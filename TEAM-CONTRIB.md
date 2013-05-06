@@ -17,6 +17,10 @@ Work on things in your favourite text $EDITOR. Once you're done, add your change
     or
     $ git commit -a
 
+And verify that git has picked up all your changes.
+
+    $ git status
+
 ### Push your branch to the remote repository as a non-master branch
 
     $ git push origin <my-awesome-feature>
@@ -41,8 +45,8 @@ After the code is merged, delete your branch on git hub by clicking "delete bran
 ### Cleanup your local branch
 
     git checkout master
-    git branch -d <my-awesome-feature>
     git remote update --prune
+    git branch -d <my-awesome-feature>
 
 Sync your master branch to the latest changes
 
