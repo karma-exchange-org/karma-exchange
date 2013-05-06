@@ -1,4 +1,4 @@
-# Instructions for members of the Karma Exchange organization to contribute changes.
+# Instructions for members of the Karma Exchange product team to contribute changes
 
 ## Uploading changes
 
