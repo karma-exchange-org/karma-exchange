@@ -10,7 +10,7 @@ Our method for collobaration is based upon this wiki: https://gist.github.com/se
 
 ### Make your changes
 
-Work on things in your favourite text $EDITOR. Once you're done, add your changes to the git staging area and commit them
+Work on things in your favourite text $EDITOR. Once you're done, add your changes to the git staging area and commit them.
 
     $ git add [files]
     $ git commit
@@ -26,7 +26,7 @@ Work on things in your favourite text $EDITOR. Once you're done, add your change
 * Go to the [karma exchange project](https://github.com/karma-exchange-org/karma-exchange.git) on github.
 * Click "Branches"
 * Select your branch
-* Click "pull request" to submit a pull request.
+* Click "Pull Request" to submit a pull request.
 
 ### Reviewing the code
 
@@ -52,11 +52,11 @@ Sync your master branch to the latest changes
 
 ### Setting up git on your computer
 
-https://help.github.com/articles/set-up-git
+Read https://help.github.com/articles/set-up-git
 
     git config --global user.name "First Last"
     git config --global user.email "fake.email@gmail.com"
-    git config --global core.editor emacs
+    git config --global core.editor $EDITOR
     git config --global credential.helper cache
     git config --global credential.helper 'cache --timeout=360000'
 
@@ -76,10 +76,8 @@ Assuming that you're placing the repository in ~/src
 
 1. Github:
    * https://help.github.com/articles/set-up-git
-
 2. Github collaboration. This is our template for collaboration:
    * https://gist.github.com/seshness/3943237
-
 3. Git:
    * http://www.vogella.com/articles/Git/article.html
    * http://gitref.org/basic/
