@@ -22,8 +22,7 @@ public class EventTest extends PersistenceTestHelper {
       KeyWrapper.create(Cause.create("homeless"))));
 
     Location location = new Location();
-    location.setId(Long.valueOf(1));
-    event.setLocation(KeyWrapper.create(location));
+    event.setLocation(location);
 
     event.setStatus(Event.Status.OPEN);
     event.setMaxRsvp(20);
