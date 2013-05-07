@@ -4,22 +4,34 @@
 
 Our method for collobaration is based upon this wiki: https://gist.github.com/seshness/3943237
 
-### Create a branch for your changes.
+### Make and test your changes
 
+Make whatever changes you want to make. Make sure all tests pass:
+
+    $ mvn test
+
+### Create a branch with your changes
+
+Create a branch using "git checkout -b". Don't worry, this command automatically copies your changes to the new branch:
+
+    $ cd <project git dir>
     $ git checkout -b <my-awesome-feature>
 
-### Make your changes
+Add any new files:
 
-Work on things in your favourite text $EDITOR. Once you're done, add your changes to the git staging area and commit them.
+    $ git add .
 
-    $ git add [files]
-    $ git commit
-    or
-    $ git commit -a
-
-And verify that git has picked up all your changes.
+Review your changes:
 
     $ git status
+
+Commit your changes:
+
+    $ git commit -a    
+
+(Optional) If you want to review your commits:
+
+    $ gitk
 
 ### Push your branch to the remote repository as a non-master branch
 
@@ -44,13 +56,15 @@ After the code is merged, delete your branch on git hub by clicking "delete bran
 
 ### Cleanup your local branch
 
+Sync your master branch to the latest changes:
+
     git checkout master
     git remote update --prune
-    git branch -d <my-awesome-feature>
-
-Sync your master branch to the latest changes
-
     git pull
+
+Delete your merged branch:
+
+    git branch -d <my-awesome-feature>
 
 ## Setup
 
