@@ -4,24 +4,36 @@
 
 Our method for collobaration is based upon this wiki: https://gist.github.com/seshness/3943237
 
-### Create a branch for your changes.
+### Make and test your changes
 
+Make whatever changes you want to make. Make sure all tests pass:
+
+    $ mvn test
+
+### Create a branch with your changes
+
+Create a branch using "git checkout -b". Don't worry, this command automatically copies your changes to the new branch:
+
+    $ cd <project git dir>
     $ git checkout -b <my-awesome-feature>
 
-### Make your changes
+Add any new files:
 
-Work on things in your favourite text $EDITOR. Once you're done, add your changes to the git staging area and commit them.
+    $ git add .
 
-    $ git add [files]
-    $ git commit
-    or
-    $ git commit -a
-
-And verify that git has picked up all your changes.
+Review your changes:
 
     $ git status
 
-### Push your branch to the remote repository as a non-master branch
+Commit your changes:
+
+    $ git commit -a    
+
+(Optional) Review your commits:
+
+    $ gitk
+
+Push your branch to the remote repository as a non-master branch:
 
     $ git push origin <my-awesome-feature>
 
@@ -36,6 +48,14 @@ And verify that git has picked up all your changes.
 
 The code should ideally be reviewed by someone else in the organization. See the [git hub pull tutorial](https://help.github.com/articles/using-pull-requests#managing-pull-requests) to see how pull requests are processed by the code reviewer.
 
+To incorporate code review feedback just follow the prior modification and push instructions and re-run your tests, but skip the step of creating a new branch:
+
+    <make your changes>
+    $ mvn test
+    $ git add .
+    $ git commit -a    
+    $ git push origin <my-awesome-feature>
+
 ### Merging the code
 
 Once you have received code review approval follow the [merge instructions](https://help.github.com/articles/merging-a-pull-request). In most cases it should just be as simple as clicking the "Merge pull request" button.
@@ -44,13 +64,15 @@ After the code is merged, delete your branch on git hub by clicking "delete bran
 
 ### Cleanup your local branch
 
+Sync your master branch to the latest changes:
+
     git checkout master
     git remote update --prune
-    git branch -d <my-awesome-feature>
-
-Sync your master branch to the latest changes
-
     git pull
+
+Delete your merged branch:
+
+    git branch -d <my-awesome-feature>
 
 ## Setup
 
