@@ -1,18 +1,13 @@
 package org.karmaexchange.dao;
 
-import javax.xml.bind.annotation.XmlRootElement;
-
 import lombok.Data;
 
-import com.googlecode.objectify.annotation.Entity;
-import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Embed;
 
-@XmlRootElement
-@Entity
 @Data
+@Embed
 public class Location {
 
-  @Id private Long id;
   private String title;
   private String description;
   private Address address;

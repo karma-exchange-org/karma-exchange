@@ -46,12 +46,9 @@ public class Image {
   @Getter
   @Setter
   private GeoPtWrapper gpsLocation;  // Most images are tagged with gps information automatically.
-  @Getter
-  @Setter
-  private KeyWrapper<Location> location;  // When the user explicitly specifies a location.
 
   public static Image create(BlobKey blobKey, Key<User> uploadedBy, Date dateUploaded,
-                             GeoPt gpsLocation, Key<Location> location) {
+                             GeoPt gpsLocation) {
     Image image = new Image();
     image.blobKey = blobKey;
     ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey).secureUrl(true);
@@ -61,9 +58,6 @@ public class Image {
     image.dateUploaded = dateUploaded;
     if (gpsLocation != null) {
       image.gpsLocation = GeoPtWrapper.create(gpsLocation);
-    }
-    if (location != null) {
-      image.location = KeyWrapper.create(location);
     }
     return image;
   }
