@@ -36,9 +36,11 @@ Make sure you're using eclipse juno (3.8 / 4.2) or a more recent version.
 
 3. Open your workspace / create a new workspace and import the maven project: File --> Import --> Maven --> Existing Maven Project.
 
-4. To run the tests: F11 --> Maven Test
+4. Disable eclipse's javascript validator (it doesn't seem to handle angular well): Project->Properties->Builders then uncheck the‘Javascript Validator’.
 
-5. To run the dev app server: F11 --> Maven Build --> DevAppServer: appengine:devserver
+5. To run the tests: F11 --> Maven Test
+
+6. To run the dev app server: F11 --> Maven Build --> DevAppServer: appengine:devserver
 
 Further reading [Google Plugin Maven Integeration Wiki](https://code.google.com/p/google-web-toolkit/wiki/WorkingWithMaven)
 
