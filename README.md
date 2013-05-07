@@ -28,13 +28,17 @@ Further reading [App Engine Maven Integeration Wiki](https://developers.google.c
 
 ## Eclipse details:
 
-1. Install all the maven eclipse plugins from http://download.jboss.org/jbosstools/updates/m2eclipse-wtp and restart eclipse.
+Make sure you're using eclipse juno (3.8 / 4.2) or a more recent version.
 
-2. Open your workspace / create a new workspace and import the maven project: File --> Import --> Maven --> Existing Maven Project.
+1. Close eclipse and install [lombok](http://projectlombok.org/). Download the jar and execute it / double click it to add it to eclipse.ini.
 
-3. To run the tests: F11 --> Maven Test
+2. Install the maven eclipse plugins from http://download.jboss.org/jbosstools/updates/m2eclipse-wtp (all of them) and restart eclipse.
 
-4. To run the dev app server: F11 --> Maven Build --> DevAppServer: appengine:devserver
+3. Open your workspace / create a new workspace and import the maven project: File --> Import --> Maven --> Existing Maven Project.
+
+4. To run the tests: F11 --> Maven Test
+
+5. To run the dev app server: F11 --> Maven Build --> DevAppServer: appengine:devserver
 
 Further reading [Google Plugin Maven Integeration Wiki](https://code.google.com/p/google-web-toolkit/wiki/WorkingWithMaven)
 
