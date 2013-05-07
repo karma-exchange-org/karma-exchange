@@ -6,12 +6,14 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
 
+import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
 
 @XmlRootElement
 @Entity
+@Cache
 @Data
 public final class User {
 
@@ -40,6 +42,9 @@ public final class User {
   private Rating eventOrganizerRating;
 
   private EventSearch lastEventSearch;
+
+  // TODO(avaliani): jackson doesn't like oAuth. It converts it to "oauth".
+  private List<OAuthCredential> oauthCredentials;
 
   // TODO(avaliani): profileSecurityPrefs
 }

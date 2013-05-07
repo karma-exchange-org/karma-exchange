@@ -1,0 +1,29 @@
+<form name="form" class="form-horizontal">
+<div class="control-group" ng-class="{error: form.event.$invalid}">
+    <label class="control-label" for="event">Event Title</label>
+    <div class="controls">
+        <input type="text" ng-model="item.title" id="title" placeholder="title">
+        <input type="text" ng-model="item.description" id="description" placeholder="description">
+        <input type="text" ng-model="item.specialInstructions" id="specialInstructions" placeholder="specialInstructions">
+        <input type="text" ng-model="item.causes" id="causes" placeholder="causes">
+        <input type="text" ng-model="item.location" id="location" placeholder="Email" >
+        <input type="text" ng-model="item.startTime" id="startTime" placeholder="startTime">
+        <input type="text" ng-model="item.endTime" id="endTime" placeholder="endTime">
+        <input type="text" ng-model="item.primaryImage" id="primaryImage" placeholder="primaryImage">
+        <input type="text" ng-model="item.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
+        <input type="text" ng-model="item.skillsRequired" id="skillsRequired" placeholder="skillsRequired">
+        <input type="text" ng-model="item.organizations" id="organizations" placeholder="Email">
+        <input type="text" ng-model="item.organizers" id="organizers" placeholder="organizers">
+        <input type="text" ng-model="item.maxRsvp" id="maxRsvp" placeholder="maxRsvp">
+        <input type="text" ng-model="item.minRsvp" id="minRsvp" placeholder="minRsvp">
+ 
+ 
+    </div>
+</div>
+<div class="form-actions">
+    <button class="btn btn-primary" ng-click="save()">
+        Submit
+    </button>
+    <a href="#/events" class="btn">Cancel</a>
+</div>
+</form>
