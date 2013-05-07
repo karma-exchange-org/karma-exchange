@@ -10,6 +10,7 @@ import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.TestUtil.debug;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Before;
@@ -74,6 +75,10 @@ public class UserTest extends PersistenceTestHelper {
     rating.addRating(4.5);
     user1.setEventOrganizerRating(rating);
 
+    List<OAuthCredential> credentials = asList(
+      OAuthCredential.create("facebook.com", "uid", "token"));
+    user1.setOauthCredentials(credentials);
+
     // Setup user2.
     user2 = new User();
     user2.setId(Long.valueOf(27));
@@ -127,6 +132,22 @@ public class UserTest extends PersistenceTestHelper {
       ofy().load().type(User.class)
           .filter("eventOrganizerRating.average >", Double.valueOf(4.5)).keys());
     assertEquals(0, userKeys.size());
+
+    userKeys = Sets.newHashSet(
+      ofy().load()
+           .type(User.class)
+           .filter("oauthCredentials.globalUidAndToken", "tokenuidfacebook.com")
+           .keys());
+    assertEquals(1, userKeys.size());
+    assertTrue(userKeys.contains(Key.create(user1)));
+
+    userKeys = Sets.newHashSet(
+      ofy().load()
+           .type(User.class)
+           .filter("oauthCredentials.globalUid", "uidfacebook.com")
+           .keys());
+    assertEquals(1, userKeys.size());
+    assertTrue(userKeys.contains(Key.create(user1)));
 
     if (debug) {
       DatastoreTestUtil.dumpEntity(user1);
