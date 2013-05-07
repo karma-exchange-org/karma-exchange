@@ -29,11 +29,11 @@ Commit your changes:
 
     $ git commit -a    
 
-(Optional) If you want to review your commits:
+(Optional) Review your commits:
 
     $ gitk
 
-### Push your branch to the remote repository as a non-master branch
+Push your branch to the remote repository as a non-master branch:
 
     $ git push origin <my-awesome-feature>
 
