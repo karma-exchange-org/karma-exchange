@@ -48,6 +48,14 @@ Push your branch to the remote repository as a non-master branch:
 
 The code should ideally be reviewed by someone else in the organization. See the [git hub pull tutorial](https://help.github.com/articles/using-pull-requests#managing-pull-requests) to see how pull requests are processed by the code reviewer.
 
+To incorporate code review feedback just follow the prior modification and push instructions and re-run your tests, but skip the step of creating a new branch:
+
+    <make your changes>
+    $ mvn test
+    $ git add .
+    $ git commit -a    
+    $ git push origin <my-awesome-feature>
+
 ### Merging the code
 
 Once you have received code review approval follow the [merge instructions](https://help.github.com/articles/merging-a-pull-request). In most cases it should just be as simple as clicking the "Merge pull request" button.
