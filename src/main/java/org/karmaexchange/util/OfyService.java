@@ -26,7 +26,6 @@ public class OfyService {
     ObjectifyService.register(NonProfitOrganization.class);
     ObjectifyService.register(Skill.class);
     ObjectifyService.register(Cause.class);
-    ObjectifyService.register(Location.class);
     ObjectifyService.register(EventComment.class);
   }
 

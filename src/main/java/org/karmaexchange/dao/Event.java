@@ -31,7 +31,7 @@ public final class Event {
   @Index
   private List<KeyWrapper<Cause>> causes;
 
-  private KeyWrapper<Location> location;
+  private Location location;
   @Index
   private Date startTime;
   @Index
