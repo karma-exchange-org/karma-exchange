@@ -1,29 +1,170 @@
-<form name="form" class="form-horizontal">
-<div class="control-group" ng-class="{error: form.event.$invalid}">
-    <label class="control-label" for="event">Event Title</label>
-    <div class="controls">
-        <input type="text" ng-model="item.title" id="title" placeholder="title">
-        <input type="text" ng-model="item.description" id="description" placeholder="description">
-        <input type="text" ng-model="item.specialInstructions" id="specialInstructions" placeholder="specialInstructions">
-        <input type="text" ng-model="item.causes" id="causes" placeholder="causes">
-        <input type="text" ng-model="item.location" id="location" placeholder="Email" >
-        <input type="text" ng-model="item.startTime" id="startTime" placeholder="startTime">
-        <input type="text" ng-model="item.endTime" id="endTime" placeholder="endTime">
-        <input type="text" ng-model="item.primaryImage" id="primaryImage" placeholder="primaryImage">
-        <input type="text" ng-model="item.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
-        <input type="text" ng-model="item.skillsRequired" id="skillsRequired" placeholder="skillsRequired">
-        <input type="text" ng-model="item.organizations" id="organizations" placeholder="Email">
-        <input type="text" ng-model="item.organizers" id="organizers" placeholder="organizers">
-        <input type="text" ng-model="item.maxRsvp" id="maxRsvp" placeholder="maxRsvp">
-        <input type="text" ng-model="item.minRsvp" id="minRsvp" placeholder="minRsvp">
- 
- 
+<div class="container-fluid">
+
+    <div class="row-fluid">
+
+        <div class="span5">
+
+            <form name="form" class="form-horizontal">
+
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Event Title</label>
+
+                    <div class="controls">
+
+                        <input type="text" ng-model="item.title" id="title" placeholder="title">
+
+                    </div>
+
+                </div>
+
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Organization(if any)</label>
+
+                    <div class="controls">
+
+                        <input type="text" ng-model="item.organizations" id="organizations" placeholder="Benefiting Organizations">
+
+                    </div>
+
+                </div>
+
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Description</label>
+
+                    <div class="controls">
+
+                        <textarea rows="3" class="input-large" ng-model="item.description" id="description" placeholder="description"></textarea>
+
+                    </div>
+
+                </div>
+
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">When?</label>
+
+                    <div class="controls controls-row">
+
+                        <input type="text" ng-model="item.startTime" id="startTime" placeholder="Start time">
+
+                        <input type="text" ng-model="item.endTime" id="endTime" placeholder="End time">
+
+                    </div>
+
+                </div>
+
+
+
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Where?</label>
+
+                    <div class="controls">
+
+                        <input googleplace type="text" ng-model="item.location.title" id="location.title" placeholder="Name of the place" >
+
+                    </div>
+
+                    <div class="controls">
+
+                        <input type="text" ng-model="item.location.address.street" id="location.address.street" placeholder="Street" >
+
+                    </div>
+
+                    <div class="controls controls-row">
+
+                        <input type="text" ng-model="item.location.address.city" id="location.address.city" placeholder="City" >
+
+                        <input type="text" ng-model="item.location.address.state" id="location.address.state" placeholder="State" >
+
+                    </div>
+
+
+
+                    <div class="controls controls-row">
+
+                        <input type="text" ng-model="item.location.address.country" id="location.address.country" placeholder="Country" >
+
+                        <input type="text" ng-model="item.location.address.zip" id="location.address.zip" placeholder="Zip" >
+
+                    </div>
+                </div>
+
+        </div>
+        <div class="span7">
+
+            <div class="google-map" 
+                center="center"
+                zoom="zoom" 
+                markers="markers"
+                latitude="latitude"
+                longitude="longitude"
+                mark-click="true"
+                draggable="true"
+                style="height: 400px; width: 100%">
+            </div>
+
+        </div>
     </div>
+    <button ng-click="refreshMap()">Refresh map</button>
+    <div class="row-fluid">
+
+                
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Number of volunteers needed</label>
+
+                    <div class="controls controls-row">
+
+                        <input type="text" ng-model="item.maxRsvp" id="maxRsvp" placeholder="Minimum">
+
+                        <input type="text" ng-model="item.minRsvp" id="minRsvp" placeholder="Maximum">
+
+                    </div>
+
+                </div>
+
+
+
+                <input type="text" ng-model="item.specialInstructions" id="specialInstructions" placeholder="specialInstructions">
+
+                <input type="text" ng-model="item.causes" id="causes" placeholder="causes">
+
+
+
+                <input type="text" ng-model="item.primaryImage" id="primaryImage" placeholder="primaryImage">
+
+                <input type="text" ng-model="item.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
+
+                <input type="text" ng-model="item.skillsRequired" id="skillsRequired" placeholder="Skills Required">
+
+
+
+                <input type="text" ng-model="item.organizers" id="organizers" placeholder="organizers">
+
+
+
+                <div class="form-actions">
+
+                    <button class="btn btn-primary" ng-click="save()">
+
+                        Submit
+
+                    </button>
+
+                    <a href="#/events" class="btn">Cancel</a>
+
+                </div>
+
+            </form>
+
+        </div>
+
+        
+
+    </div>
+
 </div>
-<div class="form-actions">
-    <button class="btn btn-primary" ng-click="save()">
-        Submit
-    </button>
-    <a href="#/events" class="btn">Cancel</a>
-</div>
-</form>
