@@ -22,7 +22,7 @@
 		<tr ng-repeat="item in items" id="event_{{item.id}}">
 			<td>{{item.title}}</td>
 			<td>{{item.description}}</td>
-			<td>{{item.location}}</td>
+			<td>{{item.location.address.city}}</td>
 			<td>
 				<a href="#/editevent/{{item.id}}"><i class="icon-edit"></i></a>
 				<a ng-click="delete()"><i class="icon-remove"></i></a>
