@@ -14,11 +14,15 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response;
 
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
+import org.karmaexchange.resources.msg.ResponseMsg;
+import org.karmaexchange.resources.msg.ResponseMsg.ErrorMsg;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -47,31 +51,37 @@ public class OAuthFilter implements Filter {
     HttpServletRequest req = (HttpServletRequest) request;
     HttpServletResponse resp = (HttpServletResponse) response;
 
-    OAuthCredential credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
-    if (credential == null) {
-      setErrorResponse(resp, "login credentials not specified");
-      return;
-    }
-
-    log.log(OAUTH_LOG_LEVEL, "[" + credential + "] checking if oAuth token is cached");
-
-    // 1. If the oauth token is cached, then its valid. Just use it.
-    if (!credentialIsCached(credential)) {
-
-      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] verifying oauth token");
-
-      // 2. If it's not cached, check with the social network provider if it's valid.
-      if (verifyCredential(credential)) {
-
-        log.log(OAUTH_LOG_LEVEL, "[" + credential + "] updating oauth token");
-
-        // The token is valid, so we need to update the token.
-        updateCachedCredential(credential);
-      } else {
-        log.log(OAUTH_LOG_LEVEL, "[" + credential + "] rejecting request");
-        setErrorResponse(resp, "failed to validate oAuth token");
-        return;
+    try {
+      OAuthCredential credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
+      if (credential == null) {
+        throw ResponseMsg.createException("authentication credentials missing",
+          ErrorMsg.Type.AUTHENTICATION);
       }
+
+      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] checking if oAuth token is cached");
+
+      // 1. If the oauth token is cached, then its valid. Just use it.
+      if (!credentialIsCached(credential)) {
+
+        log.log(OAUTH_LOG_LEVEL, "[" + credential + "] verifying oauth token");
+
+        // 2. If it's not cached, check with the social network provider if it's valid.
+        if (verifyCredential(credential)) {
+
+          log.log(OAUTH_LOG_LEVEL, "[" + credential + "] updating oauth token");
+
+          // The token is valid, so we need to update the token.
+          updateCachedCredential(credential);
+        } else {
+          throw ResponseMsg.createException("authentication credentials are not valid",
+            ErrorMsg.Type.AUTHENTICATION);
+        }
+      }
+    } catch (WebApplicationException e) {
+      Response errMsg = e.getResponse();
+      log.log(OAUTH_LOG_LEVEL, "Failed to authenticate: " + errMsg);
+      resp.setStatus(errMsg.getStatus());
+      return;
     }
 
     // Authorization complete... continue to the resource.
@@ -90,12 +100,12 @@ public class OAuthFilter implements Filter {
 
   private static boolean verifyCredential(OAuthCredential credential) {
     SocialNetworkProvider provider =
-        SocialNetworkProviderFactory.getProvider(credential.getProvider());
+        SocialNetworkProviderFactory.getProvider(credential);
     if (provider == null) {
       log.log(OAUTH_LOG_LEVEL, "[" + credential + "] invalid provider in credential");
       return false;
     } else {
-      return provider.verifyCredential(credential);
+      return provider.verifyCredential();
     }
   }
 

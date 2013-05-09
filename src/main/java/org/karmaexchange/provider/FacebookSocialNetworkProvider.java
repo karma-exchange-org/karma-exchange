@@ -8,37 +8,103 @@ import java.util.logging.Logger;
 
 import javax.servlet.Filter;
 
+import org.karmaexchange.dao.Address;
+import org.karmaexchange.dao.ContactInfo;
+import org.karmaexchange.dao.GeoPtWrapper;
+import org.karmaexchange.dao.ModificationInfo;
 import org.karmaexchange.dao.OAuthCredential;
+import org.karmaexchange.dao.User;
+import org.karmaexchange.resources.msg.ResponseMsg;
+import org.karmaexchange.resources.msg.ResponseMsg.ErrorMsg;
 
+import com.google.appengine.api.datastore.GeoPt;
+import com.google.common.collect.Lists;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.Facebook;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.exception.FacebookException;
 import com.restfb.json.JsonObject;
+import com.restfb.types.NamedFacebookType;
 import com.restfb.util.ReflectionUtils;
 
 public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
 
   private static final Logger log = Logger.getLogger(Filter.class.getName());
 
+  public FacebookSocialNetworkProvider(OAuthCredential credential) {
+    super(credential);
+  }
+
   @Override
-  public boolean verifyCredential(OAuthCredential credential) {
+  public boolean verifyCredential() {
     DebugTokenFacebookClient fbClient = new DebugTokenFacebookClient(credential);
+    DebugTokenInfo tokenInfo;
     try {
-      DebugTokenInfo tokenInfo = fbClient.debugToken(credential.getToken());
-      log.log(OAUTH_LOG_LEVEL, "DebugTokenInfo fetched: " + tokenInfo);
-      if (tokenInfo.getUserId().equals(credential.getUid())) {
-        return true;
-      } else {
-        log.log(OAUTH_LOG_LEVEL,
-          format("Uid of tokenInfo=[%s] does not match credential uid=[%s], tokenInfo[%s]",
-          tokenInfo.getUserId(), credential.getUid(), tokenInfo));
-        return false;
-      }
+      tokenInfo = fbClient.debugToken(credential.getToken());
     } catch(FacebookException e) {
-      log.log(OAUTH_LOG_LEVEL, "Failed to fetch credential", e);
+      throw ResponseMsg.createException(e, ErrorMsg.Type.PARTNER_SERVICE_FAILURE);
+    }
+    log.log(OAUTH_LOG_LEVEL, "DebugTokenInfo fetched: " + tokenInfo);
+    if (tokenInfo.getUserId().equals(credential.getUid())) {
+      return true;
+    } else {
+      log.log(OAUTH_LOG_LEVEL,
+        format("Uid of tokenInfo=[%s] does not match credential uid=[%s], tokenInfo[%s]",
+        tokenInfo.getUserId(), credential.getUid(), tokenInfo));
       return false;
+    }
+  }
+
+  @Override
+  public User initUser() {
+    DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
+    com.restfb.types.User fbUser;
+    fbUser = fbClient.fetchObject("me", com.restfb.types.User.class);
+    User user = new User();
+    user.setModificationInfo(ModificationInfo.create());
+    user.setFirstName(fbUser.getFirstName());
+    user.setLastName(fbUser.getLastName());
+    ContactInfo contactInfo = new ContactInfo();
+    user.setContactInfo(contactInfo);
+    // TODO(avaliani):
+    // Access tokens required:
+    //   - email
+    //   - user photos
+    //   - location
+    // TODO(avaliani): look into facebook image re-sizing.
+    contactInfo.setEmail(fbUser.getEmail());
+    // Facebook does not expose the phone number.
+    NamedFacebookType fbLocationKey = fbUser.getLocation();
+    if (fbLocationKey != null) {
+      contactInfo.setAddress(initAddress(fbClient, fbLocationKey));
+    }
+    user.setOauthCredentials(Lists.newArrayList(credential));
+    return user;
+  }
+
+  private Address initAddress(DefaultFacebookClient fbClient, NamedFacebookType fbLocationKey) {
+    Address address = new Address();
+    com.restfb.types.Location fbLocation = fetchObject(
+      fbClient, fbLocationKey.getName(), com.restfb.types.Location.class);
+    address.setStreet(fbLocation.getStreet());
+    address.setCity(fbLocation.getCity());
+    address.setState(fbLocation.getState());
+    address.setCountry(fbLocation.getCountry());
+    address.setZip(fbLocation.getZip());
+    if ((fbLocation.getLatitude() != null) && (fbLocation.getLongitude() != null)) {
+      GeoPt geoPt = new GeoPt((float) ((double) fbLocation.getLatitude()),
+        (float) ((double) fbLocation.getLongitude()));
+      address.setGeoPt(GeoPtWrapper.create(geoPt));
+    }
+    return address;
+  }
+
+  private <T> T fetchObject(DefaultFacebookClient fbClient, String name, Class<T> objClass) {
+    try {
+      return fbClient.fetchObject(name, objClass);
+    } catch(FacebookException e) {
+      throw ResponseMsg.createException(e, ErrorMsg.Type.PARTNER_SERVICE_FAILURE);
     }
   }
 
