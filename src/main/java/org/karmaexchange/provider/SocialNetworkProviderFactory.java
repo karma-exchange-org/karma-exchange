@@ -17,13 +17,12 @@ public final class SocialNetworkProviderFactory {
 
   private static final String FACEBOOK_PROVIDER = "facebook";
 
-  private static final Map<String, SocialNetworkProvider> PROVIDER_MAP = Maps.newHashMap();
-  static {
-    PROVIDER_MAP.put(FACEBOOK_PROVIDER, new FacebookSocialNetworkProvider());
-  }
-
-  public static SocialNetworkProvider getProvider(String provider) {
-    return PROVIDER_MAP.get(provider);
+  public static SocialNetworkProvider getProvider(OAuthCredential credential) {
+    if (credential.getProvider().equals(FACEBOOK_PROVIDER)) {
+      return new FacebookSocialNetworkProvider(credential);
+    } else {
+      return null;
+    }
   }
 
   public static OAuthCredential getLoginProviderCredential(HttpServletRequest req) {
