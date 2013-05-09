@@ -53,7 +53,7 @@ public class UserTest extends PersistenceTestHelper {
     contactInfo.setEmail("test@karmaexchange.org");
     Address address = new Address();
     contactInfo.setAddress(address);
-    address.setZip(94105);
+    address.setZip("94105");
     address.setGeoPt(GeoPtWrapper.create(new GeoPt(1.9f, 1.0f)));
 
     EmergencyContact ec1 = new EmergencyContact();

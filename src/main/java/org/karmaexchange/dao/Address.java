@@ -11,6 +11,6 @@ public final class Address {
   private String city;
   private String state;
   private String country;
-  private Integer zip;
+  private String zip;
   private GeoPtWrapper geoPt;
 }
