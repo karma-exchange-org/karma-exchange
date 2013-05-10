@@ -11,11 +11,13 @@ import javax.servlet.Filter;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.ContactInfo;
 import org.karmaexchange.dao.GeoPtWrapper;
+import org.karmaexchange.dao.Image;
+import org.karmaexchange.dao.Image.ImageProvider;
 import org.karmaexchange.dao.ModificationInfo;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
-import org.karmaexchange.resources.msg.ResponseMsg;
-import org.karmaexchange.resources.msg.ResponseMsg.ErrorMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.common.collect.Lists;
@@ -32,6 +34,8 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
 
   private static final Logger log = Logger.getLogger(Filter.class.getName());
 
+  private static final String PROFILE_IMAGE_URL_FMT = "https://graph.facebook.com/%s/picture";
+
   public FacebookSocialNetworkProvider(OAuthCredential credential) {
     super(credential);
   }
@@ -43,7 +47,7 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     try {
       tokenInfo = fbClient.debugToken(credential.getToken());
     } catch(FacebookException e) {
-      throw ResponseMsg.createException(e, ErrorMsg.Type.PARTNER_SERVICE_FAILURE);
+      throw ErrorResponseMsg.createException(e, ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
     }
     log.log(OAUTH_LOG_LEVEL, "DebugTokenInfo fetched: " + tokenInfo);
     if (tokenInfo.getUserId().equals(credential.getUid())) {
@@ -70,17 +74,23 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     // TODO(avaliani):
     // Access tokens required:
     //   - email
-    //   - user photos
     //   - location
-    // TODO(avaliani): look into facebook image re-sizing.
     contactInfo.setEmail(fbUser.getEmail());
-    // Facebook does not expose the phone number.
+    Image image = Image.create(buildImageUrl(credential.getUid()), ImageProvider.FACEBOOK);
+    user.setProfileImage(image);
+
     NamedFacebookType fbLocationKey = fbUser.getLocation();
-    if (fbLocationKey != null) {
-      contactInfo.setAddress(initAddress(fbClient, fbLocationKey));
-    }
+    // TODO(avaliani): fix this
+    // if (fbLocationKey != null) {
+    //   contactInfo.setAddress(initAddress(fbClient, fbLocationKey));
+    // }
+
     user.setOauthCredentials(Lists.newArrayList(credential));
     return user;
+  }
+
+  private String buildImageUrl(String uid) {
+    return String.format(PROFILE_IMAGE_URL_FMT, uid);
   }
 
   private Address initAddress(DefaultFacebookClient fbClient, NamedFacebookType fbLocationKey) {
@@ -104,7 +114,7 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     try {
       return fbClient.fetchObject(name, objClass);
     } catch(FacebookException e) {
-      throw ResponseMsg.createException(e, ErrorMsg.Type.PARTNER_SERVICE_FAILURE);
+      throw ErrorResponseMsg.createException(e, ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
     }
   }
 
