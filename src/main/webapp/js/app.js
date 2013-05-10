@@ -4,8 +4,8 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
         $routeProvider.
             when('/', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
             when('/events', { controller: eventsCtrl, templateUrl: 'partials/events.html' }).
-            when('/addevent', { controller: addEventsCtrl, templateUrl: 'partials/addevent.html' }).
-            when('/editevent/:itemId', { controller: editEventsCtrl, templateUrl: 'partials/addevent.html' }).
+            when('/addevent', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
+            when('/editevent/:itemId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             otherwise({ redirectTo: '/' });
 
         $httpProvider.defaults.headers.common['X-'] = 'X';
@@ -66,38 +66,9 @@ var eventsCtrl = function ($scope, $location, $http, Events,$cookieStore) {
 
 };
 
-var addEventsCtrl = function($scope, $location, Events, geocoder) {
 
-	checkLogin($location);
 
-    angular.extend($scope, {
-
-        /** the initial center of the map */
-        center: {
-            latitude: 37,
-            longitude: -122
-        },
-
-        /** the initial zoom level of the map */
-        zoom: 4,
-
-        /** list of markers to put in the map */
-        markers: [ {
-                
-            }],
-
-        // These 2 properties will be set when clicking on the map
-        clicked: null,  
-        clicked: null,
-    });
-    $scope.save = function () {
-    	Events.save($scope.item, function() {
-            $location.path('/events');
-        });
-    };
-};
-
-var editEventsCtrl =  function ($scope, $routeParams, $location, Events) {
+var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
 
     angular.extend($scope, {
 
@@ -119,19 +90,28 @@ var editEventsCtrl =  function ($scope, $routeParams, $location, Events) {
         
     });
 
+    
+    
     $scope.refreshMap = function(){
-                geocoder.geocode({ 'address': $scope.item.location.address.street+','+$scope.item.location.address.city+','+$scope.item.location.address.state+','+$scope.item.location.address.country }, function (results, status) {
-                if (status == google.maps.GeocoderStatus.OK) {
-                    $scope.center.latitude = results[0].geometry.location.lat();
-                    $scope.center.longitude = results[0].geometry.location.lng();
-                    $scope.addMarker($scope.center.latitude,$scope.center.longitude);
-                    $scope.zoom = 15;
-                    $scope.$apply();
-                    
-                    
-                }
+                console.log('refresh');
+                if($scope.item&&$scope.item.location.address.street)
+                {    
+                    geocoder.geocode({ 'address': $scope.item.location.address.street+','+$scope.item.location.address.city+','+$scope.item.location.address.state+','+$scope.item.location.address.country }, function (results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        $scope.center.latitude = results[0].geometry.location.lat();
+                        $scope.center.longitude = results[0].geometry.location.lng();
+                        $scope.markers = [ {}];
+                        $scope.addMarker($scope.center.latitude,$scope.center.longitude);
+                        $scope.zoom = 15;
+                        $scope.$apply();
+                        
+                        
+                    }
 
-    })};
+                })}
+            };
+
+
 
     $scope.addMarker = function (markerLat,markerLng) {
             $scope.markers.push({
@@ -152,6 +132,8 @@ var editEventsCtrl =  function ($scope, $routeParams, $location, Events) {
                     latitude: position.coords.latitude,
                     longitude: position.coords.longitude
                 };
+
+                $scope.zoom = 12;
                 
                 $scope.$apply();
             }, function () {
@@ -165,20 +147,88 @@ var editEventsCtrl =  function ($scope, $routeParams, $location, Events) {
 	
 
 	$scope.save = function () {
-		Events.update({id: $scope.item.id}, $scope.item, function () {
-	        $location.path('/events');
-	    });
+        if($location.$$url=="/addevent")
+        {
+            Events.save($scope.item, function() {
+            $location.path('/events');
+        });
+        }
+        else
+        {    
+    		Events.update({id: $scope.item.id}, $scope.item, function () {
+    	        $location.path('/events');
+    	    });
+        }
 	};
 
-    $scope.item = Events.get({ id: $routeParams.itemId } ,function() {
-        $scope.refreshMap();
+    if($location.$$url=="/addevent")
+    {
+        $scope.findMe();
+        $scope.$watch('item.location.address.street', function(newVal,oldVal) {
+            if(newVal!=oldVal)
+            {
+                $scope.refreshMap();
 
-        }, function(response) {
-        //404 or bad
-        console.log(response);
-        if(response.status === 404) {
-    }});
-    $scope.findMe();
+            }    
+            
+          });
+        $scope.$watch('item.location.address.city', function(newVal,oldVal) {
+            if(newVal!=oldVal)
+            {
+                $scope.refreshMap();
+
+            }    
+            
+          });
+        $scope.$watch('item.location.address.state', function(newVal,oldVal) {
+            if(newVal!=oldVal)
+            {
+                $scope.refreshMap();
+
+            }    
+            
+          });
+        $scope.$watch('item.location.address.country', function(newVal,oldVal) {
+            if(newVal!=oldVal)
+            {
+                $scope.refreshMap();
+
+            }    
+            
+          });
+
+    }
+    else
+    {    
+        $scope.item = Events.get({ id: $routeParams.itemId } ,function() {
+            
+
+            }, function(response) {
+            //404 or bad
+            console.log(response);
+            if(response.status === 404) {
+        }});
+    }
+
+
+    $('#startTimePicker')
+        .datetimepicker()
+        .on('changeDate', function(ev){
+            
+
+            
+            $scope.item.startTime = jQuery(ev.target).data('datetimepicker').getDate();
+            $scope.$apply();
+            
+        });
+    $('#endTimePicker')
+        .datetimepicker()
+        .on('changeDate', function(ev){
+            
+            $scope.item.endTime = jQuery(ev.target).data('datetimepicker').getDate();
+            $scope.$apply();
+            
+        });
 };
     
 
