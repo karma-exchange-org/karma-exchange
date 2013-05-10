@@ -6,15 +6,18 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 
 @XmlRootElement
 @Entity
 @Data
-public final class Event {
+@EqualsAndHashCode(callSuper=false)
+public final class Event extends BaseDao<Event> {
 
   /*
    * TODO(avaliani):
@@ -23,6 +26,8 @@ public final class Event {
    */
 
   @Id private Long id;
+  @Ignore
+  private String key;
   private ModificationInfo modificationInfo;
 
   private String title;
@@ -54,11 +59,11 @@ public final class Event {
 
   @Index
   private Status status;
-  private int minRsvp;
-  private int maxRsvp;
+  private int minRegistrations;
+  private int maxRegistrations;
   private int maxWaitingList;
   @Index
-  private List<KeyWrapper<User>> rsvpdUsers;
+  private List<KeyWrapper<User>> registeredUsers;
   private List<KeyWrapper<User>> waitingListUsers;
 
   private Rating eventRating;
@@ -75,5 +80,11 @@ public final class Event {
     COMPLETED,
     HOLD,  // Edit only. Not visible for public search.
     CANCELED
+  }
+
+  @Override
+  public void setId(Long id) {
+    this.id = id;
+    updateKey();
   }
 }

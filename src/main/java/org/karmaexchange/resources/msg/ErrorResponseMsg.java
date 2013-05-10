@@ -9,40 +9,40 @@ import lombok.NoArgsConstructor;
 
 @XmlRootElement
 @Data
-public class ResponseMsg {
+public class ErrorResponseMsg {
   // We have this level of nesting to mimic facebook's nesting for error messages.
   // TODO(avaliani): investigate this more.
-  private ErrorMsg error;
+  private ErrorInfo error;
 
-  public static WebApplicationException createException(Throwable e, ErrorMsg.Type errorType) {
+  public static WebApplicationException createException(Throwable e, ErrorInfo.Type errorType) {
     return new WebApplicationException(createErrorResponse(e.getMessage(), errorType));
   }
 
-  public static WebApplicationException createException(String message, ErrorMsg.Type errorType) {
+  public static WebApplicationException createException(String message, ErrorInfo.Type errorType) {
     return new WebApplicationException(createErrorResponse(message, errorType));
   }
 
-  private static Response createErrorResponse(String message, ErrorMsg.Type errorType) {
-    ResponseMsg msg = createErrorMsg(message, errorType);
+  private static Response createErrorResponse(String message, ErrorInfo.Type errorType) {
+    ErrorResponseMsg msg = createErrorMsg(message, errorType);
     return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
   }
 
-  private static ResponseMsg createErrorMsg(String message, ErrorMsg.Type errorType) {
-    ErrorMsg errorMsg = new ErrorMsg(message, errorType);
-    ResponseMsg msg = new ResponseMsg();
+  private static ErrorResponseMsg createErrorMsg(String message, ErrorInfo.Type errorType) {
+    ErrorInfo errorMsg = new ErrorInfo(message, errorType);
+    ErrorResponseMsg msg = new ErrorResponseMsg();
     msg.setError(errorMsg);
     return msg;
   }
 
   @Data
   @NoArgsConstructor
-  public static class ErrorMsg {
+  public static class ErrorInfo {
     private String message;
     private Type type;
     // private int code;
     // private int subcode
 
-    public ErrorMsg(String message, Type type) {
+    public ErrorInfo(String message, Type type) {
       this.message = message;
       this.type = type;
     }
