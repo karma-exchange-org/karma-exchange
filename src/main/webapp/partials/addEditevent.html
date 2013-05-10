@@ -46,14 +46,19 @@
 
                     <label class="control-label" for="event">When?</label>
 
-                    <div class="controls controls-row">
-
-                        <input type="text" ng-model="item.startTime" id="startTime" placeholder="Start time">
-
-                        <input type="text" ng-model="item.endTime" id="endTime" placeholder="End time">
-
+                    <div class="controls controls-row ">
+                        <div class="input-append date form_datetime"  data-date-format="dd MM yyyy - HH:ii P" id="startTimePicker">
+                            <input size="16" readonly type="text" value="{{item.startTime | date:'dd MMM yyyy - hh:mm a'}}" id="startTime" placeholder="Start time">
+                            <span class="add-on"><i class="icon-remove"></i></span>
+                             <span class="add-on"><i class="icon-th"></i></span>
+                        </div>
+                       <div class="input-append date form_datetime" data-date-format="dd MM yyyy - HH:ii P" id="endTimePicker">
+                            <input size="16" readonly type="text" value="{{item.endTime | date:'dd MMM yyyy - hh:mm a'}}" id="endTime" placeholder="End time">
+                            <span class="add-on"><i class="icon-remove"></i></span>
+                            <span class="add-on"><i class="icon-th"></i></span>
+                        </div>
                     </div>
-
+                    
                 </div>
 
 
@@ -168,3 +173,14 @@
     </div>
 
 </div>
+<script type="text/javascript">
+        $('.form_datetime').datetimepicker({
+            showMeridian: true,
+            autoclose: true,
+            todayHighlight : true,
+            minuteStep : 30,
+            todayBtn: true,
+            setStartDate : (new Date()),
+            setEndDate : (new Date())
+        });
+    </script> 
