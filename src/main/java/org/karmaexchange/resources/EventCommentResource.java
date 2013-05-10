@@ -14,6 +14,6 @@ public class EventCommentResource extends BaseResource<EventComment> {
 
   @Override
   protected long getResourceId(EventComment eventComment) {
-    return eventComment.getId();
+    return (eventComment.getId() == null) ? 0 : eventComment.getId();
   }
 }

@@ -39,6 +39,9 @@ public class Image {
   private String url;
   @Getter
   @Setter
+  private ImageProvider urlProvider;
+  @Getter
+  @Setter
   private KeyWrapper<User> uploadedBy;
   @Getter
   @Setter
@@ -53,12 +56,20 @@ public class Image {
     image.blobKey = blobKey;
     ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey).secureUrl(true);
     // This call might be slow. This may have to be punted to a task queue.
-    image.url = ImagesServiceFactory.getImagesService().getServingUrl(options);
-    image.uploadedBy = KeyWrapper.create(uploadedBy);
-    image.dateUploaded = dateUploaded;
+    image.setUrl(ImagesServiceFactory.getImagesService().getServingUrl(options));
+    image.setUrlProvider(ImageProvider.BLOBSTORE);
+    image.setUploadedBy(KeyWrapper.create(uploadedBy));
+    image.setDateUploaded(dateUploaded);
     if (gpsLocation != null) {
-      image.gpsLocation = GeoPtWrapper.create(gpsLocation);
+      image.setGpsLocation(GeoPtWrapper.create(gpsLocation));
     }
+    return image;
+  }
+
+  public static Image create(String url, ImageProvider provider) {
+    Image image = new Image();
+    image.setUrl(url);
+    image.setUrlProvider(provider);
     return image;
   }
 
@@ -74,4 +85,8 @@ public class Image {
     blobKey = new BlobKey(blobKeyStr);
   }
 
+  public enum ImageProvider {
+    FACEBOOK,
+    BLOBSTORE
+  }
 }

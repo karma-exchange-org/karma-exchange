@@ -14,6 +14,6 @@ public class OrganizationResource extends BaseResource<Organization> {
 
   @Override
   protected long getResourceId(Organization organization) {
-    return organization.getId();
+    return (organization.getId() == null) ? 0 : organization.getId();
   }
 }

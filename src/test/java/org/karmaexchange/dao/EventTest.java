@@ -25,7 +25,7 @@ public class EventTest extends PersistenceTestHelper {
     event.setLocation(location);
 
     event.setStatus(Event.Status.OPEN);
-    event.setMaxRsvp(20);
+    event.setMaxRegistrations(20);
     event.setKarmaPoints(100);
   }
 

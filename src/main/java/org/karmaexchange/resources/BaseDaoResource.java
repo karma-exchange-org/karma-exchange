@@ -6,6 +6,7 @@ import static org.karmaexchange.util.OfyService.ofy;
 import java.net.URI;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -19,63 +20,72 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.googlecode.objectify.Key;
 
-public abstract class BaseResource<T> {
+public abstract class BaseDaoResource<T extends BaseDao<T>> extends AuthenticatedResource {
 
   @Context
   protected UriInfo uriInfo;
   @Context
   protected Request request;
 
+  public BaseDaoResource(@Context HttpServletRequest servletRequest) {
+    super(servletRequest);
+  }
+
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public List<T> getResources() {
-    return ofy().load().type(getResourceClass()).list();
+    return BaseDao.loadAll(getResourceClass());
   }
 
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response upsertResource(T resource) {
-    ofy().save().entity(resource).now();
-    URI uri = uriInfo.getAbsolutePathBuilder().path(Long.toString(getResourceId(resource))).build();
+    BaseDao.upsert(resource, getUser());
+    URI uri = uriInfo.getAbsolutePathBuilder().path(resource.getKey()).build();
     return Response.created(uri).build();
   }
 
   @Path("{resource}")
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response getResource(@PathParam("resource") long id) {
-    T resource = ofy().load().key(Key.create(getResourceClass(), id)).get();
+  public Response getResource(@PathParam("resource") String key) {
+    return Response.ok(getResourceObj(key)).build();
+  }
+
+  protected T getResourceObj(String key) {
+    T resource = BaseDao.<T>load(key);
     if (resource == null) {
       throw ErrorResponseMsg.createException("resource does not exist", ErrorInfo.Type.BAD_REQUEST);
     }
-    return Response.ok(resource).build();
+    return resource;
   }
 
   @Path("{resource}")
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response updateResource(@PathParam("resource") long id, T resource) {
-    if (id != getResourceId(resource)) {
+  public Response updateResource(@PathParam("resource") String key, T resource) {
+    if (((resource.getKey() != null) || (resource.getId() != null))
+        && !key.equals(resource.getKey())) {
       throw ErrorResponseMsg.createException(
-        format("new resource id [%s] does not match existing resource id [%s]",
-          Long.toString(getResourceId(resource)), Long.toString(id)),
+        format("the resource key [%s] does not match the url path key [%s]",
+          resource.getKey(), key),
         ErrorInfo.Type.BAD_REQUEST);
     }
-    ofy().save().entity(resource).now();
+    BaseDao.<T>upsert(resource, getUser());
     return Response.created(uriInfo.getAbsolutePath()).build();
   }
 
   @Path("{resource}")
   @DELETE
-  public void deleteResource(@PathParam("resource") long id) {
-    ofy().delete().key(Key.create(getResourceClass(), id)).now();
+  public void deleteResource(@PathParam("resource") String key) {
+    ofy().delete().key(Key.<T>create(key)).now();
   }
 
   protected abstract Class<T> getResourceClass();
-  protected abstract long getResourceId(T resource);
 }

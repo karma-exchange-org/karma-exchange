@@ -48,6 +48,10 @@ public class Organization {
 
   private List<KeyWrapper<User>> admins;
 
+  // Users that have given permission for Organizations to use their ids as organizers for events.
+  // By default admins are organizers.
+  private List<KeyWrapper<User>> organizers;
+
   @Index
   private long karmaPoints;
 

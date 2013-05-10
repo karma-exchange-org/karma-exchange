@@ -21,8 +21,8 @@ import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
-import org.karmaexchange.resources.msg.ResponseMsg;
-import org.karmaexchange.resources.msg.ResponseMsg.ErrorMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -54,8 +54,8 @@ public class OAuthFilter implements Filter {
     try {
       OAuthCredential credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
       if (credential == null) {
-        throw ResponseMsg.createException("authentication credentials missing",
-          ErrorMsg.Type.AUTHENTICATION);
+        throw ErrorResponseMsg.createException("authentication credentials missing",
+          ErrorInfo.Type.AUTHENTICATION);
       }
 
       log.log(OAUTH_LOG_LEVEL, "[" + credential + "] checking if oAuth token is cached");
@@ -73,8 +73,8 @@ public class OAuthFilter implements Filter {
           // The token is valid, so we need to update the token.
           updateCachedCredential(credential);
         } else {
-          throw ResponseMsg.createException("authentication credentials are not valid",
-            ErrorMsg.Type.AUTHENTICATION);
+          throw ErrorResponseMsg.createException("authentication credentials are not valid",
+            ErrorInfo.Type.AUTHENTICATION);
         }
       }
     } catch (WebApplicationException e) {
@@ -110,16 +110,20 @@ public class OAuthFilter implements Filter {
   }
 
   private static void updateCachedCredential(OAuthCredential credential) {
-    User user = ofy().load().type(User.class)
-        .filter("oauthCredentials.globalUid", credential.getGlobalUid())
-        .first()
-        .now();
-    if (user != null) {
-      updateCachedCredential(user, credential);
+    User user = User.getUser(credential);
+    if (user == null) {
+      createUser(credential);
     } else {
-      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] user has not yet been created");
+      updateCachedCredential(user, credential);
     }
-    // If the user does not exist the user has most likely not been created yet.
+  }
+
+  /**
+   * Populate the user based upon information stored in the oAuth provider.
+   */
+  private static void createUser(OAuthCredential credential) {
+    User user = SocialNetworkProviderFactory.getProvider(credential).initUser();
+    ofy().save().entity(user).now();
   }
 
   private static void updateCachedCredential(User user, OAuthCredential newCredential) {
@@ -132,12 +136,5 @@ public class OAuthFilter implements Filter {
     }
     log.log(OAUTH_LOG_LEVEL, "[" + newCredential + "] " +
     		"User found by credentials, but credential does not exist for updating");
-  }
-
-  private static void setErrorResponse(HttpServletResponse resp, String message) {
-    // TODO(avaliani): copy facebook w/ a json / html response. Forbidden is not suppose to be used
-    // for failed authentication.
-    log.log(OAUTH_LOG_LEVEL, "Failed to authenticate: " + message);
-    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
   }
 }
