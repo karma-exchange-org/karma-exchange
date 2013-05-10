@@ -27,16 +27,17 @@ kexApp.factory('Events', function($resource) {
 kexApp.directive('googleplace', function() {
     return {
         require: 'ngModel',
-        link: function(scope, element, attrs, model) {
+        link: function($scope, element, attrs, model) {
             var options = {
                 types: [],
                 componentRestrictions: {}
             };
-            scope.gPlace = new google.maps.places.Autocomplete(element[0], options);
+            $scope.gPlace = new google.maps.places.Autocomplete(element[0], options);
 
-            google.maps.event.addListener(scope.gPlace, 'place_changed', function() {
-                scope.$apply(function() {
-                    model.$setViewValue(element.val());                
+            google.maps.event.addListener($scope.gPlace, 'place_changed', function() {
+                $scope.$apply(function() {
+                    model.$setViewValue(element.val());
+                                   
                 });
             });
         }
@@ -93,15 +94,15 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     
     
     $scope.refreshMap = function(){
-                console.log('refresh');
+                
                 if($scope.item&&$scope.item.location.address.street)
                 {    
                     geocoder.geocode({ 'address': $scope.item.location.address.street+','+$scope.item.location.address.city+','+$scope.item.location.address.state+','+$scope.item.location.address.country }, function (results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
                         $scope.center.latitude = results[0].geometry.location.lat();
                         $scope.center.longitude = results[0].geometry.location.lng();
-                        $scope.markers = [ {}];
-                        $scope.addMarker($scope.center.latitude,$scope.center.longitude);
+                        
+                        $scope.setMarker($scope.center.latitude,$scope.center.longitude);
                         $scope.zoom = 15;
                         $scope.$apply();
                         
@@ -121,6 +122,16 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
             
             
         };
+
+    $scope.setMarker = function (markerLat,markerLng) {
+            $scope.markers = [{}];
+            $scope.markers.push({
+                latitude: parseFloat(markerLat),
+                longitude: parseFloat(markerLng)
+            });
+            
+            
+        };    
         
     $scope.findMe = function () {
         
@@ -133,7 +144,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
                     longitude: position.coords.longitude
                 };
 
-                $scope.zoom = 12;
+                $scope.zoom = 15;
                 
                 $scope.$apply();
             }, function () {
@@ -155,7 +166,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         }
         else
         {    
-    		Events.update({id: $scope.item.id}, $scope.item, function () {
+    		Events.update({id: $scope.item.key}, $scope.item, function () {
     	        $location.path('/events');
     	    });
         }
@@ -164,52 +175,73 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     if($location.$$url=="/addevent")
     {
         $scope.findMe();
-        $scope.$watch('item.location.address.street', function(newVal,oldVal) {
-            if(newVal!=oldVal)
-            {
-                $scope.refreshMap();
-
-            }    
-            
-          });
-        $scope.$watch('item.location.address.city', function(newVal,oldVal) {
-            if(newVal!=oldVal)
-            {
-                $scope.refreshMap();
-
-            }    
-            
-          });
-        $scope.$watch('item.location.address.state', function(newVal,oldVal) {
-            if(newVal!=oldVal)
-            {
-                $scope.refreshMap();
-
-            }    
-            
-          });
-        $scope.$watch('item.location.address.country', function(newVal,oldVal) {
-            if(newVal!=oldVal)
-            {
-                $scope.refreshMap();
-
-            }    
-            
-          });
+        
 
     }
     else
     {    
         $scope.item = Events.get({ id: $routeParams.itemId } ,function() {
-            
+                $("#location-title").val(''+$scope.item.location.title);
+                $scope.refreshMap();
 
             }, function(response) {
             //404 or bad
-            console.log(response);
+            
             if(response.status === 404) {
         }});
     }
+    $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("location-title"));
+    google.maps.event.addListener($scope.autocomplete, 'place_changed', function(event) {
+        
+        var marker;
 
+        var place = $scope.autocomplete.getPlace();
+        $scope.item.location.title = place.name;
+        
+        $scope.item.location.address.street = '';
+        for (var i = 0; i < place.address_components.length; i++) {
+            
+            if(place.address_components[i].types[0]=='locality')
+            {
+                $scope.item.location.address.city = place.address_components[i].long_name;
+            } 
+            else if(place.address_components[i].types[0]=='country')
+            {
+                $scope.item.location.address.country = place.address_components[i].long_name;
+            } 
+            else if(place.address_components[i].types[0]=='postal_code')
+            {
+                $scope.item.location.address.zip = place.address_components[i].long_name;
+            } 
+            else if(place.address_components[i].types[0]=='administrative_area_level_1')
+            {
+                $scope.item.location.address.state = place.address_components[i].long_name;
+            } 
+            else if(place.address_components[i].types[0]=='street_number')
+            {
+                $scope.item.location.address.street = place.address_components[i].long_name+' '+$scope.item.location.address.street;
+            }
+            else if(place.address_components[i].types[0]=='route')
+            {
+                $scope.item.location.address.street = $scope.item.location.address.street+' '+place.address_components[i].long_name;
+            }
+
+
+            //Do something
+        }    
+
+            
+       
+        $scope.center = {
+                    latitude: place.geometry.location.kb,
+                    longitude: place.geometry.location.lb
+                };
+        $scope.setMarker(place.geometry.location.kb,place.geometry.location.lb)
+        $scope.zoom = 15;
+                
+        $scope.$apply();
+        
+      });
 
     $('#startTimePicker')
         .datetimepicker()

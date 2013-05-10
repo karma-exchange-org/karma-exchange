@@ -1,10 +1,11 @@
+<form name="form" class="form-horizontal">
 <div class="container-fluid">
 
     <div class="row-fluid">
 
         <div class="span5">
 
-            <form name="form" class="form-horizontal">
+            
 
                 <div class="control-group" ng-class="{error: form.event.$invalid}">
 
@@ -20,7 +21,7 @@
 
                 <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-                    <label class="control-label" for="event">Organization(if any)</label>
+                    <label class="control-label" for="organizations">Organization(if any)</label>
 
                     <div class="controls">
 
@@ -32,7 +33,7 @@
 
                 <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-                    <label class="control-label" for="event">Description</label>
+                    <label class="control-label" for="description">Description</label>
 
                     <div class="controls">
 
@@ -69,33 +70,27 @@
 
                     <div class="controls">
 
-                        <input googleplace type="text" ng-model="item.location.title" id="location.title" placeholder="Name of the place" >
+                        <input type="text"  class="span12" id="location-title" placeholder="Name of the place" >
 
                     </div>
 
                     <div class="controls">
 
-                        <input type="text" ng-model="item.location.address.street" id="location.address.street" placeholder="Street" >
+                        <p>{{item.location.address.street}}</p>
 
                     </div>
 
                     <div class="controls controls-row">
 
-                        <input type="text" ng-model="item.location.address.city" id="location.address.city" placeholder="City" >
+                        <p>{{item.location.address.city}}, {{item.location.address.state}}, <p>
 
-                        <input type="text" ng-model="item.location.address.state" id="location.address.state" placeholder="State" >
-
-                    </div>
-
-
-
-                    <div class="controls controls-row">
-
-                        <input type="text" ng-model="item.location.address.country" id="location.address.country" placeholder="Country" >
-
-                        <input type="text" ng-model="item.location.address.zip" id="location.address.zip" placeholder="Zip" >
+                        <p>{{item.location.address.country}}, {{item.location.address.zip}}</p>
 
                     </div>
+
+
+
+                    
                 </div>
 
         </div>
@@ -114,9 +109,9 @@
 
         </div>
     </div>
-    <button ng-click="refreshMap()">Refresh map</button>
+    
     <div class="row-fluid">
-
+        <div class="span12">
                 
                 <div class="control-group" ng-class="{error: form.event.$invalid}">
 
@@ -124,27 +119,55 @@
 
                     <div class="controls controls-row">
 
-                        <input type="text" ng-model="item.maxRsvp" id="maxRsvp" placeholder="Minimum">
+                        <input type="text" ng-model="item.maxRegistrations" id="maxRegistrations" placeholder="Minimum">
 
-                        <input type="text" ng-model="item.minRsvp" id="minRsvp" placeholder="Maximum">
+                        <input type="text" ng-model="item.minRegistrations" id="minRegistrations" placeholder="Maximum">
 
                     </div>
 
                 </div>
 
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+                    <label class="control-label" for="event">Special instructions</label>
+                    <div class="controls controls-row">
+                       
+                         <textarea rows="3" class="span12 input-xxlarge" ng-model="item.specialInstructions" id="specialInstructions" placeholder="specialInstructions"></textarea>
+                    </div>
 
+                </div>
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-                <input type="text" ng-model="item.specialInstructions" id="specialInstructions" placeholder="specialInstructions">
+                    <label class="control-label" for="event">Causes</label>
+                    <div class="controls controls-row">
+                        <input class="span12" type="text" ng-model="item.causes" id="causes" placeholder="causes">
+                     </div>
 
-                <input type="text" ng-model="item.causes" id="causes" placeholder="causes">
+                </div>
 
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Skills required</label>
+                    <div class="controls controls-row">
+                        <input class="span12"  type="text" ng-model="item.skillsRequired" id="skillsRequired" placeholder="Skills Required">
+                     </div>
+
+                </div>
+
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Skills preferred</label>
+                    <div class="controls controls-row">
+                        <input class="span12"  type="text" ng-model="item.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
+                     </div>
+
+                </div>
 
 
                 <input type="text" ng-model="item.primaryImage" id="primaryImage" placeholder="primaryImage">
 
-                <input type="text" ng-model="item.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
+                
 
-                <input type="text" ng-model="item.skillsRequired" id="skillsRequired" placeholder="Skills Required">
+                
 
 
 
@@ -164,15 +187,16 @@
 
                 </div>
 
-            </form>
+            
 
         </div>
-
+    </div>
         
 
     </div>
 
 </div>
+</form>
 <script type="text/javascript">
         $('.form_datetime').datetimepicker({
             showMeridian: true,
