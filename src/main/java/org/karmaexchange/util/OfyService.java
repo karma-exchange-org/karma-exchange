@@ -4,7 +4,6 @@ package org.karmaexchange.util;
 import org.karmaexchange.dao.Cause;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.EventComment;
-import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.NonProfitOrganization;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Skill;

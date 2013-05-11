@@ -19,4 +19,10 @@ public class ListResponseMsg<T> {
     String next;
     String prev;
   }
+
+  public static <T> ListResponseMsg<T> create(List<T> data) {
+    ListResponseMsg<T> msg = new ListResponseMsg<T>();
+    msg.data = data;
+    return msg;
+  }
 }

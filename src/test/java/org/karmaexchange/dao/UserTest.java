@@ -103,7 +103,8 @@ public class UserTest extends PersistenceTestHelper {
 
     validatePersistence(user1);
     validatePersistence(user2);
-    assertEquals(user1.getModificationInfo().getCreationUser().fetchEntity(), user1);
+    User userFromDb = BaseDao.load(user1.getModificationInfo().getCreationUser().getKey());
+    assertEquals(userFromDb, user1);
 
     Skill skill = Skill.create("programming");
     Set<Key<User>> userKeys = Sets.newHashSet(

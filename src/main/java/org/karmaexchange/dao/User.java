@@ -63,8 +63,8 @@ public final class User extends BaseDao<User> {
   }
 
   @Override
-  protected void processUpdate(User oldUser, User updateUser) {
-    super.processUpdate(oldUser, updateUser);
+  protected void processUpdate(User oldUser) {
+    super.processUpdate(oldUser);
     // Some fields can not be manipulated by updating the user.
     // TODO(avlaiani): re-evaluate this. All fields should be updateable if you have admin
     //     privileges.

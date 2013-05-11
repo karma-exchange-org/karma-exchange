@@ -6,7 +6,6 @@ import static org.karmaexchange.util.OfyService.ofy;
 import java.net.URI;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -26,16 +25,12 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.googlecode.objectify.Key;
 
-public abstract class BaseDaoResource<T extends BaseDao<T>> extends AuthenticatedResource {
+public abstract class BaseDaoResource<T extends BaseDao<T>> {
 
   @Context
   protected UriInfo uriInfo;
   @Context
   protected Request request;
-
-  public BaseDaoResource(@Context HttpServletRequest servletRequest) {
-    super(servletRequest);
-  }
 
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -46,7 +41,7 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> extends Authenticate
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response upsertResource(T resource) {
-    BaseDao.upsert(resource, getUser());
+    BaseDao.upsert(resource);
     URI uri = uriInfo.getAbsolutePathBuilder().path(resource.getKey()).build();
     return Response.created(uri).build();
   }
@@ -66,6 +61,7 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> extends Authenticate
     return resource;
   }
 
+  // TODO(avaliani): This is a non CAS update. This may not be safe.
   @Path("{resource}")
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -77,7 +73,7 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> extends Authenticate
           resource.getKey(), key),
         ErrorInfo.Type.BAD_REQUEST);
     }
-    BaseDao.<T>upsert(resource, getUser());
+    BaseDao.<T>upsert(resource);
     return Response.created(uriInfo.getAbsolutePath()).build();
   }
 

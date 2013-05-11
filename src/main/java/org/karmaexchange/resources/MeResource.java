@@ -1,6 +1,9 @@
 package org.karmaexchange.resources;
 
-import javax.servlet.http.HttpServletRequest;
+import static org.karmaexchange.util.OfyService.ofy;
+import static org.karmaexchange.util.UserService.getCurrentUser;
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -16,33 +19,29 @@ import javax.ws.rs.core.UriInfo;
 import org.karmaexchange.dao.User;
 
 @Path("/me")
-public class MeResource extends AuthenticatedResource {
+public class MeResource {
 
   @Context
   private UriInfo uriInfo;
   @Context
   private Request request;
 
-  public MeResource(@Context HttpServletRequest servletRequest) {
-    super(servletRequest);
-  }
-
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response getResource() {
-    return Response.ok(getUser()).build();
+    return Response.ok(getCurrentUser()).build();
   }
 
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response upsertResource(User updatedUser) {
-    updatedUser.update(getUser(), getUser());
+    updatedUser.update(getCurrentUser());
     return Response.ok().build();
   }
 
   @DELETE
   public void deleteResource() {
-    getUser().delete();
+    ofy().delete().key(getCurrentUserKey()).now();
     // TODO(avaliani): revoke OAuth credentials. This way the user account won't be re-created
     //     automatically.
   }
