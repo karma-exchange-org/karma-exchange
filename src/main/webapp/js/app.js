@@ -59,7 +59,7 @@ var eventsCtrl = function ($scope, $location, $http, Events,$cookieStore) {
     $scope.reset();
 
     $scope.delete = function () {
-        var itemId = this.item.id;
+        var itemId = this.item.key;
         Events.delete({ id: itemId }, function () {
             $("#event_" + itemId).fadeOut();
         });
@@ -175,7 +175,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     if($location.$$url=="/addevent")
     {
         $scope.findMe();
-        
+        $scope.item = {"location":{"title":null,"description":null,"address":{"street":null,"city":null,"state":null,"country":null,"zip":null,"geoPt":null}}};
 
     }
     else
