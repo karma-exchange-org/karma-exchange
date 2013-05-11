@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
 
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -44,13 +45,13 @@ public class Organization {
   private Image displayImage;
   private ContactInfo contactInfo;
 
-  private List<KeyWrapper<Cause>> causes;
+  private List<KeyWrapper<Cause>> causes = Lists.newArrayList();
 
-  private List<KeyWrapper<User>> admins;
+  private List<KeyWrapper<User>> admins = Lists.newArrayList();
 
   // Users that have given permission for Organizations to use their ids as organizers for events.
   // By default admins are organizers.
-  private List<KeyWrapper<User>> organizers;
+  private List<KeyWrapper<User>> organizers = Lists.newArrayList();
 
   @Index
   private long karmaPoints;

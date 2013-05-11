@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
 
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Index;
@@ -37,7 +38,7 @@ public class EventComment {
    * ORAGANIZER_RATING comment only the organizer will be tagged.
    */
   @Index
-  private List<KeyWrapper<User>> usersTagged;
+  private List<KeyWrapper<User>> usersTagged = Lists.newArrayList();
 
   public enum Type {
     LOGISTIC,
