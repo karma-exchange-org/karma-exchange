@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
@@ -36,10 +37,10 @@ public final class User extends BaseDao<User> {
   private String nickName;
   private Image profileImage;
   private ContactInfo contactInfo;
-  private List<EmergencyContact> emergencyContacts;
+  private List<EmergencyContact> emergencyContacts = Lists.newArrayList();
 
   @Index
-  private List<KeyWrapper<Skill>> skills;
+  private List<KeyWrapper<Skill>> skills = Lists.newArrayList();
 
   // Skipping interests for now.
   // Facebook has a detailed + categorized breakdown of interests.
@@ -52,7 +53,7 @@ public final class User extends BaseDao<User> {
   private EventSearch lastEventSearch;
 
   // TODO(avaliani): jackson doesn't like oAuth. It converts it to "oauth".
-  private List<OAuthCredential> oauthCredentials;
+  private List<OAuthCredential> oauthCredentials = Lists.newArrayList();
 
   // TODO(avaliani): profileSecurityPrefs
 
