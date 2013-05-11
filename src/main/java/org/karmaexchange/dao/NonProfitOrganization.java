@@ -2,8 +2,6 @@ package org.karmaexchange.dao;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.codehaus.jackson.annotate.JsonTypeName;
-
 import com.googlecode.objectify.annotation.EntitySubclass;
 
 /*

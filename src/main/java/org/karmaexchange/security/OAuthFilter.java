@@ -3,6 +3,7 @@ package org.karmaexchange.security;
 import static org.karmaexchange.util.OfyService.ofy;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,8 +24,8 @@ import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.UserService;
 
-import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 
 public class OAuthFilter implements Filter {
@@ -51,8 +52,10 @@ public class OAuthFilter implements Filter {
     HttpServletRequest req = (HttpServletRequest) request;
     HttpServletResponse resp = (HttpServletResponse) response;
 
+    OAuthCredential credential;
+    Key<User> userKey;
     try {
-      OAuthCredential credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
+      credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
       if (credential == null) {
         throw ErrorResponseMsg.createException("authentication credentials missing",
           ErrorInfo.Type.AUTHENTICATION);
@@ -61,7 +64,8 @@ public class OAuthFilter implements Filter {
       log.log(OAUTH_LOG_LEVEL, "[" + credential + "] checking if oAuth token is cached");
 
       // 1. If the oauth token is cached, then its valid. Just use it.
-      if (!credentialIsCached(credential)) {
+      userKey = credentialIsCached(credential);
+      if (userKey == null) {
 
         log.log(OAUTH_LOG_LEVEL, "[" + credential + "] verifying oauth token");
 
@@ -71,7 +75,7 @@ public class OAuthFilter implements Filter {
           log.log(OAUTH_LOG_LEVEL, "[" + credential + "] updating oauth token");
 
           // The token is valid, so we need to update the token.
-          updateCachedCredential(credential);
+          userKey = updateCachedCredential(credential);
         } else {
           throw ErrorResponseMsg.createException("authentication credentials are not valid",
             ErrorInfo.Type.AUTHENTICATION);
@@ -84,18 +88,26 @@ public class OAuthFilter implements Filter {
       return;
     }
 
-    // Authorization complete... continue to the resource.
-    filters.doFilter(req, resp);
+    // Authorization complete. Continue to the resource.
+    try {
+      UserService.setCurrentUserCredential(credential);
+      UserService.setCurrentUserKey(userKey);
+      filters.doFilter(req, resp);
+    } finally {
+      UserService.setCurrentUserCredential(null);
+      UserService.setCurrentUserKey(null);
+    }
   }
 
-  public static boolean credentialIsCached(OAuthCredential credential) {
+  public static Key<User> credentialIsCached(OAuthCredential credential) {
     // The assumption here is that it is impossible to persist a fake provider + uid + token.
     // When we create the user object we will always construct the globalUidAndToken from scratch.
     // TODO(avaliani): Validate that Objectify @Cached is actually being hit.
     Iterable<Key<User>> keys = ofy().load().type(User.class)
         .filter("oauthCredentials.globalUidAndToken", credential.getGlobalUidAndToken())
         .keys();
-    return !Lists.newArrayList(keys).isEmpty();
+    Iterator<Key<User>> keysIter = keys.iterator();
+    return keysIter.hasNext() ? keysIter.next() : null;
   }
 
   private static boolean verifyCredential(OAuthCredential credential) {
@@ -109,21 +121,23 @@ public class OAuthFilter implements Filter {
     }
   }
 
-  private static void updateCachedCredential(OAuthCredential credential) {
+  private static Key<User> updateCachedCredential(OAuthCredential credential) {
     User user = User.getUser(credential);
     if (user == null) {
-      createUser(credential);
+      user = createUser(credential);
     } else {
       updateCachedCredential(user, credential);
     }
+    return Key.create(user);
   }
 
   /**
    * Populate the user based upon information stored in the oAuth provider.
    */
-  private static void createUser(OAuthCredential credential) {
+  private static User createUser(OAuthCredential credential) {
     User user = SocialNetworkProviderFactory.getProvider(credential).initUser();
     ofy().save().entity(user).now();
+    return user;
   }
 
   private static void updateCachedCredential(User user, OAuthCredential newCredential) {

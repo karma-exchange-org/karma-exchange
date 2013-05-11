@@ -17,7 +17,7 @@ import com.googlecode.objectify.annotation.Embed;
  */
 @Data
 @Embed
-public final class KeyWrapper<T> {
+public final class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
 
   private Key<T> key;
 
@@ -48,7 +48,12 @@ public final class KeyWrapper<T> {
   }
 
   public T fetchEntity() {
-    return ofy().load().key(key).get();
+    return ofy().load().key(key).now();
+
   }
 
+  @Override
+  public int compareTo(KeyWrapper<T> other) {
+    return this.key.compareTo(other.key);
+  }
 }

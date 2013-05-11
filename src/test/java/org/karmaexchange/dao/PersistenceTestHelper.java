@@ -35,7 +35,7 @@ public class PersistenceTestHelper {
     }
 
     Key<T> key = ofy().save().entity(entity).now();
-    T persistedEntity = ofy().load().key(key).get();
+    T persistedEntity = ofy().load().key(key).now();
 
     if (debug) {
       System.out.println("After: " + persistedEntity);
