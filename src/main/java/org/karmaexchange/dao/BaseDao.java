@@ -8,6 +8,7 @@ import java.util.List;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 
@@ -22,7 +23,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   public abstract ModificationInfo getModificationInfo();
   public abstract void setModificationInfo(ModificationInfo modificationInfo);
 
-  public static <T extends BaseDao<T>> void upsert(T resource, User updateUser) {
+  public static <T extends BaseDao<T>> void upsert(T resource) {
     // Cleanup any id and key mismatch.
     if ((resource.getId() == null) && (resource.getKey() != null)) {
       resource.setId(Key.<T>create(resource.getKey()).getId());
@@ -45,7 +46,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     if (prevResource == null) {
       resource.insert();
     } else {
-      resource.update(prevResource, updateUser);
+      resource.update(prevResource);
     }
   }
 
@@ -54,11 +55,19 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   public static <T extends BaseDao<T>> T load(Key<T> key) {
-    T resource = ofy().load().key(key).get();
+    T resource = ofy().load().key(key).now();
     if (resource != null) {
       resource.processLoad();
     }
     return resource;
+  }
+
+  public static <T extends BaseDao<T>> List<T> load(List<Key<T>> keys) {
+    List<T> resources = Lists.newArrayList(ofy().load().keys(keys).values());
+    for (T resource : resources) {
+      resource.processLoad();
+    }
+    return resources;
   }
 
   public static <T extends BaseDao<T>> List<T> loadAll(Class<T> resourceClass) {
@@ -82,8 +91,8 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     updateKey();
   }
 
-  public final void update(T prevObj, User updateUser) {
-    processUpdate(prevObj, updateUser);
+  public final void update(T prevObj) {
+    processUpdate(prevObj);
     ofy().save().entity(this).now();
   }
 
@@ -91,7 +100,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     ofy().delete().key(Key.create(this)).now();
   }
 
-  protected void processUpdate(T prevObj, User updateUser) {
+  protected void processUpdate(T prevObj) {
     updateKey();
     if (!prevObj.getKey().equals(getKey())) {
       throw ErrorResponseMsg.createException(
@@ -102,12 +111,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     if (getModificationInfo() == null) {
       // Handle objects that were created without modification info.
       if (prevObj.getModificationInfo() == null) {
-        setModificationInfo(ModificationInfo.create(updateUser));
+        setModificationInfo(ModificationInfo.create());
       } else {
         setModificationInfo(prevObj.getModificationInfo());
       }
     }
-    getModificationInfo().update(updateUser);
+    getModificationInfo().update();
   }
 
   protected void processLoad() {

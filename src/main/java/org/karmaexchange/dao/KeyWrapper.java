@@ -1,7 +1,5 @@
 package org.karmaexchange.dao;
 
-import static org.karmaexchange.util.OfyService.ofy;
-
 import java.util.List;
 
 import lombok.Data;
@@ -17,7 +15,7 @@ import com.googlecode.objectify.annotation.Embed;
  */
 @Data
 @Embed
-public final class KeyWrapper<T> {
+public final class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
 
   private Key<T> key;
 
@@ -39,6 +37,12 @@ public final class KeyWrapper<T> {
     return key.getString();
   }
 
+  /*
+  public Key<T> getKeyObj() {
+    return key;
+  }
+  */
+
   public static <T> List<Key<T>> getKeyObjs(List<KeyWrapper<T>> wrappedKeys) {
     List<Key<T>> keys = Lists.newArrayListWithCapacity(wrappedKeys.size());
     for (KeyWrapper<T> wrappedKey : wrappedKeys) {
@@ -47,8 +51,8 @@ public final class KeyWrapper<T> {
     return keys;
   }
 
-  public T fetchEntity() {
-    return ofy().load().key(key).get();
+  @Override
+  public int compareTo(KeyWrapper<T> other) {
+    return this.key.compareTo(other.key);
   }
-
 }

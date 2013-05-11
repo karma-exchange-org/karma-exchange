@@ -48,9 +48,10 @@ public class ErrorResponseMsg {
     }
 
     public enum Type {
-      BAD_REQUEST,
       AUTHENTICATION,
       BACKEND_SERVICE_FAILURE,
+      BAD_REQUEST,
+      LIMIT_REACHED,
       PARTNER_SERVICE_FAILURE
     }
   }

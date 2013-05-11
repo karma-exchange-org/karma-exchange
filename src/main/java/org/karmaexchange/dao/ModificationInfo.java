@@ -1,8 +1,8 @@
 package org.karmaexchange.dao;
 
-import java.util.Date;
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
-import javax.annotation.Nullable;
+import java.util.Date;
 
 import com.googlecode.objectify.annotation.Embed;
 
@@ -19,22 +19,18 @@ public final class ModificationInfo {
   private Date lastModificationDate;
 
   public static ModificationInfo create() {
-    return create(null);
-  }
-
-  public static ModificationInfo create(@Nullable User currentUser) {
     ModificationInfo info = new ModificationInfo();
     info.creationDate = new Date();
     info.lastModificationDate = info.creationDate;
-    if (currentUser != null) {
-      info.creationUser = KeyWrapper.create(currentUser);
+    if (getCurrentUserKey() != null) {
+      info.creationUser = KeyWrapper.create(getCurrentUserKey());
       info.lastModificationUser = info.creationUser;
     }
     return info;
   }
 
-  public void update(User currentUser) {
-    lastModificationUser = KeyWrapper.create(currentUser);
+  public void update() {
+    lastModificationUser = KeyWrapper.create(getCurrentUserKey());
     lastModificationDate = new Date();
   }
 }

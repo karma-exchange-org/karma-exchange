@@ -49,7 +49,7 @@ public abstract class BaseResource<T> {
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response getResource(@PathParam("resource") long id) {
-    T resource = ofy().load().key(Key.create(getResourceClass(), id)).get();
+    T resource = ofy().load().key(Key.create(getResourceClass(), id)).now();
     if (resource == null) {
       throw ErrorResponseMsg.createException("resource does not exist", ErrorInfo.Type.BAD_REQUEST);
     }

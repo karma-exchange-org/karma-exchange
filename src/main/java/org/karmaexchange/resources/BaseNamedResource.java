@@ -47,7 +47,7 @@ public abstract class BaseNamedResource<T> {
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public T getResource(@PathParam("resource") String name) {
-    T resource = ofy().load().key(Key.create(getResourceClass(), name)).get();
+    T resource = ofy().load().key(Key.create(getResourceClass(), name)).now();
     return checkNotNull(resource, "Resource entity with name=" + name + " does not exist");
   }
 
