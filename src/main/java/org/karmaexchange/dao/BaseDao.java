@@ -2,13 +2,13 @@ package org.karmaexchange.dao;
 
 import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
-import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.List;
 
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 
@@ -62,6 +62,14 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     return resource;
   }
 
+  public static <T extends BaseDao<T>> List<T> load(List<Key<T>> keys) {
+    List<T> resources = Lists.newArrayList(ofy().load().keys(keys).values());
+    for (T resource : resources) {
+      resource.processLoad();
+    }
+    return resources;
+  }
+
   public static <T extends BaseDao<T>> List<T> loadAll(Class<T> resourceClass) {
     List<T> resources = ofy().load().type(resourceClass).list();
     for (T resource : resources) {
@@ -103,12 +111,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     if (getModificationInfo() == null) {
       // Handle objects that were created without modification info.
       if (prevObj.getModificationInfo() == null) {
-        setModificationInfo(ModificationInfo.create(getCurrentUserKey()));
+        setModificationInfo(ModificationInfo.create());
       } else {
         setModificationInfo(prevObj.getModificationInfo());
       }
     }
-    getModificationInfo().update(getCurrentUserKey());
+    getModificationInfo().update();
   }
 
   protected void processLoad() {

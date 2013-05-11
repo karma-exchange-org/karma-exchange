@@ -1,7 +1,6 @@
 package org.karmaexchange.util;
 
-import static org.karmaexchange.util.OfyService.ofy;
-
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 
@@ -9,21 +8,21 @@ import com.googlecode.objectify.Key;
 
 public final class UserService {
 
-  private static final ThreadLocal<Key<User>> currentUser = new ThreadLocal<Key<User>>();
+  private static final ThreadLocal<Key<User>> currentUserKey = new ThreadLocal<Key<User>>();
   private static final ThreadLocal<OAuthCredential> currentUserCredential =
       new ThreadLocal<OAuthCredential>();
 
   public static Key<User> getCurrentUserKey() {
-    return currentUser.get();
+    return currentUserKey.get();
   }
 
   public static void setCurrentUserKey(Key<User> user) {
-    currentUser.set(user);
+    currentUserKey.set(user);
   }
 
   // Objectify caches this in the session cache.
   public static User getCurrentUser() {
-    return ofy().load().key(getCurrentUserKey()).now();
+    return BaseDao.load(getCurrentUserKey());
   }
 
   public static OAuthCredential getCurrentUserCredential() {

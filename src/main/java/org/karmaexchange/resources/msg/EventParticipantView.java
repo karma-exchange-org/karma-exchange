@@ -1,12 +1,10 @@
 package org.karmaexchange.resources.msg;
 
-import static org.karmaexchange.util.OfyService.ofy;
-
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.User;
 
@@ -29,8 +27,7 @@ public class EventParticipantView {
     List<EventParticipantView> registeredUsers = Lists.newArrayListWithCapacity(usersBatch.size());
     if (!usersBatch.isEmpty()) {
       List<Key<User>> registeredUserKeys = KeyWrapper.getKeyObjs(usersBatch);
-      Map<Key<User>, User> registerdUsersMap = ofy().load().keys(registeredUserKeys);
-      for (User user : registerdUsersMap.values()) {
+      for (User user : BaseDao.load(registeredUserKeys)) {
         registeredUsers.add(EventParticipantView.create(user));
       }
     }

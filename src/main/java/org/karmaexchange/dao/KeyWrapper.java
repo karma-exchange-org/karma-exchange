@@ -1,7 +1,5 @@
 package org.karmaexchange.dao;
 
-import static org.karmaexchange.util.OfyService.ofy;
-
 import java.util.List;
 
 import lombok.Data;
@@ -39,17 +37,18 @@ public final class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
     return key.getString();
   }
 
+  /*
+  public Key<T> getKeyObj() {
+    return key;
+  }
+  */
+
   public static <T> List<Key<T>> getKeyObjs(List<KeyWrapper<T>> wrappedKeys) {
     List<Key<T>> keys = Lists.newArrayListWithCapacity(wrappedKeys.size());
     for (KeyWrapper<T> wrappedKey : wrappedKeys) {
       keys.add(wrappedKey.key);
     }
     return keys;
-  }
-
-  public T fetchEntity() {
-    return ofy().load().key(key).now();
-
   }
 
   @Override
