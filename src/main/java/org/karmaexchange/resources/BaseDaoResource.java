@@ -32,11 +32,13 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
   @Context
   protected Request request;
 
+  /* HACK HACK HACK
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public List<T> getResources() {
     return BaseDao.loadAll(getResourceClass());
   }
+  */
 
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

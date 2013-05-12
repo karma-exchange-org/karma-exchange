@@ -20,9 +20,11 @@ import javax.ws.rs.core.Response;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.AddRegisteredUserTxn;
 import org.karmaexchange.dao.Event.DeleteRegisteredUserTxn;
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.EventParticipantView;
+import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 
 import com.googlecode.objectify.Key;
@@ -33,6 +35,15 @@ public class EventResource extends BaseDaoResource<Event> {
   @Override
   protected Class<Event> getResourceClass() {
     return Event.class;
+  }
+
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public ListResponseMsg<EventSearchView> getResources() {
+    // TOOD(avaliani): need to start maintaining the status automatically.
+    // .filter("status", "OPEN")
+    List<Event> events = BaseDao.loadAll(ofy().load().type(Event.class).order("startTime"));
+    return ListResponseMsg.create(EventSearchView.create(events));
   }
 
   @Path("{resource}/registered")
