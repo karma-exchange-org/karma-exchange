@@ -78,6 +78,14 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     return resources;
   }
 
+  public static <T extends BaseDao<T>> List<T> loadAll(Query<T> query) {
+    List<T> resources = query.list();
+    for (T resource : resources) {
+      resource.processLoad();
+    }
+    return resources;
+  }
+
   public static <T extends BaseDao<T>> T loadFirst(Query<T> query) {
     T resource = query.first().now();
     if (resource != null) {
