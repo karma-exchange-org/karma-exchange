@@ -9,7 +9,7 @@ import lombok.Data;
 
 @XmlRootElement
 @Data
-@XmlSeeAlso({EventParticipantView.class})
+@XmlSeeAlso({EventParticipantView.class, EventSearchView.class})
 public class ListResponseMsg<T> {
 
   private List<T> data;
