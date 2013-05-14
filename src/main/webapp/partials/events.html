@@ -19,10 +19,11 @@
 		<th><a href="#/addevent"><i class="icon-plus-sign"></i></a></th>
 	</thead>
 	<tbody>
-		<tr ng-repeat="item in items" id="event_{{item.id}}">
+		<tr ng-repeat="item in items.data" id="event_{{item.key}}">
 			<td>{{item.title}}</td>
 			<td>{{item.description}}</td>
 			<td>{{item.location.address.city}}</td>
+			<td><button class="btn btn-success"id="event_register_{{item.key}}"ng-click="register()">Register</button></td>
 			<td>
 				<a href="#/editevent/{{item.key}}"><i class="icon-edit"></i></a>
 				<a ng-click="delete()"><i class="icon-remove"></i></a>
