@@ -21,7 +21,15 @@ var homeCtrl = function($scope, $location) {
 
 
 kexApp.factory('Events', function($resource) {
-    return $resource('/api/event/:id', { id: '@id' }, { update: { method: 'POST' } });
+    return $resource('/api/event/:id/:registerCtlr', { id: '@id',registerCtlr:'@registerCtlr' }, 
+        { update: { method: 'POST' },
+         fetch:  {method:'GET', isArray:false}
+         
+          
+    });
+
+
+
 });
 
 kexApp.directive('googleplace', function() {
@@ -48,21 +56,40 @@ var geocoder = new google.maps.Geocoder();
 
 
 
-var eventsCtrl = function ($scope, $location, $http, Events,$cookieStore) {
+var eventsCtrl = function ($scope, $location, Events) {
 	checkLogin($location);
 	$scope.reset = function() {
 
 
-        $scope.items = Events.query({q: $scope.query});
+        $scope.items = Events.fetch({q: $scope.query});
+        $scope.register = function(){
+            var itemId = this.item.key;
+            if($("#event_register_" + itemId).hasClass('btn-success'))
+            {    
+                Events.update({ id: itemId , registerCtlr :'registered'}, function () {
+                    $("#event_register_" + itemId).removeClass('btn-success').addClass('btn-danger').html('Un-register');
+                });
+            }
+            else
+            {
+                Events.delete({ id: itemId , registerCtlr :'registered'}, function () {
+                    $("#event_register_" + itemId).removeClass('btn-danger').addClass('btn-success').html('Register');
+                });
+
+            }    
+        };
+
     };
 
     $scope.reset();
 
     $scope.delete = function () {
         var itemId = this.item.key;
+
         Events.delete({ id: itemId }, function () {
             $("#event_" + itemId).fadeOut();
         });
+
     };
 
 };
@@ -190,6 +217,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
             if(response.status === 404) {
         }});
     }
+    //TDEBT - (hbalijepalli)
     $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("location-title"));
     google.maps.event.addListener($scope.autocomplete, 'place_changed', function(event) {
         
