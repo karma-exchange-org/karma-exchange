@@ -43,7 +43,11 @@ public final class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
   }
   */
 
-  public static <T> List<Key<T>> getKeyObjs(List<KeyWrapper<T>> wrappedKeys) {
+  public static <T> Key<T> toKey(KeyWrapper<T> wrapper) {
+    return wrapper.key;
+  }
+
+  public static <T> List<Key<T>> toKeys(List<KeyWrapper<T>> wrappedKeys) {
     List<Key<T>> keys = Lists.newArrayListWithCapacity(wrappedKeys.size());
     for (KeyWrapper<T> wrappedKey : wrappedKeys) {
       keys.add(wrappedKey.key);

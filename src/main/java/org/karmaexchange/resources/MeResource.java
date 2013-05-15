@@ -10,6 +10,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
@@ -44,5 +45,13 @@ public class MeResource {
     ofy().delete().key(getCurrentUserKey()).now();
     // TODO(avaliani): revoke OAuth credentials. This way the user account won't be re-created
     //     automatically.
+  }
+
+  @Path("event")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public Response getEvents(@QueryParam("type") String eventType) {
+    // TODO(avaliani): add support for impact view type
+    return Response.ok(getCurrentUser()).build();
   }
 }
