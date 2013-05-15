@@ -15,6 +15,7 @@ import com.google.appengine.api.images.ServingUrlOptions;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Embed;
 
+// TODO(avaliani): consider making Image polymorphic for the different image types.
 @Embed
 @ToString
 @EqualsAndHashCode
@@ -74,15 +75,11 @@ public class Image {
   }
 
   public String getBlobKey() {
-    if (blobKey == null) {
-      return null;
-    } else {
-      return blobKey.getKeyString();
-    }
+    return (blobKey == null) ? null : blobKey.getKeyString();
   }
 
   public void setBlobKey(String blobKeyStr) {
-    blobKey = new BlobKey(blobKeyStr);
+    blobKey = (blobKeyStr == null) ? null : new BlobKey(blobKeyStr);
   }
 
   public enum ImageProvider {

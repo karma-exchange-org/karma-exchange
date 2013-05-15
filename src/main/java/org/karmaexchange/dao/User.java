@@ -1,6 +1,7 @@
 package org.karmaexchange.dao;
 
 import static org.karmaexchange.util.OfyService.ofy;
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.List;
 
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 import com.google.common.collect.Lists;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Id;
@@ -29,6 +31,9 @@ public final class User extends BaseDao<User> {
   private String key;
   private ModificationInfo modificationInfo;
 
+  @Ignore
+  private Permission permission;
+
   @Index
   private String firstName;
   @Index
@@ -38,6 +43,9 @@ public final class User extends BaseDao<User> {
   private Image profileImage;
   private ContactInfo contactInfo;
   private List<EmergencyContact> emergencyContacts = Lists.newArrayList();
+
+  @Index
+  private List<KeyWrapper<Cause>> causes = Lists.newArrayList();
 
   @Index
   private List<KeyWrapper<Skill>> skills = Lists.newArrayList();
@@ -72,6 +80,15 @@ public final class User extends BaseDao<User> {
     // setKarmaPoints(oldUser.getKarmaPoints());
     // setEventOrganizerRating(oldUser.getEventOrganizerRating());
     setOauthCredentials(oldUser.getOauthCredentials());
+  }
+
+  @Override
+  protected void updatePermission() {
+    if (Key.create(this).equals(getCurrentUserKey())) {
+      setPermission(Permission.ALL);
+    } else {
+      setPermission(Permission.READ);
+    }
   }
 
   public static User getUser(OAuthCredential credential) {

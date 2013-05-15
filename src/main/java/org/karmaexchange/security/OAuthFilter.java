@@ -90,12 +90,10 @@ public class OAuthFilter implements Filter {
 
     // Authorization complete. Continue to the resource.
     try {
-      UserService.setCurrentUserCredential(credential);
-      UserService.setCurrentUserKey(userKey);
+      UserService.updateCurrentUser(credential, userKey);
       filters.doFilter(req, resp);
     } finally {
-      UserService.setCurrentUserCredential(null);
-      UserService.setCurrentUserKey(null);
+      UserService.updateCurrentUser(null, null);
     }
   }
 

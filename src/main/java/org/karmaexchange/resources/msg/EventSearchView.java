@@ -7,6 +7,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Location;
+import org.karmaexchange.dao.ParticipantImage;
+import org.karmaexchange.dao.Permission;
 
 import com.google.common.collect.Lists;
 
@@ -17,6 +19,8 @@ import lombok.Data;
 public class EventSearchView {
 
   private String key;
+  private Permission permission;
+
   private String title;
   private Location location;
   private Date startTime;
@@ -24,7 +28,7 @@ public class EventSearchView {
   private ImageUrlView primaryImage;
   private int karmaPoints;
 
-  private List<ImageUrlView> participants = Lists.newArrayList();
+  private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
   public static List<EventSearchView> create(List<Event> events) {
     List<EventSearchView> searchResults = Lists.newArrayListWithCapacity(events.size());
@@ -37,6 +41,7 @@ public class EventSearchView {
   private static EventSearchView create(Event event) {
     EventSearchView searchView = new EventSearchView();
     searchView.setKey(event.getKey());
+    searchView.setPermission(event.getPermission());
     searchView.setTitle(event.getTitle());
     searchView.setLocation(event.getLocation());
     searchView.setStartTime(event.getStartTime());
@@ -45,7 +50,7 @@ public class EventSearchView {
       searchView.setPrimaryImage(ImageUrlView.create(event.getPrimaryImage()));
     }
     searchView.setKarmaPoints(event.getKarmaPoints());
-    // searchView.setParticipants();
+    searchView.setCachedParticipantImages(event.getCachedParticipantImages());
     return searchView;
   }
 }
