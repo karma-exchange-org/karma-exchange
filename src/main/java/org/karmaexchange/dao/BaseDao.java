@@ -10,6 +10,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.cmd.Query;
 
 public abstract class BaseDao<T extends BaseDao<T>> {
@@ -22,6 +23,9 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   public abstract ModificationInfo getModificationInfo();
   public abstract void setModificationInfo(ModificationInfo modificationInfo);
+
+  public abstract Permission getPermission();
+  public abstract void setPermission(Permission permission);
 
   public static <T extends BaseDao<T>> void upsert(T resource) {
     // Cleanup any id and key mismatch.
@@ -63,7 +67,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   public static <T extends BaseDao<T>> List<T> load(List<Key<T>> keys) {
-    List<T> resources = Lists.newArrayList(ofy().load().keys(keys).values());
+    return load(keys, false);
+  }
+
+  public static <T extends BaseDao<T>> List<T> load(List<Key<T>> keys, boolean transactionless) {
+    Objectify ofyService = transactionless ? ofy().transactionless() : ofy();
+    List<T> resources = Lists.newArrayList(ofyService.load().keys(keys).values());
     for (T resource : resources) {
       resource.processLoad();
     }
@@ -95,8 +104,9 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   void insert() {
+    preProcessInsert();
     ofy().save().entity(this).now();
-    updateKey();
+    postProcessInsert();
   }
 
   public final void update(T prevObj) {
@@ -106,6 +116,13 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   public void delete() {
     ofy().delete().key(Key.create(this)).now();
+  }
+
+  protected void preProcessInsert() {
+  }
+
+  protected void postProcessInsert() {
+    updateKey();
   }
 
   protected void processUpdate(T prevObj) {
@@ -129,9 +146,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   protected void processLoad() {
     updateKey();
+    updatePermission();
   }
 
   protected void updateKey() {
     setKey(KeyWrapper.create(this).getKey());
   }
+
+  protected abstract void updatePermission();
 }

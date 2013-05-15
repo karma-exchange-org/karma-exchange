@@ -32,7 +32,9 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
   @Context
   protected Request request;
 
-  /* HACK HACK HACK
+  // TODO(avaliani): re-add support for list resources. Dig into why response objects don't parse
+  //     lists.
+  /*
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public List<T> getResources() {

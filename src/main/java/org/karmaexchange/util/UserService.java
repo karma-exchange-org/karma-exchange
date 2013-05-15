@@ -1,5 +1,7 @@
 package org.karmaexchange.util;
 
+import javax.annotation.Nullable;
+
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
@@ -16,10 +18,6 @@ public final class UserService {
     return currentUserKey.get();
   }
 
-  public static void setCurrentUserKey(Key<User> user) {
-    currentUserKey.set(user);
-  }
-
   // Objectify caches this in the session cache.
   public static User getCurrentUser() {
     return BaseDao.load(getCurrentUserKey());
@@ -29,8 +27,10 @@ public final class UserService {
     return currentUserCredential.get();
   }
 
-  public static void setCurrentUserCredential(OAuthCredential credential) {
+  public static void updateCurrentUser(@Nullable OAuthCredential credential,
+                                       @Nullable Key<User> user) {
     currentUserCredential.set(credential);
+    currentUserKey.set(user);
   }
 
   // boolean isUserAdmin()

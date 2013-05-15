@@ -1,5 +1,7 @@
 package org.karmaexchange.dao;
 
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
+
 import java.util.Date;
 import java.util.List;
 
@@ -11,6 +13,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
@@ -25,6 +28,8 @@ import com.googlecode.objectify.annotation.Index;
 @EqualsAndHashCode(callSuper=false)
 public final class Event extends BaseDao<Event> {
 
+  public static final int MAX_CACHED_PARTICIPANT_IMAGES = 10;
+
   /*
    * TODO(avaliani):
    *   - look at volunteer match schema
@@ -35,6 +40,9 @@ public final class Event extends BaseDao<Event> {
   @Ignore
   private String key;
   private ModificationInfo modificationInfo;
+
+  @Ignore
+  private Permission permission;
 
   private String title;
   private String description;
@@ -73,6 +81,9 @@ public final class Event extends BaseDao<Event> {
   private List<KeyWrapper<User>> registeredUsers = Lists.newArrayList();
   private List<KeyWrapper<User>> waitingListUsers = Lists.newArrayList();
 
+  // This field is automatically managed. It can not be explicitly set.
+  private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
+
   private Rating eventRating;
 
   /**
@@ -96,12 +107,21 @@ public final class Event extends BaseDao<Event> {
   }
 
   @Override
-  protected void processUpdate(Event prevObj) {
-    super.processUpdate(prevObj);
-    processWaitingList();
+  protected void preProcessInsert() {
+    super.preProcessInsert();
+    // Ignore anything that was explicitly passed in.
+    cachedParticipantImages = Lists.newArrayList();
+    updateCachedParticipantImages();
   }
 
-  private void processWaitingList() {
+  @Override
+  protected void processUpdate(Event prevObj) {
+    super.processUpdate(prevObj);
+    updateRegisteredUsers();
+    updateCachedParticipantImages();
+  }
+
+  private void updateRegisteredUsers() {
     if ((getRegisteredUsers().size() < getMaxRegistrations()) &&
         !getWaitingListUsers().isEmpty()) {
       int numSpots = getMaxRegistrations() - getRegisteredUsers().size();
@@ -109,6 +129,75 @@ public final class Event extends BaseDao<Event> {
           getWaitingListUsers().subList(0, Math.min(numSpots, getWaitingListUsers().size()));
       getRegisteredUsers().addAll(usersToRegister);
       usersToRegister.clear();
+    }
+  }
+
+  private void updateCachedParticipantImages() {
+    int numParticipantImagesToCache = numParticipants() - getCachedParticipantImages().size();
+    numParticipantImagesToCache = Math.min(numParticipantImagesToCache,
+      MAX_CACHED_PARTICIPANT_IMAGES - getCachedParticipantImages().size());
+    if (numParticipantImagesToCache > 0) {
+      List<Key<User>> usersToFetch = Lists.newArrayList();
+      for (KeyWrapper<User> participantKey : getParticipantKeys(MAX_CACHED_PARTICIPANT_IMAGES)) {
+        if (!Iterables.any(getCachedParticipantImages(),
+            ParticipantImage.createEqualityPredicate(participantKey))) {
+          usersToFetch.add(KeyWrapper.toKey(participantKey));
+          numParticipantImagesToCache--;
+          if (numParticipantImagesToCache == 0) {
+            break;
+          }
+        }
+      }
+      List<User> participantsToCache = BaseDao.load(usersToFetch, true);
+      for (User participantToCache : participantsToCache) {
+        getCachedParticipantImages().add(ParticipantImage.create(participantToCache));
+      }
+    }
+  }
+
+  private void deleteParticipant(Key<User> userKey) {
+    getOrganizers().remove(KeyWrapper.create(userKey));
+    getRegisteredUsers().remove(KeyWrapper.create(userKey));
+    Iterables.removeIf(getCachedParticipantImages(),
+      ParticipantImage.createEqualityPredicate(KeyWrapper.create(userKey)));
+  }
+
+  private List<KeyWrapper<User>> getParticipantKeys(int limit) {
+    List<KeyWrapper<User>> participants = Lists.newArrayList();
+    for (KeyWrapper<User> organizer : getOrganizers()) {
+      participants.add(organizer);
+      limit--;
+      if (limit == 0) {
+        break;
+      }
+    }
+    if (limit > 0) {
+      for (KeyWrapper<User> registeredUser : getRegisteredUsers()) {
+        participants.add(registeredUser);
+        limit--;
+        if (limit == 0) {
+          break;
+        }
+      }
+    }
+    return participants;
+  }
+
+  private int numParticipants() {
+    return getOrganizers().size() + getRegisteredUsers().size();
+  }
+
+  @Override
+  protected void updatePermission() {
+    if (getOrganizations().isEmpty()) {
+      if (organizers.contains(KeyWrapper.create(getCurrentUserKey()))) {
+        setPermission(Permission.ALL);
+      } else {
+        setPermission(Permission.READ);
+      }
+    } else {
+      // List<Organization> organizations = BaseDao.load(KeyWrapper.toKeys(getOrganizations()));
+      // TODO(avaliani): fill in when we convert organizations to BaseDao.
     }
   }
 
@@ -152,8 +241,7 @@ public final class Event extends BaseDao<Event> {
         throw ErrorResponseMsg.createException("event not found",
           ErrorInfo.Type.BAD_REQUEST);
       }
-      // If the user is already part of the event or an organizer, do not add the user.
-      event.getRegisteredUsers().remove(KeyWrapper.create(userKey));
+      event.deleteParticipant(userKey);
       event.update(event);
     }
   }

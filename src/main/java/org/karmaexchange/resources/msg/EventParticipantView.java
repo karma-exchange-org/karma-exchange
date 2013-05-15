@@ -26,7 +26,7 @@ public class EventParticipantView {
   public static List<EventParticipantView> get(List<KeyWrapper<User>> usersBatch) {
     List<EventParticipantView> registeredUsers = Lists.newArrayListWithCapacity(usersBatch.size());
     if (!usersBatch.isEmpty()) {
-      List<Key<User>> registeredUserKeys = KeyWrapper.getKeyObjs(usersBatch);
+      List<Key<User>> registeredUserKeys = KeyWrapper.toKeys(usersBatch);
       for (User user : BaseDao.load(registeredUserKeys)) {
         registeredUsers.add(EventParticipantView.create(user));
       }
