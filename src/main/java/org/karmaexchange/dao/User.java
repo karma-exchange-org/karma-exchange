@@ -83,12 +83,7 @@ public final class User extends BaseDao<User> {
   }
 
   @Override
-  protected void processLoad() {
-    super.processLoad();
-    updatePermission();
-  }
-
-  private void updatePermission() {
+  protected void updatePermission() {
     if (Key.create(this).equals(getCurrentUserKey())) {
       setPermission(Permission.ALL);
     } else {

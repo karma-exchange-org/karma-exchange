@@ -24,6 +24,9 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   public abstract ModificationInfo getModificationInfo();
   public abstract void setModificationInfo(ModificationInfo modificationInfo);
 
+  public abstract Permission getPermission();
+  public abstract void setPermission(Permission permission);
+
   public static <T extends BaseDao<T>> void upsert(T resource) {
     // Cleanup any id and key mismatch.
     if ((resource.getId() == null) && (resource.getKey() != null)) {
@@ -143,9 +146,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   protected void processLoad() {
     updateKey();
+    updatePermission();
   }
 
   protected void updateKey() {
     setKey(KeyWrapper.create(this).getKey());
   }
+
+  protected abstract void updatePermission();
 }

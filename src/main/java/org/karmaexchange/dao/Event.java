@@ -121,12 +121,6 @@ public final class Event extends BaseDao<Event> {
     updateCachedParticipantImages();
   }
 
-  @Override
-  protected void processLoad() {
-    super.processLoad();
-    updatePermission();
-  }
-
   private void updateRegisteredUsers() {
     if ((getRegisteredUsers().size() < getMaxRegistrations()) &&
         !getWaitingListUsers().isEmpty()) {
@@ -193,7 +187,8 @@ public final class Event extends BaseDao<Event> {
     return getOrganizers().size() + getRegisteredUsers().size();
   }
 
-  private void updatePermission() {
+  @Override
+  protected void updatePermission() {
     if (getOrganizations().isEmpty()) {
       if (organizers.contains(KeyWrapper.create(getCurrentUserKey()))) {
         setPermission(Permission.ALL);
