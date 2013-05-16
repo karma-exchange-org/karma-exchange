@@ -1,5 +1,6 @@
 package org.karmaexchange.dao;
 
+import static java.lang.String.format;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.Date;
@@ -71,8 +72,10 @@ public final class Event extends BaseDao<Event> {
   @Index
   private List<KeyWrapper<User>> organizers = Lists.newArrayList();
 
+  // This field is automatically managed.
   @Index
   private Status status;
+
   private int minRegistrations;
   // The maxRegistration limit only applies to participants. The limit does not include organizers.
   private int maxRegistrations;
@@ -81,7 +84,7 @@ public final class Event extends BaseDao<Event> {
   private List<KeyWrapper<User>> registeredUsers = Lists.newArrayList();
   private List<KeyWrapper<User>> waitingListUsers = Lists.newArrayList();
 
-  // This field is automatically managed. It can not be explicitly set.
+  // This field is automatically managed.
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
   private Rating eventRating;
@@ -95,9 +98,9 @@ public final class Event extends BaseDao<Event> {
   public enum Status {
     OPEN,
     FULL,
-    COMPLETED,
-    HOLD,  // Edit only. Not visible for public search.
-    CANCELED
+    COMPLETED
+    /* HOLD, */  // Edit only. Not visible for public search.
+    /* CANCELED */
   }
 
   @Override
@@ -109,16 +112,39 @@ public final class Event extends BaseDao<Event> {
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();
+    validateEvent();
     // Ignore anything that was explicitly passed in.
     cachedParticipantImages = Lists.newArrayList();
     updateCachedParticipantImages();
+    updateStatus();
+    if (getOrganizers().isEmpty()) {
+      getOrganizers().add(KeyWrapper.create(getCurrentUserKey()));
+    }
   }
 
   @Override
   protected void processUpdate(Event prevObj) {
     super.processUpdate(prevObj);
+    validateEvent();
     updateRegisteredUsers();
     updateCachedParticipantImages();
+    updateStatus();
+  }
+
+  private void validateEvent() {
+    if (null == getStartTime()) {
+      throw ErrorResponseMsg.createException("the event start time can not be null",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    if (null == getEndTime()) {
+      throw ErrorResponseMsg.createException("the event end time can not be null",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    if (getEndTime().before(getStartTime())) {
+      throw ErrorResponseMsg.createException(
+        "the event end time must be after the event start time",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
   }
 
   private void updateRegisteredUsers() {
@@ -133,7 +159,7 @@ public final class Event extends BaseDao<Event> {
   }
 
   private void updateCachedParticipantImages() {
-    int numParticipantImagesToCache = numParticipants() - getCachedParticipantImages().size();
+    int numParticipantImagesToCache = getNumParticipants() - getCachedParticipantImages().size();
     numParticipantImagesToCache = Math.min(numParticipantImagesToCache,
       MAX_CACHED_PARTICIPANT_IMAGES - getCachedParticipantImages().size());
     if (numParticipantImagesToCache > 0) {
@@ -152,6 +178,17 @@ public final class Event extends BaseDao<Event> {
       for (User participantToCache : participantsToCache) {
         getCachedParticipantImages().add(ParticipantImage.create(participantToCache));
       }
+    }
+  }
+
+  private void updateStatus() {
+    Date now = new Date();
+    if (getEndTime().before(now)) {
+      setStatus(Status.COMPLETED);
+    } else if (getRegisteredUsers().size() < getMaxRegistrations()) {
+      setStatus(Status.OPEN);
+    } else {
+      setStatus(Status.FULL);
     }
   }
 
@@ -183,7 +220,7 @@ public final class Event extends BaseDao<Event> {
     return participants;
   }
 
-  private int numParticipants() {
+  public int getNumParticipants() {
     return getOrganizers().size() + getRegisteredUsers().size();
   }
 
