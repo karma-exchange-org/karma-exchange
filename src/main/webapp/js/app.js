@@ -3,6 +3,7 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
     config(function($routeProvider,$httpProvider) {
         $routeProvider.
             when('/', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
+            when('/home', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
             when('/events', { controller: eventsCtrl, templateUrl: 'partials/events.html' }).
             when('/addevent', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             when('/editevent/:itemId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
@@ -14,7 +15,15 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
 
 
 var homeCtrl = function($scope, $location) {
-	checkLogin($location);
+	if(checkLogin($location))
+    {
+        if($location.$$url=="/")
+        {
+            $location.path("/events");   
+        }    
+        
+    }    
+
 };
 
 
@@ -80,6 +89,15 @@ var eventsCtrl = function ($scope, $location, Events) {
         };
 
     };
+
+    $scope.currentDate = 'something';
+    $scope.createHeader = function(dateVal) {
+        console.log(dateVal+' - '+$scope.currentDate);
+          showHeader = (dateVal!=$scope.currentDate); 
+           $scope.currentDate = dateVal;
+           console.log(showHeader);
+          return showHeader;
+    }
 
     $scope.reset();
 
@@ -295,7 +313,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
 var checkLogin = function($location){
 	if($.cookie("facebook-token"))
 	{
-		//do nothing
+		return true;
 	}
 	else
 	{
@@ -305,6 +323,7 @@ var checkLogin = function($location){
 		$.removeCookie("login");
 
 		setAuthCookies();
+        return false;
 	}
 };
 
