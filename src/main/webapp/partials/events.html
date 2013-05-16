@@ -13,13 +13,18 @@
 
 <table class="table table-striped table-condensed table-hover table-bordered ">
 	<thead>
+		<th>Date</th>
 		<th>Name</th>
 		<th>Description</th>
 		<th>Location</th>
 		<th><a href="#/addevent"><i class="icon-plus-sign"></i></a></th>
 	</thead>
 	<tbody>
-		<tr ng-repeat="item in items.data" id="event_{{item.key}}">
+		<tr ng-repeat="item in items.data | orderBy : 'startTime'" id="event_{{item.key}}">
+			<div ng-show="createHeader(item.startTime)">
+		       something here for the header
+		    </div>
+		    <td>{{item.startTime | date:'mediumDate'}}</td>
 			<td>{{item.title}}</td>
 			<td>{{item.description}}</td>
 			<td>{{item.location.address.city}}</td>
