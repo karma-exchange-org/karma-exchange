@@ -32,6 +32,7 @@ import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.googlecode.objectify.Key;
@@ -56,25 +57,26 @@ public class EventResource extends BaseDaoResource<Event> {
 
     Date startTime = (startTimeValue == null) ? new Date() : new Date(startTimeValue);
 
+    // Query one more than the limit to see if we need to provide a link to additional results.
     Query<Event> query = ofy().load().type(Event.class)
         .filter("startTime >=", startTime)
         .order("startTime")
-        .limit(limit);
+        .limit(limit + 1);
     if (afterCursorStr != null) {
       query = query.startAt(Cursor.fromWebSafeString(afterCursorStr));
     }
 
     QueryResultIterator<Event> queryIter = query.iterator();
-    List<Event> searchResults = Lists.newArrayList(queryIter);
-    BaseDao.processLoadResults(searchResults);
+    List<Event> searchResults = Lists.newArrayList(Iterators.limit(queryIter, limit));
     Cursor afterCursor = queryIter.getCursor();
+    BaseDao.processLoadResults(searchResults);
 
     Map<String, Object> paginationParams = Maps.newHashMap();
     paginationParams.put(START_TIME_PARAM, startTime.getTime());
 
     return ListResponseMsg.create(
       EventSearchView.create(searchResults),
-      PagingInfo.create(afterCursor, limit, searchResults.size(), uriInfo.getAbsolutePath(),
+      PagingInfo.create(afterCursor, limit, queryIter.hasNext(), uriInfo.getAbsolutePath(),
         paginationParams));
   }
 

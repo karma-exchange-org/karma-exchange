@@ -52,14 +52,14 @@ public class ListResponseMsg<T> {
     private String afterCursor;
 
     @Nullable
-    public static PagingInfo create(@Nullable Cursor afterCursor, int limit, int numResultsFetched,
+    public static PagingInfo create(@Nullable Cursor afterCursor, int limit, boolean moreResults,
                                     URI resourceUri, Map<String, Object> params) {
       if (afterCursor == null) {
         return null;
       } else {
         String afterCursorStr = afterCursor.toWebSafeString();
         String nextUrl;
-        if (numResultsFetched == limit) {
+        if (moreResults) {
           Map<String, Object> finalParams = Maps.newHashMap(params);
           finalParams.put(AFTER_CURSOR_PARAM, afterCursorStr);
           finalParams.put(LIMIT_PARAM, limit);
