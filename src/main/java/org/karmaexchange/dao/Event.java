@@ -1,6 +1,5 @@
 package org.karmaexchange.dao;
 
-import static java.lang.String.format;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.Date;
@@ -118,7 +117,10 @@ public final class Event extends BaseDao<Event> {
     updateCachedParticipantImages();
     updateStatus();
     if (getOrganizers().isEmpty()) {
-      getOrganizers().add(KeyWrapper.create(getCurrentUserKey()));
+      KeyWrapper<User> currentUserKey = KeyWrapper.create(getCurrentUserKey());
+      getOrganizers().add(currentUserKey);
+      getRegisteredUsers().remove(currentUserKey);
+      getWaitingListUsers().remove(currentUserKey);
     }
   }
 
@@ -143,6 +145,12 @@ public final class Event extends BaseDao<Event> {
     if (getEndTime().before(getStartTime())) {
       throw ErrorResponseMsg.createException(
         "the event end time must be after the event start time",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    if (getMinRegistrations() > getMaxRegistrations()) {
+      throw ErrorResponseMsg.createException(
+        "the minimum number of registrations must be less than or equal to the maximum number" +
+            "of registrations",
         ErrorInfo.Type.BAD_REQUEST);
     }
   }
