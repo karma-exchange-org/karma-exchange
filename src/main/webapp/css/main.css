@@ -15,6 +15,32 @@
 	max-width: inherit !important;
 }
 
+body {
+padding-top: 60px;
+}
+.container-fluid > .content{
+margin-left:280px;
+}
+.categories li{
+
+}
+.categories li:focus{
+
+}
+#main-items tbody tr td{
+cursor:pointer !important;
+}
+.highlight td{
+font-weight:bold;
+}
+td.mini-thumbnail img{
+max-height:50px;
+max-width:100px;
+}
+td.mini-thumbnail{
+text-align:center;
+}
+
 
 
 

@@ -13,7 +13,7 @@
 
                     <div class="controls">
 
-                        <input type="text" ng-model="item.title" id="title" placeholder="title">
+                        <input type="text" ng-model="event.title" id="title" placeholder="title">
 
                     </div>
 
@@ -25,7 +25,7 @@
 
                     <div class="controls">
 
-                        <input type="text" ng-model="item.organizations" id="organizations" placeholder="Benefiting Organizations">
+                        <input type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations">
 
                     </div>
 
@@ -37,7 +37,7 @@
 
                     <div class="controls">
 
-                        <textarea rows="3" class="input-large" ng-model="item.description" id="description" placeholder="description"></textarea>
+                        <textarea rows="3" class="input-large" ng-model="event.description" id="description" placeholder="description"></textarea>
 
                     </div>
 
@@ -49,12 +49,12 @@
 
                     <div class="controls controls-row ">
                         <div class="input-append date form_datetime"  data-date-format="dd MM yyyy - HH:ii P" id="startTimePicker">
-                            <input size="16" readonly type="text" value="{{item.startTime | date:'dd MMM yyyy - hh:mm a'}}" id="startTime" placeholder="Start time">
+                            <input size="16" readonly type="text" value="{{event.startTime | date:'dd MMM yyyy - hh:mm a'}}" id="startTime" placeholder="Start time">
                             <span class="add-on"><i class="icon-remove"></i></span>
                              <span class="add-on"><i class="icon-th"></i></span>
                         </div>
                        <div class="input-append date form_datetime" data-date-format="dd MM yyyy - HH:ii P" id="endTimePicker">
-                            <input size="16" readonly type="text" value="{{item.endTime | date:'dd MMM yyyy - hh:mm a'}}" id="endTime" placeholder="End time">
+                            <input size="16" readonly type="text" value="{{event.endTime | date:'dd MMM yyyy - hh:mm a'}}" id="endTime" placeholder="End time">
                             <span class="add-on"><i class="icon-remove"></i></span>
                             <span class="add-on"><i class="icon-th"></i></span>
                         </div>
@@ -76,15 +76,15 @@
 
                     <div class="controls">
 
-                        <p>{{item.location.address.street}}</p>
+                        <p>{{event.location.address.street}}</p>
 
                     </div>
 
                     <div class="controls controls-row">
 
-                        <p>{{item.location.address.city}}, {{item.location.address.state}}, <p>
+                        <p>{{event.location.address.city}}, {{event.location.address.state}}, <p>
 
-                        <p>{{item.location.address.country}}, {{item.location.address.zip}}</p>
+                        <p>{{event.location.address.country}}, {{event.location.address.zip}}</p>
                        
 
                     </div>
@@ -120,9 +120,9 @@
 
                     <div class="controls controls-row">
 
-                        <input type="text" ng-model="item.maxRegistrations" id="maxRegistrations" placeholder="Minimum">
+                        <input type="text" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Minimum">
 
-                        <input type="text" ng-model="item.minRegistrations" id="minRegistrations" placeholder="Maximum">
+                        <input type="text" ng-model="event.minRegistrations" id="minRegistrations" placeholder="Maximum">
 
                     </div>
 
@@ -132,7 +132,7 @@
                     <label class="control-label" for="event">Special instructions</label>
                     <div class="controls controls-row">
                        
-                         <textarea rows="3" class="span12 input-xxlarge" ng-model="item.specialInstructions" id="specialInstructions" placeholder="specialInstructions"></textarea>
+                         <textarea rows="3" class="span12 input-xxlarge" ng-model="event.specialInstructions" id="specialInstructions" placeholder="specialInstructions"></textarea>
                     </div>
 
                 </div>
@@ -140,7 +140,7 @@
 
                     <label class="control-label" for="event">Causes</label>
                     <div class="controls controls-row">
-                        <input class="span12" type="text" ng-model="item.causes" id="causes" placeholder="causes">
+                        <input class="span12" type="text" ng-model="event.causes" id="causes" placeholder="causes">
                      </div>
 
                 </div>
@@ -149,7 +149,7 @@
 
                     <label class="control-label" for="event">Skills required</label>
                     <div class="controls controls-row">
-                        <input class="span12"  type="text" ng-model="item.skillsRequired" id="skillsRequired" placeholder="Skills Required">
+                        <input class="span12"  type="text" ng-model="event.skillsRequired" id="skillsRequired" placeholder="Skills Required">
                      </div>
 
                 </div>
@@ -158,13 +158,13 @@
 
                     <label class="control-label" for="event">Skills preferred</label>
                     <div class="controls controls-row">
-                        <input class="span12"  type="text" ng-model="item.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
+                        <input class="span12"  type="text" ng-model="event.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
                      </div>
 
                 </div>
 
 
-                <input type="text" ng-model="item.primaryImage" id="primaryImage" placeholder="primaryImage">
+                <input type="text" ng-model="event.primaryImage" id="primaryImage" placeholder="primaryImage">
 
                 
 
@@ -172,7 +172,7 @@
 
 
 
-                <input type="text" ng-model="item.organizers" id="organizers" placeholder="organizers">
+                <input type="text" ng-model="event.organizers" id="organizers" placeholder="organizers">
 
 
 
