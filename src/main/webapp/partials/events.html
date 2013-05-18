@@ -1,39 +1,28 @@
+<div class="container-fluid">
+	
 
-<form class="form-search">
-	<div class="input-append">
-		<input type="text" ng-model="query" class="input-medium search-query"
-			placeholder="Search">
-		<button ng-click="reset()" type="submit" class="btn">
-			<i class="icon-search"></i>
-		</button>
+	<div>
+		<a href="#/addevent"><i class="icon-plus-sign"></i></a>
+		
+			<ul class="unstyled">
+
+				<li ng-repeat="event in events.data" id="event_{{event.key}}">
+					<div>
+						<div class="well" ng-show="createHeader(event.startTime)">
+					       {{event.startTime | date:'mediumDate'}}
+					    </div>
+					    
+					    	<p>
+
+					    		{{event.startTime | date:'shortTime'}} 
+					    		<a href="#/editevent/{{event.key}}">{{event.title}} - {{event.description}} - {{event.location.address.city}}
+					    		</a>
+								<a href="#/editevent/{{event.key}}"><i class="icon-edit"></i></a>
+								<a ng-click="delete()"><i class="icon-remove"></i></a>
+							</p>
+					</div>	
+				</li>
+			</ul>
+		</div>
 	</div>
-	<button ng-click="query=''; reset()" ng-disabled="!query" type="submit"
-		class="btn">Reset</button>
-</form>
-
-<table class="table table-striped table-condensed table-hover table-bordered ">
-	<thead>
-		<th>Date</th>
-		<th>Name</th>
-		<th>Description</th>
-		<th>Location</th>
-		<th><a href="#/addevent"><i class="icon-plus-sign"></i></a></th>
-	</thead>
-	<tbody>
-		<tr ng-repeat="item in items.data | orderBy : 'startTime'" id="event_{{item.key}}">
-			<div ng-show="createHeader(item.startTime)">
-		       something here for the header
-		    </div>
-		    <td>{{item.startTime | date:'mediumDate'}}</td>
-			<td>{{item.title}}</td>
-			<td>{{item.description}}</td>
-			<td>{{item.location.address.city}}</td>
-			<td><button class="btn btn-success"id="event_register_{{item.key}}"ng-click="register()">Register</button></td>
-			<td>
-				<a href="#/editevent/{{item.key}}"><i class="icon-edit"></i></a>
-				<a ng-click="delete()"><i class="icon-remove"></i></a>
-			</td>
-			
-		</tr>
-	</tbody>
-</table>
+</div>
