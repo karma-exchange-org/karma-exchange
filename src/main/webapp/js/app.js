@@ -4,9 +4,10 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
         $routeProvider.
             when('/', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
             when('/home', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
+            when('/me', { controller: meCtrl, templateUrl: 'partials/me.html' }).
             when('/events', { controller: eventsCtrl, templateUrl: 'partials/events.html' }).
             when('/addevent', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
-            when('/editevent/:itemId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
+            when('/editevent/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             otherwise({ redirectTo: '/' });
 
         $httpProvider.defaults.headers.common['X-'] = 'X';
@@ -14,32 +15,27 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
     });
 
 
-var homeCtrl = function($scope, $location) {
-	if(checkLogin($location))
-    {
-        if($location.$$url=="/")
-        {
-            $location.path("/events");   
-        }    
-        
-    }    
-
-};
 
 
-
+/*
+All webservice factories go here
+*/
 
 kexApp.factory('Events', function($resource) {
-    return $resource('/api/event/:id/:registerCtlr', { id: '@id',registerCtlr:'@registerCtlr' }, 
-        { update: { method: 'POST' },
-         fetch:  {method:'GET', isArray:false}
+    return $resource('/api/event/:id/:registerCtlr', { id: '@id',registerCtlr:'@registerCtlr' }
          
-          
-    });
+    );
+});    
 
 
 
-});
+kexApp.factory('Me', function($resource) {
+    return $resource('/api/me/:id',{ id: '@id'});
+}); 
+
+/*
+All app directives  go here
+*/
 
 kexApp.directive('googleplace', function() {
     return {
@@ -60,29 +56,69 @@ kexApp.directive('googleplace', function() {
         }
     };
 });
+
 var geocoder = new google.maps.Geocoder();
+
+/*
+All app controllers  go here
+*/   
+
+     
+
+var homeCtrl = function($scope, $location) {
+    if(checkLogin($location))
+    {
+        if($location.$$url=="/")
+        {
+            $location.path("/events");   
+        }    
         
+    }    
+
+};
+
+var meCtrl = function($scope, $location, Me) {
+    if(!checkLogin($location))
+    {
+        return;
+    } 
+
+    $scope.load = function(){
+        $scope.me = Me.get();
+
+    };
+    $scope.save = function(){
+        Me.save({id : $scope.me.key});
+    };
+
+    $scope.load();
 
 
+      
+
+};
 
 var eventsCtrl = function ($scope, $location, Events) {
-	checkLogin($location);
+	if(!checkLogin($location))
+    {
+        return;
+    } 
 	$scope.reset = function() {
 
 
-        $scope.items = Events.fetch({q: $scope.query});
+        $scope.events = Events.get({q: $scope.query});
         $scope.register = function(){
-            var itemId = this.item.key;
-            if($("#event_register_" + itemId).hasClass('btn-success'))
+            var eventId = this.event.key;
+            if($("#event_register_" + eventId).hasClass('btn-success'))
             {    
-                Events.update({ id: itemId , registerCtlr :'registered'}, function () {
-                    $("#event_register_" + itemId).removeClass('btn-success').addClass('btn-danger').html('Un-register');
+                Events.save({ id: eventId , registerCtlr :'registered'}, function () {
+                    $("#event_register_" + eventId).removeClass('btn-success').addClass('btn-danger').html('Un-register');
                 });
             }
             else
             {
-                Events.delete({ id: itemId , registerCtlr :'registered'}, function () {
-                    $("#event_register_" + itemId).removeClass('btn-danger').addClass('btn-success').html('Register');
+                Events.delete({ id: eventId , registerCtlr :'registered'}, function () {
+                    $("#event_register_" + eventId).removeClass('btn-danger').addClass('btn-success').html('Register');
                 });
 
             }    
@@ -90,22 +126,22 @@ var eventsCtrl = function ($scope, $location, Events) {
 
     };
 
-    $scope.currentDate = 'something';
-    $scope.createHeader = function(dateVal) {
-        console.log(dateVal+' - '+$scope.currentDate);
-          showHeader = (dateVal!=$scope.currentDate); 
-           $scope.currentDate = dateVal;
-           console.log(showHeader);
-          return showHeader;
+    $scope.currentDate = new Date();
+    $scope.createHeader = function(dateParam) {
+        dateVal = new Date(dateParam);
+        currentDate = new Date($scope.currentDate);
+        showHeader = (dateVal.toDateString()!=currentDate.toDateString()); 
+        $scope.currentDate = new Date(dateVal);
+        return showHeader;
     }
 
     $scope.reset();
 
     $scope.delete = function () {
-        var itemId = this.item.key;
+        var eventId = this.event.key;
 
-        Events.delete({ id: itemId }, function () {
-            $("#event_" + itemId).fadeOut();
+        Events.delete({ id: eventId }, function () {
+            $("#event_" + eventId).fadeOut();
         });
 
     };
@@ -115,7 +151,10 @@ var eventsCtrl = function ($scope, $location, Events) {
 
 
 var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
-
+    if(!checkLogin($location))
+    {
+        return;
+    } 
     angular.extend($scope, {
 
         /** the initial center of the map */
@@ -140,9 +179,9 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     
     $scope.refreshMap = function(){
                 
-                if($scope.item&&$scope.item.location.address.street)
+                if($scope.event&&$scope.event.location.address.street)
                 {    
-                    geocoder.geocode({ 'address': $scope.item.location.address.street+','+$scope.item.location.address.city+','+$scope.item.location.address.state+','+$scope.item.location.address.country }, function (results, status) {
+                    geocoder.geocode({ 'address': $scope.event.location.address.street+','+$scope.event.location.address.city+','+$scope.event.location.address.state+','+$scope.event.location.address.country }, function (results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
                         $scope.center.latitude = results[0].geometry.location.lat();
                         $scope.center.longitude = results[0].geometry.location.lng();
@@ -205,13 +244,13 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
 	$scope.save = function () {
         if($location.$$url=="/addevent")
         {
-            Events.save($scope.item, function() {
+            Events.save($scope.event, function() {
             $location.path('/events');
         });
         }
         else
         {    
-    		Events.update({id: $scope.item.key}, $scope.item, function () {
+    		Events.save({id: $scope.event.key}, $scope.event, function () {
     	        $location.path('/events');
     	    });
         }
@@ -220,13 +259,13 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     if($location.$$url=="/addevent")
     {
         $scope.findMe();
-        $scope.item = {"location":{"title":null,"description":null,"address":{"street":null,"city":null,"state":null,"country":null,"zip":null,"geoPt":null}}};
+        $scope.event = {"location":{"title":null,"description":null,"address":{"street":null,"city":null,"state":null,"country":null,"zip":null,"geoPt":null}}};
 
     }
     else
     {    
-        $scope.item = Events.get({ id: $routeParams.itemId } ,function() {
-                $("#location-title").val(''+$scope.item.location.title);
+        $scope.event = Events.get({ id: $routeParams.eventId } ,function() {
+                $("#location-title").val(''+$scope.event.location.title);
                 $scope.refreshMap();
 
             }, function(response) {
@@ -242,34 +281,34 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         var marker;
 
         var place = $scope.autocomplete.getPlace();
-        $scope.item.location.title = place.name;
+        $scope.event.location.title = place.name;
         
-        $scope.item.location.address.street = '';
+        $scope.event.location.address.street = '';
         for (var i = 0; i < place.address_components.length; i++) {
             
             if(place.address_components[i].types[0]=='locality')
             {
-                $scope.item.location.address.city = place.address_components[i].long_name;
+                $scope.event.location.address.city = place.address_components[i].long_name;
             } 
             else if(place.address_components[i].types[0]=='country')
             {
-                $scope.item.location.address.country = place.address_components[i].long_name;
+                $scope.event.location.address.country = place.address_components[i].long_name;
             } 
             else if(place.address_components[i].types[0]=='postal_code')
             {
-                $scope.item.location.address.zip = place.address_components[i].long_name;
+                $scope.event.location.address.zip = place.address_components[i].long_name;
             } 
             else if(place.address_components[i].types[0]=='administrative_area_level_1')
             {
-                $scope.item.location.address.state = place.address_components[i].long_name;
+                $scope.event.location.address.state = place.address_components[i].long_name;
             } 
             else if(place.address_components[i].types[0]=='street_number')
             {
-                $scope.item.location.address.street = place.address_components[i].long_name+' '+$scope.item.location.address.street;
+                $scope.event.location.address.street = place.address_components[i].long_name+' '+$scope.event.location.address.street;
             }
             else if(place.address_components[i].types[0]=='route')
             {
-                $scope.item.location.address.street = $scope.item.location.address.street+' '+place.address_components[i].long_name;
+                $scope.event.location.address.street = $scope.event.location.address.street+' '+place.address_components[i].long_name;
             }
 
 
@@ -295,7 +334,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
             
 
             
-            $scope.item.startTime = jQuery(ev.target).data('datetimepicker').getDate();
+            $scope.event.startTime = jQuery(ev.target).data('datetimepicker').getDate();
             $scope.$apply();
             
         });
@@ -303,7 +342,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         .datetimepicker()
         .on('changeDate', function(ev){
             
-            $scope.item.endTime = jQuery(ev.target).data('datetimepicker').getDate();
+            $scope.event.endTime = jQuery(ev.target).data('datetimepicker').getDate();
             $scope.$apply();
             
         });
