@@ -6,7 +6,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.Event.Status;
+import org.karmaexchange.dao.Event.RegistrationInfo;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.ParticipantImage;
 import org.karmaexchange.dao.Permission;
@@ -28,7 +28,7 @@ public class EventSearchView {
   private Date endTime;
   private ImageUrlView primaryImage;
   private int karmaPoints;
-  private Status status;
+  private RegistrationInfo registrationInfo;
 
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
@@ -55,8 +55,8 @@ public class EventSearchView {
     }
     searchView.setKarmaPoints(event.getKarmaPoints());
     searchView.setCachedParticipantImages(event.getCachedParticipantImages());
-    searchView.setNumParticipants(event.getNumParticipants());
-    searchView.setStatus(event.getStatus());
+    searchView.setNumParticipants(event.getNumAttending());
+    searchView.setRegistrationInfo(event.getRegistrationInfo());
     return searchView;
   }
 }

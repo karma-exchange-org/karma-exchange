@@ -3,6 +3,7 @@ package org.karmaexchange.resources;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,8 @@ import com.googlecode.objectify.cmd.Query;
 @Path("/event")
 public class EventResource extends BaseDaoResource<Event> {
 
-  private static final String START_TIME_PARAM = "start_time";
+  public static final String START_TIME_PARAM = "start_time";
+  public static final String SEARCH_TYPE_PARAM = "type";
 
   @Override
   protected Class<Event> getResourceClass() {
@@ -52,16 +54,35 @@ public class EventResource extends BaseDaoResource<Event> {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventSearchView> getResources(
       @QueryParam(PagingInfo.AFTER_CURSOR_PARAM) String afterCursorStr,
-      @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue("25") int limit,
+      @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit,
       @QueryParam(START_TIME_PARAM) Long startTimeValue) {
+    return eventSearch(afterCursorStr, limit, startTimeValue, uriInfo.getAbsolutePath(),
+      EventSearchType.UPCOMING, Maps.<String, Object>newHashMap());
+  }
 
+  // TODO(avaliani): take one. Need to re-factor this a bunch!!!
+  public static ListResponseMsg<EventSearchView> eventSearch(String afterCursorStr, int limit,
+      Long startTimeValue, URI baseUri, EventSearchType searchType, Map<String, Object> filters) {
     Date startTime = (startTimeValue == null) ? new Date() : new Date(startTimeValue);
+    String resultOrder;
+    if (searchType == null) {
+      searchType = EventSearchType.UPCOMING;
+    }
+    if (searchType == EventSearchType.UPCOMING) {
+      resultOrder = "startTime";
+      filters.put("startTime >=", startTime);
+    } else {
+      resultOrder = "-startTime";
+      filters.put("startTime <", startTime);
+    }
 
     // Query one more than the limit to see if we need to provide a link to additional results.
     Query<Event> query = ofy().load().type(Event.class)
-        .filter("startTime >=", startTime)
-        .order("startTime")
+        .order(resultOrder)
         .limit(limit + 1);
+    for (Map.Entry<String, Object> entry : filters.entrySet()) {
+      query = query.filter(entry.getKey(), entry.getValue());
+    }
     if (afterCursorStr != null) {
       query = query.startAt(Cursor.fromWebSafeString(afterCursorStr));
     }
@@ -73,11 +94,11 @@ public class EventResource extends BaseDaoResource<Event> {
 
     Map<String, Object> paginationParams = Maps.newHashMap();
     paginationParams.put(START_TIME_PARAM, startTime.getTime());
+    paginationParams.put(SEARCH_TYPE_PARAM, searchType);
 
     return ListResponseMsg.create(
       EventSearchView.create(searchResults),
-      PagingInfo.create(afterCursor, limit, queryIter.hasNext(), uriInfo.getAbsolutePath(),
-        paginationParams));
+      PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri, paginationParams));
   }
 
   @Path("{resource}/registered")
@@ -85,7 +106,7 @@ public class EventResource extends BaseDaoResource<Event> {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventParticipantView> getRegistered(
       @PathParam("resource") String eventKeyStr,
-      @QueryParam("limit") @DefaultValue("10") int limit) {
+      @QueryParam("limit") @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit) {
     Event event = getResourceObj(eventKeyStr);
     // TODO(avaliani): consider supporting a negative limit - reverse the list.
     limit = Math.abs(limit);
@@ -110,5 +131,10 @@ public class EventResource extends BaseDaoResource<Event> {
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
     ofy().transact(new DeleteRegisteredUserTxn(Key.<Event>create(eventKeyStr), userKey));
+  }
+
+  public enum EventSearchType {
+    UPCOMING,
+    PAST
   }
 }
