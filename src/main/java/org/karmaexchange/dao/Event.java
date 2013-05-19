@@ -76,11 +76,11 @@ public final class Event extends BaseDao<Event> {
   private List<KeyWrapper<Organization>> organizations = Lists.newArrayList();
   // Organizers can also edit the event.
 
-  // Can not be set. Automatically managed.
+  // Can not be explicitly set. Automatically managed.
   @Ignore
   private List<KeyWrapper<User>> organizers = Lists.newArrayList();
 
-  // This field is automatically managed.
+  // Can not be explicitly set. Automatically managed.
   @Ignore
   private RegistrationInfo registrationInfo;
 
@@ -89,10 +89,10 @@ public final class Event extends BaseDao<Event> {
   private int maxRegistrations;
   private int maxWaitingList;
 
-  // Can not be set. Automatically managed.
+  // Can not be explicitly set. Automatically managed.
   @Ignore
   private List<KeyWrapper<User>> registeredUsers = Lists.newArrayList();
-  // Can not be set. Automatically managed.
+  // Can not be explicitly set. Automatically managed.
   @Ignore
   private List<KeyWrapper<User>> waitingListUsers = Lists.newArrayList();
 
@@ -137,6 +137,9 @@ public final class Event extends BaseDao<Event> {
     // No-op it.
   }
   public void setCachedParticipantImages(List<ParticipantImage> ignored) {
+    // No-op it.
+  }
+  public void setRegistrationInfo(RegistrationInfo ignored) {
     // No-op it.
   }
 
@@ -290,6 +293,10 @@ public final class Event extends BaseDao<Event> {
 
   public int getNumAttending() {
     return organizers.size() + registeredUsers.size();
+  }
+
+  public void setNumAttending(int ignore) {
+    // No-op.
   }
 
   private void updateRegistrationInfo() {

@@ -63,6 +63,7 @@ public class EventResource extends BaseDaoResource<Event> {
   // TODO(avaliani): take one. Need to re-factor this a bunch!!!
   public static ListResponseMsg<EventSearchView> eventSearch(String afterCursorStr, int limit,
       Long startTimeValue, URI baseUri, EventSearchType searchType, Map<String, Object> filters) {
+    filters = Maps.newHashMap(filters);
     Date startTime = (startTimeValue == null) ? new Date() : new Date(startTimeValue);
     String resultOrder;
     if (searchType == null) {
