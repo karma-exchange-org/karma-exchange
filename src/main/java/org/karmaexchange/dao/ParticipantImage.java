@@ -11,15 +11,10 @@ import com.googlecode.objectify.annotation.Embed;
 
 @Embed
 @Data
-public class ParticipantImage implements Comparable<ParticipantImage> {
+public class ParticipantImage {
   private KeyWrapper<User> participant;
   private String imageUrl;
   private ImageProvider imageUrlProvider;
-
-  @Override
-  public int compareTo(ParticipantImage other) {
-    return this.participant.compareTo(other.participant);
-  }
 
   public static ParticipantImage create(User participant) {
     ParticipantImage participantImage = new ParticipantImage();
@@ -34,8 +29,7 @@ public class ParticipantImage implements Comparable<ParticipantImage> {
     return participantImage;
   }
 
-  public static Predicate<ParticipantImage> createEqualityPredicate(
-      final KeyWrapper<User> userKey) {
+  public static Predicate<ParticipantImage> userPredicate(final KeyWrapper<User> userKey) {
     return new Predicate<ParticipantImage>() {
       @Override
       public boolean apply(@Nullable ParticipantImage input) {

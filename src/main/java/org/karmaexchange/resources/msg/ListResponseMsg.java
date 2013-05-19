@@ -54,10 +54,10 @@ public class ListResponseMsg<T> {
     @Nullable
     public static PagingInfo create(@Nullable Cursor afterCursor, int limit, boolean moreResults,
                                     URI resourceUri, Map<String, Object> params) {
-      if (afterCursor == null) {
+      String afterCursorStr = (afterCursor == null) ? "" : afterCursor.toWebSafeString();
+      if (afterCursorStr.isEmpty()) {
         return null;
       } else {
-        String afterCursorStr = afterCursor.toWebSafeString();
         String nextUrl;
         if (moreResults) {
           Map<String, Object> finalParams = Maps.newHashMap(params);

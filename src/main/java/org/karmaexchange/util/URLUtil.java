@@ -1,9 +1,13 @@
 package org.karmaexchange.util;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Map;
+
 
 /**
  * Some basic utilities for manipulating urls.
@@ -35,6 +39,7 @@ public class URLUtil {
 
       bld.append(urlEncode(entry.getKey()));
       bld.append("=");
+      checkNotNull(entry.getValue(), format("query parameter[%s] has no value", entry.getKey()));
       bld.append(urlEncode(entry.getValue()));
     }
 
