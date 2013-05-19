@@ -4,7 +4,6 @@ import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
 
 import java.net.URI;
-import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -26,6 +25,8 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import com.googlecode.objectify.Key;
 
 public abstract class BaseDaoResource<T extends BaseDao<T>> {
+
+  public static final String DEFAULT_NUM_SEARCH_RESULTS = 25 + "";
 
   @Context
   protected UriInfo uriInfo;
