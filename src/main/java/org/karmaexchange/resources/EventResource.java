@@ -1,5 +1,6 @@
 package org.karmaexchange.resources;
 
+import static com.google.common.base.Preconditions.checkState;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
@@ -21,9 +22,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.Event.AddRegisteredUserTxn;
-import org.karmaexchange.dao.Event.DeleteRegisteredUserTxn;
 import org.karmaexchange.dao.BaseDao;
+import org.karmaexchange.dao.Event.EventParticipant.ParticipantType;
+import org.karmaexchange.dao.Event.UpsertParticipantTxn;
+import org.karmaexchange.dao.Event.DeleteParticipantTxn;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.EventParticipantView;
@@ -44,6 +46,13 @@ public class EventResource extends BaseDaoResource<Event> {
 
   public static final String START_TIME_PARAM = "start_time";
   public static final String SEARCH_TYPE_PARAM = "type";
+
+  public static final String DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS = 10 + "";
+
+  public enum EventSearchType {
+    UPCOMING,
+    PAST
+  }
 
   @Override
   protected Class<Event> getResourceClass() {
@@ -102,40 +111,44 @@ public class EventResource extends BaseDaoResource<Event> {
       PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri, paginationParams));
   }
 
-  @Path("{resource}/registered")
+  @Path("{resource}/participants/{participant_type}")
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public ListResponseMsg<EventParticipantView> getRegistered(
+  public ListResponseMsg<EventParticipantView> getParticipants(
       @PathParam("resource") String eventKeyStr,
-      @QueryParam("limit") @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit) {
+      @PathParam("participant_type") ParticipantType participantType,
+      @QueryParam(PagingInfo.OFFSET_PARAM) @DefaultValue("0") int offset,
+      @QueryParam(PagingInfo.LIMIT_PARAM)
+      @DefaultValue(DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS) int limit) {
     Event event = getResourceObj(eventKeyStr);
-    // TODO(avaliani): consider supporting a negative limit - reverse the list.
-    limit = Math.abs(limit);
-    List<KeyWrapper<User>> registeredUsersBatch =
-        event.getRegisteredUsers().subList(0, Math.min(limit, event.getRegisteredUsers().size()));
-    return ListResponseMsg.create(EventParticipantView.get(registeredUsersBatch));
+    checkState((limit >= 0) && (offset >= 0), "limit and offset must be non-negative");
+    List<KeyWrapper<User>> participants = event.getParticipants(participantType);
+    List<KeyWrapper<User>> offsettedResult =
+        PagingInfo.getOffsettedResult(participants, offset, limit);
+    return ListResponseMsg.create(
+      EventParticipantView.get(offsettedResult),
+      PagingInfo.create(offset, limit, participants.size(), uriInfo.getAbsolutePath(), null));
   }
 
-  @Path("{resource}/registered")
+  @Path("{resource}/participants/{participant_type}")
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response updateRegistered(@PathParam("resource") String eventKeyStr,
+  public Response upsertParticipants(
+      @PathParam("resource") String eventKeyStr,
+      @PathParam("participant_type") ParticipantType participantType,
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
-    ofy().transact(new AddRegisteredUserTxn(Key.<Event>create(eventKeyStr), userKey));
+    ofy().transact(new UpsertParticipantTxn(
+      Key.<Event>create(eventKeyStr), userKey, participantType));
     return Response.ok().build();
   }
 
-  @Path("{resource}/registered")
+  @Path("{resource}/participants")
   @DELETE
-  public void deleteRegistered(@PathParam("resource") String eventKeyStr,
+  public void deleteParticipants(
+      @PathParam("resource") String eventKeyStr,
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
-    ofy().transact(new DeleteRegisteredUserTxn(Key.<Event>create(eventKeyStr), userKey));
-  }
-
-  public enum EventSearchType {
-    UPCOMING,
-    PAST
+    ofy().transact(new DeleteParticipantTxn(Key.<Event>create(eventKeyStr), userKey));
   }
 }

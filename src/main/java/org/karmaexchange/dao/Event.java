@@ -94,7 +94,7 @@ public final class Event extends BaseDao<Event> {
   private List<KeyWrapper<User>> registeredUsers = Lists.newArrayList();
   // Can not be explicitly set. Automatically managed.
   @Ignore
-  private List<KeyWrapper<User>> waitingListUsers = Lists.newArrayList();
+  private List<KeyWrapper<User>> waitListedUsers = Lists.newArrayList();
 
   // We need a consolidated list because pagination does not support OR queries.
   @Index
@@ -133,7 +133,7 @@ public final class Event extends BaseDao<Event> {
   public void setRegisteredUsers(List<KeyWrapper<User>> ignored) {
     // No-op it.
   }
-  public void setWaitingListUsers(List<KeyWrapper<User>> ignored) {
+  public void setWaitListedUsers(List<KeyWrapper<User>> ignored) {
     // No-op it.
   }
   public void setCachedParticipantImages(List<ParticipantImage> ignored) {
@@ -178,7 +178,7 @@ public final class Event extends BaseDao<Event> {
   private void initParticipantLists() {
     organizers = Lists.newArrayList();
     registeredUsers = Lists.newArrayList();
-    waitingListUsers = Lists.newArrayList();;
+    waitListedUsers = Lists.newArrayList();;
     for (EventParticipant participant : participants) {
       switch (participant.getType()) {
         case ORGANIZER:
@@ -188,11 +188,24 @@ public final class Event extends BaseDao<Event> {
           registeredUsers.add(participant.getUser());
           break;
         case WAIT_LISTED:
-          waitingListUsers.add(participant.getUser());
+          waitListedUsers.add(participant.getUser());
           break;
         default:
-          throw new IllegalStateException("unexpected participant type: " + participant.getType());
+          checkState(false, "unknown participant type: " + participant.getType());
       }
+    }
+  }
+
+  public List<KeyWrapper<User>> getParticipants(ParticipantType paticipantType) {
+    switch (paticipantType) {
+      case ORGANIZER:
+        return organizers;
+      case REGISTERED:
+        return registeredUsers;
+      case WAIT_LISTED:
+        return waitListedUsers;
+      default:
+        throw new IllegalStateException("unknown participant type: " + paticipantType);
     }
   }
 
@@ -216,14 +229,19 @@ public final class Event extends BaseDao<Event> {
             "of registrations",
         ErrorInfo.Type.BAD_REQUEST);
     }
+    if (organizers.isEmpty()) {
+      throw ErrorResponseMsg.createException(
+        "at least one organizer must be assigned to the event",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
   }
 
   private void processWaitList() {
     if ((registeredUsers.size() < maxRegistrations) &&
-        !waitingListUsers.isEmpty()) {
+        !waitListedUsers.isEmpty()) {
       int numSpots = maxRegistrations - registeredUsers.size();
       List<KeyWrapper<User>> usersToRegister =
-          waitingListUsers.subList(0, Math.min(numSpots, waitingListUsers.size()));
+          waitListedUsers.subList(0, Math.min(numSpots, waitListedUsers.size()));
       for (KeyWrapper<User> userToRegister : usersToRegister) {
         EventParticipant participant = Iterables.find(participants,
           EventParticipant.userPredicate(KeyWrapper.toKey(userToRegister)));
@@ -305,7 +323,7 @@ public final class Event extends BaseDao<Event> {
     if (participant == null) {
       if (registeredUsers.size() < maxRegistrations) {
         registrationInfo = RegistrationInfo.CAN_REGISTER;
-      } else if (waitingListUsers.size() < maxWaitingList) {
+      } else if (waitListedUsers.size() < maxWaitingList) {
         registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
       } else {
         registrationInfo = RegistrationInfo.FULL;
@@ -326,7 +344,7 @@ public final class Event extends BaseDao<Event> {
   @Override
   protected void updatePermission() {
     if (organizations.isEmpty()) {
-      if (organizers.contains(KeyWrapper.create(getCurrentUserKey()))) {
+      if (isOrganizer(getCurrentUserKey())) {
         permission = Permission.ALL;
       } else {
         permission = Permission.READ;
@@ -337,11 +355,16 @@ public final class Event extends BaseDao<Event> {
     }
   }
 
+  private boolean isOrganizer(Key<User> userKey) {
+    return organizers.contains(KeyWrapper.create(userKey));
+  }
+
   @Data
   @EqualsAndHashCode(callSuper=false)
-  public static class AddRegisteredUserTxn extends VoidWork {
+  public static class UpsertParticipantTxn extends VoidWork {
     private final Key<Event> eventKey;
-    private final Key<User> userKey;
+    private final Key<User> userToUpsertKey;
+    private final ParticipantType participantType;
 
     public void vrun() {
       Event event = load(eventKey);
@@ -349,33 +372,60 @@ public final class Event extends BaseDao<Event> {
         throw ErrorResponseMsg.createException("event not found",
           ErrorInfo.Type.BAD_REQUEST);
       }
-      // If the user is already part of the event or an organizer, do not add the user.
-      EventParticipant participant = Iterables.tryFind(event.participants,
-        EventParticipant.userPredicate(userKey)).orNull();
-      if ((participant != null) &&
-          ((participant.getType() == ParticipantType.ORGANIZER) ||
-           (participant.getType() == ParticipantType.REGISTERED))) {
-        return;
+
+      EventParticipant participantToUpsert = Iterables.tryFind(event.participants,
+        EventParticipant.userPredicate(userToUpsertKey)).orNull();
+      // Users that can not edit the event are restricted to only adding themselves to the
+      // registered list or the waiting list. Additionally, users with edit permissions
+      // bypass all event registration and waiting list limits.
+      if (!event.permission.canEdit()) {
+        if (!userToUpsertKey.equals(getCurrentUserKey())) {
+          throw ErrorResponseMsg.createException(
+            "only organizers can add any participant to the event",
+            ErrorInfo.Type.BAD_REQUEST);
+        }
+        if (participantType == ParticipantType.ORGANIZER) {
+          throw ErrorResponseMsg.createException(
+            "insufficent priveleges to make the current user an organizer of the event",
+            ErrorInfo.Type.BAD_REQUEST);
+        }
+        if ((participantToUpsert != null) && (participantToUpsert.getType() == participantType)) {
+          // Nothing to do.
+          return;
+        }
+        if (participantType == ParticipantType.REGISTERED) {
+          if (event.registeredUsers.size() >= event.maxRegistrations) {
+            throw ErrorResponseMsg.createException(
+              "the event has reached the max registration limit",
+              ErrorInfo.Type.LIMIT_REACHED);
+          }
+        } else {
+          checkState(participantType == ParticipantType.WAIT_LISTED);
+          if (event.waitListedUsers.size() >= event.maxWaitingList) {
+            throw ErrorResponseMsg.createException(
+              "the event has reached the max waiting list limit",
+              ErrorInfo.Type.LIMIT_REACHED);
+          }
+        }
       }
-      if (event.registeredUsers.size() >= event.maxRegistrations) {
-        throw ErrorResponseMsg.createException("the event has reached the max registration limit",
-          ErrorInfo.Type.LIMIT_REACHED);
-      }
-      if (participant == null) {
-        participant = EventParticipant.create(userKey, ParticipantType.REGISTERED);
-        event.participants.add(participant);
+      if (participantToUpsert == null) {
+        // TODO(avaliani): organizers should not in theory be allowed to add arbitrary users.
+        //     However, this simplifies testing so we're going to allow it for now.
+        participantToUpsert = EventParticipant.create(userToUpsertKey, participantType);
+        event.participants.add(participantToUpsert);
       } else {
-        participant.setType(ParticipantType.REGISTERED);
+        participantToUpsert.setType(participantType);
       }
+      // validateEvent() ensures that there is at least one organizer.
       event.update(event);
     }
   }
 
   @Data
   @EqualsAndHashCode(callSuper=false)
-  public static class DeleteRegisteredUserTxn extends VoidWork {
+  public static class DeleteParticipantTxn extends VoidWork {
     private final Key<Event> eventKey;
-    private final Key<User> userKey;
+    private final Key<User> userToRemoveKey;
 
     public void vrun() {
       Event event = load(eventKey);
@@ -383,14 +433,16 @@ public final class Event extends BaseDao<Event> {
         throw ErrorResponseMsg.createException("event not found",
           ErrorInfo.Type.BAD_REQUEST);
       }
+      if (!event.permission.canEdit() && !userToRemoveKey.equals(getCurrentUserKey())) {
+        throw ErrorResponseMsg.createException(
+          "only prganizers can remove any participant from the event",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
       EventParticipant participant = Iterables.tryFind(event.participants,
-        EventParticipant.userPredicate(userKey)).orNull();
+        EventParticipant.userPredicate(userToRemoveKey)).orNull();
       if (participant != null) {
-        if (participant.getType() == ParticipantType.ORGANIZER) {
-          throw ErrorResponseMsg.createException("organizers can not unregister",
-            ErrorInfo.Type.BAD_REQUEST);
-        }
         event.participants.remove(participant);
+        // validateEvent() ensures that there is at least one organizer.
         event.update(event);
       }
     }
