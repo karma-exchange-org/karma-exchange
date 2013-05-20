@@ -12,6 +12,9 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
 
         $httpProvider.defaults.headers.common['X-'] = 'X';
 
+    })
+    .run(function($rootScope,Me){
+        $rootScope.me = Me.get();;
     });
 
 
@@ -30,7 +33,7 @@ kexApp.factory('Events', function($resource) {
 
 
 kexApp.factory('Me', function($resource) {
-    return $resource('/api/me/:id',{ id: '@id'});
+    return $resource('/api/me');
 }); 
 
 /*
@@ -77,7 +80,7 @@ var homeCtrl = function($scope, $location) {
 
 };
 
-var meCtrl = function($scope, $location, Me) {
+var meCtrl = function($scope, $location, Me,$rootScope) {
     if(!checkLogin($location))
     {
         return;
@@ -85,10 +88,11 @@ var meCtrl = function($scope, $location, Me) {
 
     $scope.load = function(){
         $scope.me = Me.get();
+        $rootScope.me = $scope.me;
 
     };
     $scope.save = function(){
-        Me.save({id : $scope.me.key});
+        Me.save();
     };
 
     $scope.load();
@@ -126,7 +130,7 @@ var eventsCtrl = function ($scope, $location, Events) {
 
     };
 
-    $scope.currentDate = new Date();
+    $scope.currentDate = new Date(2001, 01, 01, 01, 01, 01, 0);
     $scope.createHeader = function(dateParam) {
         dateVal = new Date(dateParam);
         currentDate = new Date($scope.currentDate);
