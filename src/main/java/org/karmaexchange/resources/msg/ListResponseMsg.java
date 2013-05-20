@@ -43,6 +43,7 @@ public class ListResponseMsg<T> {
   public static class PagingInfo {
     public static final String AFTER_CURSOR_PARAM = "after";
     public static final String LIMIT_PARAM = "limit";
+    public static final String OFFSET_PARAM = "offset";
 
     /**
      * The URL for the next set of results. If null, there are no more results.
@@ -71,7 +72,32 @@ public class ListResponseMsg<T> {
       }
     }
 
-    private PagingInfo(String nextUrl, String afterCursor) {
+    @Nullable
+    public static PagingInfo create(int currentOffset, int limit, int listSize,
+                                    URI resourceUri, @Nullable Map<String, Object> params) {
+      int nextOffset = currentOffset + limit;
+      boolean moreResults = listSize > nextOffset;
+      if (!moreResults) {
+        return null;
+      }
+      Map<String, Object> finalParams =
+          (params == null) ? Maps.<String, Object>newHashMap() : Maps.newHashMap(params);
+      finalParams.put(OFFSET_PARAM, nextOffset);
+      finalParams.put(LIMIT_PARAM, limit);
+      String nextUrl = URLUtil.buildURL(resourceUri, finalParams);
+      return new PagingInfo(nextUrl, null);
+    }
+
+    public static <T> List<T> getOffsettedResult(List<T> result, int offset, int limit) {
+      if (offset >= result.size()) {
+        return result.subList(0, 0);
+      } else {
+        limit = Math.min(limit, result.size() - offset);
+        return result.subList(offset, offset + limit);
+      }
+    }
+
+    private PagingInfo(@Nullable String nextUrl, @Nullable String afterCursor) {
       this.next = nextUrl;
       this.afterCursor = afterCursor;
     }
