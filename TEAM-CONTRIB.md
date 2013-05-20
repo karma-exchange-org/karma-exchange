@@ -12,22 +12,13 @@ Make whatever changes you want to make. Make sure all tests pass:
 
 ### Create a branch with your changes
 
-Create a branch using "git checkout -b". Don't worry, this command automatically copies your changes to the new branch:
-
     $ cd <project git dir>
     $ git checkout -b <my-awesome-feature>
-
-Add any new files:
-
     $ git add .
-
-Review your changes:
-
     $ git status
-
-Commit your changes:
-
     $ git commit -a    
+
+Don't worry, "git checkout -b" automatically copies your changes to the new branch.
 
 (Optional) Review your commits:
 
