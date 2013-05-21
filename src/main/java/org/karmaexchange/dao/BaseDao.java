@@ -5,12 +5,16 @@ import static org.karmaexchange.util.OfyService.ofy;
 
 import java.util.List;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
+import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.cmd.Query;
 
 public abstract class BaseDao<T extends BaseDao<T>> {
@@ -42,15 +46,24 @@ public abstract class BaseDao<T extends BaseDao<T>> {
           ErrorInfo.Type.BAD_REQUEST);
       }
     }
+    ofy().transact(new UpsertTxn<T>(resource));
+  }
 
-    T prevResource = null;
-    if (resource.getId() != null) {
-      prevResource = load(Key.create(resource));
-    }
-    if (prevResource == null) {
-      resource.insert();
-    } else {
-      resource.update(prevResource);
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  public static class UpsertTxn<T extends BaseDao<T>> extends VoidWork {
+    private final T resource;
+
+    public void vrun() {
+      T prevResource = null;
+      if (resource.getId() != null) {
+        prevResource = load(Key.create(resource));
+      }
+      if (prevResource == null) {
+        resource.insert();
+      } else {
+        resource.update(prevResource);
+      }
     }
   }
 
@@ -101,13 +114,13 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     return resource;
   }
 
-  void insert() {
+  final void insert() {
     preProcessInsert();
     ofy().save().entity(this).now();
     postProcessInsert();
   }
 
-  public final void update(T prevObj) {
+  final void update(T prevObj) {
     processUpdate(prevObj);
     ofy().save().entity(this).now();
   }

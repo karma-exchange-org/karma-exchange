@@ -124,7 +124,7 @@ public class EventResource extends BaseDaoResource<Event> {
     checkState((limit >= 0) && (offset >= 0), "limit and offset must be non-negative");
     List<KeyWrapper<User>> participants = event.getParticipants(participantType);
     List<KeyWrapper<User>> offsettedResult =
-        PagingInfo.getOffsettedResult(participants, offset, limit);
+        PagingInfo.createOffsettedResult(participants, offset, limit);
     return ListResponseMsg.create(
       EventParticipantView.get(offsettedResult),
       PagingInfo.create(offset, limit, participants.size(), uriInfo.getAbsolutePath(), null));

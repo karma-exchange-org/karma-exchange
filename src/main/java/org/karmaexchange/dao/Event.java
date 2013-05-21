@@ -1,5 +1,6 @@
 package org.karmaexchange.dao;
 
+import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -153,17 +154,31 @@ public final class Event extends BaseDao<Event> {
       participants.add(EventParticipant.create(getCurrentUserKey(), ParticipantType.ORGANIZER));
       initParticipantLists();
     }
-    updateCachedParticipantImages();
+    processParticipants();
     validateEvent();
   }
 
   @Override
   protected void processUpdate(Event prevObj) {
     super.processUpdate(prevObj);
+    // Participants is independently and transactionally updated.
+    this.participants = Lists.newArrayList(prevObj.participants);
+    processParticipants();
+    validateEvent();
+  }
+
+  /** Persist the new participant list to the datastore. */
+  private void updateParticipants() {
+    super.processUpdate(this);
+    processParticipants();
+    validateEvent();
+    ofy().save().entity(this).now();
+  }
+
+  private void processParticipants() {
     initParticipantLists();
     processWaitList();
     updateCachedParticipantImages();
-    validateEvent();
   }
 
   @Override
@@ -417,7 +432,7 @@ public final class Event extends BaseDao<Event> {
         participantToUpsert.setType(participantType);
       }
       // validateEvent() ensures that there is at least one organizer.
-      event.update(event);
+      event.updateParticipants();
     }
   }
 
@@ -443,7 +458,7 @@ public final class Event extends BaseDao<Event> {
       if (participant != null) {
         event.participants.remove(participant);
         // validateEvent() ensures that there is at least one organizer.
-        event.update(event);
+        event.updateParticipants();
       }
     }
   }

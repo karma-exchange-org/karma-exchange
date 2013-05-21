@@ -1,5 +1,6 @@
 package org.karmaexchange.resources;
 
+import static java.lang.String.format;
 import static org.karmaexchange.resources.BaseDaoResource.DEFAULT_NUM_SEARCH_RESULTS;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUser;
@@ -21,10 +22,13 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.EventResource.EventSearchType;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
 
 import com.google.common.collect.Maps;
@@ -45,8 +49,14 @@ public class MeResource {
 
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response upsertResource(User updatedUser) {
-    updatedUser.update(getCurrentUser());
+  public Response updateResource(User updatedUser) {
+    if (!getCurrentUserKey().getString().equals(updatedUser.getKey())) {
+      throw ErrorResponseMsg.createException(
+        format("thew new resource key [%s] does not match the previous key [%s]",
+          getCurrentUserKey().getString(), updatedUser.getKey()),
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    BaseDao.upsert(updatedUser);
     return Response.ok().build();
   }
 
