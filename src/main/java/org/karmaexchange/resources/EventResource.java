@@ -23,7 +23,7 @@ import javax.ws.rs.core.Response;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.BaseDao;
-import org.karmaexchange.dao.Event.EventParticipant.ParticipantType;
+import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.UpsertParticipantTxn;
 import org.karmaexchange.dao.Event.DeleteParticipantTxn;
 import org.karmaexchange.dao.KeyWrapper;
