@@ -76,8 +76,8 @@ public class ListResponseMsg<T> {
     public static PagingInfo create(int currentOffset, int limit, int listSize,
                                     URI resourceUri, @Nullable Map<String, Object> params) {
       int nextOffset = currentOffset + limit;
-      boolean moreResults = listSize > nextOffset;
-      if (!moreResults) {
+      if (nextOffset >= listSize) {
+        // No more results.
         return null;
       }
       Map<String, Object> finalParams =
@@ -88,7 +88,7 @@ public class ListResponseMsg<T> {
       return new PagingInfo(nextUrl, null);
     }
 
-    public static <T> List<T> getOffsettedResult(List<T> result, int offset, int limit) {
+    public static <T> List<T> createOffsettedResult(List<T> result, int offset, int limit) {
       if (offset >= result.size()) {
         return result.subList(0, 0);
       } else {

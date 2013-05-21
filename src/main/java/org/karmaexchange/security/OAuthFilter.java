@@ -18,6 +18,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider;
@@ -134,6 +135,7 @@ public class OAuthFilter implements Filter {
    */
   private static User createUser(OAuthCredential credential) {
     User user = SocialNetworkProviderFactory.getProvider(credential).initUser();
+    // getCurrentUserKey() is not setup at this point so we can't use BaseDao.upsert().
     ofy().save().entity(user).now();
     return user;
   }
@@ -142,6 +144,9 @@ public class OAuthFilter implements Filter {
     for (OAuthCredential credential : user.getOauthCredentials()) {
       if (credential.getGlobalUid().equals(newCredential.getGlobalUid())) {
         credential.setToken(newCredential.getToken());
+        // getCurrentUserKey() is not setup at this point so we can't use BaseDao.upsert().
+        // TODO(avaliani): consider moving this to a new non user object. This way we don't
+        //     violate the atomicity of user object updates.
         ofy().save().entity(user).now();
         return;
       }
