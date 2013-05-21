@@ -13,7 +13,6 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
-import org.karmaexchange.dao.Event.EventParticipant.ParticipantType;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -488,12 +487,11 @@ public final class Event extends BaseDao<Event> {
         }
       };
     }
-
-    public enum ParticipantType {
-      ORGANIZER,
-      REGISTERED,
-      WAIT_LISTED
-    }
   }
 
+  public enum ParticipantType {
+    ORGANIZER,
+    REGISTERED,
+    WAIT_LISTED
+  }
 }
