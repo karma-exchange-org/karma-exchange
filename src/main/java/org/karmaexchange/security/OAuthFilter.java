@@ -18,7 +18,6 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider;

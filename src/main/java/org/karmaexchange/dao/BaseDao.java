@@ -8,7 +8,6 @@ import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import org.karmaexchange.dao.Event.DeleteParticipantTxn;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
