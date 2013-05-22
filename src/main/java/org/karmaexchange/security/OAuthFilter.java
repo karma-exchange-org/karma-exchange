@@ -30,9 +30,6 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.UserService;
 
 import com.googlecode.objectify.Key;
-import com.sun.jersey.api.json.JSONConfiguration;
-import com.sun.jersey.api.json.JSONJAXBContext;
-import com.sun.jersey.api.json.JSONMarshaller;
 
 public class OAuthFilter implements Filter {
 
