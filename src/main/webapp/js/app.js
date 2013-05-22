@@ -14,7 +14,8 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
 
     })
     .run(function($rootScope,Me){
-        $rootScope.me = Me.get();;
+        $rootScope.me = Me.get();
+        
     });
 
 
@@ -92,7 +93,7 @@ var meCtrl = function($scope, $location, Me,$rootScope) {
 
     };
     $scope.save = function(){
-        Me.save();
+        Me.save($scope.me);
     };
 
     $scope.load();
@@ -135,7 +136,9 @@ var eventsCtrl = function ($scope, $location, Events) {
         dateVal = new Date(dateParam);
         currentDate = new Date($scope.currentDate);
         showHeader = (dateVal.toDateString()!=currentDate.toDateString()); 
+
         $scope.currentDate = new Date(dateVal);
+
         return showHeader;
     }
 
@@ -340,6 +343,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
             
             $scope.event.startTime = jQuery(ev.target).data('datetimepicker').getDate();
             $scope.$apply();
+            $('#endTimePicker').datetimepicker('setStartDate', $scope.event.startTime);
             
         });
     $('#endTimePicker')
