@@ -3,6 +3,7 @@ package org.karmaexchange.security;
 import static org.karmaexchange.util.OfyService.ofy;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider;
@@ -27,6 +30,9 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.UserService;
 
 import com.googlecode.objectify.Key;
+import com.sun.jersey.api.json.JSONConfiguration;
+import com.sun.jersey.api.json.JSONJAXBContext;
+import com.sun.jersey.api.json.JSONMarshaller;
 
 public class OAuthFilter implements Filter {
 
@@ -83,8 +89,8 @@ public class OAuthFilter implements Filter {
       }
     } catch (WebApplicationException e) {
       Response errMsg = e.getResponse();
-      log.log(OAUTH_LOG_LEVEL, "Failed to authenticate: " + errMsg);
-      resp.setStatus(errMsg.getStatus());
+      log.log(OAUTH_LOG_LEVEL, "Failed to authenticate:\n  " + errMsg.getEntity());
+      setResponse(resp, e);
       return;
     }
 
@@ -95,6 +101,21 @@ public class OAuthFilter implements Filter {
     } finally {
       UserService.updateCurrentUser(null, null);
     }
+  }
+
+  private static void setResponse(HttpServletResponse resp, WebApplicationException err)
+      throws IOException {
+    Response errMsg = err.getResponse();
+    resp.setStatus(errMsg.getStatus());
+    resp.setContentType("application/json");
+    OutputStream out = resp.getOutputStream();
+    try {
+      ObjectMapper mapper = new ObjectMapper();
+      mapper.writeValue(out, errMsg.getEntity());
+    } catch (JsonMappingException e) {
+      log.log(OAUTH_LOG_LEVEL, "Failed to write json error response: " + e.getMessage());
+    }
+    out.flush();
   }
 
   public static Key<User> credentialIsCached(OAuthCredential credential) {
