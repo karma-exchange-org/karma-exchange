@@ -32,7 +32,9 @@ public class EventSearchView {
 
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
-  private int numParticipants;
+  private int numAttending;
+  private int numRegistered;
+  private int maxRegistrations;
 
   public static List<EventSearchView> create(List<Event> events) {
     List<EventSearchView> searchResults = Lists.newArrayListWithCapacity(events.size());
@@ -55,7 +57,9 @@ public class EventSearchView {
     }
     searchView.setKarmaPoints(event.getKarmaPoints());
     searchView.setCachedParticipantImages(event.getCachedParticipantImages());
-    searchView.setNumParticipants(event.getNumAttending());
+    searchView.setNumAttending(event.getNumAttending());
+    searchView.setNumRegistered(event.getRegisteredUsers().size());
+    searchView.setMaxRegistrations(event.getMaxRegistrations());
     searchView.setRegistrationInfo(event.getRegistrationInfo());
     return searchView;
   }
