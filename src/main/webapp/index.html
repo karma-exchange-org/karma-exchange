@@ -146,7 +146,7 @@ body {
 
 
 
-<div class="navbar navbar-fixed-top navbar-inverse nav">
+<div class="navbar navbar-fixed-top navbar-inverse nav row-fluid">
     <div class="navbar-inner">
         <div class="container">
             <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
@@ -164,7 +164,9 @@ body {
       			  <li><a href="#/me"><i class="icon-user icon-white"></i> Me</a></li>
               </ul>
               <div class="pull-right">
+              	
                 <ul class="nav pull-right">
+                	<li><a class="brand" href="index.html"> <img ng-src="{{me.profileImage.url}}"></a></li>
                     <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li><a href="/user/preferences"><i class="icon-cog"></i> Preferences</a></li>
@@ -173,6 +175,7 @@ body {
                             <li><a href="/#" onclick="FB.logout();"><i class="icon-off"></i> Logout</a></li>
                         </ul>
                     </li>
+
                 </ul>
               </div>
             </div>
