@@ -8,18 +8,34 @@
 
 				<li ng-repeat="event in events.data" id="event_{{event.key}}">
 					<div>
-						<div class="well" ng-show="createHeader(event.startTime)">
+						<h3 ng-show="createHeader(event.startTime)">
 					       {{event.startTime | date:'mediumDate'}}
-					    </div>
+					    </h3>
 					    
-					    	<p>
+					    	<div class="well text-center row-fluid">
 
-					    		{{event.startTime | date:'shortTime'}} 
-					    		<a href="#/editevent/{{event.key}}">{{event.title}} - {{event.description}} - {{event.location.address.city}}
-					    		</a>
-								<a href="#/editevent/{{event.key}}"><i class="icon-edit"></i></a>
-								<a ng-click="delete()"><i class="icon-remove"></i></a>
-							</p>
+					    		
+					    		<ul class="inline">
+					    			<li class="pull-left">
+					    				<strong>{{event.startTime | date:'shortTime'}}</strong>
+					    				
+					    				
+					    					
+					    					
+					    	
+					    				
+						    				<a href="#/editevent/{{event.key}}">{{event.title}} </a> 
+						    				<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
+						    		
+						    		</li>
+									<li class="pagination-centered pull-right" ng-repeat="userImage in event.cachedParticipantImages">
+										<div class="span6">
+											<img ng-src="{{userImage.imageUrl}}">
+										</div>
+									</li>	
+								</ul>
+								
+							</div>
 					</div>	
 				</li>
 			</ul>

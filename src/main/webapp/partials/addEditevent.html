@@ -120,9 +120,9 @@
 
                     <div class="controls controls-row">
 
-                        <input type="text" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Minimum">
+                        <input type="text" ng-model="event.minRegistrations" id="minRegistrations" placeholder="Minimum">
 
-                        <input type="text" ng-model="event.minRegistrations" id="minRegistrations" placeholder="Maximum">
+                        <input type="text" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum">
 
                     </div>
 
@@ -205,7 +205,7 @@
             todayHighlight : true,
             minuteStep : 30,
             todayBtn: true,
-            setStartDate : (new Date()),
-            setEndDate : (new Date())
+            startDate : (new Date()),
+            
         });
     </script> 
