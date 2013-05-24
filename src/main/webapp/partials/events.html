@@ -1,6 +1,20 @@
 <div class="container-fluid">
-	
-
+	<div>
+	  <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+	  
+	</div>
+	<div modal="modelOpen" close="closeEvent()" options="opts">
+        <div class="modal-header">
+            <h4>{{modelEvent.title}} - {{modelEvent.startTime|date:'mediumDate'}} </h4>
+        </div>
+        <div class="modal-body">
+            {{modelEvent.title}} - {{modelEvent.description}}
+        </div>
+        <div class="modal-footer">
+        	<button class="btn btn-success submit" ng-click="register()">Register</button>
+            <button class="btn btn-warning cancel" ng-click="closeEvent()">Cancel</button>
+        </div>
+    </div>
 	<div>
 		<a href="#/addevent"><i class="icon-plus-sign"></i></a>
 		
@@ -13,18 +27,17 @@
 					    </h3>
 					    
 					    	<div class="well text-center row-fluid">
-
+					    		
 					    		
 					    		<ul class="inline">
 					    			<li class="pull-left">
 					    				<strong>{{event.startTime | date:'shortTime'}}</strong>
-					    				
-					    				
+	    				
 					    					
 					    					
 					    	
 					    				
-						    				<a href="#/editevent/{{event.key}}">{{event.title}} </a> 
+						    				<a ng-click="openEvent();">{{event.title}} </a> 
 						    				<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
 						    		
 						    		</li>
