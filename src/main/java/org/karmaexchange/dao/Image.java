@@ -34,9 +34,6 @@ import com.googlecode.objectify.annotation.Parent;
 //   Note that equalsAndHashCode would then need to call super.
 //
 // 1.b. Re-eval setId() overriding.
-//
-// 2. Verify that no index is required if we do an ancestor query and sort by dateuploaded.
-//    Not true. it's app/kind that's the prefix. Not app/parent/kind
 @XmlRootElement
 @Entity
 @Data
@@ -44,14 +41,6 @@ import com.googlecode.objectify.annotation.Parent;
 @EqualsAndHashCode(callSuper=false)
 public class Image extends BaseDao<Image> {
 
-  // Bootstrapping problem for user object. Need to save it to create image object.
-  //   - createUserPreBootstrap
-  //   - updateCreatedUserPostBootstrap
-  //
-  // TODO(avaliani): fix image bootstrap
-  //   Better:
-  //   - initUser
-  //   - User.setProfileImage(SocialNetworkProvider.getProfileImage())
   @Parent
   Key<?> owner;
   @Id
@@ -134,7 +123,7 @@ public class Image extends BaseDao<Image> {
   @Override
   protected void processUpdate(Image prevObj) {
     super.processUpdate(prevObj);
-    // Some fields can not be modified. The image can be deleted.
+    // Some fields can not be modified.
     blobKey = prevObj.blobKey;
     url = prevObj.url;
     urlProvider = prevObj.urlProvider;

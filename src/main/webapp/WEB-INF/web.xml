@@ -25,18 +25,17 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
 			<param-value>true</param-value>
 		</init-param>
-
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>Jersey Web Application</servlet-name>
 		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
+
 	<servlet>
 		<servlet-name>DeleteBlobServlet</servlet-name>
 		<servlet-class>org.karmaexchange.task.DeleteBlobServlet</servlet-class>
 	</servlet>
-
 	<servlet-mapping>
 		<servlet-name>DeleteBlobServlet</servlet-name>
 		<url-pattern>/task/delete_blob</url-pattern>

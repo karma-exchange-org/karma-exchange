@@ -2,7 +2,6 @@ package org.karmaexchange.resources;
 
 import static java.lang.String.format;
 import static org.karmaexchange.resources.BaseDaoResource.DEFAULT_NUM_SEARCH_RESULTS;
-import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUser;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
