@@ -1,0 +1,21 @@
+<div class="container-fluid">
+	<rating value="rate" max="10" readonly="true"></rating>
+	
+
+
+
+					<accordion close-others="true">
+						<div ng-repeat="event in events.data">
+						<h3 ng-show="createHeader(event.startTime)">
+					       {{event.startTime | date:'mediumDate'}}
+					    </h3>
+					    <accordion-group heading="{{event.title}}" >
+
+					      <a href="#/viewevent/{{event.key}}">{{event.title}} </a> 
+						    				<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
+					    </accordion-group>
+					    </div>	
+					</accordion>
+	
+
+</div>

@@ -1,5 +1,5 @@
 
-var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
+var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","ui.bootstrap"]).
     config(function($routeProvider,$httpProvider) {
         $routeProvider.
             when('/', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
@@ -8,6 +8,7 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps"]).
             when('/events', { controller: eventsCtrl, templateUrl: 'partials/events.html' }).
             when('/addevent', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             when('/editevent/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
+            when('/viewevent/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             otherwise({ redirectTo: '/' });
 
         $httpProvider.defaults.headers.common['X-'] = 'X';
@@ -26,7 +27,7 @@ All webservice factories go here
 */
 
 kexApp.factory('Events', function($resource) {
-    return $resource('/api/event/:id/:registerCtlr', { id: '@id',registerCtlr:'@registerCtlr' }
+    return $resource('/api/event/:id/:registerCtlr/:regType', { id: '@id',registerCtlr:'@registerCtlr',regType:'@regType'}
          
     );
 });    
@@ -108,29 +109,35 @@ var eventsCtrl = function ($scope, $location, Events) {
     {
         return;
     } 
+    $scope.modelOpen = false;
+    
 	$scope.reset = function() {
 
 
-        $scope.events = Events.get({q: $scope.query});
-        $scope.register = function(){
-            var eventId = this.event.key;
-            if($("#event_register_" + eventId).hasClass('btn-success'))
-            {    
-                Events.save({ id: eventId , registerCtlr :'registered'}, function () {
-                    $("#event_register_" + eventId).removeClass('btn-success').addClass('btn-danger').html('Un-register');
-                });
-            }
-            else
-            {
-                Events.delete({ id: eventId , registerCtlr :'registered'}, function () {
-                    $("#event_register_" + eventId).removeClass('btn-danger').addClass('btn-success').html('Register');
-                });
+    $scope.events = Events.get({q: $scope.query});
+    $scope.register = function(){
+        var eventId = this.modelEvent.key;
+        Events.save({ id: eventId , registerCtlr :'participants',regType:'REGISTERED'}, function () {
+                //alert and close
+                $scope.addAlert("Registration successful!");
+                $scope.closeEvent();
 
-            }    
-        };
-
+            });
+      
     };
 
+    };
+    $scope.addAlert = function(message) {
+        if(!$scope.alerts)
+        {    
+            $scope.alerts = [];
+        }
+        $scope.alerts.push({msg: message});
+      };
+
+  $scope.closeAlert = function(index) {
+        $scope.alerts.splice(index, 1);
+      };
     $scope.currentDate = new Date(2001, 01, 01, 01, 01, 01, 0);
     $scope.createHeader = function(dateParam) {
         dateVal = new Date(dateParam);
@@ -152,6 +159,18 @@ var eventsCtrl = function ($scope, $location, Events) {
         });
 
     };
+    $scope.modelEvent = {};
+    $scope.openEvent = function(){
+
+        $scope.modelEvent = Events.get({ id: this.event.key });
+        $scope.modelOpen = true;
+
+    };
+
+    $scope.closeEvent = function () {
+    
+    $scope.modelOpen = false;
+  };
 
 };
 
