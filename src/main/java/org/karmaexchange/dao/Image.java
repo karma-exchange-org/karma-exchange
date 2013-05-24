@@ -1,77 +1,167 @@
 package org.karmaexchange.dao;
 
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
+
 import java.util.Date;
 
+import javax.xml.bind.annotation.XmlRootElement;
+
+import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
+import org.karmaexchange.task.DeleteBlobServlet;
+
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
 import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.datastore.GeoPt;
 import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Embed;
+import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Ignore;
+import com.googlecode.objectify.annotation.Index;
+import com.googlecode.objectify.annotation.Parent;
 
-// TODO(avaliani): consider making Image polymorphic for the different image types.
-@Embed
-@ToString
-@EqualsAndHashCode
-public class Image {
+// TODO(avaliani):
+// 1. Test moving modificationInfo, permission, and key to BaseDao. Make them protected.
+//    Can we somehow move setId() to BaseDao. Or is that even needed. In the update
+//    flow isn't the key eventually updated. So is it important that it be immediately updated?
+//   See if:
+//   a) Objectify handles it properly.
+//   b) Json conversion handles it properly.
+//   Note that equalsAndHashCode would then need to call super.
+//
+// 1.b. Re-eval setId() overriding.
+//
+// 2. Verify that no index is required if we do an ancestor query and sort by dateuploaded.
+//    Not true. it's app/kind that's the prefix. Not app/parent/kind
+@XmlRootElement
+@Entity
+@Data
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper=false)
+public class Image extends BaseDao<Image> {
+
+  // Bootstrapping problem for user object. Need to save it to create image object.
+  //   - createUserPreBootstrap
+  //   - updateCreatedUserPostBootstrap
+  //
+  // TODO(avaliani): fix image bootstrap
+  //   Better:
+  //   - initUser
+  //   - User.setProfileImage(SocialNetworkProvider.getProfileImage())
+  @Parent
+  Key<?> owner;
+  @Id
+  private Long id;
+  @Ignore
+  private String key;
+  private ModificationInfo modificationInfo;
+
+  @Ignore
+  private Permission permission;
 
   private BlobKey blobKey;
-
-  /**
-   * ImagesService blob url.
-   * <p>
-   * To get a 32 pixel sized version (aspect-ratio preserved) simply append
-   * "=s32" to the url:
-   * {@code "http://lh3.ggpht.com/SomeCharactersGoesHere=s32"}
-   * <p>
-   * To get a 32 pixel cropped version simply append "=s32-c":
-   * {@code "http://lh3.ggpht.com/SomeCharactersGoesHere=s32-c"}
-   *
-   * @see ImagesService#getServingUrl(ServingUrlOptions)
-   */
-  @Getter
-  @Setter
   private String url;
-  @Getter
-  @Setter
-  private ImageProvider urlProvider;
-  @Getter
-  @Setter
-  private KeyWrapper<User> uploadedBy;
-  @Getter
-  @Setter
+  private ImageProviderType urlProvider;
+  @Index
   private Date dateUploaded;
-  @Getter
-  @Setter
+
+  private String caption;
   private GeoPtWrapper gpsLocation;  // Most images are tagged with gps information automatically.
 
-  public static Image create(BlobKey blobKey, Key<User> uploadedBy, Date dateUploaded,
-                             GeoPt gpsLocation) {
-    Image image = new Image();
-    image.blobKey = blobKey;
+  public enum ImageProviderType {
+    FACEBOOK,
+
+    /**
+     * To get a 32 pixel sized version (aspect-ratio preserved) simply append
+     * "=s32" to the url:
+     * {@code "http://lh3.ggpht.com/SomeCharactersGoesHere=s32"}
+     * <p>
+     * To get a 32 pixel cropped version simply append "=s32-c":
+     * {@code "http://lh3.ggpht.com/SomeCharactersGoesHere=s32-c"}
+     *
+     * @see ImagesService#getServingUrl(ServingUrlOptions)
+     */
+    BLOBSTORE;
+
+    public static ImageProviderType toImageProviderType(
+        SocialNetworkProviderType socialNetworkProviderType) {
+      return ImageProviderType.valueOf(socialNetworkProviderType.name());
+    }
+  }
+
+  public static Image createAndPersist(Key<?> owner, BlobKey blobKey, String caption) {
     ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey).secureUrl(true);
     // This call might be slow. This may have to be punted to a task queue.
-    image.setUrl(ImagesServiceFactory.getImagesService().getServingUrl(options));
-    image.setUrlProvider(ImageProvider.BLOBSTORE);
-    image.setUploadedBy(KeyWrapper.create(uploadedBy));
-    image.setDateUploaded(dateUploaded);
-    if (gpsLocation != null) {
-      image.setGpsLocation(GeoPtWrapper.create(gpsLocation));
-    }
+    String url = ImagesServiceFactory.getImagesService().getServingUrl(options);
+    Image image = new Image(owner, url, blobKey, caption);
+    BaseDao.upsert(image);
     return image;
   }
 
-  public static Image create(String url, ImageProvider provider) {
-    Image image = new Image();
-    image.setUrl(url);
-    image.setUrlProvider(provider);
+  public static Image createAndPersist(Key<?> owner, String url,
+      SocialNetworkProviderType socialNetworkUrlProvider) {
+    ImageProviderType imageProviderType =
+        ImageProviderType.toImageProviderType(socialNetworkUrlProvider);
+    Image image = new Image(owner, url, imageProviderType);
+    BaseDao.upsert(image);
     return image;
+  }
+
+  private Image(Key<?> owner, String url, ImageProviderType urlProvider) {
+    this.owner = owner;
+    this.url = url;
+    this.urlProvider = urlProvider;
+  }
+
+  private Image(Key<?> owner, String url, BlobKey blobKey, String caption) {
+    this.owner = owner;
+    this.blobKey = blobKey;
+    this.url = url;
+    urlProvider = ImageProviderType.BLOBSTORE;
+    this.caption = caption;
+  }
+
+  @Override
+  protected void preProcessInsert() {
+    super.preProcessInsert();
+    this.dateUploaded = modificationInfo.getCreationDate();
+  }
+
+  @Override
+  protected void processUpdate(Image prevObj) {
+    super.processUpdate(prevObj);
+    // Some fields can not be modified. The image can be deleted.
+    blobKey = prevObj.blobKey;
+    url = prevObj.url;
+    urlProvider = prevObj.urlProvider;
+    dateUploaded = prevObj.dateUploaded;
+  }
+
+  @Override
+  protected void processDelete() {
+    if (urlProvider == ImageProviderType.BLOBSTORE) {
+      // We do this via a task queue so that it is transactionally done. Only if the transaction
+      // that contains this commits will this task queue task be executed.
+      DeleteBlobServlet.enqueueTask(blobKey);
+    }
+  }
+
+  @Override
+  public void setId(Long id) {
+    this.id = id;
+    updateKey();
+  }
+
+  public void setOwner(String keyStr) {
+    owner = Key.<Object>create(keyStr);
+  }
+
+  public String geOwner() {
+    return owner.getString();
   }
 
   public String getBlobKey() {
@@ -82,8 +172,15 @@ public class Image {
     blobKey = (blobKeyStr == null) ? null : new BlobKey(blobKeyStr);
   }
 
-  public enum ImageProvider {
-    FACEBOOK,
-    BLOBSTORE
+  @Override
+  protected void updatePermission() {
+    // TODO(avaliani): fill this in. Organizers of events should have
+    // the ability to delete pictures also if the picture is owned by an
+    // event.
+    if (KeyWrapper.toKey(modificationInfo.getCreationUser()).equals(getCurrentUserKey())) {
+      permission = Permission.ALL;
+    } else {
+      permission = Permission.READ;
+    }
   }
 }

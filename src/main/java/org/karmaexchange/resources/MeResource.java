@@ -8,6 +8,7 @@ import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
@@ -24,13 +25,17 @@ import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.EventResource.EventSearchType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
+import org.karmaexchange.util.ImageUploadUtil;
 
+import com.google.appengine.api.blobstore.BlobKey;
+import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
 import com.google.common.collect.Maps;
 
 @Path("/me")
@@ -62,9 +67,7 @@ public class MeResource {
 
   @DELETE
   public void deleteResource() {
-    ofy().delete().key(getCurrentUserKey()).now();
-    // TODO(avaliani): revoke OAuth credentials. This way the user account won't be re-created
-    //     automatically.
+    BaseDao.delete(getCurrentUserKey());
   }
 
   @Path("event")
@@ -79,5 +82,30 @@ public class MeResource {
     filters.put("participants.user.key", getCurrentUserKey());
     return EventResource.eventSearch(afterCursorStr, limit, startTimeValue,
       uriInfo.getAbsolutePath(), searchType, filters);
+  }
+
+  @Path("profile_image")
+  @POST
+  public Response updateProfileImage(
+      @QueryParam("provider") SocialNetworkProviderType providerType,
+      @Context HttpServletRequest servletRequest) {
+    if (providerType == null) {
+      BlobKey blobKey = ImageUploadUtil.persistImage(servletRequest);
+      try {
+        User.updateProfileImage(getCurrentUserKey(), blobKey);
+      } catch (RuntimeException e) {
+        BlobstoreServiceFactory.getBlobstoreService().delete(blobKey);
+        throw e;
+      }
+    } else {
+      User.updateProfileImage(getCurrentUserKey(), providerType);
+    }
+    return Response.ok().build();
+  }
+
+  @Path("profile_image")
+  @DELETE
+  public void deleteProfileImage() {
+    User.deleteProfileImage(getCurrentUserKey());
   }
 }

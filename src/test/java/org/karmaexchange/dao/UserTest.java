@@ -15,7 +15,7 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.karmaexchange.dao.Image.ImageProvider;
+import org.karmaexchange.dao.Image.ImageProviderType;
 import org.karmaexchange.util.DatastoreTestUtil;
 
 import com.google.appengine.api.datastore.GeoPt;
@@ -45,10 +45,11 @@ public class UserTest extends PersistenceTestHelper {
     modificationInfo.setLastModificationDate(creationDate);
 
     Image image = new Image();
+    image.setId((long) 1);
     image.setBlobKey("QsZLm_NXs4mCNc2idbG6gg");
     image.setUrl("http://completely_fake");
-    image.setUrlProvider(ImageProvider.BLOBSTORE);
-    user1.setProfileImage(image);
+    image.setUrlProvider(ImageProviderType.BLOBSTORE);
+    user1.setProfileImage(ImageRef.create(image));
 
     ContactInfo contactInfo = new ContactInfo();
     user1.setContactInfo(contactInfo);
