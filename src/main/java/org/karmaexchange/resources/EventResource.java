@@ -111,11 +111,11 @@ public class EventResource extends BaseDaoResource<Event> {
       PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri, paginationParams));
   }
 
-  @Path("{resource}/participants/{participant_type}")
+  @Path("{event_key}/participants/{participant_type}")
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventParticipantView> getParticipants(
-      @PathParam("resource") String eventKeyStr,
+      @PathParam("event_key") String eventKeyStr,
       @PathParam("participant_type") ParticipantType participantType,
       @QueryParam(PagingInfo.OFFSET_PARAM) @DefaultValue("0") int offset,
       @QueryParam(PagingInfo.LIMIT_PARAM)
@@ -130,11 +130,11 @@ public class EventResource extends BaseDaoResource<Event> {
       PagingInfo.create(offset, limit, participants.size(), uriInfo.getAbsolutePath(), null));
   }
 
-  @Path("{resource}/participants/{participant_type}")
+  @Path("{event_key}/participants/{participant_type}")
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response upsertParticipants(
-      @PathParam("resource") String eventKeyStr,
+      @PathParam("event_key") String eventKeyStr,
       @PathParam("participant_type") ParticipantType participantType,
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
@@ -143,10 +143,10 @@ public class EventResource extends BaseDaoResource<Event> {
     return Response.ok().build();
   }
 
-  @Path("{resource}/participants")
+  @Path("{event_key}/participants")
   @DELETE
   public void deleteParticipants(
-      @PathParam("resource") String eventKeyStr,
+      @PathParam("event_key") String eventKeyStr,
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
     ofy().transact(new DeleteParticipantTxn(Key.<Event>create(eventKeyStr), userKey));

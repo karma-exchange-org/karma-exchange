@@ -2,15 +2,15 @@ package org.karmaexchange.resources.msg;
 
 import lombok.Data;
 
-import org.karmaexchange.dao.Image;
-import org.karmaexchange.dao.Image.ImageProvider;
+import org.karmaexchange.dao.Image.ImageProviderType;
+import org.karmaexchange.dao.ImageRef;
 
 @Data
 public class ImageUrlView {
   private String url;
-  private ImageProvider urlProvider;
+  private ImageProviderType urlProvider;
 
-  public static ImageUrlView create(Image image) {
+  public static ImageUrlView create(ImageRef image) {
     ImageUrlView imageView = new ImageUrlView();
     imageView.setUrl(image.getUrl());
     imageView.setUrlProvider(image.getUrlProvider());
