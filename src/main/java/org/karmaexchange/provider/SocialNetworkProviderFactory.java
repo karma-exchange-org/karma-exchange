@@ -6,6 +6,9 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.karmaexchange.dao.OAuthCredential;
+import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.google.common.collect.Maps;
 
@@ -15,13 +18,17 @@ public final class SocialNetworkProviderFactory {
   private static final String OAUTH_TOKEN_SUFFIX = "token";
   private static final String OAUTH_LOGIN = "login";
 
-  private static final String FACEBOOK_PROVIDER = "facebook";
-
   public static SocialNetworkProvider getProvider(OAuthCredential credential) {
-    if (credential.getProvider().equals(FACEBOOK_PROVIDER)) {
-      return new FacebookSocialNetworkProvider(credential);
-    } else {
-      return null;
+    return getProviderType(credential).getProvider(credential);
+  }
+
+  public static SocialNetworkProviderType getProviderType(OAuthCredential credential) {
+    try {
+      return SocialNetworkProviderType.valueOf(credential.getProvider().toUpperCase());
+    } catch (IllegalArgumentException e) {
+      throw ErrorResponseMsg.createException(
+        "unknown social network provider type: " + credential.getProvider(),
+        ErrorInfo.Type.BAD_REQUEST);
     }
   }
 

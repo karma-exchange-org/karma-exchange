@@ -1,6 +1,5 @@
 package org.karmaexchange.dao;
 
-import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -29,6 +28,8 @@ import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 
+// TODO(avlaiani):
+//   - Fix EventSearchView for images once we revamp it.
 @XmlRootElement
 @Entity
 @Data
@@ -166,12 +167,9 @@ public final class Event extends BaseDao<Event> {
     validateEvent();
   }
 
-  /** Persist the new participant list to the datastore. */
   private void updateParticipants() {
-    super.processUpdate(this);
     processParticipants();
     validateEvent();
-    ofy().save().entity(this).now();
   }
 
   private void processParticipants() {
@@ -381,7 +379,7 @@ public final class Event extends BaseDao<Event> {
     private final ParticipantType participantType;
 
     public void vrun() {
-      Event event = load(eventKey);
+      Event event = BaseDao.load(eventKey);
       if (event == null) {
         throw ErrorResponseMsg.createException("event not found",
           ErrorInfo.Type.BAD_REQUEST);
@@ -432,6 +430,7 @@ public final class Event extends BaseDao<Event> {
       }
       // validateEvent() ensures that there is at least one organizer.
       event.updateParticipants();
+      BaseDao.partialUpdate(event);
     }
   }
 
@@ -442,7 +441,7 @@ public final class Event extends BaseDao<Event> {
     private final Key<User> userToRemoveKey;
 
     public void vrun() {
-      Event event = load(eventKey);
+      Event event = BaseDao.load(eventKey);
       if (event == null) {
         throw ErrorResponseMsg.createException("event not found",
           ErrorInfo.Type.BAD_REQUEST);
@@ -458,6 +457,7 @@ public final class Event extends BaseDao<Event> {
         event.participants.remove(participant);
         // validateEvent() ensures that there is at least one organizer.
         event.updateParticipants();
+        BaseDao.partialUpdate(event);
       }
     }
   }

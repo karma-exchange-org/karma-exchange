@@ -19,6 +19,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.karmaexchange.dao.OAuthCredential;
@@ -57,6 +60,7 @@ public class OAuthFilter implements Filter {
 
     OAuthCredential credential;
     Key<User> userKey;
+    UpdateCredentialResult updateCredentialResult = null;
     try {
       credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
       if (credential == null) {
@@ -78,7 +82,8 @@ public class OAuthFilter implements Filter {
           log.log(OAUTH_LOG_LEVEL, "[" + credential + "] updating oauth token");
 
           // The token is valid, so we need to update the token.
-          userKey = updateCachedCredential(credential);
+          updateCredentialResult = updateCachedCredential(credential);
+          userKey = Key.create(updateCredentialResult.getUser());
         } else {
           throw ErrorResponseMsg.createException("authentication credentials are not valid",
             ErrorInfo.Type.AUTHENTICATION);
@@ -92,8 +97,11 @@ public class OAuthFilter implements Filter {
     }
 
     // Authorization complete. Continue to the resource.
+    UserService.updateCurrentUser(credential, userKey);
     try {
-      UserService.updateCurrentUser(credential, userKey);
+      if (updateCredentialResult != null) {
+        updateCredentialResult.finalizeUpdate();
+      }
       filters.doFilter(req, resp);
     } finally {
       UserService.updateCurrentUser(null, null);
@@ -127,31 +135,27 @@ public class OAuthFilter implements Filter {
   }
 
   private static boolean verifyCredential(OAuthCredential credential) {
-    SocialNetworkProvider provider =
-        SocialNetworkProviderFactory.getProvider(credential);
-    if (provider == null) {
-      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] invalid provider in credential");
-      return false;
-    } else {
-      return provider.verifyCredential();
-    }
+    return SocialNetworkProviderFactory.getProvider(credential).verifyCredential();
   }
 
-  private static Key<User> updateCachedCredential(OAuthCredential credential) {
+  private static UpdateCredentialResult updateCachedCredential(OAuthCredential credential) {
     User user = User.getUser(credential);
     if (user == null) {
-      user = createUser(credential);
+      SocialNetworkProvider socialNetworkProvider =
+          SocialNetworkProviderFactory.getProvider(credential);
+      return new NewUserUpdateCredentialResult(createUser(socialNetworkProvider),
+        socialNetworkProvider);
     } else {
       updateCachedCredential(user, credential);
+      return new UpdateCredentialResult(user);
     }
-    return Key.create(user);
   }
 
   /**
    * Populate the user based upon information stored in the oAuth provider.
    */
-  private static User createUser(OAuthCredential credential) {
-    User user = SocialNetworkProviderFactory.getProvider(credential).initUser();
+  private static User createUser(SocialNetworkProvider socialNetworkProvider) {
+    User user = socialNetworkProvider.initUser();
     // getCurrentUserKey() is not setup at this point so we can't use BaseDao.upsert().
     ofy().save().entity(user).now();
     return user;
@@ -171,4 +175,34 @@ public class OAuthFilter implements Filter {
     log.log(OAUTH_LOG_LEVEL, "[" + newCredential + "] " +
     		"User found by credentials, but credential does not exist for updating");
   }
+
+  @Data
+  private static class UpdateCredentialResult {
+    protected final User user;
+
+    /**
+     * Completes the credential update tasks after {@link UserService#updateCurrentUser} is
+     * invoked.
+     */
+    public void finalizeUpdate() {
+      // No-op
+    }
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=true)
+  private static class NewUserUpdateCredentialResult extends UpdateCredentialResult {
+    private final SocialNetworkProvider socialNetworkProvider;
+
+    public NewUserUpdateCredentialResult(User user, SocialNetworkProvider socialNetworkProvider) {
+      super(user);
+      this.socialNetworkProvider = socialNetworkProvider;
+    }
+
+    @Override
+    public void finalizeUpdate() {
+      User.updateProfileImage(Key.create(user), socialNetworkProvider.getProviderType());
+    }
+  }
+
 }

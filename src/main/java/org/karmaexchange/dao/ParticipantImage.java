@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 
 import lombok.Data;
 
-import org.karmaexchange.dao.Image.ImageProvider;
+import org.karmaexchange.dao.Image.ImageProviderType;
 
 import com.google.common.base.Predicate;
 import com.googlecode.objectify.annotation.Embed;
@@ -14,17 +14,15 @@ import com.googlecode.objectify.annotation.Embed;
 public class ParticipantImage {
   private KeyWrapper<User> participant;
   private String imageUrl;
-  private ImageProvider imageUrlProvider;
+  private ImageProviderType imageUrlProvider;
 
   public static ParticipantImage create(User participant) {
     ParticipantImage participantImage = new ParticipantImage();
-    Image profileImage = participant.getProfileImage();
+    ImageRef profileImageRef = participant.getProfileImage();
     participantImage.setParticipant(KeyWrapper.create(participant));
-    // Note that every non-test user will have a social network provided url. So there's no
-    // reason to return null if the profileImage is null.
-    if (profileImage != null) {
-      participantImage.setImageUrl(profileImage.getUrl());
-      participantImage.setImageUrlProvider(profileImage.getUrlProvider());
+    if (profileImageRef != null) {
+      participantImage.setImageUrl(profileImageRef.getUrl());
+      participantImage.setImageUrlProvider(profileImageRef.getUrlProvider());
     }
     return participantImage;
   }

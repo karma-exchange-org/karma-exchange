@@ -53,7 +53,7 @@ public class EventSearchView {
     searchView.setStartTime(event.getStartTime());
     searchView.setEndTime(event.getEndTime());
     if (event.getPrimaryImage() != null) {
-      searchView.setPrimaryImage(ImageUrlView.create(event.getPrimaryImage()));
+      // searchView.setPrimaryImage(ImageUrlView.create(event.getPrimaryImage()));
     }
     searchView.setKarmaPoints(event.getKarmaPoints());
     searchView.setCachedParticipantImages(event.getCachedParticipantImages());

@@ -12,10 +12,11 @@ import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.ContactInfo;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.Image;
-import org.karmaexchange.dao.Image.ImageProvider;
+import org.karmaexchange.dao.Image.ImageProviderType;
 import org.karmaexchange.dao.ModificationInfo;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
@@ -36,8 +37,9 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
 
   private static final String PROFILE_IMAGE_URL_FMT = "https://graph.facebook.com/%s/picture";
 
-  public FacebookSocialNetworkProvider(OAuthCredential credential) {
-    super(credential);
+  public FacebookSocialNetworkProvider(OAuthCredential credential,
+      SocialNetworkProviderType providerType) {
+    super(credential, providerType);
   }
 
   @Override
@@ -76,8 +78,6 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     //   - email
     //   - location
     contactInfo.setEmail(fbUser.getEmail());
-    Image image = Image.create(buildImageUrl(credential.getUid()), ImageProvider.FACEBOOK);
-    user.setProfileImage(image);
 
     NamedFacebookType fbLocationKey = fbUser.getLocation();
     // TODO(avaliani): fix this
@@ -89,8 +89,9 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     return user;
   }
 
-  private String buildImageUrl(String uid) {
-    return String.format(PROFILE_IMAGE_URL_FMT, uid);
+  @Override
+  public String getProfileImageUrl() {
+    return String.format(PROFILE_IMAGE_URL_FMT, credential.getUid());
   }
 
   private Address initAddress(DefaultFacebookClient fbClient, NamedFacebookType fbLocationKey) {

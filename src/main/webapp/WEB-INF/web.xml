@@ -9,10 +9,9 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<filter-name>OAuthFilter</filter-name>
 		<filter-class>org.karmaexchange.security.OAuthFilter</filter-class>
 	</filter>
-
 	<filter-mapping>
 		<filter-name>OAuthFilter</filter-name>
-		<url-pattern>/*</url-pattern>
+		<url-pattern>/api/*</url-pattern>
 	</filter-mapping>
 
 	<servlet>
@@ -26,14 +25,30 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
 			<param-value>true</param-value>
 		</init-param>
-
 		<load-on-startup>1</load-on-startup>
 	</servlet>
-
 	<servlet-mapping>
 		<servlet-name>Jersey Web Application</servlet-name>
 		<url-pattern>/api/*</url-pattern>
 	</servlet-mapping>
+
+	<servlet>
+		<servlet-name>DeleteBlobServlet</servlet-name>
+		<servlet-class>org.karmaexchange.task.DeleteBlobServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>DeleteBlobServlet</servlet-name>
+		<url-pattern>/task/delete_blob</url-pattern>
+	</servlet-mapping>
+
+    <security-constraint>
+        <web-resource-collection>
+            <url-pattern>/task/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
 
 	<welcome-file-list>
 		<welcome-file>index.html</welcome-file>

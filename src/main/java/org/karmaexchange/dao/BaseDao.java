@@ -5,6 +5,8 @@ import static org.karmaexchange.util.OfyService.ofy;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -67,10 +69,16 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     }
   }
 
+  public static <T extends BaseDao<T>> void partialUpdate(T resource) {
+    resource.partialUpdate();
+  }
+
+  @Nullable
   public static <T extends BaseDao<T>> T load(String keyStr) {
     return load(Key.<T>create(keyStr));
   }
 
+  @Nullable
   public static <T extends BaseDao<T>> T load(Key<T> key) {
     T resource = ofy().load().key(key).now();
     if (resource != null) {
@@ -114,6 +122,23 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     return resource;
   }
 
+  public static <T extends BaseDao<T>> void delete(Key<T> key) {
+    ofy().transact(new DeleteTxn<T>(key));
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  public static class DeleteTxn<T extends BaseDao<T>> extends VoidWork {
+    private final Key<T> resourceKey;
+
+    public void vrun() {
+      T resource = BaseDao.load(resourceKey);
+      if (resource != null) {
+        resource.delete();
+      }
+    }
+  }
+
   final void insert() {
     preProcessInsert();
     ofy().save().entity(this).now();
@@ -125,11 +150,18 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     ofy().save().entity(this).now();
   }
 
-  public void delete() {
+  final void partialUpdate() {
+    processPartialUpdate(null);
+    ofy().save().entity(this).now();
+  }
+
+  final void delete() {
+    processDelete();
     ofy().delete().key(Key.create(this)).now();
   }
 
   protected void preProcessInsert() {
+    setModificationInfo(ModificationInfo.create());
   }
 
   protected void postProcessInsert() {
@@ -144,15 +176,22 @@ public abstract class BaseDao<T extends BaseDao<T>> {
           getKey(), prevObj.getKey()),
         ErrorInfo.Type.BAD_REQUEST);
     }
+    processPartialUpdate(prevObj);
+  }
+
+  final void processPartialUpdate(T prevObj) {
     if (getModificationInfo() == null) {
       // Handle objects that were created without modification info.
-      if (prevObj.getModificationInfo() == null) {
+      if ((prevObj == null) || (prevObj.getModificationInfo() == null)) {
         setModificationInfo(ModificationInfo.create());
       } else {
         setModificationInfo(prevObj.getModificationInfo());
       }
     }
     getModificationInfo().update();
+  }
+
+  protected void processDelete() {
   }
 
   protected void processLoad() {
