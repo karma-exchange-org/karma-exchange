@@ -6,6 +6,7 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","u
             when('/home', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
             when('/me', { controller: meCtrl, templateUrl: 'partials/me.html' }).
             when('/events', { controller: eventsCtrl, templateUrl: 'partials/events.html' }).
+            when('/events2', { controller: eventsCtrl, templateUrl: 'partials/eventsAccord.html' }).
             when('/addevent', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             when('/editevent/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             when('/viewevent/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
@@ -16,10 +17,9 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","u
     })
     .run(function($rootScope,Me){
         $rootScope.me = Me.get();
+
         
     });
-
-
 
 
 /*
@@ -35,7 +35,7 @@ kexApp.factory('Events', function($resource) {
 
 
 kexApp.factory('Me', function($resource) {
-    return $resource('/api/me');
+    return $resource('/api/me/:resource/:filter',{ resource: '@resource',filter:'@filter'});
 }); 
 
 /*
@@ -91,6 +91,7 @@ var meCtrl = function($scope, $location, Me,$rootScope) {
     $scope.load = function(){
         $scope.me = Me.get();
         $rootScope.me = $scope.me;
+        $scope.events = Me.get({resource: 'event'})
 
     };
     $scope.save = function(){
@@ -114,18 +115,20 @@ var eventsCtrl = function ($scope, $location, Events) {
 	$scope.reset = function() {
 
 
-    $scope.events = Events.get({q: $scope.query});
+        $scope.events = Events.get({q: $scope.query});
+        
+        
+
+    };
     $scope.register = function(){
         var eventId = this.modelEvent.key;
         Events.save({ id: eventId , registerCtlr :'participants',regType:'REGISTERED'}, function () {
                 //alert and close
                 $scope.addAlert("Registration successful!");
-                $scope.closeEvent();
+                
 
             });
       
-    };
-
     };
     $scope.addAlert = function(message) {
         if(!$scope.alerts)
@@ -160,17 +163,16 @@ var eventsCtrl = function ($scope, $location, Events) {
 
     };
     $scope.modelEvent = {};
-    $scope.openEvent = function(){
+
+    $scope.expandEvent = function(){
 
         $scope.modelEvent = Events.get({ id: this.event.key });
-        $scope.modelOpen = true;
+        $('.event-detail').hide();
+        $('#'+this.event.key+'_detail').show();
 
     };
 
-    $scope.closeEvent = function () {
-    
-    $scope.modelOpen = false;
-  };
+  
 
 };
 
