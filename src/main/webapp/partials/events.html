@@ -1,20 +1,6 @@
 <div class="container-fluid">
-	<div>
-	  <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
-	  
-	</div>
-	<div modal="modelOpen" close="closeEvent()" options="opts">
-        <div class="modal-header">
-            <h4>{{modelEvent.title}} - {{modelEvent.startTime|date:'mediumDate'}} </h4>
-        </div>
-        <div class="modal-body">
-            {{modelEvent.title}} - {{modelEvent.description}}
-        </div>
-        <div class="modal-footer">
-        	<button class="btn btn-success submit" ng-click="register()">Register</button>
-            <button class="btn btn-warning cancel" ng-click="closeEvent()">Cancel</button>
-        </div>
-    </div>
+	
+	<alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
 	<div>
 		<a href="#/addevent"><i class="icon-plus-sign"></i></a>
 		
@@ -32,12 +18,10 @@
 					    		<ul class="inline">
 					    			<li class="pull-left">
 					    				<strong>{{event.startTime | date:'shortTime'}}</strong>
-	    				
+	    								    					
 					    					
-					    					
-					    	
-					    				
-						    				<a ng-click="openEvent();">{{event.title}} </a> 
+					    				    				
+						    				<a ng-click="expandEvent();"><strong>{{event.title}} </strong></a> 
 						    				<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
 						    		
 						    		</li>
@@ -47,8 +31,49 @@
 										</div>
 									</li>	
 								</ul>
+								<div class="row-fluid event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
+								
+								<table class="table">  
+							        <thead>  
+							          <tr>  
+							            <th>What?</th>  
+							            <th>When?</th> 
+							            <th>Where?</th> 
+							            <th>Who?</th>  
+							            <th>I wanna help</th>  
+							          </tr>  
+							        </thead>  
+							        <tbody>  
+							          <tr>  
+							            <td class="span4">{{modelEvent.description}}</td>  
+							            <td>
+							            	<p>Starts at : <strong>{{modelEvent.startTime|date:'shortTime'}}</strong></p>
+							            	<p>Ends at&nbsp&nbsp: <strong>{{modelEvent.endTime|date:'shortTime'}}</strong> </p>
+							            </td>  
+							            <td>
+							            	<p>{{modelEvent.location.address.street}}</p>
+							            	<p>{{modelEvent.location.address.city}}, {{modelEvent.location.address.state}}, <p>
+
+                        					<p>{{modelEvent.location.address.country}}, {{modelEvent.location.address.zip}}</p>
+							            </td>
+							            <td>
+							            	<p>Needs : <strong>{{modelEvent.maxRegistrations}}</strong></p>
+							            	<p>Registered: <strong>{{modelEvent.participants.length}}</strong></p>
+							             </td>  
+							            <td>
+							            	<p><button class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Register</button></p>
+							            	<p><a href="#/viewevent/{{modelEvent.key}}"class="btn btn-info"><i class=" icon-info-sign icon-white"></i>More info</a></p>
+							            </td>  
+							          </tr>  
+							           
+							        </tbody>  
+							      </table>  
+
 								
 							</div>
+							</div>
+							
+							
 					</div>	
 				</li>
 			</ul>
