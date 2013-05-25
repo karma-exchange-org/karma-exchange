@@ -36,6 +36,8 @@ import com.googlecode.objectify.annotation.Index;
 @EqualsAndHashCode(callSuper=false)
 public final class Event extends BaseDao<Event> {
 
+  public static final int MAX_EVENT_KARMA_POINTS = 500;
+
   public static final int MAX_CACHED_PARTICIPANT_IMAGES = 10;
 
   /*
@@ -108,7 +110,8 @@ public final class Event extends BaseDao<Event> {
   private Rating eventRating;
 
   /**
-   * The number of karma points earned by participating in the event.
+   * The number of karma points earned by participating in the event. This is derived from the
+   * start and end time.
    */
   @Index
   private int karmaPoints;
@@ -156,13 +159,16 @@ public final class Event extends BaseDao<Event> {
     }
     processParticipants();
     validateEvent();
+    initKarmaPoints();
   }
 
   @Override
   protected void processUpdate(Event prevObj) {
     super.processUpdate(prevObj);
+    // Karma points are set when the event is created.
+    karmaPoints = prevObj.karmaPoints;
     // Participants is independently and transactionally updated.
-    this.participants = Lists.newArrayList(prevObj.participants);
+    participants = Lists.newArrayList(prevObj.participants);
     processParticipants();
     validateEvent();
   }
@@ -185,6 +191,11 @@ public final class Event extends BaseDao<Event> {
     initParticipantLists();
     super.processLoad();
     updateRegistrationInfo();
+  }
+
+  private void initKarmaPoints() {
+    long eventDurationMins = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
+    karmaPoints = (int) Math.min(eventDurationMins, MAX_EVENT_KARMA_POINTS);
   }
 
   private void initParticipantLists() {
