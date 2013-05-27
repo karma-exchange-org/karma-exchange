@@ -149,8 +149,8 @@ public class Image extends BaseDao<Image> {
     owner = Key.<Object>create(keyStr);
   }
 
-  public String geOwner() {
-    return owner.getString();
+  public String getOwner() {
+    return (owner == null) ? null : owner.getString();
   }
 
   public String getBlobKey() {
