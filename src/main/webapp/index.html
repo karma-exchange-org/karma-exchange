@@ -161,7 +161,7 @@ body {
               <ul class="nav">
                   <li class="divider-vertical"></li>
                   <li><a href="#/home"><i class="icon-home icon-white"></i> Home</a></li>
-                  <li><a href="#/events"><i class="icon-list icon-white"></i> Events</a></li>
+                  <li><a href="#/event"><i class="icon-list icon-white"></i> Events</a></li>
       			  <li><a href="#/me"><i class="icon-user icon-white"></i> Me</a></li>
               </ul>
               <div class="pull-right">
@@ -170,10 +170,10 @@ body {
                 	<li><a class="brand" href="index.html"> <img ng-src="{{me.profileImage.url}}"></a></li>
                     <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
                         <ul class="dropdown-menu">
-                            <li><a href="/user/preferences"><i class="icon-cog"></i> Preferences</a></li>
+                            <li><a href="#/mysettings"><i class="icon-cog"></i>Profile</a></li>
                             <li><a href="/help/support"><i class="icon-envelope"></i> Contact Support</a></li>
                             <li class="divider"></li>
-                            <li><a href="/#" onclick="FB.logout();"><i class="icon-off"></i> Logout</a></li>
+                            <li><a href="/#" onclick="logOut();"><i class="icon-off"></i> Logout</a></li>
                         </ul>
                     </li>
 
