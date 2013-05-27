@@ -233,6 +233,12 @@ public final class Event extends BaseDao<Event> {
   }
 
   private void validateEvent() {
+    if ((null == title) || title.isEmpty()) {
+      throw ErrorResponseMsg.createException("all events require an event title",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    // TODO(avaliani): make sure the description has a minimum length. Avoiding this for now
+    //   since we don't have auto event creation.
     if (null == startTime) {
       throw ErrorResponseMsg.createException("the event start time can not be null",
         ErrorInfo.Type.BAD_REQUEST);
@@ -244,6 +250,11 @@ public final class Event extends BaseDao<Event> {
     if (endTime.before(startTime)) {
       throw ErrorResponseMsg.createException(
         "the event end time must be after the event start time",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    if (maxRegistrations < 1) {
+      throw ErrorResponseMsg.createException(
+        "max registrations must be greater than or equal to one",
         ErrorInfo.Type.BAD_REQUEST);
     }
     if (minRegistrations > maxRegistrations) {
