@@ -1,0 +1,116 @@
+
+<div class="container-fluid">
+
+    <div class="row-fluid">
+
+        <div class="span8">
+
+    
+
+                <div class="span12 row-fluid well-large well">
+                    <h2>{{event.title}}</h2>
+                    <div class="span6">   
+
+                        
+                        <p>{{event.startTime | date:'mediumDate'}} - {{event.startTime|date:'shortTime'}} - {{event.endTime|date:'shortTime'}}</p>
+                    </div>
+                    <div class="span6">
+                        <p>Needs : <strong>{{event.maxRegistrations}}</strong></p>
+                        <p>Registered: <strong>{{event.participants.length}}</strong></p>
+                        
+                    </div>
+                    <div class="row-fluid">
+                        <p>{{event.location.address.street}}</p>
+
+
+
+                        <p>{{event.location.address.city}}, {{event.location.address.state}}, <p>
+
+                        <p>{{event.location.address.country}}, {{event.location.address.zip}}</p>
+                    </div>
+                    <p ng-hide="event.organizations.length==0">Benefitting : 
+                        <ul class="inline"><li  ng-repeat="org in events.organizations">{{org.name}}</li></ul>
+                    </p>
+                    <div class="row-fluid">
+                        
+                            <div class="pull-left"><strong>{{event.karmaPoints}} karma points</strong></div>
+                            <div class="pull-right">
+                                <a ng-show="{ORGANIZER:true}[event.registrationInfo]"class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
+                                
+                                <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Register</button>
+                                <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Wait list</button>
+                                <p ng-show="{REGISTERED:true,WAIT_LISTED:true}[event.registrationInfo]"><i class="icon-ok"></i>You have registered!</p>
+                            </div>
+
+                             
+                        
+
+                        
+                    </div>
+                </div>
+                        <p ng-hide="eventOrganizers.length==0">Organized by 
+                        <ul class="inline">
+                            <li ng-repeat="organizer in eventOrganizers">
+
+                                {{orgnaizer.name}}
+                            </li>
+                        </ul>
+                        </p>
+                        <p ng-hide="event.causes.length==0">Causes 
+                        <ul class="inline">
+                            <li ng-repeat="cause in event.causes">
+                                {{cause.id}}
+
+                            </li>
+                        </ul>
+                        </p>
+                        <h4>What?</h4>
+                        
+                        <p>{{event.description}}</p>
+                        
+                        <h4>Special instructions</h4>
+                        <p>{{event.specialInstructions}}</p>
+                        
+                        <input style="display:none" type="text"  class="span12" id="location-title" placeholder="Name of the place" >
+                        
+                        
+
+
+                    
+                        <p ng-hide="event.skillsRequired==0">Causes 
+                        <ul class="inline">
+                            <li ng-repeat="skill in event.skillsRequired">
+                                {{skill.id}}
+
+                            </li>
+                        </ul>
+                        </p>
+                        <p ng-hide="event.skillsPreferred==0">Causes 
+                        <ul class="inline">
+                            <li ng-repeat="skill in event.skillsPreferred">
+                                {{skill.id}}
+
+                            </li>
+                        </ul>
+                        </p>
+         </div>                
+  
+
+        <div id="myCommentsDiv" class="span4"></div>
+         
+
+    </div>
+    
+ 
+        
+
+
+</div>
+<script>
+    var mydiv = document.getElementById('myCommentsDiv'); 
+    mydiv.innerHTML =
+      '<div class="fb-comments" href="' + document.location.href + '" data-num-posts="10" data-width="357">'; 
+    FB.XFBML.parse(mydiv); 
+</script>
+
+

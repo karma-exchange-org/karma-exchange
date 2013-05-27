@@ -2,7 +2,7 @@
 	
 	<alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
 	<div>
-		<a href="#/addevent"><i class="icon-plus-sign"></i></a>
+		<a href="#/event/add"><i class="icon-plus-sign"></i></a>
 		
 			<ul class="unstyled">
 
@@ -21,7 +21,7 @@
 	    								    					
 					    					
 					    				    				
-						    				<a ng-click="expandEvent();"><strong>{{event.title}} </strong></a> 
+						    				<a ng-click="toggleEvent();"><strong>{{event.title}} </strong></a> 
 						    				<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
 						    		
 						    		</li>
@@ -37,8 +37,7 @@
 							        <thead>  
 							          <tr>  
 							            <th>What?</th>  
-							            <th>When?</th> 
-							            <th>Where?</th> 
+							            <th>When? Where?</th> 
 							            <th>Who?</th>  
 							            <th>I wanna help</th>  
 							          </tr>  
@@ -47,11 +46,10 @@
 							          <tr>  
 							            <td class="span4">{{modelEvent.description}}</td>  
 							            <td>
-							            	<p>Starts at : <strong>{{modelEvent.startTime|date:'shortTime'}}</strong></p>
-							            	<p>Ends at&nbsp&nbsp: <strong>{{modelEvent.endTime|date:'shortTime'}}</strong> </p>
-							            </td>  
-							            <td>
-							            	<p>{{modelEvent.location.address.street}}</p>
+							            	<p><strong>{{modelEvent.startTime|date:'shortTime'}} - {{modelEvent.endTime|date:'shortTime'}}</strong></p>
+							            	
+							             
+							                 	<p>{{modelEvent.location.address.street}}</p>
 							            	<p>{{modelEvent.location.address.city}}, {{modelEvent.location.address.state}}, <p>
 
                         					<p>{{modelEvent.location.address.country}}, {{modelEvent.location.address.zip}}</p>
@@ -61,8 +59,18 @@
 							            	<p>Registered: <strong>{{modelEvent.participants.length}}</strong></p>
 							             </td>  
 							            <td>
-							            	<p><button class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Register</button></p>
-							            	<p><a href="#/viewevent/{{modelEvent.key}}"class="btn btn-info"><i class=" icon-info-sign icon-white"></i>More info</a></p>
+							            	<h4>{{event.karmaPoints}} karma points.</h4>
+							            	<p>
+							            		<a ng-show="{ORGANIZER:true}[modelEvent.registrationInfo]"class="btn btn-success" href="#/event/{{modelEvent.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
+							            		
+							            		<button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Register</button>
+							            		<button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Wait list</button>
+							            		<p ng-show="{REGISTERED:true,WAIT_LISTED:true}[modelEvent.registrationInfo]"><i class="icon-ok"></i>You have registered!</p>
+							            		
+							            	
+
+							            	</p>
+							            	<p ng-hide="{ORGANIZER:true}[modelEvent.registrationInfo]"><a href="#/event/{{modelEvent.key}}"class="btn btn-info"><i class=" icon-info-sign icon-white"></i>More info</a></p>
 							            </td>  
 							          </tr>  
 							           

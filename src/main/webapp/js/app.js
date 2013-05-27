@@ -5,18 +5,20 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","u
             when('/', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
             when('/home', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
             when('/me', { controller: meCtrl, templateUrl: 'partials/me.html' }).
-            when('/events', { controller: eventsCtrl, templateUrl: 'partials/events.html' }).
+            when('/mysettings', { controller: meCtrl, templateUrl: 'partials/mysettings.html' }).
+            when('/event', { controller: eventsCtrl, templateUrl: 'partials/events.html' }).
             when('/events2', { controller: eventsCtrl, templateUrl: 'partials/eventsAccord.html' }).
-            when('/addevent', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
-            when('/editevent/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
-            when('/viewevent/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
+            when('/event/add', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
+            when('/event/:eventId/edit', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
+            when('/event/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/viewEvent.html' }).
             otherwise({ redirectTo: '/' });
 
         $httpProvider.defaults.headers.common['X-'] = 'X';
 
     })
-    .run(function($rootScope,Me){
+    .run(function($rootScope,Me,$location){
         $rootScope.me = Me.get();
+        
 
         
     });
@@ -75,7 +77,7 @@ var homeCtrl = function($scope, $location) {
     {
         if($location.$$url=="/")
         {
-            $location.path("/events");   
+            $location.path("/event");   
         }    
         
     }    
@@ -125,6 +127,8 @@ var eventsCtrl = function ($scope, $location, Events) {
         Events.save({ id: eventId , registerCtlr :'participants',regType:'REGISTERED'}, function () {
                 //alert and close
                 $scope.addAlert("Registration successful!");
+                $scope.modelEvent.registrationInfo = 'REGISTERED';
+                $scope.$apply();
                 
 
             });
@@ -164,11 +168,20 @@ var eventsCtrl = function ($scope, $location, Events) {
     };
     $scope.modelEvent = {};
 
-    $scope.expandEvent = function(){
+    $scope.toggleEvent = function(){
 
-        $scope.modelEvent = Events.get({ id: this.event.key });
-        $('.event-detail').hide();
-        $('#'+this.event.key+'_detail').show();
+        
+        
+        if($('#'+this.event.key+'_detail').is(":visible"))
+        {
+            $('.event-detail').hide();
+        }
+        else
+        {
+             $('.event-detail').hide();
+             $scope.modelEvent = Events.get({ id: this.event.key });
+             $('#'+this.event.key+'_detail').show();
+        }    
 
     };
 
@@ -273,18 +286,18 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         if($location.$$url=="/addevent")
         {
             Events.save($scope.event, function() {
-            $location.path('/events');
+            $location.path('/event');
         });
         }
         else
         {    
     		Events.save({id: $scope.event.key}, $scope.event, function () {
-    	        $location.path('/events');
+    	        $location.path('/event');
     	    });
         }
 	};
 
-    if($location.$$url=="/addevent")
+    if($location.$$url=="/event/add")
     {
         $scope.findMe();
         $scope.event = {"location":{"title":null,"description":null,"address":{"street":null,"city":null,"state":null,"country":null,"zip":null,"geoPt":null}}};
@@ -293,8 +306,9 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     else
     {    
         $scope.event = Events.get({ id: $routeParams.eventId } ,function() {
-                $("#location-title").val(''+$scope.event.location.title);
-                $scope.refreshMap();
+                //$("#location-title").val(''+$scope.event.location.title);
+                //$scope.refreshMap();
+                $scope.eventOrganizers = Events.query({ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'});
 
             }, function(response) {
             //404 or bad
@@ -303,6 +317,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         }});
     }
     //TDEBT - (hbalijepalli)
+
     $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("location-title"));
     google.maps.event.addListener($scope.autocomplete, 'place_changed', function(event) {
         
@@ -393,6 +408,15 @@ var checkLogin = function($location){
 		setAuthCookies();
         return false;
 	}
+};
+
+var logOut = function($location){
+    $.removeCookie("facebook-uid");
+    $.removeCookie("facebook-token");
+    $.removeCookie("login");
+    FB.logout();
+    $location.path("/");
+    
 };
 
 
