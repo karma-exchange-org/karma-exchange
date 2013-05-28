@@ -30,6 +30,7 @@ import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.EventParticipantView;
 import org.karmaexchange.resources.msg.EventSearchView;
+import org.karmaexchange.resources.msg.ExpandedEventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
 
@@ -109,6 +110,15 @@ public class EventResource extends BaseDaoResource<Event> {
     return ListResponseMsg.create(
       EventSearchView.create(searchResults),
       PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri, paginationParams));
+  }
+
+  @Path("{event_key}/expanded_search_view")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public Response getExpandedEventSearchView(
+    @PathParam("event_key") String eventKeyStr) {
+    Event event = getResourceObj(eventKeyStr);
+    return Response.ok(ExpandedEventSearchView.create(event)).build();
   }
 
   @Path("{event_key}/participants/{participant_type}")

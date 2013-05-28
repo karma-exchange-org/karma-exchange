@@ -10,13 +10,16 @@ import org.karmaexchange.dao.Event.RegistrationInfo;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.ParticipantImage;
 import org.karmaexchange.dao.Permission;
+import org.karmaexchange.dao.Rating;
 
 import com.google.common.collect.Lists;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @XmlRootElement
 @Data
+@NoArgsConstructor
 public class EventSearchView {
 
   private String key;
@@ -27,7 +30,6 @@ public class EventSearchView {
   private Date startTime;
   private Date endTime;
   private ImageUrlView primaryImage;
-  private int karmaPoints;
   private RegistrationInfo registrationInfo;
 
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
@@ -36,31 +38,33 @@ public class EventSearchView {
   private int numRegistered;
   private int maxRegistrations;
 
+  private Rating eventRating;
+  private int karmaPoints;
+
   public static List<EventSearchView> create(List<Event> events) {
     List<EventSearchView> searchResults = Lists.newArrayListWithCapacity(events.size());
     for (Event event : events) {
-      searchResults.add(create(event));
+      searchResults.add(new EventSearchView(event));
     }
     return searchResults;
   }
 
-  private static EventSearchView create(Event event) {
-    EventSearchView searchView = new EventSearchView();
-    searchView.setKey(event.getKey());
-    searchView.setPermission(event.getPermission());
-    searchView.setTitle(event.getTitle());
-    searchView.setLocation(event.getLocation());
-    searchView.setStartTime(event.getStartTime());
-    searchView.setEndTime(event.getEndTime());
+  protected EventSearchView(Event event) {
+    key = event.getKey();
+    permission = event.getPermission();
+    title = event.getTitle();
+    location = event.getLocation();
+    startTime = event.getStartTime();
+    endTime = event.getEndTime();
     if (event.getPrimaryImage() != null) {
-      // searchView.setPrimaryImage(ImageUrlView.create(event.getPrimaryImage()));
+      // PrimaryImage(ImageUrlView.create(event.getPrimaryImage()));
     }
-    searchView.setKarmaPoints(event.getKarmaPoints());
-    searchView.setCachedParticipantImages(event.getCachedParticipantImages());
-    searchView.setNumAttending(event.getNumAttending());
-    searchView.setNumRegistered(event.getRegisteredUsers().size());
-    searchView.setMaxRegistrations(event.getMaxRegistrations());
-    searchView.setRegistrationInfo(event.getRegistrationInfo());
-    return searchView;
+    karmaPoints = event.getKarmaPoints();
+    cachedParticipantImages = event.getCachedParticipantImages();
+    numAttending = event.getNumAttending();
+    numRegistered = event.getRegisteredUsers().size();
+    maxRegistrations = event.getMaxRegistrations();
+    registrationInfo = event.getRegistrationInfo();
+    eventRating = event.getEventRating();
   }
 }

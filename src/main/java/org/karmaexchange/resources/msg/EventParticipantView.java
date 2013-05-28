@@ -6,6 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.KeyWrapper;
+import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.User;
 
 import com.google.common.collect.Lists;
@@ -22,6 +23,7 @@ public class EventParticipantView {
   private String key;
   private ImageUrlView profileImage;
   private long karmaPoints;
+  private Rating eventOrganizerRating;
 
   public static List<EventParticipantView> get(List<KeyWrapper<User>> usersBatch) {
     List<EventParticipantView> registeredUsers = Lists.newArrayListWithCapacity(usersBatch.size());
@@ -34,16 +36,17 @@ public class EventParticipantView {
     return registeredUsers;
   }
 
-  private static EventParticipantView create(User user) {
-    EventParticipantView profileImageView = new EventParticipantView();
-    profileImageView.setFirstName(user.getFirstName());
-    profileImageView.setLastName(user.getLastName());
-    profileImageView.setNickName(user.getNickName());
-    profileImageView.setKey(user.getKey());
+  public static EventParticipantView create(User user) {
+    EventParticipantView participantView = new EventParticipantView();
+    participantView.setFirstName(user.getFirstName());
+    participantView.setLastName(user.getLastName());
+    participantView.setNickName(user.getNickName());
+    participantView.setKey(user.getKey());
     if (user.getProfileImage() != null) {
-      profileImageView.setProfileImage(ImageUrlView.create(user.getProfileImage()));
+      participantView.setProfileImage(ImageUrlView.create(user.getProfileImage()));
     }
-    profileImageView.setKarmaPoints(user.getKarmaPoints());
-    return profileImageView;
+    participantView.setKarmaPoints(user.getKarmaPoints());
+    participantView.setEventOrganizerRating(user.getEventOrganizerRating());
+    return participantView;
   }
 }
