@@ -16,6 +16,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -24,16 +25,16 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
-import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 
-// TODO(avlaiani):
+// TODO(avaliani):
 //   - Fix EventSearchView for images once we revamp it.
 @XmlRootElement
 @Entity
 @Data
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=true)
+@ToString(callSuper=true)
 public final class Event extends BaseDao<Event> {
 
   public static final int MAX_EVENT_KARMA_POINTS = 500;
@@ -45,14 +46,6 @@ public final class Event extends BaseDao<Event> {
    *   - look at volunteer match schema
    *   - compare this to Meetup, OneBrick, Golden Gate athletic club, etc.
    */
-
-  @Id private Long id;
-  @Ignore
-  private String key;
-  private ModificationInfo modificationInfo;
-
-  @Ignore
-  private Permission permission;
 
   private String title;
   private String description;
@@ -123,12 +116,6 @@ public final class Event extends BaseDao<Event> {
     CAN_REGISTER,
     CAN_WAIT_LIST,
     FULL
-  }
-
-  @Override
-  public void setId(Long id) {
-    this.id = id;
-    updateKey();
   }
 
   public void setOrganizers(List<KeyWrapper<User>> ignored) {

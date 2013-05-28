@@ -17,21 +17,37 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.VoidWork;
+import com.googlecode.objectify.annotation.Id;
+import com.googlecode.objectify.annotation.Ignore;
+import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.cmd.Query;
 
+@Data
 public abstract class BaseDao<T extends BaseDao<T>> {
+  @Parent
+  protected Key<?> owner;
+  @Id
+  private Long id;
+  @Ignore
+  private String key;
+  private ModificationInfo modificationInfo;
 
-  public abstract void setId(Long id);
-  public abstract Long getId();
+  @Ignore
+  protected Permission permission;
 
-  public abstract String getKey();
-  public abstract void setKey(String key);
+  // TODO(avaliani): is this needed anymore? Is the updateKey() flow outdated.
+  public final void setId(Long id) {
+    this.id = id;
+    updateKey();
+  }
 
-  public abstract ModificationInfo getModificationInfo();
-  public abstract void setModificationInfo(ModificationInfo modificationInfo);
+  public final void setOwner(String keyStr) {
+    owner = (keyStr == null) ? null : Key.<Object>create(keyStr);
+  }
 
-  public abstract Permission getPermission();
-  public abstract void setPermission(Permission permission);
+  public final String getOwner() {
+    return (owner == null) ? null : owner.getString();
+  }
 
   public static <T extends BaseDao<T>> void upsert(T resource) {
     // Cleanup any id and key mismatch.
