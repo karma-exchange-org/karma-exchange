@@ -17,6 +17,7 @@ import org.karmaexchange.util.UserService;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.common.collect.Lists;
@@ -24,25 +25,16 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Entity;
-import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 
 @XmlRootElement
 @Entity
+// TODO(avaliani): re-eval this caching strategy once OAuth caching is re-worked.
 @Cache
 @Data
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=true)
+@ToString(callSuper=true)
 public final class User extends BaseDao<User> {
-
-  @Id
-  private Long id;
-  @Ignore
-  private String key;
-  private ModificationInfo modificationInfo;
-
-  @Ignore
-  private Permission permission;
 
   @Index
   private String firstName;
@@ -74,12 +66,6 @@ public final class User extends BaseDao<User> {
   private List<OAuthCredential> oauthCredentials = Lists.newArrayList();
 
   // TODO(avaliani): profileSecurityPrefs
-
-  @Override
-  public void setId(Long id) {
-    this.id = id;
-    updateKey();
-  }
 
   @Override
   protected void processUpdate(User oldUser) {

@@ -12,6 +12,7 @@ import org.karmaexchange.task.DeleteBlobServlet;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.images.ImagesService;
@@ -19,38 +20,15 @@ import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
-import com.googlecode.objectify.annotation.Id;
-import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
-import com.googlecode.objectify.annotation.Parent;
 
-// TODO(avaliani):
-// 1. Test moving modificationInfo, permission, and key to BaseDao. Make them protected.
-//    Can we somehow move setId() to BaseDao. Or is that even needed. In the update
-//    flow isn't the key eventually updated. So is it important that it be immediately updated?
-//   See if:
-//   a) Objectify handles it properly.
-//   b) Json conversion handles it properly.
-//   Note that equalsAndHashCode would then need to call super.
-//
-// 1.b. Re-eval setId() overriding.
 @XmlRootElement
 @Entity
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper=false)
+@EqualsAndHashCode(callSuper=true)
+@ToString(callSuper=true)
 public class Image extends BaseDao<Image> {
-
-  @Parent
-  Key<?> owner;
-  @Id
-  private Long id;
-  @Ignore
-  private String key;
-  private ModificationInfo modificationInfo;
-
-  @Ignore
-  private Permission permission;
 
   private BlobKey blobKey;
   private String url;
@@ -117,7 +95,7 @@ public class Image extends BaseDao<Image> {
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();
-    this.dateUploaded = modificationInfo.getCreationDate();
+    this.dateUploaded = getModificationInfo().getCreationDate();
   }
 
   @Override
@@ -139,20 +117,6 @@ public class Image extends BaseDao<Image> {
     }
   }
 
-  @Override
-  public void setId(Long id) {
-    this.id = id;
-    updateKey();
-  }
-
-  public void setOwner(String keyStr) {
-    owner = Key.<Object>create(keyStr);
-  }
-
-  public String getOwner() {
-    return (owner == null) ? null : owner.getString();
-  }
-
   public String getBlobKey() {
     return (blobKey == null) ? null : blobKey.getKeyString();
   }
@@ -166,7 +130,7 @@ public class Image extends BaseDao<Image> {
     // TODO(avaliani): fill this in. Organizers of events should have
     // the ability to delete pictures also if the picture is owned by an
     // event.
-    if (KeyWrapper.toKey(modificationInfo.getCreationUser()).equals(getCurrentUserKey())) {
+    if (KeyWrapper.toKey(getModificationInfo().getCreationUser()).equals(getCurrentUserKey())) {
       permission = Permission.ALL;
     } else {
       permission = Permission.READ;
