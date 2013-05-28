@@ -27,7 +27,7 @@ public final class JsonValidationTestUtil {
     String jsonEntityStr = jsonEntityStringWriter.toString();
 
     if (debug) {
-      System.out.println(jsonEntityStr);
+      System.out.println("Json:\n" + jsonEntityStr);
     }
 
     JSONUnmarshaller jsonUnmarshaller = jsonContext.createJSONUnmarshaller();
