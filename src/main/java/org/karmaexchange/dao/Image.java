@@ -28,7 +28,7 @@ import com.googlecode.objectify.annotation.Index;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public class Image extends BaseDao<Image> {
+public class Image extends IdBaseDao<Image> {
 
   private BlobKey blobKey;
   private String url;

@@ -34,7 +34,7 @@ import com.googlecode.objectify.annotation.Index;
 @Data
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public final class User extends BaseDao<User> {
+public final class User extends IdBaseDao<User> {
 
   @Index
   private String firstName;
@@ -58,7 +58,7 @@ public final class User extends BaseDao<User> {
   @Index
   private long karmaPoints;
 
-  private Rating eventOrganizerRating;
+  private IndexedAggregateRating eventOrganizerRating = IndexedAggregateRating.create();
 
   private EventSearch lastEventSearch;
 

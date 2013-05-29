@@ -6,7 +6,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.KeyWrapper;
-import org.karmaexchange.dao.Rating;
+import org.karmaexchange.dao.AggregateRating;
 import org.karmaexchange.dao.User;
 
 import com.google.common.collect.Lists;
@@ -23,7 +23,7 @@ public class EventParticipantView {
   private String key;
   private ImageUrlView profileImage;
   private long karmaPoints;
-  private Rating eventOrganizerRating;
+  private AggregateRating eventOrganizerRating;
 
   public static List<EventParticipantView> get(List<KeyWrapper<User>> usersBatch) {
     List<EventParticipantView> registeredUsers = Lists.newArrayListWithCapacity(usersBatch.size());

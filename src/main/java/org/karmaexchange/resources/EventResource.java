@@ -27,6 +27,7 @@ import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.UpsertParticipantTxn;
 import org.karmaexchange.dao.Event.DeleteParticipantTxn;
 import org.karmaexchange.dao.KeyWrapper;
+import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.EventParticipantView;
 import org.karmaexchange.resources.msg.EventSearchView;
@@ -160,5 +161,29 @@ public class EventResource extends BaseDaoResource<Event> {
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
     ofy().transact(new DeleteParticipantTxn(Key.<Event>create(eventKeyStr), userKey));
+  }
+
+  @Path("{event_key}/review")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public Review getReview(
+      @PathParam("event_key") String eventKeyStr) {
+    return BaseDao.load(Review.getKey(Key.<Event>create(eventKeyStr)));
+  }
+
+  @Path("{event_key}/review")
+  @POST
+  @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public void upsertReview(
+      @PathParam("event_key") String eventKeyStr,
+      Review review) {
+    Event.mutateEventReview(Key.<Event>create(eventKeyStr), review);
+  }
+
+  @Path("{event_key}/review")
+  @DELETE
+  public void deleteReview(
+      @PathParam("event_key") String eventKeyStr) {
+    Event.mutateEventReview(Key.<Event>create(eventKeyStr), null);
   }
 }

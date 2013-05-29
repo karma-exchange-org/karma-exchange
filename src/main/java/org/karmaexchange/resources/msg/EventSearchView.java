@@ -10,7 +10,7 @@ import org.karmaexchange.dao.Event.RegistrationInfo;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.ParticipantImage;
 import org.karmaexchange.dao.Permission;
-import org.karmaexchange.dao.Rating;
+import org.karmaexchange.dao.AggregateRating;
 
 import com.google.common.collect.Lists;
 
@@ -38,7 +38,7 @@ public class EventSearchView {
   private int numRegistered;
   private int maxRegistrations;
 
-  private Rating eventRating;
+  private AggregateRating rating;
   private int karmaPoints;
 
   public static List<EventSearchView> create(List<Event> events) {
@@ -65,6 +65,6 @@ public class EventSearchView {
     numRegistered = event.getRegisteredUsers().size();
     maxRegistrations = event.getMaxRegistrations();
     registrationInfo = event.getRegistrationInfo();
-    eventRating = event.getEventRating();
+    rating = event.getRating();
   }
 }

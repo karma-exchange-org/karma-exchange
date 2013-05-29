@@ -56,5 +56,5 @@ public class Organization {
   @Index
   private long karmaPoints;
 
-  private Rating eventRating;
+  private IndexedAggregateRating eventRating = IndexedAggregateRating.create();
 }
