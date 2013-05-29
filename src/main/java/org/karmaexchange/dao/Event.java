@@ -1,5 +1,7 @@
 package org.karmaexchange.dao;
 
+import static java.lang.String.format;
+import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -35,7 +37,7 @@ import com.googlecode.objectify.annotation.Index;
 @Data
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public final class Event extends BaseDao<Event> {
+public final class Event extends IdBaseDao<Event> {
 
   public static final int MAX_EVENT_KARMA_POINTS = 500;
 
@@ -100,7 +102,7 @@ public final class Event extends BaseDao<Event> {
   // listed users images are skipped.
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
-  private Rating eventRating;
+  private IndexedAggregateRating rating = IndexedAggregateRating.create();
 
   /**
    * The number of karma points earned by participating in the event. This is derived from the
@@ -116,6 +118,12 @@ public final class Event extends BaseDao<Event> {
     CAN_REGISTER,
     CAN_WAIT_LIST,
     FULL
+  }
+
+  public enum ParticipantType {
+    ORGANIZER,
+    REGISTERED,
+    WAIT_LISTED
   }
 
   public void setOrganizers(List<KeyWrapper<User>> ignored) {
@@ -154,6 +162,8 @@ public final class Event extends BaseDao<Event> {
     super.processUpdate(prevObj);
     // Karma points are set when the event is created.
     karmaPoints = prevObj.karmaPoints;
+    // Rating is independently and transactionally updated.
+    rating = prevObj.rating;
     // Participants is independently and transactionally updated.
     participants = Lists.newArrayList(prevObj.participants);
     processParticipants();
@@ -204,6 +214,11 @@ public final class Event extends BaseDao<Event> {
           checkState(false, "unknown participant type: " + participant.getType());
       }
     }
+  }
+
+  @Nullable
+  private EventParticipant tryFindParticipant(Key<User> userKey) {
+    return Iterables.tryFind(participants, EventParticipant.userPredicate(userKey)).orNull();
   }
 
   public List<KeyWrapper<User>> getParticipants(ParticipantType paticipantType) {
@@ -278,8 +293,7 @@ public final class Event extends BaseDao<Event> {
     while (cachedImageIter.hasNext()) {
       ParticipantImage cachedImage = cachedImageIter.next();
       Key<User> userKey = KeyWrapper.toKey(cachedImage.getParticipant());
-      EventParticipant participant =
-          Iterables.tryFind(participants, EventParticipant.userPredicate(userKey)).orNull();
+      EventParticipant participant = tryFindParticipant(userKey);
       if ((participant == null) || (participant.getType() == ParticipantType.WAIT_LISTED)) {
         cachedImageIter.remove();
       }
@@ -339,8 +353,7 @@ public final class Event extends BaseDao<Event> {
   }
 
   private void updateRegistrationInfo() {
-    EventParticipant participant = Iterables.tryFind(participants,
-      EventParticipant.userPredicate(getCurrentUserKey())).orNull();
+    EventParticipant participant = tryFindParticipant(getCurrentUserKey());
     if (participant == null) {
       if (registeredUsers.size() < maxRegistrations) {
         registrationInfo = RegistrationInfo.CAN_REGISTER;
@@ -394,8 +407,7 @@ public final class Event extends BaseDao<Event> {
           ErrorInfo.Type.BAD_REQUEST);
       }
 
-      EventParticipant participantToUpsert = Iterables.tryFind(event.participants,
-        EventParticipant.userPredicate(userToUpsertKey)).orNull();
+      EventParticipant participantToUpsert = event.tryFindParticipant(userToUpsertKey);
       // Users that can not edit the event are restricted to only adding themselves to the
       // registered list or the waiting list. Additionally, users with edit permissions
       // bypass all event registration and waiting list limits.
@@ -460,8 +472,7 @@ public final class Event extends BaseDao<Event> {
           "only prganizers can remove any participant from the event",
           ErrorInfo.Type.BAD_REQUEST);
       }
-      EventParticipant participant = Iterables.tryFind(event.participants,
-        EventParticipant.userPredicate(userToRemoveKey)).orNull();
+      EventParticipant participant = event.tryFindParticipant(userToRemoveKey);
       if (participant != null) {
         event.participants.remove(participant);
         // validateEvent() ensures that there is at least one organizer.
@@ -498,9 +509,53 @@ public final class Event extends BaseDao<Event> {
     }
   }
 
-  public enum ParticipantType {
-    ORGANIZER,
-    REGISTERED,
-    WAIT_LISTED
+  public static void mutateEventReview(Key<Event> eventKey, @Nullable Review review) {
+    ofy().transact(new MutateEventReviewTxn(eventKey, review));
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  private static class MutateEventReviewTxn extends VoidWork {
+    private final Key<Event> eventKey;
+    @Nullable
+    private final Review review;
+
+    public void vrun() {
+      Event event = BaseDao.load(eventKey);
+      if (event == null) {
+        throw ErrorResponseMsg.createException("event not found", ErrorInfo.Type.BAD_REQUEST);
+      }
+      EventParticipant participantDetails = event.tryFindParticipant(getCurrentUserKey());
+      if ((participantDetails == null) ||
+          (participantDetails.getType() == ParticipantType.WAIT_LISTED)) {
+        throw ErrorResponseMsg.createException(
+          "only users that participated in the event can provide an event review",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
+      Key<Review> expReviewKey = Review.getKey(eventKey);
+      if (review != null) {
+        review.preUpsertInit(eventKey);
+        if (!Key.create(review).equals(expReviewKey)) {
+          throw ErrorResponseMsg.createException(
+            format("review key [%s] does not match expected review key [%s]",
+              Key.create(review).toString(), expReviewKey.toString()),
+            ErrorInfo.Type.BAD_REQUEST);
+        }
+      }
+      Review existingReview = BaseDao.load(expReviewKey);
+      if (existingReview != null) {
+        event.rating.deleteRating(existingReview.getRating());
+      }
+      if (review == null) {
+        if (existingReview != null) {
+          BaseDao.delete(expReviewKey);
+        }
+      } else {
+        event.rating.addRating(review.getRating());
+        BaseDao.upsert(review);
+      }
+      BaseDao.partialUpdate(event);
+      // TODO(avaliani): Update organizer rating.
+    }
   }
 }

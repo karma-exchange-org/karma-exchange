@@ -6,6 +6,7 @@ import static org.karmaexchange.util.OfyService.ofy;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.xml.bind.annotation.XmlTransient;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -17,7 +18,6 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.VoidWork;
-import com.googlecode.objectify.annotation.Id;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.cmd.Query;
@@ -26,20 +26,12 @@ import com.googlecode.objectify.cmd.Query;
 public abstract class BaseDao<T extends BaseDao<T>> {
   @Parent
   protected Key<?> owner;
-  @Id
-  private Long id;
   @Ignore
   private String key;
   private ModificationInfo modificationInfo;
 
   @Ignore
   protected Permission permission;
-
-  // TODO(avaliani): is this needed anymore? Is the updateKey() flow outdated.
-  public final void setId(Long id) {
-    this.id = id;
-    updateKey();
-  }
 
   public final void setOwner(String keyStr) {
     owner = (keyStr == null) ? null : Key.<Object>create(keyStr);
@@ -50,20 +42,6 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   public static <T extends BaseDao<T>> void upsert(T resource) {
-    // Cleanup any id and key mismatch.
-    if ((resource.getId() == null) && (resource.getKey() != null)) {
-      resource.setId(Key.<T>create(resource.getKey()).getId());
-    }
-    if (resource.getId() != null) {
-      if (resource.getKey() == null) {
-        resource.updateKey();
-      } else if (!resource.getKey().equals(Key.create(resource).getString())) {
-        throw ErrorResponseMsg.createException(
-          format("resource key [%s] does not match id based key [%s]",
-            resource.getKey(), Key.create(resource).getString()),
-          ErrorInfo.Type.BAD_REQUEST);
-      }
-    }
     ofy().transact(new UpsertTxn<T>(resource));
   }
 
@@ -73,8 +51,11 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     private final T resource;
 
     public void vrun() {
+      // Cleanup any id and key mismatch.
+      resource.syncKeyAndIdForUpsert();
+
       T prevResource = null;
-      if (resource.getId() != null) {
+      if (resource.isKeyComplete()) {
         prevResource = load(Key.create(resource));
       }
       if (prevResource == null) {
@@ -84,6 +65,11 @@ public abstract class BaseDao<T extends BaseDao<T>> {
       }
     }
   }
+
+  protected abstract void syncKeyAndIdForUpsert();
+
+  @XmlTransient
+  public abstract boolean isKeyComplete();
 
   public static <T extends BaseDao<T>> void partialUpdate(T resource) {
     resource.partialUpdate();
