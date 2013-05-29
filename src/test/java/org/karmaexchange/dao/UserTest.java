@@ -74,8 +74,8 @@ public class UserTest extends PersistenceTestHelper {
 
     user1.setKarmaPoints(100);
 
-    Rating rating = new Rating();
-    rating.addRating(4.5);
+    IndexedAggregateRating  rating = new IndexedAggregateRating ();
+    rating.addRating(Rating.create(4.5));
     user1.setEventOrganizerRating(rating);
 
     List<OAuthCredential> credentials = asList(
@@ -128,13 +128,13 @@ public class UserTest extends PersistenceTestHelper {
 
     userKeys = Sets.newHashSet(
       ofy().load().type(User.class)
-          .filter("eventOrganizerRating.average >=", Double.valueOf(3.2)).keys());
+          .filter("eventOrganizerRating.value >=", Double.valueOf(3.2)).keys());
     assertEquals(1, userKeys.size());
     assertTrue(userKeys.contains(Key.create(user1)));
 
     userKeys = Sets.newHashSet(
       ofy().load().type(User.class)
-          .filter("eventOrganizerRating.average >", Double.valueOf(4.5)).keys());
+          .filter("eventOrganizerRating.value >", Double.valueOf(4.5)).keys());
     assertEquals(0, userKeys.size());
 
     userKeys = Sets.newHashSet(

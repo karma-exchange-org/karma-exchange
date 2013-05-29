@@ -7,6 +7,7 @@ import org.karmaexchange.dao.EventComment;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.NonProfitOrganization;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.Skill;
 import org.karmaexchange.dao.User;
 
@@ -28,6 +29,7 @@ public class OfyService {
     ObjectifyService.register(Cause.class);
     ObjectifyService.register(EventComment.class);
     ObjectifyService.register(Image.class);
+    ObjectifyService.register(Review.class);
   }
 
   public static Objectify ofy() {
