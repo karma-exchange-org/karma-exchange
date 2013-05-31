@@ -14,6 +14,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.task.ProcessOrganizerRatingsServlet;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -102,7 +103,8 @@ public final class Event extends IdBaseDao<Event> {
   // listed users images are skipped.
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
-  private IndexedAggregateRating rating = IndexedAggregateRating.create();
+  private IndexedAggregateRating rating;
+  private DerivedOrganizerRatings derivedOrganizerRatings;
 
   /**
    * The number of karma points earned by participating in the event. This is derived from the
@@ -155,6 +157,8 @@ public final class Event extends IdBaseDao<Event> {
     processParticipants();
     validateEvent();
     initKarmaPoints();
+    rating = IndexedAggregateRating.create();
+    initDerivedOrganizerRatings();
   }
 
   @Override
@@ -164,15 +168,29 @@ public final class Event extends IdBaseDao<Event> {
     karmaPoints = prevObj.karmaPoints;
     // Rating is independently and transactionally updated.
     rating = prevObj.rating;
+    derivedOrganizerRatings = prevObj.derivedOrganizerRatings;
     // Participants is independently and transactionally updated.
     participants = Lists.newArrayList(prevObj.participants);
     processParticipants();
     validateEvent();
   }
 
-  private void updateParticipants() {
+  private void processParticipantMutation(EventParticipant updatedParticipant, boolean wasDeleted) {
     processParticipants();
+    derivedOrganizerRatings.processParticipantMutation(this, updatedParticipant, wasDeleted);
     validateEvent();
+  }
+
+  private void processRatingUpdate() {
+    derivedOrganizerRatings.processRatingUpdate(this);
+  }
+
+  private void processPendingRating() {
+    derivedOrganizerRatings.processPendingRating(this);
+  }
+
+  private boolean hasPendingRatings() {
+    return derivedOrganizerRatings.hasPendingRatings();
   }
 
   private void processParticipants() {
@@ -193,6 +211,15 @@ public final class Event extends IdBaseDao<Event> {
   private void initKarmaPoints() {
     long eventDurationMins = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
     karmaPoints = (int) Math.min(eventDurationMins, MAX_EVENT_KARMA_POINTS);
+  }
+
+  private void initDerivedOrganizerRatings() {
+    derivedOrganizerRatings = new DerivedOrganizerRatings();
+    for (EventParticipant participant : participants) {
+      if (participant.getType() == ParticipantType.ORGANIZER) {
+        derivedOrganizerRatings.processParticipantMutation(this, participant, false);
+      }
+    }
   }
 
   private void initParticipantLists() {
@@ -450,7 +477,7 @@ public final class Event extends IdBaseDao<Event> {
         participantToUpsert.setType(participantType);
       }
       // validateEvent() ensures that there is at least one organizer.
-      event.updateParticipants();
+      event.processParticipantMutation(participantToUpsert, false);
       BaseDao.partialUpdate(event);
     }
   }
@@ -476,7 +503,7 @@ public final class Event extends IdBaseDao<Event> {
       if (participant != null) {
         event.participants.remove(participant);
         // validateEvent() ensures that there is at least one organizer.
-        event.updateParticipants();
+        event.processParticipantMutation(participant, true);
         BaseDao.partialUpdate(event);
       }
     }
@@ -548,14 +575,170 @@ public final class Event extends IdBaseDao<Event> {
       }
       if (review == null) {
         if (existingReview != null) {
-          BaseDao.delete(expReviewKey);
+          BaseDao.delete(Key.create(existingReview));
         }
       } else {
         event.rating.addRating(review.getRating());
         BaseDao.upsert(review);
       }
+      event.processRatingUpdate();
       BaseDao.partialUpdate(event);
-      // TODO(avaliani): Update organizer rating.
+    }
+  }
+
+  /**
+   * This class updates the organizer event ratings for all organizers associated with an event.
+   *
+   * Note that all methods in this class should be invoked from within the context of a transaction.
+   */
+  @Data
+  @Embed
+  public static class DerivedOrganizerRatings {
+
+    /*
+     * Event has to be explicitly passed as an argument since inner classes are not supported by
+     * objectify.
+     */
+
+    List<DerivedOrganizerRating> processed = Lists.newArrayList();
+    List<DerivedOrganizerRating> pending = Lists.newArrayList();
+
+    public void processParticipantMutation(Event event, EventParticipant participant,
+        boolean wasDeleted) {
+      processParticipantMutation(event, KeyWrapper.toKey(participant.getUser()),
+        (wasDeleted ? false : (participant.getType() == ParticipantType.ORGANIZER)));
+    }
+
+    private void processParticipantMutation(Event event, Key<User> userKey, boolean isOrganizer) {
+      boolean pendingQueueWasEmpty = pending.isEmpty();
+      DerivedOrganizerRating derivedRating = tryFindDerivedRating(pending, userKey);
+      if (derivedRating != null) {
+        // Nothing to do, already queued.
+        return;
+      }
+      derivedRating = tryFindDerivedRating(processed, userKey);
+      if (derivedRating == null) {
+        if (isOrganizer) {
+          if (event.getRating().getCount() > 0) {
+            pending.add(new DerivedOrganizerRating(userKey));
+          } else {
+            processed.add(new DerivedOrganizerRating(userKey));
+          }
+        }
+      } else {
+        if (isOrganizer) {
+          if (!event.getRating().equals(derivedRating.getAccumulatedRating())) {
+            processed.remove(derivedRating);
+            pending.add(derivedRating);
+          }
+        } else {
+          processed.remove(derivedRating);
+          if (derivedRating.getAccumulatedRating().getCount() > 0) {
+            pending.add(derivedRating);
+          }
+        }
+      }
+      queueProcessingTask(event, pendingQueueWasEmpty);
+    }
+
+    private static DerivedOrganizerRating tryFindDerivedRating(
+        List<DerivedOrganizerRating> list, Key<User> organizerKey) {
+      return Iterables.tryFind(list,
+        DerivedOrganizerRating.organizerPredicate(organizerKey)).orNull();
+    }
+
+    public void processRatingUpdate(Event event) {
+      boolean pendingQueueWasEmpty = pending.isEmpty();
+      pending.addAll(processed);
+      processed.clear();
+      queueProcessingTask(event, pendingQueueWasEmpty);
+    }
+
+    private void queueProcessingTask(Event event, boolean pendingQueueWasEmpty) {
+      if (pendingQueueWasEmpty && !pending.isEmpty()) {
+        ProcessOrganizerRatingsServlet.enqueueTask(event);
+      }
+    }
+
+    public void processPendingRating(Event event) {
+      if (pending.isEmpty()) {
+        return;
+      }
+      DerivedOrganizerRating derivedRating = pending.remove(0);
+      Key<User> userKey = KeyWrapper.toKey(derivedRating.getOrganizer());
+      User user = BaseDao.load(userKey);
+      if (user == null) {
+        // Nothing to do. User no longer exists.
+        return;
+      }
+      // Delete the old rating.
+      user.getEventOrganizerRating().deleteAggregateRating(derivedRating.getAccumulatedRating());
+      // Add the new rating.
+      EventParticipant eventParticipant = event.tryFindParticipant(userKey);
+      if ((eventParticipant != null) && (eventParticipant.getType() == ParticipantType.ORGANIZER)) {
+        derivedRating = new DerivedOrganizerRating(userKey, event.getRating());
+        user.getEventOrganizerRating().addAggregateRating(derivedRating.getAccumulatedRating());
+        processed.add(derivedRating);
+      }
+      BaseDao.partialUpdate(user);
+    }
+
+    public boolean hasPendingRatings() {
+      return !pending.isEmpty();
+    }
+
+    @Data
+    @Embed
+    @NoArgsConstructor
+    public static class DerivedOrganizerRating {
+      KeyWrapper<User> organizer;
+      AggregateRating accumulatedRating;
+
+      public DerivedOrganizerRating(Key<User> organizerKey) {
+        this(organizerKey, null);
+      }
+
+      public DerivedOrganizerRating(Key<User> organizerKey,
+          @Nullable AggregateRating ratingToCopy) {
+        this.organizer = KeyWrapper.create(organizerKey);
+        accumulatedRating = AggregateRating.create(ratingToCopy);
+      }
+
+      public static Predicate<DerivedOrganizerRating> organizerPredicate(
+          final Key<User> organizerKey) {
+        return new Predicate<DerivedOrganizerRating>() {
+          @Override
+          public boolean apply(@Nullable DerivedOrganizerRating input) {
+            return KeyWrapper.toKey(input.organizer).equals(organizerKey);
+          }
+        };
+      }
+    }
+  }
+
+  public static void processDerivedOrganizerRatings(Key<Event> eventKey) {
+    ProcessDerivedOrganizerRatingsTxn organizerRatingsTxn;
+    do {
+      organizerRatingsTxn = new ProcessDerivedOrganizerRatingsTxn(eventKey);
+      ofy().transact(organizerRatingsTxn);
+    } while (organizerRatingsTxn.isWorkPending());
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  public static class ProcessDerivedOrganizerRatingsTxn extends VoidWork {
+    private final Key<Event> eventKey;
+    private boolean workPending;
+
+    public void vrun() {
+      Event event = BaseDao.load(eventKey);
+      if ((event == null) || !event.hasPendingRatings()) {
+        // The event may no longer exist or there may be no work pending.
+        return;
+      }
+      event.processPendingRating();
+      workPending = event.hasPendingRatings();
+      BaseDao.partialUpdate(event);
     }
   }
 }

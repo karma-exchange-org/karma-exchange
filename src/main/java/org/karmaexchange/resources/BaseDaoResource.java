@@ -71,10 +71,10 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response updateResource(@PathParam("resource") String key, T resource) {
-    if (resource.isKeyComplete() && !key.equals(Key.create(resource))) {
+    if (resource.isKeyComplete() && !key.equals(Key.create(resource).getString())) {
       throw ErrorResponseMsg.createException(
         format("the resource key [%s] does not match the url path key [%s]",
-          Key.create(resource), key),
+          Key.create(resource).getString(), key),
         ErrorInfo.Type.BAD_REQUEST);
     }
     BaseDao.<T>upsert(resource);
