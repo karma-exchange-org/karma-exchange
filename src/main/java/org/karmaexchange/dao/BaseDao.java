@@ -1,7 +1,9 @@
 package org.karmaexchange.dao;
 
 import static java.lang.String.format;
+import static org.karmaexchange.util.AdminUtil.isAdminKey;
 import static org.karmaexchange.util.OfyService.ofy;
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.List;
 
@@ -198,11 +200,19 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   protected void processLoad() {
     updateKey();
-    updatePermission();
+    updatePermissionWithAdminCheck();
   }
 
   protected void updateKey() {
     setKey(KeyWrapper.create(this).getKey());
+  }
+
+  private final void updatePermissionWithAdminCheck() {
+    if (isAdminKey(getCurrentUserKey())) {
+      permission = Permission.ALL;
+    } else {
+      updatePermission();
+    }
   }
 
   protected abstract void updatePermission();

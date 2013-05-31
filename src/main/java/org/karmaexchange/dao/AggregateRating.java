@@ -1,5 +1,7 @@
 package org.karmaexchange.dao;
 
+import javax.annotation.Nullable;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -18,25 +20,51 @@ public class AggregateRating extends Rating {
     return new AggregateRating();
   }
 
+  public static AggregateRating create(@Nullable AggregateRating ratingToCopy) {
+    AggregateRating rating = new AggregateRating();
+    if (ratingToCopy != null) {
+      rating.addAggregateRating(ratingToCopy);
+    }
+    return rating;
+  }
+
   protected AggregateRating() {
     super(null);
   }
 
-  public void addRating(Rating rating) {
-    sum += rating.getValue();
+  public void addRating(Rating ratingToAdd) {
     count += 1;
+    sum += ratingToAdd.getValue();
     updateValue();
   }
 
-  public void deleteRating(Rating rating) {
+  public void addAggregateRating(AggregateRating ratingToAdd) {
+    count += ratingToAdd.count;
+    sum += ratingToAdd.sum;
+    updateValue();
+  }
+
+  public void deleteRating(Rating ratingToDelete) {
     if (count > 0) {
-      sum -= rating.getValue();
-      if (sum < 0) {
+      count -= 1;
+      sum -= ratingToDelete.getValue();
+      if ((sum < 0) || (count == 0)) {
         sum = 0;
       }
-      count -= 1;
       updateValue();
     }
+  }
+
+  public void deleteAggregateRating(AggregateRating ratingToDelete) {
+    count -= ratingToDelete.count;
+    sum -= ratingToDelete.sum;
+    if (count < 0) {
+      count = 0;
+    }
+    if ((sum < 0) || (count == 0)) {
+      sum = 0;
+    }
+    updateValue();
   }
 
   private void updateValue() {
