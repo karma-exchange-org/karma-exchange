@@ -41,6 +41,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 		<url-pattern>/task/delete_blob</url-pattern>
 	</servlet-mapping>
 
+	<servlet>
+		<servlet-name>ProcessOrganizerRatingsServlet</servlet-name>
+		<servlet-class>org.karmaexchange.task.ProcessOrganizerRatingsServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>ProcessOrganizerRatingsServlet</servlet-name>
+		<url-pattern>/task/process_organizer_ratings</url-pattern>
+	</servlet-mapping>
+
     <security-constraint>
         <web-resource-collection>
             <url-pattern>/task/*</url-pattern>

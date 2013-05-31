@@ -36,6 +36,14 @@ import com.googlecode.objectify.annotation.Index;
 @ToString(callSuper=true)
 public final class User extends IdBaseDao<User> {
 
+  /*
+   * Note that User object creation via the oAuth filter does not leverage BaseDao to init
+   * the user object.
+   * TODO(avaliani): re-eval this. We can either factor out steps like preProcessInsert(). Or
+   *     fix all of BaseDao to handle inserts without a current user key. The later seems like
+   *     a cleaner approach.
+   */
+
   @Index
   private String firstName;
   @Index
@@ -58,6 +66,7 @@ public final class User extends IdBaseDao<User> {
   @Index
   private long karmaPoints;
 
+  // Initialization required for OAuth user creation.
   private IndexedAggregateRating eventOrganizerRating = IndexedAggregateRating.create();
 
   private EventSearch lastEventSearch;
@@ -68,6 +77,15 @@ public final class User extends IdBaseDao<User> {
   // TODO(avaliani): profileSecurityPrefs
 
   @Override
+  protected void preProcessInsert() {
+    super.preProcessInsert();
+    // TODO(avaliani): ProfileImage is valuable for testing. Eventually null
+    // this out.
+    // profileImage = null;
+    eventOrganizerRating = IndexedAggregateRating.create();
+  }
+
+  @Override
   protected void processUpdate(User oldUser) {
     super.processUpdate(oldUser);
     // Some fields can not be manipulated by updating the user.
@@ -75,6 +93,7 @@ public final class User extends IdBaseDao<User> {
 
     // Some fields are explicitly updated.
     profileImage = oldUser.profileImage;
+    eventOrganizerRating = oldUser.eventOrganizerRating;
 
     // TODO(avlaiani): re-evaluate this. All fields should be updateable if you have admin
     //     privileges.
