@@ -160,15 +160,15 @@
                 <!-- in order to debug in eclipse -->
                 <!--
                 http://stackoverflow.com/questions/2449461/convert-existing-eclipse-project-to-maven-project
-		        <configuration>
-		          <jvmFlags>
-		            <jvmFlag>-Xdebug</jvmFlag>
-		            <jvmFlag>-Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=y
-		            </jvmFlag>
-		          </jvmFlags>
-		          <disableUpdateCheck>true</disableUpdateCheck>
-		        </configuration>
-                -->
+                <configuration>
+                  <jvmFlags>
+                    <jvmFlag>-Xdebug</jvmFlag>
+                    <jvmFlag>-Xrunjdwp:transport=dt_socket,address=1044,server=y,suspend=y
+                    </jvmFlag>
+                  </jvmFlags>
+                  <disableUpdateCheck>true</disableUpdateCheck>
+                </configuration>
+               -->
 
             </plugin>
         </plugins>
