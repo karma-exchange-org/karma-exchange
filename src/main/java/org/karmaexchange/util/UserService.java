@@ -1,6 +1,6 @@
 package org.karmaexchange.util;
 
-import javax.annotation.Nullable;
+import static org.karmaexchange.util.AdminUtil.isAdminKey;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
@@ -27,13 +27,19 @@ public final class UserService {
     return currentUserCredential.get();
   }
 
-  public static void updateCurrentUser(@Nullable OAuthCredential credential,
-                                       @Nullable Key<User> user) {
+  public static void setCurrentUser(OAuthCredential credential, Key<User> user) {
     currentUserCredential.set(credential);
     currentUserKey.set(user);
   }
 
-  // boolean isUserAdmin()
+  public static void clearCurrentUser() {
+    currentUserCredential.set(null);
+    currentUserKey.set(null);
+  }
+
+  public static boolean isCurrentUserAdmin() {
+    return isAdminKey(getCurrentUserKey());
+  }
 
   // Static utility methods only.
   private UserService() {
