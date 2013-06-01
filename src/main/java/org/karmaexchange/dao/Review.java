@@ -29,11 +29,7 @@ public class Review extends NameBaseDao<Review> {
   // At this point reviews will have no comments associated with them. Instead comments will
   // be associate with events and organization comments on facebook.
 
-  public void preUpsertInit(Key<?> owner) {
-    if (rating == null) {
-      throw ErrorResponseMsg.createException(
-        "a rating must be specified", ErrorInfo.Type.BAD_REQUEST);
-    }
+  public void initPreUpsert(Key<?> owner) {
     if (name == null) {
       name = getCurrentUserKey().getString();
       this.owner = owner;
@@ -43,18 +39,26 @@ public class Review extends NameBaseDao<Review> {
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();
-    validateAuthorMatches();
+    validateReview();
   }
 
   @Override
   protected void processUpdate(Review prevObj) {
     super.processUpdate(prevObj);
-    validateAuthorMatches();
+    validateReview();
   }
 
   @Override
   protected void processDelete() {
     super.processDelete();
+    validateAuthorMatches();
+  }
+
+  private void validateReview() {
+    if (rating == null) {
+      throw ErrorResponseMsg.createException(
+        "a rating must be specified", ErrorInfo.Type.BAD_REQUEST);
+    }
     validateAuthorMatches();
   }
 

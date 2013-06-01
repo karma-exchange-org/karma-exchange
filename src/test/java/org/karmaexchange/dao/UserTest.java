@@ -2,8 +2,6 @@ package org.karmaexchange.dao;
 
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.karmaexchange.util.JsonValidationTestUtil.validateJsonConversion;
 import static org.karmaexchange.util.OfyService.ofy;
@@ -34,7 +32,7 @@ public class UserTest extends PersistenceTestHelper {
 
     // Setup user1.
     user1 = new User();
-    user1.setId(Long.valueOf(26));
+    user1.setName("fake name 1");
 
     ModificationInfo modificationInfo = new ModificationInfo();
     user1.setModificationInfo(modificationInfo);
@@ -84,7 +82,7 @@ public class UserTest extends PersistenceTestHelper {
 
     // Setup user2.
     user2 = new User();
-    user2.setId(Long.valueOf(27));
+    user2.setName("fake name 2");
     user2.setSkills(asList(
       KeyWrapper.create(Skill.create("programming")),
       KeyWrapper.create(Skill.create("marketing"))));
@@ -97,15 +95,10 @@ public class UserTest extends PersistenceTestHelper {
 
   @Test
   public void testPersistence() throws Exception {
-    User user3 = new User();
-    assertNull(user3.getId());
-    ofy().save().entity(user3).now();
-    assertNotNull(user3.getId());
-
     validatePersistence(user1);
     validatePersistence(user2);
-    User userFromDb = BaseDao.load(user1.getModificationInfo().getCreationUser().getKey());
-    assertEquals(userFromDb, user1);
+    User userFromDb = BaseDao.load(Key.create(user1));
+    assertEquals(user1, userFromDb);
 
     Skill skill = Skill.create("programming");
     Set<Key<User>> userKeys = Sets.newHashSet(
@@ -141,14 +134,6 @@ public class UserTest extends PersistenceTestHelper {
       ofy().load()
            .type(User.class)
            .filter("oauthCredentials.globalUidAndToken", "tokenuidfacebook.com")
-           .keys());
-    assertEquals(1, userKeys.size());
-    assertTrue(userKeys.contains(Key.create(user1)));
-
-    userKeys = Sets.newHashSet(
-      ofy().load()
-           .type(User.class)
-           .filter("oauthCredentials.globalUid", "uidfacebook.com")
            .keys());
     assertEquals(1, userKeys.size());
     assertTrue(userKeys.contains(Key.create(user1)));

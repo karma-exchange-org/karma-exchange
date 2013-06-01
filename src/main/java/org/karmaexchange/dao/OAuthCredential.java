@@ -16,7 +16,6 @@ public class OAuthCredential {
   @Getter
   private String token;
 
-  @Index
   @Getter
   private String globalUid;
   @Index

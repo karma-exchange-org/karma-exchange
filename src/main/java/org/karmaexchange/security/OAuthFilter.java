@@ -24,15 +24,19 @@ import lombok.EqualsAndHashCode;
 
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.AdminUtil;
+import org.karmaexchange.util.AdminUtil.AdminTaskType;
 import org.karmaexchange.util.UserService;
 
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.VoidWork;
 
 public class OAuthFilter implements Filter {
 
@@ -61,6 +65,7 @@ public class OAuthFilter implements Filter {
     OAuthCredential credential;
     Key<User> userKey;
     UpdateCredentialResult updateCredentialResult = null;
+    AdminUtil.setCurrentUser(AdminTaskType.OAUTH_FILTER);
     try {
       credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
       if (credential == null) {
@@ -94,17 +99,19 @@ public class OAuthFilter implements Filter {
       log.log(OAUTH_LOG_LEVEL, "Failed to authenticate:\n  " + errMsg.getEntity());
       setResponse(resp, e);
       return;
+    } finally {
+      UserService.clearCurrentUser();
     }
 
     // Authorization complete. Continue to the resource.
-    UserService.updateCurrentUser(credential, userKey);
+    UserService.setCurrentUser(credential, userKey);
     try {
       if (updateCredentialResult != null) {
         updateCredentialResult.finalizeUpdate();
       }
       filters.doFilter(req, resp);
     } finally {
-      UserService.updateCurrentUser(null, null);
+      UserService.clearCurrentUser();
     }
   }
 
@@ -139,41 +146,53 @@ public class OAuthFilter implements Filter {
   }
 
   private static UpdateCredentialResult updateCachedCredential(OAuthCredential credential) {
-    User user = User.getUser(credential);
-    if (user == null) {
-      SocialNetworkProvider socialNetworkProvider =
-          SocialNetworkProviderFactory.getProvider(credential);
-      return new NewUserUpdateCredentialResult(createUser(socialNetworkProvider),
-        socialNetworkProvider);
-    } else {
-      updateCachedCredential(user, credential);
-      return new UpdateCredentialResult(user);
+    UpdateCredentialTxn updateCredentialTxn = new UpdateCredentialTxn(credential);
+    ofy().transact(updateCredentialTxn);
+    return updateCredentialTxn.getResult();
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  private static class UpdateCredentialTxn extends VoidWork {
+    private final OAuthCredential credential;
+    private final SocialNetworkProvider socialNetworkProvider;
+    private UpdateCredentialResult result;
+
+    public UpdateCredentialTxn(OAuthCredential credential) {
+      this.credential = credential;
+      socialNetworkProvider = SocialNetworkProviderFactory.getProvider(credential);
     }
-  }
 
-  /**
-   * Populate the user based upon information stored in the oAuth provider.
-   */
-  private static User createUser(SocialNetworkProvider socialNetworkProvider) {
-    User user = socialNetworkProvider.initUser();
-    // getCurrentUserKey() is not setup at this point so we can't use BaseDao.upsert().
-    ofy().save().entity(user).now();
-    return user;
-  }
-
-  private static void updateCachedCredential(User user, OAuthCredential newCredential) {
-    for (OAuthCredential credential : user.getOauthCredentials()) {
-      if (credential.getGlobalUid().equals(newCredential.getGlobalUid())) {
-        credential.setToken(newCredential.getToken());
-        // getCurrentUserKey() is not setup at this point so we can't use BaseDao.upsert().
-        // TODO(avaliani): consider moving this to a new non user object. This way we don't
-        //     violate the atomicity of user object updates.
-        ofy().save().entity(user).now();
-        return;
+    public void vrun() {
+      User user = User.getUser(credential);
+      if (user == null) {
+        result = new NewUserUpdateCredentialResult(createUser(), socialNetworkProvider);
+      } else {
+        updateCachedCredential(user);
+        result = new UpdateCredentialResult(user);
       }
     }
-    log.log(OAUTH_LOG_LEVEL, "[" + newCredential + "] " +
-    		"User found by credentials, but credential does not exist for updating");
+
+    /**
+     * Populate the user based upon information stored in the oAuth provider.
+     */
+    private User createUser() {
+      User user = socialNetworkProvider.createUser();
+      BaseDao.upsert(user);
+      return user;
+    }
+
+    private void updateCachedCredential(User user) {
+      for (OAuthCredential persistedCredential : user.getOauthCredentials()) {
+        if (persistedCredential.getGlobalUid().equals(credential.getGlobalUid())) {
+          persistedCredential.setToken(credential.getToken());
+          BaseDao.partialUpdate(user);
+          return;
+        }
+      }
+      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] " +
+          "User found by credentials, but credential does not exist for updating");
+    }
   }
 
   @Data

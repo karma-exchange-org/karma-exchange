@@ -561,7 +561,7 @@ public final class Event extends IdBaseDao<Event> {
       }
       Key<Review> expReviewKey = Review.getKey(eventKey);
       if (review != null) {
-        review.preUpsertInit(eventKey);
+        review.initPreUpsert(eventKey);
         if (!Key.create(review).equals(expReviewKey)) {
           throw ErrorResponseMsg.createException(
             format("review key [%s] does not match expected review key [%s]",

@@ -1,5 +1,8 @@
 package org.karmaexchange.dao;
 
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+import static org.karmaexchange.provider.SocialNetworkProviderFactory.getProviderType;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
@@ -13,10 +16,12 @@ import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.UserService;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import com.google.appengine.api.blobstore.BlobKey;
@@ -32,17 +37,13 @@ import com.googlecode.objectify.annotation.Index;
 // TODO(avaliani): re-eval this caching strategy once OAuth caching is re-worked.
 @Cache
 @Data
+@NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public final class User extends IdBaseDao<User> {
+public final class User extends NameBaseDao<User> {
 
-  /*
-   * Note that User object creation via the oAuth filter does not leverage BaseDao to init
-   * the user object.
-   * TODO(avaliani): re-eval this. We can either factor out steps like preProcessInsert(). Or
-   *     fix all of BaseDao to handle inserts without a current user key. The later seems like
-   *     a cleaner approach.
-   */
+  private static final SocialNetworkProviderType USER_KEY_PROVIDER =
+      SocialNetworkProviderType.FACEBOOK;
 
   @Index
   private String firstName;
@@ -66,8 +67,7 @@ public final class User extends IdBaseDao<User> {
   @Index
   private long karmaPoints;
 
-  // Initialization required for OAuth user creation.
-  private IndexedAggregateRating eventOrganizerRating = IndexedAggregateRating.create();
+  private IndexedAggregateRating eventOrganizerRating;
 
   private EventSearch lastEventSearch;
 
@@ -76,9 +76,38 @@ public final class User extends IdBaseDao<User> {
 
   // TODO(avaliani): profileSecurityPrefs
 
+  public static User create(OAuthCredential credential) {
+    return new User(credential);
+  }
+
+  private User(OAuthCredential credential) {
+    oauthCredentials.add(credential);
+    initKey();
+  }
+
+  public void initKey() {
+    owner = null;
+    for (OAuthCredential credential : oauthCredentials) {
+      if (getProviderType(credential) == USER_KEY_PROVIDER) {
+        name = credential.getGlobalUid();
+        return;
+      }
+    }
+    throw ErrorResponseMsg.createException(
+      format("%s oauth provider credential required for user object", USER_KEY_PROVIDER),
+      ErrorInfo.Type.BAD_REQUEST);
+  }
+
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();
+
+    if (AdminUtil.isAdminKey(Key.create(this))) {
+      throw ErrorResponseMsg.createException(
+        "can not use reserved admin key as user object key: " + Key.create(this),
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+
     // TODO(avaliani): ProfileImage is valuable for testing. Eventually null
     // this out.
     // profileImage = null;
@@ -94,6 +123,7 @@ public final class User extends IdBaseDao<User> {
     // Some fields are explicitly updated.
     profileImage = oldUser.profileImage;
     eventOrganizerRating = oldUser.eventOrganizerRating;
+    oauthCredentials = Lists.newArrayList(oldUser.oauthCredentials);
 
     // TODO(avlaiani): re-evaluate this. All fields should be updateable if you have admin
     //     privileges.
@@ -127,8 +157,10 @@ public final class User extends IdBaseDao<User> {
   }
 
   public static User getUser(OAuthCredential credential) {
-    return loadFirst(ofy().load().type(User.class)
-      .filter("oauthCredentials.globalUid", credential.getGlobalUid()));
+    checkState(getProviderType(credential) == USER_KEY_PROVIDER,
+        format("provider[%s] does not match user key provider[%s]",
+          getProviderType(credential), USER_KEY_PROVIDER));
+    return BaseDao.load(Key.create(User.class, credential.getGlobalUid()));
   }
 
   public static void updateProfileImage(Key<User> userKey, BlobKey blobKey) {

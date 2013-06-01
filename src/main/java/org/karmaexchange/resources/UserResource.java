@@ -23,4 +23,11 @@ public class UserResource extends BaseDaoResource<User> {
   protected Class<User> getResourceClass() {
     return User.class;
   }
+
+  @Override
+  protected void preProcessUpsert(User user) {
+    if (!user.isKeyComplete()) {
+      user.initKey();
+    }
+  }
 }

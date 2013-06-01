@@ -47,13 +47,16 @@ public class MeResource {
 
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response getResource() {
-    return Response.ok(getCurrentUser()).build();
+  public User getResource() {
+    return getCurrentUser();
   }
 
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response updateResource(User updatedUser) {
+    if (!updatedUser.isKeyComplete()) {
+      updatedUser.initKey();
+    }
     if (!getCurrentUserKey().getString().equals(updatedUser.getKey())) {
       throw ErrorResponseMsg.createException(
         format("thew new resource key [%s] does not match the previous key [%s]",
