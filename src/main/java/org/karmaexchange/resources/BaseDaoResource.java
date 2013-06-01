@@ -46,6 +46,7 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response upsertResource(T resource) {
+    preProcessUpsert(resource);
     BaseDao.upsert(resource);
     URI uri = uriInfo.getAbsolutePathBuilder().path(resource.getKey()).build();
     return Response.created(uri).build();
@@ -71,6 +72,7 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response updateResource(@PathParam("resource") String key, T resource) {
+    preProcessUpsert(resource);
     if (resource.isKeyComplete() && !key.equals(Key.create(resource).getString())) {
       throw ErrorResponseMsg.createException(
         format("the resource key [%s] does not match the url path key [%s]",
@@ -88,4 +90,8 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
   }
 
   protected abstract Class<T> getResourceClass();
+
+  protected void preProcessUpsert(T resource) {
+    // No-op.
+  }
 }

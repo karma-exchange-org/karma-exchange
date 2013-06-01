@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.util.AdminUtil;
+import org.karmaexchange.util.UserService;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
@@ -38,11 +39,11 @@ public class ProcessOrganizerRatingsServlet extends HttpServlet {
         logger.log(Level.WARNING, "unable to parse event key: " + eventKeyStr, e);
         return;
       }
-      AdminUtil.setUserService(AdminUtil.AdminTaskType.TASK_QUEUE);
+      AdminUtil.setCurrentUser(AdminUtil.AdminTaskType.TASK_QUEUE);
       try {
         Event.processDerivedOrganizerRatings(eventKey);
       } finally {
-        AdminUtil.clearUserService();
+        UserService.clearCurrentUser();
       }
     }
   }

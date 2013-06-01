@@ -63,11 +63,11 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
   }
 
   @Override
-  public User initUser() {
+  public User createUser() {
     DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
     com.restfb.types.User fbUser;
     fbUser = fbClient.fetchObject("me", com.restfb.types.User.class);
-    User user = new User();
+    User user = User.create(credential);
     user.setModificationInfo(ModificationInfo.create());
     user.setFirstName(fbUser.getFirstName());
     user.setLastName(fbUser.getLastName());
@@ -85,7 +85,6 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     //   contactInfo.setAddress(initAddress(fbClient, fbLocationKey));
     // }
 
-    user.setOauthCredentials(Lists.newArrayList(credential));
     return user;
   }
 

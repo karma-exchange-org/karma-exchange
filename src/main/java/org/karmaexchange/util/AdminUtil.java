@@ -12,6 +12,12 @@ public class AdminUtil {
   private static final String ADMIN_KEY_PREFIX = "ADMIN:";
 
   public enum AdminTaskType {
+    OAUTH_FILTER {
+      @Override
+      public Key<User> getKey() {
+        return createAdminKey(name());
+      }
+    },
     TASK_QUEUE {
       @Override
       public Key<User> getKey() {
@@ -37,11 +43,7 @@ public class AdminUtil {
     return adminKeys.contains(key);
   }
 
-  public static void setUserService(AdminTaskType type) {
-    UserService.updateCurrentUser(null, type.getKey());
-  }
-
-  public static void clearUserService() {
-    UserService.updateCurrentUser(null, null);
+  public static void setCurrentUser(AdminTaskType type) {
+    UserService.setCurrentUser(null, type.getKey());
   }
 }

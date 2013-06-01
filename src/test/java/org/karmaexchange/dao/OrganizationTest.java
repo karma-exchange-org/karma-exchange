@@ -24,9 +24,9 @@ public class OrganizationTest extends PersistenceTestHelper {
       KeyWrapper.create(Cause.create("marriage equality"))));
 
     User u1 = new User();
-    u1.setId(Long.valueOf(1));
+    u1.setName("fake name1");
     User u2 = new User();
-    u2.setId(Long.valueOf(2));
+    u2.setName("fake name2");
     org.setAdmins(asList(
       KeyWrapper.create(u1),
       KeyWrapper.create(u2)));

@@ -1,9 +1,8 @@
 package org.karmaexchange.dao;
 
 import static java.lang.String.format;
-import static org.karmaexchange.util.AdminUtil.isAdminKey;
 import static org.karmaexchange.util.OfyService.ofy;
-import static org.karmaexchange.util.UserService.getCurrentUserKey;
+import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
 import java.util.List;
 
@@ -22,7 +21,6 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Parent;
-import com.googlecode.objectify.cmd.Query;
 
 @Data
 public abstract class BaseDao<T extends BaseDao<T>> {
@@ -118,14 +116,6 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     }
   }
 
-  public static <T extends BaseDao<T>> T loadFirst(Query<T> query) {
-    T resource = query.first().now();
-    if (resource != null) {
-      resource.processLoad();
-    }
-    return resource;
-  }
-
   public static <T extends BaseDao<T>> void delete(Key<T> key) {
     ofy().transact(new DeleteTxn<T>(key));
   }
@@ -208,7 +198,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   private final void updatePermissionWithAdminCheck() {
-    if (isAdminKey(getCurrentUserKey())) {
+    if (isCurrentUserAdmin()) {
       permission = Permission.ALL;
     } else {
       updatePermission();

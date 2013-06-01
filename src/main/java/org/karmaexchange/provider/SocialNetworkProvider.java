@@ -31,7 +31,7 @@ public abstract class SocialNetworkProvider {
 
   public abstract boolean verifyCredential();
 
-  public abstract User initUser();
+  public abstract User createUser();
 
   public abstract String getProfileImageUrl();
 }
