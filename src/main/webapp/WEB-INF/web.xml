@@ -1,54 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xmlns="http://java.sun.com/xml/ns/javaee"
-xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+    xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+    version="2.5">
 
-	<filter>
-		<filter-name>OAuthFilter</filter-name>
-		<filter-class>org.karmaexchange.security.OAuthFilter</filter-class>
-	</filter>
-	<filter-mapping>
-		<filter-name>OAuthFilter</filter-name>
-		<url-pattern>/api/*</url-pattern>
-	</filter-mapping>
+    <filter>
+        <filter-name>OAuthFilter</filter-name>
+        <filter-class>org.karmaexchange.security.OAuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>OAuthFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
 
-	<servlet>
-		<servlet-name>Jersey Web Application</servlet-name>
-		<servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-		<init-param>
-			<param-name>com.sun.jersey.config.property.packages</param-name>
-			<param-value>org.karmaexchange.resources</param-value>
-		</init-param>
-		<init-param>
-			<param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>Jersey Web Application</servlet-name>
-		<url-pattern>/api/*</url-pattern>
-	</servlet-mapping>
+    <servlet>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>com.sun.jersey.config.property.packages</param-name>
+            <param-value>org.karmaexchange.resources</param-value>
+        </init-param>
+        <init-param>
+            <param-name>com.sun.jersey.api.json.POJOMappingFeature</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <url-pattern>/api/*</url-pattern>
+    </servlet-mapping>
 
-	<servlet>
-		<servlet-name>DeleteBlobServlet</servlet-name>
-		<servlet-class>org.karmaexchange.task.DeleteBlobServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>DeleteBlobServlet</servlet-name>
-		<url-pattern>/task/delete_blob</url-pattern>
-	</servlet-mapping>
+    <servlet>
+        <servlet-name>DeleteBlobServlet</servlet-name>
+        <servlet-class>org.karmaexchange.task.DeleteBlobServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteBlobServlet</servlet-name>
+        <url-pattern>/task/delete_blob</url-pattern>
+    </servlet-mapping>
 
-	<servlet>
-		<servlet-name>ProcessOrganizerRatingsServlet</servlet-name>
-		<servlet-class>org.karmaexchange.task.ProcessOrganizerRatingsServlet</servlet-class>
-	</servlet>
-	<servlet-mapping>
-		<servlet-name>ProcessOrganizerRatingsServlet</servlet-name>
-		<url-pattern>/task/process_organizer_ratings</url-pattern>
-	</servlet-mapping>
+    <servlet>
+        <servlet-name>ProcessOrganizerRatingsServlet</servlet-name>
+        <servlet-class>org.karmaexchange.task.ProcessOrganizerRatingsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProcessOrganizerRatingsServlet</servlet-name>
+        <url-pattern>/task/process_organizer_ratings</url-pattern>
+    </servlet-mapping>
 
     <security-constraint>
         <web-resource-collection>
@@ -59,8 +59,8 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
         </auth-constraint>
     </security-constraint>
 
-	<welcome-file-list>
-		<welcome-file>index.html</welcome-file>
-	</welcome-file-list>
+    <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
+    </welcome-file-list>
 
 </web-app>

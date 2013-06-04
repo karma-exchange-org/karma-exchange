@@ -5,6 +5,7 @@ import static org.karmaexchange.util.OfyService.ofy;
 
 import java.net.URI;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -32,6 +33,9 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
   protected UriInfo uriInfo;
   @Context
   protected Request request;
+  @Context
+  protected ServletContext servletContext;
+
 
   // TODO(avaliani): re-add support for list resources. Dig into why response objects don't parse
   //     lists.
