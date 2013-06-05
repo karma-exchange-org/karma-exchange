@@ -1,5 +1,8 @@
 package org.karmaexchange.util;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 
@@ -29,18 +32,15 @@ public class Properties {
   public enum Property {
     FACEBOOK_APP_SECRET("facebook-app-secret");
 
+    @Getter
     private final String propertyName;
 
     private Property(String propertyName) {
       this.propertyName = propertyName;
     }
 
-    private String getPropertyName() {
-      if (isProductionDeployment()) {
-        return propertyName;
-      } else {
-        return TEST_PROPERTY_PREFIX + propertyName;
-      }
+    public boolean testAndProductionDistinct() {
+      return true;
     }
   }
 
@@ -54,15 +54,32 @@ public class Properties {
       } catch (ConfigurationException e) {
         throw ErrorResponseMsg.createException(e, ErrorInfo.Type.BACKEND_SERVICE_FAILURE);
       }
-      configToInit.setThrowExceptionOnMissing(true);
       config = configToInit;
     }
     return config;
   }
 
   public static String get(ServletContext context, Property property) {
-    // TODO(avaliani): low-pri: see if I can optimize the unconditional lock on getConfig.
-    return getConfig(context).getString(property.getPropertyName());
+    PropertiesConfiguration propConfig = getConfig(context);
+    String value;
+    if (!isProductionDeployment()) {
+      value = propConfig.getString(getTestPropertyName(property));
+      if (value != null) {
+        return value;
+      }
+      if (property.testAndProductionDistinct()) {
+        throw new NullPointerException(
+          format("property '%s' not specified in '%s'", getTestPropertyName(property),
+            CONFIG_FILE_PATH));
+      }
+    }
+    value = propConfig.getString(property.getPropertyName());
+    return checkNotNull(value,
+      format("property '%s' not specified in '%s'", property.getPropertyName(), CONFIG_FILE_PATH));
+  }
+
+  private static String getTestPropertyName(Property property) {
+    return TEST_PROPERTY_PREFIX + property.getPropertyName();
   }
 
   private static boolean isProductionDeployment() {
