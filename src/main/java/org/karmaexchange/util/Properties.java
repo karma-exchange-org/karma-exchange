@@ -15,10 +15,13 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
+import com.google.appengine.api.utils.SystemProperty;
+
 @ThreadSafe
 public class Properties {
 
   private static final String CONFIG_FILE_PATH = "/WEB-INF/server_properties.txt";
+  private static final String TEST_PROPERTY_PREFIX = "test-";
 
   @GuardedBy("Properties.class")
   private static PropertiesConfiguration config;
@@ -26,11 +29,18 @@ public class Properties {
   public enum Property {
     FACEBOOK_APP_SECRET("facebook-app-secret");
 
-    @Getter(AccessLevel.PRIVATE)
     private final String propertyName;
 
     private Property(String propertyName) {
       this.propertyName = propertyName;
+    }
+
+    private String getPropertyName() {
+      if (isProductionDeployment()) {
+        return propertyName;
+      } else {
+        return TEST_PROPERTY_PREFIX + propertyName;
+      }
     }
   }
 
@@ -53,5 +63,9 @@ public class Properties {
   public static String get(ServletContext context, Property property) {
     // TODO(avaliani): low-pri: see if I can optimize the unconditional lock on getConfig.
     return getConfig(context).getString(property.getPropertyName());
+  }
+
+  private static boolean isProductionDeployment() {
+    return SystemProperty.environment.value() == SystemProperty.Environment.Value.Production;
   }
 }
