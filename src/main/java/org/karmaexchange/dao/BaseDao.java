@@ -4,6 +4,7 @@ import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -110,7 +111,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     return resources;
   }
 
-  public static <T extends BaseDao<T>> void processLoadResults(List<T> resources) {
+  public static <T extends BaseDao<T>> void processLoadResults(Collection<T> resources) {
     for (T resource : resources) {
       resource.processLoad();
     }

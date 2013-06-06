@@ -7,20 +7,16 @@ import java.util.logging.Logger;
 
 import javax.servlet.Filter;
 
-import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.ContactInfo;
-import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.ModificationInfo;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
-import com.google.appengine.api.datastore.GeoPt;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.Parameter;
 import com.restfb.exception.FacebookException;
-import com.restfb.types.NamedFacebookType;
 
 public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
 
@@ -84,6 +80,7 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     return String.format(PROFILE_IMAGE_URL_FMT, credential.getUid());
   }
 
+  /*
   private Address initAddress(DefaultFacebookClient fbClient, NamedFacebookType fbLocationKey) {
     Address address = new Address();
     com.restfb.types.Location fbLocation = fetchObject(
@@ -108,4 +105,5 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
       throw ErrorResponseMsg.createException(e, ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
     }
   }
+  */
 }
