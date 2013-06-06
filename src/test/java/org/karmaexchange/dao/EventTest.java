@@ -19,7 +19,7 @@ public class EventTest extends PersistenceTestHelper {
     event.setTitle("title");
 
     event.setCauses(asList(
-      KeyWrapper.create(Cause.create("homeless"))));
+      KeyWrapper.create(CauseType.create("homeless"))));
 
     Location location = new Location();
     event.setLocation(location);

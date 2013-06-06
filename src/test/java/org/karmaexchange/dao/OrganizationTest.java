@@ -20,8 +20,8 @@ public class OrganizationTest extends PersistenceTestHelper {
     org.setId(Long.valueOf(25));
     // org.setType(Organization.Type.NON_PROFIT);
     org.setCauses(asList(
-      KeyWrapper.create(Cause.create("homeless")),
-      KeyWrapper.create(Cause.create("marriage equality"))));
+      KeyWrapper.create(CauseType.create("homeless")),
+      KeyWrapper.create(CauseType.create("marriage equality"))));
 
     User u1 = new User();
     u1.setName("fake name1");
