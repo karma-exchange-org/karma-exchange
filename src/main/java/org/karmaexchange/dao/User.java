@@ -56,7 +56,7 @@ public final class User extends NameBaseDao<User> {
   private List<EmergencyContact> emergencyContacts = Lists.newArrayList();
 
   @Index
-  private List<KeyWrapper<Cause>> causes = Lists.newArrayList();
+  private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
 
   @Index
   private List<KeyWrapper<Skill>> skills = Lists.newArrayList();
@@ -138,7 +138,7 @@ public final class User extends NameBaseDao<User> {
     //     automatically.
     //   - remove the user from all events that the user is a participant of.
     if (profileImage != null) {
-      BaseDao.delete(KeyWrapper.toKey(profileImage.getImage()));
+      BaseDao.delete(KeyWrapper.toKey(profileImage.getRef()));
       profileImage = null;
     }
   }
@@ -194,7 +194,7 @@ public final class User extends NameBaseDao<User> {
 
       Key<Image> existingImageKey = null;
       if (user.profileImage != null) {
-        existingImageKey = KeyWrapper.toKey(user.profileImage.getImage());
+        existingImageKey = KeyWrapper.toKey(user.profileImage.getRef());
         BaseDao.delete(existingImageKey);
       }
 
