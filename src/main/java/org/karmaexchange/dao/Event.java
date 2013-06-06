@@ -54,7 +54,7 @@ public final class Event extends IdBaseDao<Event> {
   private String description;
   private String specialInstructions; // See flash volunteer.
   @Index
-  private List<KeyWrapper<Cause>> causes = Lists.newArrayList();
+  private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
 
   private Location location;
   @Index

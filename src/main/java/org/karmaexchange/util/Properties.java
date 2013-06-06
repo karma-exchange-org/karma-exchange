@@ -10,7 +10,6 @@ import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 import javax.servlet.ServletContext;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 
 import org.apache.commons.configuration.ConfigurationException;
