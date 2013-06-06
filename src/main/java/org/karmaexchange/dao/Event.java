@@ -61,6 +61,8 @@ public final class Event extends IdBaseDao<Event> {
   private Date startTime;
   @Index
   private Date endTime;
+  @Ignore
+  protected Status status;
 
   private Image primaryImage;
   private List<Image> allImages = Lists.newArrayList();
@@ -120,6 +122,12 @@ public final class Event extends IdBaseDao<Event> {
     CAN_REGISTER,
     CAN_WAIT_LIST,
     FULL
+  }
+
+  public enum Status {
+    UPCOMING,
+    IN_PROGRESS,
+    COMPLETED
   }
 
   public enum ParticipantType {
@@ -205,7 +213,19 @@ public final class Event extends IdBaseDao<Event> {
     // use the participant lists to calculate the permissions.
     initParticipantLists();
     super.processLoad();
+    initStatus();
     updateRegistrationInfo();
+  }
+
+  private void initStatus() {
+    Date now = new Date();
+    if (now.before(startTime)) {
+      status = Status.UPCOMING;
+    } else if (now.before(endTime)) {
+      status = Status.IN_PROGRESS;
+    } else {
+      status = Status.COMPLETED;
+    }
   }
 
   private void initKarmaPoints() {
@@ -558,6 +578,10 @@ public final class Event extends IdBaseDao<Event> {
         throw ErrorResponseMsg.createException(
           "only users that participated in the event can provide an event review",
           ErrorInfo.Type.BAD_REQUEST);
+      }
+      if (event.status != Status.COMPLETED) {
+        throw ErrorResponseMsg.createException(
+          "only events that have completed can be reviewed", ErrorInfo.Type.BAD_REQUEST);
       }
       Key<Review> expReviewKey = Review.getKey(eventKey);
       if (review != null) {

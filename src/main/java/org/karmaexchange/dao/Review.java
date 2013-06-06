@@ -86,6 +86,10 @@ public class Review extends NameBaseDao<Review> {
     }
   }
 
+  public static <T> Key<Review> getKey(T resource) {
+    return getKey(Key.create(resource));
+  }
+
   public static Key<Review> getKey(Key<?> owner) {
     return Key.<Review>create(owner, Review.class, getCurrentUserKey().getString());
   }

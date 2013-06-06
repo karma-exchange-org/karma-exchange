@@ -1,9 +1,5 @@
 package org.karmaexchange.resources;
 
-import static org.junit.Assert.*;
-
-import javax.ws.rs.core.MediaType;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +7,6 @@ import org.karmaexchange.util.OfyService;
 
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
-import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.test.framework.JerseyTest;
 
 /*
