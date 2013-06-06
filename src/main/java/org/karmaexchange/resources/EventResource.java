@@ -109,7 +109,7 @@ public class EventResource extends BaseDaoResource<Event> {
     paginationParams.put(SEARCH_TYPE_PARAM, searchType);
 
     return ListResponseMsg.create(
-      EventSearchView.create(searchResults),
+      EventSearchView.create(searchResults, searchType),
       PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri, paginationParams));
   }
 

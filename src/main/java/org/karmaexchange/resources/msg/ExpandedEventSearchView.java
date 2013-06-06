@@ -2,6 +2,7 @@ package org.karmaexchange.resources.msg;
 
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.BaseDao;
@@ -9,6 +10,7 @@ import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 
 import com.google.common.collect.Lists;
@@ -35,11 +37,12 @@ public class ExpandedEventSearchView extends EventSearchView {
   private List<KeyWrapper<Organization>> organizations = Lists.newArrayList();
 
   public static ExpandedEventSearchView create(Event event) {
-    return new ExpandedEventSearchView(event);
+    Review review = BaseDao.load(Review.getKey(event));
+    return new ExpandedEventSearchView(event, review);
   }
 
-  private ExpandedEventSearchView(Event event) {
-    super(event);
+  private ExpandedEventSearchView(Event event, @Nullable Review currentUserReview) {
+    super(event, currentUserReview);
     description = event.getDescription();
 
     User user = BaseDao.load(KeyWrapper.toKey(event.getOrganizers().get(0)));
