@@ -16,7 +16,7 @@ import com.googlecode.objectify.annotation.Index;
 @NoArgsConstructor
 public class ImageRef {
   @Index
-  KeyWrapper<Image> image;
+  KeyWrapper<Image> ref;
   private String url;
   private ImageProviderType urlProvider;
 
@@ -25,7 +25,7 @@ public class ImageRef {
   }
 
   private ImageRef(Image image) {
-    this.image = KeyWrapper.create(image);
+    this.ref = KeyWrapper.create(image);
     this.url = image.getUrl();
     this.urlProvider = image.getUrlProvider();
   }

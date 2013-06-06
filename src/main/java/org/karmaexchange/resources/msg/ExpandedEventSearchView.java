@@ -5,7 +5,7 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.BaseDao;
-import org.karmaexchange.dao.Cause;
+import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
@@ -30,7 +30,7 @@ public class ExpandedEventSearchView extends EventSearchView {
   private int numOrganizers;
 
   // TODO(avaliani): need to expand causes.
-  private List<KeyWrapper<Cause>> causes;
+  private List<KeyWrapper<CauseType>> causes;
   // TODO(avaliani): need to expand organizations.
   private List<KeyWrapper<Organization>> organizations = Lists.newArrayList();
 

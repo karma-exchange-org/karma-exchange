@@ -45,7 +45,7 @@ public class Organization {
   private Image displayImage;
   private ContactInfo contactInfo;
 
-  private List<KeyWrapper<Cause>> causes = Lists.newArrayList();
+  private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
 
   private List<KeyWrapper<User>> admins = Lists.newArrayList();
 
