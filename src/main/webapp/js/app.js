@@ -308,7 +308,9 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         $scope.event = Events.get({ id: $routeParams.eventId } ,function() {
                 //$("#location-title").val(''+$scope.event.location.title);
                 //$scope.refreshMap();
-                $scope.eventOrganizers = Events.query({ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'});
+                $scope.eventOrganizers = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'});
+                $scope.eventRegistered = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'REGISTERED'});
+                $scope.eventWaitListed = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'WAIT_LISTED'});
 
             }, function(response) {
             //404 or bad
