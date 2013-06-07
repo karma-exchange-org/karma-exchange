@@ -136,6 +136,12 @@ public final class Event extends IdBaseDao<Event> {
     WAIT_LISTED
   }
 
+  private enum MutationType {
+    INSERT,
+    UPDATE,
+    DELETE
+  }
+
   public void setOrganizers(List<KeyWrapper<User>> ignored) {
     // No-op it.
   }
@@ -183,9 +189,11 @@ public final class Event extends IdBaseDao<Event> {
     validateEvent();
   }
 
-  private void processParticipantMutation(EventParticipant updatedParticipant, boolean wasDeleted) {
+  private void processParticipantMutation(EventParticipant updatedParticipant,
+      MutationType mutationType) {
     processParticipants();
-    derivedOrganizerRatings.processParticipantMutation(this, updatedParticipant, wasDeleted);
+    derivedOrganizerRatings.processParticipantMutation(this, updatedParticipant, mutationType);
+    deleteReviewIfRequired(updatedParticipant, mutationType);
     validateEvent();
   }
 
@@ -237,7 +245,7 @@ public final class Event extends IdBaseDao<Event> {
     derivedOrganizerRatings = new DerivedOrganizerRatings();
     for (EventParticipant participant : participants) {
       if (participant.getType() == ParticipantType.ORGANIZER) {
-        derivedOrganizerRatings.processParticipantMutation(this, participant, false);
+        derivedOrganizerRatings.processParticipantMutation(this, participant, MutationType.INSERT);
       }
     }
   }
@@ -488,16 +496,19 @@ public final class Event extends IdBaseDao<Event> {
           }
         }
       }
+      MutationType mutationType;
       if (participantToUpsert == null) {
         // TODO(avaliani): organizers should not in theory be allowed to add arbitrary users.
         //     However, this simplifies testing so we're going to allow it for now.
         participantToUpsert = EventParticipant.create(userToUpsertKey, participantType);
         event.participants.add(participantToUpsert);
+        mutationType = MutationType.INSERT;
       } else {
         participantToUpsert.setType(participantType);
+        mutationType = MutationType.UPDATE;
       }
       // validateEvent() ensures that there is at least one organizer.
-      event.processParticipantMutation(participantToUpsert, false);
+      event.processParticipantMutation(participantToUpsert, mutationType);
       BaseDao.partialUpdate(event);
     }
   }
@@ -523,7 +534,7 @@ public final class Event extends IdBaseDao<Event> {
       if (participant != null) {
         event.participants.remove(participant);
         // validateEvent() ensures that there is at least one organizer.
-        event.processParticipantMutation(participant, true);
+        event.processParticipantMutation(participant, MutationType.DELETE);
         BaseDao.partialUpdate(event);
       }
     }
@@ -573,41 +584,63 @@ public final class Event extends IdBaseDao<Event> {
         throw ErrorResponseMsg.createException("event not found", ErrorInfo.Type.BAD_REQUEST);
       }
       EventParticipant participantDetails = event.tryFindParticipant(getCurrentUserKey());
-      if ((participantDetails == null) ||
-          (participantDetails.getType() == ParticipantType.WAIT_LISTED)) {
+      if ((participantDetails == null) || !canWriteReview(participantDetails)) {
         throw ErrorResponseMsg.createException(
-          "only users that participated in the event can provide an event review",
+          "only users that participated in the event (non-organizers) can provide an event review",
           ErrorInfo.Type.BAD_REQUEST);
       }
       if (event.status != Status.COMPLETED) {
         throw ErrorResponseMsg.createException(
           "only events that have completed can be reviewed", ErrorInfo.Type.BAD_REQUEST);
       }
-      Key<Review> expReviewKey = Review.getKey(eventKey);
-      if (review != null) {
-        review.initPreUpsert(eventKey);
-        if (!Key.create(review).equals(expReviewKey)) {
-          throw ErrorResponseMsg.createException(
-            format("review key [%s] does not match expected review key [%s]",
-              Key.create(review).toString(), expReviewKey.toString()),
-            ErrorInfo.Type.BAD_REQUEST);
-        }
-      }
-      Review existingReview = BaseDao.load(expReviewKey);
-      if (existingReview != null) {
-        event.rating.deleteRating(existingReview.getRating());
-      }
-      if (review == null) {
-        if (existingReview != null) {
-          BaseDao.delete(Key.create(existingReview));
-        }
-      } else {
-        event.rating.addRating(review.getRating());
-        BaseDao.upsert(review);
-      }
-      event.processRatingUpdate();
+      processReviewMutation(event, review);
       BaseDao.partialUpdate(event);
     }
+  }
+
+  public static void processReviewMutation(Event event, @Nullable Review review) {
+    boolean ratingMutated = false;
+    Key<Review> expReviewKey = Review.getKey(event);
+    if (review != null) {
+      review.initPreUpsert(Key.create(event));
+      if (!Key.create(review).equals(expReviewKey)) {
+        throw ErrorResponseMsg.createException(
+          format("review key [%s] does not match expected review key [%s]",
+            Key.create(review).toString(), expReviewKey.toString()),
+          ErrorInfo.Type.BAD_REQUEST);
+      }
+    }
+    Review existingReview = BaseDao.load(expReviewKey);
+    if (existingReview != null) {
+      event.rating.deleteRating(existingReview.getRating());
+      ratingMutated = true;
+    }
+    if (review == null) {
+      if (existingReview != null) {
+        BaseDao.delete(Key.create(existingReview));
+      }
+    } else {
+      event.rating.addRating(review.getRating());
+      ratingMutated = true;
+      // An upsert will automatically delete the old review since the key for the new and the
+      // old review is the same.
+      BaseDao.upsert(review);
+    }
+    if (ratingMutated) {
+      event.processRatingUpdate();
+    }
+  }
+
+  private void deleteReviewIfRequired(EventParticipant updatedParticipant,
+      MutationType mutationType) {
+    if ((mutationType == MutationType.DELETE) ||
+        ((mutationType == MutationType.UPDATE) && !canWriteReview(updatedParticipant))) {
+      processReviewMutation(this, null);
+    }
+  }
+
+  private static boolean canWriteReview(EventParticipant participant) {
+    return participant.getType() == ParticipantType.REGISTERED;
   }
 
   /**
@@ -628,9 +661,10 @@ public final class Event extends IdBaseDao<Event> {
     List<DerivedOrganizerRating> pending = Lists.newArrayList();
 
     public void processParticipantMutation(Event event, EventParticipant participant,
-        boolean wasDeleted) {
+        MutationType mutationType) {
       processParticipantMutation(event, KeyWrapper.toKey(participant.getUser()),
-        (wasDeleted ? false : (participant.getType() == ParticipantType.ORGANIZER)));
+        ((mutationType == MutationType.DELETE) ? false :
+          (participant.getType() == ParticipantType.ORGANIZER)));
     }
 
     private void processParticipantMutation(Event event, Key<User> userKey, boolean isOrganizer) {
