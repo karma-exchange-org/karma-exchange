@@ -64,7 +64,7 @@ public class EventResource extends BaseDaoResource<Event> {
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventSearchView> getResources(
-      @QueryParam(EventResource.SEARCH_TYPE_PARAM) EventSearchType searchType,
+      @QueryParam(SEARCH_TYPE_PARAM) EventSearchType searchType,
       @QueryParam(PagingInfo.AFTER_CURSOR_PARAM) String afterCursorStr,
       @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit,
       @QueryParam(START_TIME_PARAM) Long startTimeValue) {
