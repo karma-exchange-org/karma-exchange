@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @XmlRootElement
 @Data
 @NoArgsConstructor
-@XmlSeeAlso({EventParticipantView.class, EventSearchView.class})
+@XmlSeeAlso({EventParticipantView.class, EventSearchView.class, ReviewCommentView.class})
 public class ListResponseMsg<T> {
 
   private List<T> data;

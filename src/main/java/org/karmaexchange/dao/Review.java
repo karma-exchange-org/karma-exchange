@@ -2,8 +2,11 @@ package org.karmaexchange.dao;
 
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
+import java.util.Date;
+
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
@@ -15,6 +18,7 @@ import lombok.ToString;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Index;
 
 @XmlRootElement
 @Entity
@@ -25,6 +29,9 @@ import com.googlecode.objectify.annotation.Entity;
 public class Review extends NameBaseDao<Review> {
 
   private Rating rating;
+  @Index
+  private Date commentCreationDate;
+  private String comment;
 
   // At this point reviews will have no comments associated with them. Instead comments will
   // be associate with events and organization comments on facebook.
@@ -39,12 +46,14 @@ public class Review extends NameBaseDao<Review> {
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();
+    updateCommentCreationDate(null);
     validateReview();
   }
 
   @Override
-  protected void processUpdate(Review prevObj) {
-    super.processUpdate(prevObj);
+  protected void processUpdate(Review prevReview) {
+    super.processUpdate(prevReview);
+    updateCommentCreationDate(prevReview);
     validateReview();
   }
 
@@ -52,6 +61,19 @@ public class Review extends NameBaseDao<Review> {
   protected void processDelete() {
     super.processDelete();
     validateAuthorMatches();
+  }
+
+  private void updateCommentCreationDate(Review prevReview) {
+    if (comment == null) {
+      commentCreationDate = null;
+    } else {
+      if ((prevReview != null) && (prevReview.commentCreationDate != null)) {
+        // The user is just updating the comment so keep the previous comment creation date.
+        commentCreationDate = prevReview.commentCreationDate;
+      } else {
+        commentCreationDate = new Date();
+      }
+    }
   }
 
   private void validateReview() {
@@ -69,8 +91,9 @@ public class Review extends NameBaseDao<Review> {
     }
   }
 
+  @XmlTransient
   @Nullable
-  private Key<User> getAuthor() {
+  public Key<User> getAuthor() {
     return (name == null) ? null : Key.<User>create(name);
   }
 

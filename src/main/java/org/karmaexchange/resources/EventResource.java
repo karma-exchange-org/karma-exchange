@@ -34,6 +34,7 @@ import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ExpandedEventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
+import org.karmaexchange.resources.msg.ReviewCommentView;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
@@ -50,6 +51,7 @@ public class EventResource extends BaseDaoResource<Event> {
   public static final String SEARCH_TYPE_PARAM = "type";
 
   public static final String DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS = 10 + "";
+  public static final String DEFAULT_NUM_REVIEWS = 3 + "";
 
   public enum EventSearchType {
     UPCOMING,
@@ -186,5 +188,34 @@ public class EventResource extends BaseDaoResource<Event> {
   public void deleteReview(
       @PathParam("event_key") String eventKeyStr) {
     Event.mutateEventReview(Key.<Event>create(eventKeyStr), null);
+  }
+
+  @Path("{event_key}/review_comment_view")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public ListResponseMsg<ReviewCommentView> getReviewComments(
+      @PathParam("event_key") String eventKeyStr,
+      @QueryParam(PagingInfo.AFTER_CURSOR_PARAM) String afterCursorStr,
+      @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue(DEFAULT_NUM_REVIEWS) int limit) {
+    String resultOrder = "-commentCreationDate";
+    Key<Event> eventKey = Key.<Event>create(eventKeyStr);
+    // Query one more than the limit to see if we need to provide a link to additional results.
+    Query<Review> query = ofy().load().type(Review.class)
+        .ancestor(eventKey)
+        .order(resultOrder)
+        .limit(limit + 1);
+    if (afterCursorStr != null) {
+      query = query.startAt(Cursor.fromWebSafeString(afterCursorStr));
+    }
+
+    QueryResultIterator<Review> queryIter = query.iterator();
+    List<Review> searchResults = Lists.newArrayList(Iterators.limit(queryIter, limit));
+    Cursor afterCursor = queryIter.getCursor();
+    BaseDao.processLoadResults(searchResults);
+
+    return ListResponseMsg.create(
+      ReviewCommentView.create(searchResults),
+      PagingInfo.create(afterCursor, limit, queryIter.hasNext(), uriInfo.getAbsolutePath(),
+        Maps.<String, Object>newHashMap()));
   }
 }

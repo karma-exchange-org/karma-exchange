@@ -90,11 +90,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     return resource;
   }
 
-  public static <T extends BaseDao<T>> List<T> load(List<Key<T>> keys) {
+  public static <T extends BaseDao<T>> List<T> load(Collection<Key<T>> keys) {
     return load(keys, false);
   }
 
-  public static <T extends BaseDao<T>> List<T> load(List<Key<T>> keys, boolean transactionless) {
+  public static <T extends BaseDao<T>> List<T> load(Collection<Key<T>> keys,
+      boolean transactionless) {
     Objectify ofyService = transactionless ? ofy().transactionless() : ofy();
     List<T> resources = Lists.newArrayList(ofyService.load().keys(keys).values());
     for (T resource : resources) {
