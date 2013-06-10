@@ -17,7 +17,7 @@ import com.googlecode.objectify.annotation.Entity;
 @ToString(callSuper=true)
 public class CauseType extends NameBaseDao<CauseType> {
 
-  private ImageRef image;
+  private PageRef page;
 
   public static CauseType create(String name) {
     return new CauseType(name);
