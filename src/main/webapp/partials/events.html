@@ -2,7 +2,6 @@
 	
 	<alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
 	<div>
-		<a href="#/event/add"><i class="icon-plus-sign"></i></a>
 		
 			<ul class="unstyled">
 
@@ -61,7 +60,7 @@
 							            <td>
 							            	<h4>{{event.karmaPoints}} karma points.</h4>
 							            	<p>
-							            		<a ng-show="{ORGANIZER:true}[modelEvent.registrationInfo]"class="btn btn-success" href="#/event/{{modelEvent.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
+							            		
 							            		
 							            		<button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Register</button>
 							            		<button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Wait list</button>
@@ -70,7 +69,7 @@
 							            	
 
 							            	</p>
-							            	<p ng-hide="{ORGANIZER:true}[modelEvent.registrationInfo]"><a href="#/event/{{modelEvent.key}}"class="btn btn-info"><i class=" icon-info-sign icon-white"></i>More info</a></p>
+							            	<p><a href="#/event/{{modelEvent.key}}"class="btn btn-info"><i class=" icon-info-sign icon-white"></i>More info</a></p>
 							            </td>  
 							          </tr>  
 							           
