@@ -1,5 +1,6 @@
 package org.karmaexchange.dao;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
@@ -20,11 +21,16 @@ public class CauseType extends NameBaseDao<CauseType> {
   private PageRef page;
 
   public static CauseType create(String name) {
-    return new CauseType(name);
+    return new CauseType(name, null);
   }
 
-  private CauseType(String name) {
+  public static CauseType create(String name, PageRef pageRef) {
+    return new CauseType(name, pageRef);
+  }
+
+  private CauseType(String name, @Nullable PageRef pageRef) {
     this.name = name;
+    page = pageRef;
   }
 
   @Override

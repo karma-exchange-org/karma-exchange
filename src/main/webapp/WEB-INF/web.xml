@@ -50,9 +50,19 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <url-pattern>/task/process_organizer_ratings</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>PersistCauseTypesServlet</servlet-name>
+        <servlet-class>org.karmaexchange.bootstrap.PersistCauseTypesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PersistCauseTypesServlet</servlet-name>
+        <url-pattern>/bootstrap/persist_cause_types</url-pattern>
+    </servlet-mapping>
+
     <security-constraint>
         <web-resource-collection>
             <url-pattern>/task/*</url-pattern>
+            <url-pattern>/bootstrap/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>admin</role-name>

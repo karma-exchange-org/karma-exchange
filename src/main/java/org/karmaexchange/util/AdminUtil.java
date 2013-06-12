@@ -12,23 +12,12 @@ public class AdminUtil {
   private static final String ADMIN_KEY_PREFIX = "ADMIN:";
 
   public enum AdminTaskType {
-    OAUTH_FILTER {
-      @Override
-      public Key<User> getKey() {
-        return createAdminKey(name());
-      }
-    },
-    TASK_QUEUE {
-      @Override
-      public Key<User> getKey() {
-        return createAdminKey(name());
-      }
-    };
+    BOOTSTRAP,
+    OAUTH_FILTER,
+    TASK_QUEUE;
 
-    public abstract Key<User> getKey();
-
-    private static Key<User> createAdminKey(String id) {
-      return Key.create(User.class, ADMIN_KEY_PREFIX + id);
+    public Key<User> getKey() {
+      return Key.create(User.class, ADMIN_KEY_PREFIX + name());
     }
   }
 
