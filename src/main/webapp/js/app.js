@@ -11,6 +11,7 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","u
             when('/event/add', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             when('/event/:eventId/edit', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
             when('/event/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/viewEvent.html' }).
+            when('/thanks', { controller: meCtrl, templateUrl: 'partials/thanks.html' }).
             otherwise({ redirectTo: '/' });
 
         $httpProvider.defaults.headers.common['X-'] = 'X';
@@ -39,6 +40,10 @@ kexApp.factory('Events', function($resource) {
 kexApp.factory('Me', function($resource) {
     return $resource('/api/me/:resource/:filter',{ resource: '@resource',filter:'@filter'});
 }); 
+
+kexApp.factory('User', function($resource) {
+    return $resource('/api/user/:key/:resource/:filter',{ key: '@key',resource: '@resource',filter:'@filter'});
+});
 
 /*
 All app directives  go here
@@ -93,7 +98,8 @@ var meCtrl = function($scope, $location, Me,$rootScope) {
     $scope.load = function(){
         $scope.me = Me.get();
         $rootScope.me = $scope.me;
-        $scope.events = Me.get({resource: 'event'})
+        $scope.events = Me.get({resource: 'event'});
+        $scope.pastEvents = Me.get({type: 'PAST'},{resource: 'event'});
 
     };
     $scope.save = function(){
@@ -147,13 +153,15 @@ var eventsCtrl = function ($scope, $location, Events) {
       };
     $scope.currentDate = new Date(2001, 01, 01, 01, 01, 01, 0);
     $scope.createHeader = function(dateParam) {
+        
         dateVal = new Date(dateParam);
         currentDate = new Date($scope.currentDate);
+       
         showHeader = (dateVal.toDateString()!=currentDate.toDateString()); 
 
         $scope.currentDate = new Date(dateVal);
-
-        return showHeader;
+        
+        return !showHeader;
     }
 
     $scope.reset();
@@ -191,6 +199,8 @@ var eventsCtrl = function ($scope, $location, Events) {
 
 
 
+
+
 var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     if(!checkLogin($location))
     {
@@ -216,7 +226,16 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         
     });
 
-    
+    $scope.register = function(){
+        var eventId = $scope.event.key;
+        Events.save({ id: eventId , registerCtlr :'participants',regType:'REGISTERED'}, function () {
+                //alert and close
+                $scope.refreshEvent();
+                
+
+            });
+      
+    };
     
     $scope.refreshMap = function(){
                 
@@ -297,6 +316,57 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         }
 	};
 
+    $scope.refreshEvent = function(){
+
+        $scope.event = Events.get({ id: $routeParams.eventId } ,function() {
+                //$("#location-title").val(''+$scope.event.location.title);
+                //$scope.refreshMap();
+                  
+                $scope.eventOrganizers = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'});
+                $scope.eventRegistered = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'REGISTERED'});
+                $scope.eventWaitListed = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'WAIT_LISTED'});
+                
+                if($scope.event.status=='COMPLETED')
+                {
+                    $scope.eventRating = Events.get({ id: $routeParams.eventId, registerCtlr :'review'}, function(){
+
+                        if(!$scope.eventRating||!$scope.eventRating.rating)
+                        {
+                            $scope.eventRating = {"rating":{"value":0}};
+                        }
+                        //TODO - Make sure that the event is not called on-load
+                        //if($scope.event.registrationInfo!='ORGANIZER')
+                        if(true)
+                        {
+                            $scope.$watch('eventRating.rating.value', function(val){
+                               
+                                if(val!=0)
+                                {
+                                    
+                                    Events.save({ id: $scope.event.key , registerCtlr :'review'}, {"rating":{"value":val}},function () {
+                                        //alert and close
+                                        $scope.event = Events.get({ id: $scope.event.key });
+                                    
+
+                                        
+
+                                    }); 
+                                }                          
+
+                            });
+                        }    
+                            
+                    });
+                } 
+                
+
+            }, function(response) {
+            //404 or bad
+            
+            if(response.status === 404) {
+        }});
+    }
+
     if($location.$$url=="/event/add")
     {
         $scope.findMe();
@@ -305,18 +375,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     }
     else
     {    
-        $scope.event = Events.get({ id: $routeParams.eventId } ,function() {
-                //$("#location-title").val(''+$scope.event.location.title);
-                //$scope.refreshMap();
-                $scope.eventOrganizers = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'});
-                $scope.eventRegistered = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'REGISTERED'});
-                $scope.eventWaitListed = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'WAIT_LISTED'});
-
-            }, function(response) {
-            //404 or bad
-            
-            if(response.status === 404) {
-        }});
+        $scope.refreshEvent();
     }
     //TDEBT - (hbalijepalli)
 
@@ -392,8 +451,11 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
             $scope.$apply();
             
         });
-};
+
     
+};
+
+
 
 var checkLogin = function($location){
 	if($.cookie("facebook-token"))
