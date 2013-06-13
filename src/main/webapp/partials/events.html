@@ -24,11 +24,15 @@
 						    				<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
 						    		
 						    		</li>
-									<li class="pagination-centered pull-right" ng-repeat="userImage in event.cachedParticipantImages">
-										<div class="span6">
-											<img ng-src="{{userImage.imageUrl}}">
-										</div>
-									</li>	
+						    		<div class="pull-right">
+						    			<ul class="inline">
+											<li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
+												
+													<a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?type=square"></a>
+												
+											</li>
+										</ul>	
+									</div>
 								</ul>
 								<div class="row-fluid event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
 								
