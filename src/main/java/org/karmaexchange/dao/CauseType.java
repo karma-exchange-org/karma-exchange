@@ -8,6 +8,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 
 @XmlRootElement
@@ -26,6 +27,10 @@ public class CauseType extends NameBaseDao<CauseType> {
 
   public static CauseType create(String name, PageRef pageRef) {
     return new CauseType(name, pageRef);
+  }
+
+  public static Key<CauseType> getKey(String name) {
+    return Key.create(CauseType.class, name);
   }
 
   private CauseType(String name, @Nullable PageRef pageRef) {

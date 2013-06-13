@@ -56,7 +56,16 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </servlet>
     <servlet-mapping>
         <servlet-name>PersistCauseTypesServlet</servlet-name>
-        <url-pattern>/bootstrap/persist_cause_types</url-pattern>
+        <url-pattern>/bootstrap/cause_types</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>PersistTestResourcesServlet</servlet-name>
+        <servlet-class>org.karmaexchange.bootstrap.PersistTestResourcesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PersistTestResourcesServlet</servlet-name>
+        <url-pattern>/bootstrap/test_resources</url-pattern>
     </servlet-mapping>
 
     <security-constraint>

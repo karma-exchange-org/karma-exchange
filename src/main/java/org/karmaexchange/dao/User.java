@@ -17,7 +17,6 @@ import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderTyp
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.AdminUtil;
-import org.karmaexchange.util.UserService;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
@@ -156,11 +156,11 @@ public final class User extends NameBaseDao<User> {
     this.profileImage = (profileImage == null) ? null : ImageRef.create(profileImage);
   }
 
-  public static User getUser(OAuthCredential credential) {
+  public static Key<User> getKey(OAuthCredential credential) {
     checkState(getProviderType(credential) == USER_KEY_PROVIDER,
         format("provider[%s] does not match user key provider[%s]",
           getProviderType(credential), USER_KEY_PROVIDER));
-    return BaseDao.load(Key.create(User.class, credential.getGlobalUid()));
+    return Key.create(User.class, credential.getGlobalUid());
   }
 
   public static void updateProfileImage(Key<User> userKey, BlobKey blobKey) {
@@ -200,12 +200,9 @@ public final class User extends NameBaseDao<User> {
 
       Image newProfileImage;
       if (imageProviderType != null) {
-        // Currently we only store the login credentials. In the future we should have access to
-        // multiple credentials. When we do, this code should change.
-        OAuthCredential credential = UserService.getCurrentUserCredential();
-        SocialNetworkProviderType credentialProviderType =
-            SocialNetworkProviderFactory.getProviderType(credential);
-        if (credentialProviderType != imageProviderType) {
+        OAuthCredential credential = Iterables.tryFind(
+          user.oauthCredentials, OAuthCredential.providerPredicate(imageProviderType)).orNull();
+        if (credential == null) {
           throw ErrorResponseMsg.createException(
             "no credentials for provider type: " + imageProviderType,
             ErrorInfo.Type.BAD_REQUEST);

@@ -164,7 +164,7 @@ public class OAuthFilter implements Filter {
     }
 
     public void vrun() {
-      User user = User.getUser(credential);
+      User user = BaseDao.load(User.getKey(credential));
       if (user == null) {
         result = new NewUserUpdateCredentialResult(createUser(), socialNetworkProvider);
       } else {
