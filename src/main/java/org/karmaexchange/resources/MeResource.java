@@ -5,8 +5,6 @@ import static org.karmaexchange.resources.BaseDaoResource.DEFAULT_NUM_SEARCH_RES
 import static org.karmaexchange.util.UserService.getCurrentUser;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -24,6 +22,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.EventResource.EventSearchType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
@@ -35,7 +34,6 @@ import org.karmaexchange.util.ImageUploadUtil;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
-import com.google.common.collect.Maps;
 
 @Path("/me")
 public class MeResource {
@@ -79,11 +77,10 @@ public class MeResource {
       @QueryParam(EventResource.SEARCH_TYPE_PARAM) EventSearchType searchType,
       @QueryParam(PagingInfo.AFTER_CURSOR_PARAM) String afterCursorStr,
       @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit,
-      @QueryParam(EventResource.START_TIME_PARAM) Long startTimeValue) {
-    Map<String, Object> filters = Maps.newHashMap();
-    filters.put("participants.user.key", getCurrentUserKey());
-    return EventResource.eventSearch(afterCursorStr, limit, startTimeValue,
-      uriInfo.getAbsolutePath(), searchType, filters);
+      @QueryParam(EventResource.START_TIME_PARAM) Long startTimeValue,
+      @QueryParam(EventResource.PARTICIPANT_TYPE_PARAM) ParticipantType participantType) {
+    return UserResource.userEventSearch(uriInfo, getCurrentUserKey(), searchType, afterCursorStr,
+      limit, startTimeValue, participantType);
   }
 
   @Path("profile_image")
