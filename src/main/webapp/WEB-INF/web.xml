@@ -51,12 +51,12 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>PersistCauseTypesServlet</servlet-name>
-        <servlet-class>org.karmaexchange.bootstrap.PersistCauseTypesServlet</servlet-class>
+        <servlet-name>PersistProductionResourcesServlet</servlet-name>
+        <servlet-class>org.karmaexchange.bootstrap.PersistProductionResourcesServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>PersistCauseTypesServlet</servlet-name>
-        <url-pattern>/bootstrap/cause_types</url-pattern>
+        <servlet-name>PersistProductionResourcesServlet</servlet-name>
+        <url-pattern>/bootstrap/production_resources</url-pattern>
     </servlet-mapping>
 
     <servlet>
