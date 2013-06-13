@@ -5,6 +5,7 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","u
             when('/', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
             when('/home', { controller: homeCtrl, templateUrl: 'partials/home.html' }).
             when('/me', { controller: meCtrl, templateUrl: 'partials/me.html' }).
+            when('/user/:userId', { controller: meCtrl, templateUrl: 'partials/me.html' }).
             when('/mysettings', { controller: meCtrl, templateUrl: 'partials/mysettings.html' }).
             when('/event', { controller: eventsCtrl, templateUrl: 'partials/events.html' }).
             when('/events2', { controller: eventsCtrl, templateUrl: 'partials/eventsAccord.html' }).
@@ -35,15 +36,15 @@ kexApp.factory('Events', function($resource) {
     );
 });    
 
-
+kexApp.factory('User', function($resource) {
+    return $resource('/api/user/:id/:resource/:filter',{ id: '@id',resource:'@resource',filter:'@filter'});
+}); 
 
 kexApp.factory('Me', function($resource) {
     return $resource('/api/me/:resource/:filter',{ resource: '@resource',filter:'@filter'});
 }); 
 
-kexApp.factory('User', function($resource) {
-    return $resource('/api/user/:key/:resource/:filter',{ key: '@key',resource: '@resource',filter:'@filter'});
-});
+
 
 /*
 All app directives  go here
@@ -89,24 +90,40 @@ var homeCtrl = function($scope, $location) {
 
 };
 
-var meCtrl = function($scope, $location, Me,$rootScope) {
+var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
     if(!checkLogin($location))
     {
         return;
     } 
 
-    $scope.load = function(){
-        $scope.me = Me.get();
-        $rootScope.me = $scope.me;
-        $scope.events = Me.get({resource: 'event'});
-        $scope.pastEvents = Me.get({type: 'PAST'},{resource: 'event'});
+    $scope.load = function($location,$routeParams){
+        if($location.$$url=="/me"||$location.$$url=="/mysettings")
+        {
+            $scope.who = 'My';
+            $scope.me = Me.get();
+            $rootScope.me = $scope.me;
+            $scope.events = Me.get({resource: 'event'});
+            $scope.pastEvents = Me.get({type: 'PAST'},{resource: 'event'});
+        }
+        else
+        {
+            $scope.me = User.get({id:$routeParams.userId},function(){
+                $scope.who = $scope.me.firstName+"'s";
+            });
+            $scope.events = User.get({id :$routeParams.userId, resource: 'event'});
+            $scope.pastEvents = User.get({type: 'PAST'},{id:$routeParams.userId,resource: 'event'});
+        }
 
     };
     $scope.save = function(){
         Me.save($scope.me);
     };
 
-    $scope.load();
+    $scope.load($location,$routeParams);
+   
+
+      
+    
 
 
       
