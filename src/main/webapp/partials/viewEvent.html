@@ -95,74 +95,66 @@
                             </li>
                         </ul>
                         </p>
+                         <legend>Comments and discussion</legend>
+                         <div id="myCommentsDiv" class="row-fluid"></div>
          </div>                
   
 
         <div class="span2">
-            <div class="row-fluid">
+            
                 <!--orgnaizers-->
-                <p ng-hide="eventOrganizers.data.length==0"><strong>Organizers ({{event.organizers.length}})</strong>
+                <p ng-hide="eventOrganizers.data.length==0"><legend>Organizers ({{event.organizers.length}})</legend>
                 <ul class="inline">
 
                     <li ng-repeat="user in eventOrganizers.data">
-                        <div class="row-fluid well well-small">
-                            <div class="row-fluid">
-                                <img src="{{user.profileImage.url}}"> {{user.karmaPoints}} karma points
-                            </div>
-                            <div class="row-fluid">
-                                <strong>{{user.firstName}} </strong> 
-                            </div>
+                      
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                        
+                                
+                           
                             
-                        </div>
+                       
                     </li>
                 </ul>
                 </p>
                         
-            </div>
-            <div class="row-fluid">
-                <p ng-hide="eventRegistered.data.length==0"><strong>Registered ({{event.registeredUsers.length}})</strong> 
-                        <ul class="unstyled">
+           
+                <p ng-hide="eventRegistered.data.length==0"><legend>Registered ({{event.registeredUsers.length}})</legend> 
+                        <ul class="inline">
 
                             <li ng-repeat="user in eventRegistered.data">
-                                <div class="row-fluid">
-                                    <div class="row-fluid">
-                                       <img src="{{user.profileImage.url}}"> {{user.karmaPoints}} karma points
-                                    </div>
-                                    <div class="row-fluid">
-                                        <strong>{{user.firstName}} </strong> 
-                                    </div>
+                               
+                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            
+                                       
+                                
                                     
-                                </div>
+                              
                                 <p></p>
                             </li>
                         </ul>
-                        </p>
-            </div>
-            <div class="row-fluid">
-                <p ng-hide="eventWaitListed.data.length==0"><strong>Waitlisted ({{event.waitListedUsers.length}})</strong> 
-                        <ul class="unstyled">
+                </p>
+        
+            
+                <p ng-hide="eventWaitListed.data.length==0"><legend>Waitlisted ({{event.waitListedUsers.length}})</legend> 
+                        <ul class="inline">
 
                             <li ng-repeat="user in eventWaitListed.data">
-                                <div class="row-fluid">
-                                    <div class="row-fluid">
-                                        <img src="{{user.profileImage.url}}"> {{user.karmaPoints}} karma points
-                                    </div>
-                                    <div class="row-fluid">
-                                        <strong>{{user.firstName}} </strong> 
-                                    </div>
-                                    
-                                </div>
+                              
+                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                 
+                                        
+                                
                                
                             </li>
                         </ul>
-                        </p>
-            </div>
+                </p>
+           
         </div>
          
-
+       
     </div>
-    <div class="well"><strong>Comments and discussion</strong></div>
-    <div id="myCommentsDiv" class="row-fluid"></div>
+    
         
 
 
