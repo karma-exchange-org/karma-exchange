@@ -29,7 +29,7 @@ public class OAuthCredential {
 
   public static OAuthCredential create(String provider, String uid, String token) {
     OAuthCredential credential = new OAuthCredential();
-    credential.setProvider(provider.toLowerCase());
+    credential.setProvider(provider);
     credential.setUid(uid);
     credential.setToken(token);
     return credential;
@@ -41,7 +41,7 @@ public class OAuthCredential {
   }
 
   public void setProvider(String provider) {
-    this.provider = provider;
+    this.provider = provider.toLowerCase();
     updateIndexedFields();
   }
 
@@ -73,7 +73,7 @@ public class OAuthCredential {
     return new Predicate<OAuthCredential>() {
       @Override
       public boolean apply(@Nullable OAuthCredential input) {
-        return input.provider.equals(provider.toString().toLowerCase());
+        return input.provider.equalsIgnoreCase(provider.toString());
       }
     };
   }

@@ -29,7 +29,7 @@ public class CauseType extends NameBaseDao<CauseType> {
     return new CauseType(name, pageRef);
   }
 
-  public static Key<CauseType> createKey(String name) {
+  public static Key<CauseType> getKey(String name) {
     return Key.create(CauseType.class, name);
   }
 

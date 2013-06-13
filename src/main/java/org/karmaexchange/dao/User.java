@@ -156,7 +156,7 @@ public final class User extends NameBaseDao<User> {
     this.profileImage = (profileImage == null) ? null : ImageRef.create(profileImage);
   }
 
-  public static Key<User> createKey(OAuthCredential credential) {
+  public static Key<User> getKey(OAuthCredential credential) {
     checkState(getProviderType(credential) == USER_KEY_PROVIDER,
         format("provider[%s] does not match user key provider[%s]",
           getProviderType(credential), USER_KEY_PROVIDER));

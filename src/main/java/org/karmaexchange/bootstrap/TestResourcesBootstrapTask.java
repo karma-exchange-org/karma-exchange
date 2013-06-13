@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.karmaexchange.dao.Address;
@@ -32,7 +31,6 @@ import com.googlecode.objectify.Key;
 
 public class TestResourcesBootstrapTask extends BootstrapTask {
 
-  @RequiredArgsConstructor
   public enum TestUser {
     USER1("100006074376957", "Susan", "Liangberg"),
     USER2("100006058506752", "John", "Occhinostein"),
@@ -46,7 +44,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     USER10("100006053377578", "Linda", "Laverdetberg"),
     USER11("100006084302920", "Carol", "Wisemanwitz"),
     USER12("100006069696646", "Donna", "Zuckerson"),
-    USER13("100006083973038", "Harry", "Occhinoman");
+    USER13("100006083973038", "Harry", "Occhinoman"),
+    AMIR("1111368160", "Amir", "Valiani"),
+    HARISH("537854733", "Harish", "Balijepalli");
 
     private final String fbId;
     @Getter
@@ -54,8 +54,14 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     @Getter
     private final String lastName;
 
+    private TestUser(String fbId, String firstName, String lastName) {
+      this.fbId = fbId;
+      this.firstName = firstName;
+      this.lastName = lastName;
+    }
+
     public Key<User> getKey() {
-      return User.createKey(createOAuthCredential());
+      return User.getKey(createOAuthCredential());
     }
 
     public User createUser() {
@@ -98,47 +104,66 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private static Collection<Event> createEvents() {
     List<Event> events = Lists.newArrayList();
-    Date now = new Date();
-    now = DateUtils.round(now, Calendar.HOUR_OF_DAY);
+    Date now = DateUtils.round(new Date(), Calendar.HOUR_OF_DAY);
 
     // Upcoming events.
 
-    List<Key<User>> organizers = asList(USER1.getKey());
+    List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey());
     List<Key<User>> registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
-    events.add(createEvent("SF Street Cleanup", DateUtils.addDays(now, 1), 1,
-      organizers, registeredUsers, waitListedUsers, 0, 100, 100));
+    events.add(createEvent("Amir & Harish Organizer - SF Street Cleanup",
+      DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100));
 
     organizers = asList(USER2.getKey());
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
-    events.add(createEvent("First Graduate invites you to be a Presentations of Learning Evaluator",
+    events.add(createEvent("Full event - Learning center",
       DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 0, 2, 100));
 
-    organizers = asList(USER4.getKey());
+    organizers = asList(AMIR.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    events.add(createEvent("Inner City Youth Community Outreach",
+    events.add(createEvent("Amir Organizer - Date conflict - No one signed up",
+      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100));
+
+    organizers = asList(HARISH.getKey());
+    registeredUsers = asList();
+    waitListedUsers = asList();
+    events.add(createEvent("Harish Organizer - Date conflict - No one signed up",
       DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100));
 
     // Past events.
 
-    organizers = asList(USER1.getKey());
+    organizers = asList(USER1.getKey(), HARISH.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
-      USER11.getKey(), USER12.getKey(), USER13.getKey());
+      USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
     waitListedUsers = asList();
-    events.add(createEvent("SF Street Cleanup", DateUtils.addDays(now, -6), 1,
+    events.add(createEvent("Harish as Organizer, Amir participant - SF Street Cleanup",
+      DateUtils.addDays(now, -6), 1,
       organizers, registeredUsers, waitListedUsers, 0, 100, 100));
 
-    organizers = asList(USER1.getKey());
+    organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
-      USER6.getKey(), USER7.getKey(), USER8.getKey());
+      USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey());
     waitListedUsers = asList();
-    events.add(createEvent("SF Street Cleanup", DateUtils.addDays(now, -13), 1,
+    events.add(createEvent("Amir as Organizer, Harish participant - SF Street Cleanup",
+      DateUtils.addDays(now, -13), 1,
       organizers, registeredUsers, waitListedUsers, 0, 100, 100));
+
+    organizers = asList(USER1.getKey(), HARISH.getKey());
+    registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey());
+    waitListedUsers = asList();
+    events.add(createEvent("Harish as Organizer - SF Street Cleanup",
+      DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100));
+
+    organizers = asList(USER1.getKey(), AMIR.getKey());
+    registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey());
+    waitListedUsers = asList();
+    events.add(createEvent("Amir as Organizer - SF Street Cleanup",
+      DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100));
 
     return events;
   }
@@ -149,10 +174,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       int maxWaitingList) {
     Event event = new Event();
     event.setTitle(title);
-    event.setDescription(repeat("Repeating description.", 500));
-    event.setSpecialInstructions(repeat("Repeating special instructions.", 240));
+    event.setDescription("The Eastmont Garden of Hope receives and distributes donated clothing, hygiene products, household items, canned goods, and other necessities to Social Services Agency clients in urgent need year-round. This program serves as many as 400 households monthly. Whether providing food for a struggling family, a warm coat for a shivering child, or diapers for a desperate mother’s newborn, the Eastmont Garden of Hope seeks to ensure that those in greatest need are served expeditiously and with utmost compassion. Volunteers play a vital role in the program's operations by managing donations and keeping the service area open and available to customers in need throughout the week.\n\n" +
+        "Volunteers are requested to participate for at least one shift (3-4 hours) per week, for at least 3 months. Scheduling is flexible, Monday-Friday, between the hours of 9:00am-12:00pm and 1:00-5:00pm.");
+    event.setSpecialInstructions("A mandatory Orientation is scheduled for Saturday, June 29, 2013 from 10:00-12:00 at the San Lorenzo Public Library (community meeting room): 395 Paseo Grande, San Lorenzo. Please contact Andrea Wong, coordinator at 510-271-9163 or ssavolunteer@acgov.org to inquire about availability of this position and confirm attendance at orientation.");
     event.setCauses(KeyWrapper.create(
-      asList(CauseType.createKey("Animals"), CauseType.createKey("Disabled"))));
+      asList(CauseType.getKey("Animals"), CauseType.getKey("Disabled"))));
     event.setLocation(createLocation());
     event.setStartTime(startTime);
     event.setEndTime(DateUtils.addHours(startTime, numHours));
@@ -193,14 +219,5 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       participants.add(EventParticipant.create(waitListedUser, ParticipantType.WAIT_LISTED));
     }
     return participants;
-  }
-
-  private static String repeat(String string, int numChars) {
-    StringBuffer result = new StringBuffer(string);
-    while (result.length() < numChars) {
-      result.append(" ");
-      result.append(string);
-    }
-    return result.toString();
   }
 }
