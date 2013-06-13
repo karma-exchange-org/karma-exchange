@@ -78,7 +78,7 @@ public final class Event extends IdBaseDao<Event> {
   // Organizers can also edit the event.
 
   // Can not be explicitly set. Automatically managed.
-  @Ignore
+  @Index
   private List<KeyWrapper<User>> organizers = Lists.newArrayList();
 
   // Can not be explicitly set. Automatically managed.
@@ -91,10 +91,10 @@ public final class Event extends IdBaseDao<Event> {
   private int maxWaitingList;
 
   // Can not be explicitly set. Automatically managed.
-  @Ignore
+  @Index
   private List<KeyWrapper<User>> registeredUsers = Lists.newArrayList();
   // Can not be explicitly set. Automatically managed.
-  @Ignore
+  @Index
   private List<KeyWrapper<User>> waitListedUsers = Lists.newArrayList();
 
   // We need a consolidated list because pagination does not support OR queries.
@@ -156,6 +156,22 @@ public final class Event extends IdBaseDao<Event> {
   }
   public void setRegistrationInfo(RegistrationInfo ignored) {
     // No-op it.
+  }
+
+  public static String getParticipantPropertyName() {
+    return "participants.user.key";
+  }
+
+  public static String getParticipantPropertyName(ParticipantType type) {
+    switch (type) {
+      case ORGANIZER:
+        return "organizers.key";
+      case REGISTERED:
+        return "registeredUsers.key";
+      case WAIT_LISTED:
+        return "waitListedUsers.key";
+    }
+    throw new IllegalStateException("Unknown participant type: " + type);
   }
 
   @Override

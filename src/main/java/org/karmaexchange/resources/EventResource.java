@@ -5,9 +5,9 @@ import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -35,9 +35,14 @@ import org.karmaexchange.resources.msg.ExpandedEventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
 import org.karmaexchange.resources.msg.ReviewCommentView;
+import org.karmaexchange.util.PaginatedQuery;
+import org.karmaexchange.util.PaginatedQuery.FilterQueryClause;
+import org.karmaexchange.util.PaginatedQuery.OrderQueryClause;
+import org.karmaexchange.util.PaginationParam;
 
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -49,6 +54,7 @@ public class EventResource extends BaseDaoResource<Event> {
 
   public static final String START_TIME_PARAM = "start_time";
   public static final String SEARCH_TYPE_PARAM = "type";
+  public static final String PARTICIPANT_TYPE_PARAM = "participant_type";
 
   public static final String DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS = 10 + "";
   public static final String DEFAULT_NUM_REVIEWS = 3 + "";
@@ -71,49 +77,53 @@ public class EventResource extends BaseDaoResource<Event> {
       @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit,
       @QueryParam(START_TIME_PARAM) Long startTimeValue) {
     return eventSearch(afterCursorStr, limit, startTimeValue, uriInfo.getAbsolutePath(),
-      searchType, Maps.<String, Object>newHashMap());
+      searchType, ImmutableList.<FilterQueryClause>of());
   }
 
-  // TODO(avaliani): take one. Need to re-factor this a bunch!!!
   public static ListResponseMsg<EventSearchView> eventSearch(String afterCursorStr, int limit,
-      Long startTimeValue, URI baseUri, EventSearchType searchType, Map<String, Object> filters) {
-    filters = Maps.newHashMap(filters);
+      Long startTimeValue, URI baseUri, EventSearchType searchType,
+      Collection<? extends FilterQueryClause> filters) {
+    PaginatedQuery.Builder<Event> queryBuilder = PaginatedQuery.Builder.create(Event.class)
+        .addFilters(filters);
+    if (afterCursorStr != null) {
+      queryBuilder.setAfterCursor(Cursor.fromWebSafeString(afterCursorStr));
+    }
     Date startTime = (startTimeValue == null) ? new Date() : new Date(startTimeValue);
-    String resultOrder;
     if (searchType == null) {
       searchType = EventSearchType.UPCOMING;
     }
-    if (searchType == EventSearchType.UPCOMING) {
-      resultOrder = "startTime";
-      filters.put("startTime >=", startTime);
-    } else {
-      resultOrder = "-startTime";
-      filters.put("startTime <", startTime);
-    }
-
+    queryBuilder.setOrder(new StartTimeOrder(searchType));
+    queryBuilder.addFilter(new StartTimeFilter(searchType, startTime));
     // Query one more than the limit to see if we need to provide a link to additional results.
-    Query<Event> query = ofy().load().type(Event.class)
-        .order(resultOrder)
-        .limit(limit + 1);
-    for (Map.Entry<String, Object> entry : filters.entrySet()) {
-      query = query.filter(entry.getKey(), entry.getValue());
-    }
-    if (afterCursorStr != null) {
-      query = query.startAt(Cursor.fromWebSafeString(afterCursorStr));
-    }
+    queryBuilder.setLimit(limit + 1);
 
-    QueryResultIterator<Event> queryIter = query.iterator();
+    PaginatedQuery<Event> paginatedQuery = queryBuilder.build();
+    Query<Event> ofyQuery = paginatedQuery.getOfyQuery();
+
+    QueryResultIterator<Event> queryIter = ofyQuery.iterator();
     List<Event> searchResults = Lists.newArrayList(Iterators.limit(queryIter, limit));
     Cursor afterCursor = queryIter.getCursor();
     BaseDao.processLoadResults(searchResults);
 
-    Map<String, Object> paginationParams = Maps.newHashMap();
-    paginationParams.put(START_TIME_PARAM, startTime.getTime());
-    paginationParams.put(SEARCH_TYPE_PARAM, searchType);
-
     return ListResponseMsg.create(
       EventSearchView.create(searchResults, searchType),
-      PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri, paginationParams));
+      PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri,
+        paginatedQuery.getPaginationParams()));
+  }
+
+  private static class StartTimeFilter extends FilterQueryClause {
+    public StartTimeFilter(EventSearchType searchType, Date startTime) {
+      super((searchType == EventSearchType.UPCOMING) ? "startTime >=" : "startTime <",
+          startTime);
+      paginationParam = new PaginationParam(START_TIME_PARAM, String.valueOf(startTime.getTime()));
+    }
+  }
+
+  private static class StartTimeOrder extends OrderQueryClause {
+    public StartTimeOrder(EventSearchType searchType) {
+      super((searchType == EventSearchType.UPCOMING) ? "startTime" : "-startTime");
+      paginationParam = new PaginationParam(SEARCH_TYPE_PARAM, searchType.toString());
+    }
   }
 
   @Path("{event_key}/expanded_search_view")
