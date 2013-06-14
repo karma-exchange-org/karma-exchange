@@ -12,6 +12,7 @@ import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.Event.RegistrationInfo;
 
 import com.google.common.collect.Lists;
 
@@ -37,7 +38,11 @@ public class ExpandedEventSearchView extends EventSearchView {
   private List<KeyWrapper<Organization>> organizations = Lists.newArrayList();
 
   public static ExpandedEventSearchView create(Event event) {
-    Review review = BaseDao.load(Review.getKey(event));
+    // Only fetch the review if the current user is registered for the event.
+    Review review = null;
+    if (event.getRegistrationInfo() == RegistrationInfo.REGISTERED) {
+      review = BaseDao.load(Review.getKeyForCurrentUser(event));
+    }
     return new ExpandedEventSearchView(event, review);
   }
 

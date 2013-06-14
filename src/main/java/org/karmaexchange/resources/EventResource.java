@@ -181,7 +181,7 @@ public class EventResource extends BaseDaoResource<Event> {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Review getReview(
       @PathParam("event_key") String eventKeyStr) {
-    return BaseDao.load(Review.getKey(Key.<Event>create(eventKeyStr)));
+    return BaseDao.load(Review.getKeyForCurrentUser(Key.<Event>create(eventKeyStr)));
   }
 
   @Path("{event_key}/review")
