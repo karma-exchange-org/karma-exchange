@@ -54,9 +54,10 @@ public class EventSearchView {
   private Rating currentUserRating;
   private int karmaPoints;
 
-  public static List<EventSearchView> create(List<Event> events, EventSearchType searchType) {
+  public static List<EventSearchView> create(List<Event> events, EventSearchType searchType,
+      boolean loadReviews) {
     Map<Key<Review>, Review> reviews;
-    if (searchType == EventSearchType.PAST) {
+    if (loadReviews && (searchType == EventSearchType.PAST)) {
       reviews = loadEventReviews(events);
     } else {
       reviews = Maps.newHashMap();

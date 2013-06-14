@@ -77,12 +77,12 @@ public class EventResource extends BaseDaoResource<Event> {
       @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit,
       @QueryParam(START_TIME_PARAM) Long startTimeValue) {
     return eventSearch(afterCursorStr, limit, startTimeValue, uriInfo.getAbsolutePath(),
-      searchType, ImmutableList.<FilterQueryClause>of());
+      searchType, ImmutableList.<FilterQueryClause>of(), true);
   }
 
   public static ListResponseMsg<EventSearchView> eventSearch(String afterCursorStr, int limit,
       Long startTimeValue, URI baseUri, EventSearchType searchType,
-      Collection<? extends FilterQueryClause> filters) {
+      Collection<? extends FilterQueryClause> filters, boolean loadReviews) {
     PaginatedQuery.Builder<Event> queryBuilder = PaginatedQuery.Builder.create(Event.class)
         .addFilters(filters);
     if (afterCursorStr != null) {
@@ -106,7 +106,7 @@ public class EventResource extends BaseDaoResource<Event> {
     BaseDao.processLoadResults(searchResults);
 
     return ListResponseMsg.create(
-      EventSearchView.create(searchResults, searchType),
+      EventSearchView.create(searchResults, searchType, loadReviews),
       PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri,
         paginatedQuery.getPaginationParams()));
   }
