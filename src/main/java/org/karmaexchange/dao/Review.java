@@ -109,11 +109,11 @@ public class Review extends NameBaseDao<Review> {
     }
   }
 
-  public static <T> Key<Review> getKey(T resource) {
-    return getKey(Key.create(resource));
+  public static <T> Key<Review> getKeyForCurrentUser(T resource) {
+    return getKeyForCurrentUser(Key.create(resource));
   }
 
-  public static Key<Review> getKey(Key<?> owner) {
+  public static Key<Review> getKeyForCurrentUser(Key<?> owner) {
     return Key.<Review>create(owner, Review.class, getCurrentUserKey().getString());
   }
 }
