@@ -150,9 +150,10 @@ var eventsCtrl = function ($scope, $location, Events) {
         Events.save({ id: eventId , registerCtlr :'participants',regType:'REGISTERED'}, function () {
                 //alert and close
                 $scope.addAlert("Registration successful!");
-                $scope.modelEvent.registrationInfo = 'REGISTERED';
+                $scope.modelEvent.registrationInfo = 'REGISTERED';                
+                $scope.modelEvent.numAttending++;
+                //TODO - push to cached event participants
                 $scope.$apply();
-                
 
             });
       
@@ -204,7 +205,7 @@ var eventsCtrl = function ($scope, $location, Events) {
         else
         {
              $('.event-detail').hide();
-             $scope.modelEvent = Events.get({ id: this.event.key });
+             $scope.modelEvent = Events.get({ id: this.event.key , registerCtlr:'expanded_search_view'});
              $('#'+this.event.key+'_detail').show();
         }    
 
