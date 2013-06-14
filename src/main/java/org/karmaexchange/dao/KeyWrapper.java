@@ -1,5 +1,6 @@
 package org.karmaexchange.dao;
 
+import java.util.Collection;
 import java.util.List;
 
 import lombok.Data;
@@ -27,6 +28,14 @@ public final class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
     KeyWrapper<T> wrapper = new KeyWrapper<T>();
     wrapper.key = key;
     return wrapper;
+  }
+
+  public static <T> List<KeyWrapper<T>> create(Collection<Key<T>> keys) {
+    List<KeyWrapper<T>> wrappedKeys = Lists.newArrayList();
+    for (Key<T> key : keys) {
+      wrappedKeys.add(create(key));
+    }
+    return wrappedKeys;
   }
 
   public void setKey(String keyStr) {

@@ -1,8 +1,13 @@
 package org.karmaexchange.dao;
 
+import javax.annotation.Nullable;
+
+import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+import com.google.common.base.Predicate;
 import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Index;
 
@@ -36,7 +41,7 @@ public class OAuthCredential {
   }
 
   public void setProvider(String provider) {
-    this.provider = provider;
+    this.provider = provider.toLowerCase();
     updateIndexedFields();
   }
 
@@ -61,5 +66,15 @@ public class OAuthCredential {
   @Override
   public String toString() {
     return uid + "@" + provider + ":" + token;
+  }
+
+  public static Predicate<OAuthCredential> providerPredicate(
+      final SocialNetworkProviderType provider) {
+    return new Predicate<OAuthCredential>() {
+      @Override
+      public boolean apply(@Nullable OAuthCredential input) {
+        return input.provider.equalsIgnoreCase(provider.toString());
+      }
+    };
   }
 }
