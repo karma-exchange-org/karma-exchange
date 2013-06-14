@@ -616,7 +616,7 @@ public final class Event extends IdBaseDao<Event> {
 
   public static void processReviewMutation(Event event, @Nullable Review review) {
     boolean ratingMutated = false;
-    Key<Review> expReviewKey = Review.getKey(event);
+    Key<Review> expReviewKey = Review.getKeyForCurrentUser(event);
     if (review != null) {
       review.initPreUpsert(Key.create(event));
       if (!Key.create(review).equals(expReviewKey)) {

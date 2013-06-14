@@ -64,7 +64,8 @@ public class EventSearchView {
     }
     List<EventSearchView> searchResults = Lists.newArrayListWithCapacity(events.size());
     for (Event event : events) {
-      searchResults.add(new EventSearchView(event, reviews.get(Review.getKey(event))));
+      searchResults.add(
+        new EventSearchView(event, reviews.get(Review.getKeyForCurrentUser(event))));
     }
     return searchResults;
   }
@@ -72,7 +73,10 @@ public class EventSearchView {
   private static Map<Key<Review>, Review> loadEventReviews(List<Event> events) {
     List<Key<Review>> reviewKeys = Lists.newArrayListWithCapacity(events.size());
     for (Event event : events) {
-      reviewKeys.add(Review.getKey(event));
+      // Only fetch the review if the current user is registered for the event.
+      if (event.getRegistrationInfo() == RegistrationInfo.REGISTERED) {
+        reviewKeys.add(Review.getKeyForCurrentUser(event));
+      }
     }
     Map<Key<Review>, Review> reviews = ofy().load().keys(reviewKeys);
     BaseDao.processLoadResults(reviews.values());
