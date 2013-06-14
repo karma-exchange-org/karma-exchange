@@ -1,5 +1,7 @@
 package org.karmaexchange.resources;
 
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
+
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -65,6 +67,7 @@ public class UserResource extends BaseDaoResource<User> {
       @Nullable EventSearchType searchType, @Nullable String afterCursorStr, int limit,
       @Nullable Long startTimeValue, @Nullable ParticipantType participantType) {
     FilterQueryClause participantFilter;
+    boolean loadReviews = userKey.equals(getCurrentUserKey());
     if (participantType == null) {
       participantFilter = new FilterQueryClause(Event.getParticipantPropertyName(), userKey);
     } else {
@@ -74,6 +77,6 @@ public class UserResource extends BaseDaoResource<User> {
         new PaginationParam(EventResource.PARTICIPANT_TYPE_PARAM, participantType.toString()));
     }
     return EventResource.eventSearch(afterCursorStr, limit, startTimeValue,
-      uriInfo.getAbsolutePath(), searchType, Lists.newArrayList(participantFilter));
+      uriInfo.getAbsolutePath(), searchType, Lists.newArrayList(participantFilter), loadReviews);
   }
 }
