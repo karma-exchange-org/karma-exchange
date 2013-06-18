@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
-import java.net.URI;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -19,7 +18,9 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.BaseDao;
@@ -36,6 +37,7 @@ import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
 import org.karmaexchange.resources.msg.ReviewCommentView;
 import org.karmaexchange.util.PaginatedQuery;
+import org.karmaexchange.util.SearchUtil;
 import org.karmaexchange.util.PaginatedQuery.FilterQueryClause;
 import org.karmaexchange.util.PaginatedQuery.OrderQueryClause;
 import org.karmaexchange.util.PaginationParam;
@@ -55,9 +57,12 @@ public class EventResource extends BaseDaoResource<Event> {
   public static final String START_TIME_PARAM = "start_time";
   public static final String SEARCH_TYPE_PARAM = "type";
   public static final String PARTICIPANT_TYPE_PARAM = "participant_type";
+  public static final String KEYWORDS_PARAM = "keywords";
 
   public static final String DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS = 10 + "";
   public static final String DEFAULT_NUM_REVIEWS = 3 + "";
+
+  public static final int MAX_SEARCH_KEYWORDS = 20;
 
   public enum EventSearchType {
     UPCOMING,
@@ -71,18 +76,22 @@ public class EventResource extends BaseDaoResource<Event> {
 
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public ListResponseMsg<EventSearchView> getResources(
-      @QueryParam(SEARCH_TYPE_PARAM) EventSearchType searchType,
-      @QueryParam(PagingInfo.AFTER_CURSOR_PARAM) String afterCursorStr,
-      @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit,
-      @QueryParam(START_TIME_PARAM) Long startTimeValue) {
-    return eventSearch(afterCursorStr, limit, startTimeValue, uriInfo.getAbsolutePath(),
-      searchType, ImmutableList.<FilterQueryClause>of(), true);
+  public ListResponseMsg<EventSearchView> getResources() {
+    return eventSearch(uriInfo, ImmutableList.<FilterQueryClause>of(), true);
   }
 
-  public static ListResponseMsg<EventSearchView> eventSearch(String afterCursorStr, int limit,
-      Long startTimeValue, URI baseUri, EventSearchType searchType,
+  public static ListResponseMsg<EventSearchView> eventSearch(UriInfo uriInfo,
       Collection<? extends FilterQueryClause> filters, boolean loadReviews) {
+    MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+    String afterCursorStr = queryParams.getFirst(PagingInfo.AFTER_CURSOR_PARAM);
+    int limit = Integer.valueOf(queryParams.containsKey(PagingInfo.LIMIT_PARAM) ?
+        queryParams.getFirst(PagingInfo.LIMIT_PARAM) : DEFAULT_NUM_SEARCH_RESULTS);
+    EventSearchType searchType = queryParams.containsKey(SEARCH_TYPE_PARAM) ?
+        EventSearchType.valueOf(queryParams.getFirst(SEARCH_TYPE_PARAM)) : null;
+    Long startTimeValue = queryParams.containsKey(START_TIME_PARAM) ?
+        Long.valueOf(queryParams.getFirst(START_TIME_PARAM)) : null;
+    String keywords = queryParams.getFirst(KEYWORDS_PARAM);
+
     PaginatedQuery.Builder<Event> queryBuilder = PaginatedQuery.Builder.create(Event.class)
         .addFilters(filters);
     if (afterCursorStr != null) {
@@ -94,6 +103,9 @@ public class EventResource extends BaseDaoResource<Event> {
     }
     queryBuilder.setOrder(new StartTimeOrder(searchType));
     queryBuilder.addFilter(new StartTimeFilter(searchType, startTime));
+    if (keywords != null) {
+      queryBuilder.addFilter(new KeywordsFilter(keywords));
+    }
     // Query one more than the limit to see if we need to provide a link to additional results.
     queryBuilder.setLimit(limit + 1);
 
@@ -107,7 +119,7 @@ public class EventResource extends BaseDaoResource<Event> {
 
     return ListResponseMsg.create(
       EventSearchView.create(searchResults, searchType, loadReviews),
-      PagingInfo.create(afterCursor, limit, queryIter.hasNext(), baseUri,
+      PagingInfo.create(afterCursor, limit, queryIter.hasNext(), uriInfo.getAbsolutePath(),
         paginatedQuery.getPaginationParams()));
   }
 
@@ -123,6 +135,14 @@ public class EventResource extends BaseDaoResource<Event> {
     public StartTimeOrder(EventSearchType searchType) {
       super((searchType == EventSearchType.UPCOMING) ? "startTime" : "-startTime");
       paginationParam = new PaginationParam(SEARCH_TYPE_PARAM, searchType.toString());
+    }
+  }
+
+  private static class KeywordsFilter extends FilterQueryClause {
+    public KeywordsFilter(String keywords) {
+      super("searchableTokens",
+        SearchUtil.getSearchableTokens(keywords, MAX_SEARCH_KEYWORDS).toArray());
+      paginationParam = new PaginationParam(KEYWORDS_PARAM, keywords);
     }
   }
 

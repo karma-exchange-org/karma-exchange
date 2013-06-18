@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.task.ProcessOrganizerRatingsServlet;
+import org.karmaexchange.util.SearchUtil;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -43,6 +44,9 @@ public final class Event extends IdBaseDao<Event> {
   public static final int MAX_EVENT_KARMA_POINTS = 500;
 
   public static final int MAX_CACHED_PARTICIPANT_IMAGES = 10;
+
+  /* Each event search token results in an index write. Put a reasonable limit on it. */
+  public static final int MAX_SEARCH_TOKENS = 100;
 
   /*
    * TODO(avaliani):
@@ -114,6 +118,9 @@ public final class Event extends IdBaseDao<Event> {
    */
   @Index
   private int karmaPoints;
+
+  @Index
+  private List<String> searchableTokens;
 
   public enum RegistrationInfo {
     ORGANIZER,
@@ -189,6 +196,7 @@ public final class Event extends IdBaseDao<Event> {
     initKarmaPoints();
     rating = IndexedAggregateRating.create();
     initDerivedOrganizerRatings();
+    initSearchableTokens();
   }
 
   @Override
@@ -203,6 +211,7 @@ public final class Event extends IdBaseDao<Event> {
     participants = Lists.newArrayList(prevObj.participants);
     processParticipants();
     validateEvent();
+    initSearchableTokens();
   }
 
   private void processParticipantMutation(EventParticipant updatedParticipant,
@@ -264,6 +273,25 @@ public final class Event extends IdBaseDao<Event> {
         derivedOrganizerRatings.processParticipantMutation(this, participant, MutationType.INSERT);
       }
     }
+  }
+
+  private void initSearchableTokens() {
+    // The lowest priority tokens should be added to the end. Once the token limit is hit
+    // the remaining tokens will be discarded.
+    StringBuilder searchableContent = new StringBuilder();
+    searchableContent.append(title);
+    searchableContent.append(' ');
+    for (KeyWrapper<CauseType> causeKeyWrapper : causes) {
+      searchableContent.append(KeyWrapper.toKey(causeKeyWrapper).getName());
+      searchableContent.append(' ');
+    }
+    if ((location != null) && (location.getTitle() != null)) {
+      searchableContent.append(location.getTitle());
+      searchableContent.append(' ');
+    }
+    searchableContent.append(description);
+    searchableTokens = Lists.newArrayList(
+      SearchUtil.getSearchableTokens(searchableContent.toString(), MAX_SEARCH_TOKENS));
   }
 
   private void initParticipantLists() {

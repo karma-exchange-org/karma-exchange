@@ -128,10 +128,19 @@ public class PaginatedQuery<T> {
   public static class FilterQueryClause extends QueryClause {
 
     private final String condition;
-    private final Object value;
+    private final Object[] values;
 
+    public FilterQueryClause(String condition, Object... values) {
+      this.condition = condition;
+      this.values = values;
+    }
+
+    @Override
     public <T> Query<T> apply(Query<T> query) {
-      return query.filter(condition, value);
+      for (Object value : values) {
+        query = query.filter(condition, value);
+      }
+      return query;
     }
   }
 
@@ -142,6 +151,7 @@ public class PaginatedQuery<T> {
 
     private final Object ancestor;
 
+    @Override
     public <T> Query<T> apply(Query<T> query) {
       return query.ancestor(ancestor);
     }
@@ -154,6 +164,7 @@ public class PaginatedQuery<T> {
 
     private final String order;
 
+    @Override
     public <T> Query<T> apply(Query<T> query) {
       return query.order(order);
     }
@@ -166,6 +177,7 @@ public class PaginatedQuery<T> {
 
     private final int limit;
 
+    @Override
     public <T> Query<T> apply(Query<T> query) {
       return query.limit(limit);
     }
@@ -178,6 +190,7 @@ public class PaginatedQuery<T> {
 
     private final Cursor afterCursor;
 
+    @Override
     public <T> Query<T> apply(Query<T> query) {
       return query.startAt(afterCursor);
     }
