@@ -5,6 +5,7 @@ import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -122,6 +124,10 @@ public final class Event extends IdBaseDao<Event> {
   @Index
   private List<String> searchableTokens;
 
+  @Index
+  private boolean completionProcessed;
+  private EventCompletionTasks completionTasks;
+
   public enum RegistrationInfo {
     ORGANIZER,
     REGISTERED,
@@ -197,13 +203,14 @@ public final class Event extends IdBaseDao<Event> {
     rating = IndexedAggregateRating.create();
     initDerivedOrganizerRatings();
     initSearchableTokens();
+    completionProcessed = false;
+    completionTasks = null;
   }
 
   @Override
   protected void processUpdate(Event prevObj) {
     super.processUpdate(prevObj);
-    // Karma points are set when the event is created.
-    karmaPoints = prevObj.karmaPoints;
+    initKarmaPoints();
     // Rating is independently and transactionally updated.
     rating = prevObj.rating;
     derivedOrganizerRatings = prevObj.derivedOrganizerRatings;
@@ -212,13 +219,28 @@ public final class Event extends IdBaseDao<Event> {
     processParticipants();
     validateEvent();
     initSearchableTokens();
+    completionProcessed = prevObj.completionProcessed;
+    completionTasks = prevObj.completionTasks;
+
+    // Do event validation that is specific to event updates.
+    validateEventUpdate(prevObj);
   }
 
   private void processParticipantMutation(EventParticipant updatedParticipant,
       MutationType mutationType) {
+    processParticipantMutation(ImmutableList.of(updatedParticipant), mutationType);
+  }
+
+  private void processParticipantMutation(Collection<EventParticipant> mutatedParticipants,
+                                          MutationType mutationType) {
     processParticipants();
-    derivedOrganizerRatings.processParticipantMutation(this, updatedParticipant, mutationType);
-    deleteReviewIfRequired(updatedParticipant, mutationType);
+    for (EventParticipant participant : mutatedParticipants) {
+      derivedOrganizerRatings.processParticipantMutation(this, participant, mutationType);
+      if (completionTasks != null) {
+        completionTasks.processParticipantMutation(this, participant, mutationType);
+      }
+      deleteReviewIfRequired(participant, mutationType);
+    }
     validateEvent();
   }
 
@@ -232,6 +254,33 @@ public final class Event extends IdBaseDao<Event> {
 
   private boolean hasPendingRatings() {
     return derivedOrganizerRatings.hasPendingRatings();
+  }
+
+  private void processCompletionTasks() {
+    // Note that we don't check the time to see if it's okay to process completion tasks.
+    // Instead we trust that the caller has checked the time. This handles cases where there
+    // is clock skew and the completion task was aborted and restarted on a different machine.
+    if (completionTasks == null) {
+      // This is the first time completion tasks are being processed. On the first pass the
+      // event object state must be cleaned up.
+      removeWaitListedUsers();
+      // After the state is cleaned up we process the remaining event completion tasks.
+      completionTasks = new EventCompletionTasks(this);
+    }
+    completionTasks.processPendingTask(this);
+  }
+
+  private void removeWaitListedUsers() {
+    List<EventParticipant> participantsRemoved = Lists.newArrayList();
+    Iterator<EventParticipant> participantIter = participants.iterator();
+    while (participantIter.hasNext()) {
+      EventParticipant participant = participantIter.next();
+      if (participant.getType() == ParticipantType.WAIT_LISTED) {
+        participantIter.remove();
+        participantsRemoved.add(participant);
+      }
+    }
+    processParticipantMutation(participantsRemoved, MutationType.DELETE);
   }
 
   private void processParticipants() {
@@ -251,13 +300,17 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   private void initStatus() {
+    status = computeStatus(this);
+  }
+
+  private static Status computeStatus(Event event) {
     Date now = new Date();
-    if (now.before(startTime)) {
-      status = Status.UPCOMING;
-    } else if (now.before(endTime)) {
-      status = Status.IN_PROGRESS;
+    if (now.before(event.startTime)) {
+      return Status.UPCOMING;
+    } else if (now.before(event.endTime)) {
+      return Status.IN_PROGRESS;
     } else {
-      status = Status.COMPLETED;
+      return Status.COMPLETED;
     }
   }
 
@@ -368,6 +421,16 @@ public final class Event extends IdBaseDao<Event> {
       throw ErrorResponseMsg.createException(
         "at least one organizer must be assigned to the event",
         ErrorInfo.Type.BAD_REQUEST);
+    }
+  }
+
+  private void validateEventUpdate(Event prevObj) {
+    if ((computeStatus(prevObj) == Status.COMPLETED) || (completionTasks != null)) {
+      if (!startTime.equals(prevObj.startTime) || !endTime.equals(prevObj.endTime)) {
+        throw ErrorResponseMsg.createException(
+          "can not update the start time or end time for a completed event",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
     }
   }
 
@@ -677,7 +740,7 @@ public final class Event extends IdBaseDao<Event> {
 
   private void deleteReviewIfRequired(EventParticipant updatedParticipant,
       MutationType mutationType) {
-    if ((mutationType == MutationType.DELETE) ||
+    if (((mutationType == MutationType.DELETE) && canWriteReview(updatedParticipant)) ||
         ((mutationType == MutationType.UPDATE) && !canWriteReview(updatedParticipant))) {
       processReviewMutation(this, null);
     }
@@ -840,6 +903,128 @@ public final class Event extends IdBaseDao<Event> {
       }
       event.processPendingRating();
       workPending = event.hasPendingRatings();
+      BaseDao.partialUpdate(event);
+    }
+  }
+
+  @Data
+  @Embed
+  @NoArgsConstructor
+  private static class EventCompletionTasks {
+
+    List<ParticipantCompletionTask> tasksPending = Lists.newArrayList();
+    List<ParticipantCompletionTask> tasksProcessed = Lists.newArrayList();
+
+    public EventCompletionTasks(Event event) {
+      List<KeyWrapper<User>> participantsToProcess = Lists.newArrayList();
+      participantsToProcess.addAll(event.organizers);
+      participantsToProcess.addAll(event.registeredUsers);
+      for (KeyWrapper<User> participant : participantsToProcess) {
+        tasksPending.add(new ParticipantCompletionTask(KeyWrapper.toKey(participant), 0));
+      }
+    }
+
+    public void processParticipantMutation(Event event, EventParticipant participant,
+                                           MutationType mutationType) {
+      Key<User> participantKey = KeyWrapper.toKey(participant.getUser());
+      ParticipantCompletionTask completionTask =
+          tryFindCompletionTask(tasksPending, participantKey);
+      if (completionTask != null) {
+        // Nothing to do, already queued.
+        return;
+      }
+      completionTask = tryFindCompletionTask(tasksProcessed, participantKey);
+      if (completionTask == null) {
+        // Since participant mutation post-event completion is rare, we'll always take the hit
+        // of updating the event.
+        tasksPending.add(new ParticipantCompletionTask(participantKey, 0));
+      } else {
+        tasksProcessed.remove(completionTask);
+        tasksPending.add(completionTask);
+      }
+      event.completionProcessed = false;
+    }
+
+    private void processPendingTask(Event event) {
+      if (tasksPending()) {
+        ParticipantCompletionTask participantTask = tasksPending.remove(0);
+        Key<User> participantKey = KeyWrapper.toKey(participantTask.participant);
+        User participant = BaseDao.load(participantKey);
+        if (participant == null) {
+          // Nothing to do. User no longer exists.
+          return;
+        }
+        // Delete the previously assigned karma points.
+        participant.setKarmaPoints(
+          participant.getKarmaPoints() - participantTask.karmaPointsAssigned);
+        // Assign the new karma points if the participant is still part of the event.
+        EventParticipant eventParticipant = event.tryFindParticipant(participantKey);
+        if ((eventParticipant != null) &&
+            ((eventParticipant.getType() == ParticipantType.ORGANIZER) ||
+             (eventParticipant.getType() == ParticipantType.REGISTERED))) {
+          participant.setKarmaPoints(participant.getKarmaPoints() + event.karmaPoints);
+          tasksProcessed.add(new ParticipantCompletionTask(participantKey, event.karmaPoints));
+        }
+        BaseDao.partialUpdate(participant);
+      }
+      event.completionProcessed = !tasksPending();
+    }
+
+    public boolean tasksPending() {
+      return tasksPending.size() > 0;
+    }
+
+    private static ParticipantCompletionTask tryFindCompletionTask(
+        List<ParticipantCompletionTask> list, Key<User> participantKey) {
+      return Iterables.tryFind(list,
+        ParticipantCompletionTask.participantPredicate(participantKey)).orNull();
+    }
+
+    @Data
+    @Embed
+    @NoArgsConstructor
+    private static class ParticipantCompletionTask {
+      private KeyWrapper<User> participant;
+      private int karmaPointsAssigned;
+
+      public ParticipantCompletionTask(Key<User> participantKey, int karmaPointsAssigned) {
+        this.participant = KeyWrapper.create(participantKey);
+        this.karmaPointsAssigned = karmaPointsAssigned;
+      }
+
+      public static Predicate<ParticipantCompletionTask> participantPredicate(
+          final Key<User> participantKey) {
+        return new Predicate<ParticipantCompletionTask>() {
+          @Override
+          public boolean apply(@Nullable ParticipantCompletionTask input) {
+            return KeyWrapper.toKey(input.participant).equals(participantKey);
+          }
+        };
+      }
+    }
+  }
+
+  public static void processEventCompletionTasks(Key<Event> eventKey) {
+    ProcessEventCompletionTasksTxn completionTasksTxn;
+    do {
+      completionTasksTxn = new ProcessEventCompletionTasksTxn(eventKey);
+      ofy().transact(completionTasksTxn);
+    } while (completionTasksTxn.isWorkPending());
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  private static class ProcessEventCompletionTasksTxn extends VoidWork {
+    private final Key<Event> eventKey;
+    private boolean workPending;
+
+    public void vrun() {
+      Event event = BaseDao.load(eventKey);
+      if ((event == null) || event.completionProcessed) {
+        return;
+      }
+      event.processCompletionTasks();
+      workPending = !event.completionProcessed;
       BaseDao.partialUpdate(event);
     }
   }

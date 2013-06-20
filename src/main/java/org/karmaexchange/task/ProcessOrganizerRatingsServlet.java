@@ -4,13 +4,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.util.AdminUtil;
-import org.karmaexchange.util.UserService;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
@@ -18,7 +12,7 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 
 @SuppressWarnings("serial")
-public class ProcessOrganizerRatingsServlet extends HttpServlet {
+public class ProcessOrganizerRatingsServlet extends AdminTaskServlet {
 
   private static final Logger logger = Logger.getLogger(
     ProcessOrganizerRatingsServlet.class.getName());
@@ -27,7 +21,7 @@ public class ProcessOrganizerRatingsServlet extends HttpServlet {
   private static final String EVENT_KEY_PARAM = "event_key";
 
   @Override
-  public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+  protected void execute() throws IOException {
     String eventKeyStr = req.getParameter(EVENT_KEY_PARAM);
     if (eventKeyStr == null) {
       logger.warning("no event key specified");
@@ -39,18 +33,8 @@ public class ProcessOrganizerRatingsServlet extends HttpServlet {
         logger.log(Level.WARNING, "unable to parse event key: " + eventKeyStr, e);
         return;
       }
-      AdminUtil.setCurrentUser(AdminUtil.AdminTaskType.TASK_QUEUE);
-      try {
-        Event.processDerivedOrganizerRatings(eventKey);
-      } finally {
-        UserService.clearCurrentUser();
-      }
+      Event.processDerivedOrganizerRatings(eventKey);
     }
-  }
-
-  @Override
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    doGet(req, resp);
   }
 
   public static void enqueueTask(Event event) {

@@ -98,8 +98,13 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       }
     }
     statusWriter.println("About to persist test events...");
+    Date now = new Date();
     for (Event event : createEvents()) {
       BaseDao.upsert(event);
+      // Process any completed events.
+      if (event.getEndTime().before(now)) {
+        Event.processEventCompletionTasks(Key.create(event));
+      }
     }
     statusWriter.println("Test users and events persisted.");
   }
@@ -142,18 +147,18 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
-    waitListedUsers = asList();
+    waitListedUsers = asList(USER3.getKey());
     events.add(createEvent("Harish as Organizer, Amir participant - SF Street Cleanup",
       DateUtils.addDays(now, -6), 1,
-      organizers, registeredUsers, waitListedUsers, 0, 100, 100));
+      organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100));
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey());
-    waitListedUsers = asList();
+    waitListedUsers = asList(USER3.getKey());
     events.add(createEvent("Amir as Organizer, Harish participant - SF Street Cleanup",
       DateUtils.addDays(now, -13), 1,
-      organizers, registeredUsers, waitListedUsers, 0, 100, 100));
+      organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100));
 
     organizers = asList(USER1.getKey(), HARISH.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey());

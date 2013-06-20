@@ -112,6 +112,7 @@ public final class User extends NameBaseDao<User> {
     // this out.
     // profileImage = null;
     eventOrganizerRating = IndexedAggregateRating.create();
+    karmaPoints = 0;
   }
 
   @Override
@@ -124,11 +125,7 @@ public final class User extends NameBaseDao<User> {
     profileImage = oldUser.profileImage;
     eventOrganizerRating = oldUser.eventOrganizerRating;
     oauthCredentials = Lists.newArrayList(oldUser.oauthCredentials);
-
-    // TODO(avlaiani): re-evaluate this. All fields should be updateable if you have admin
-    //     privileges.
-    // setKarmaPoints(oldUser.getKarmaPoints());
-    // setEventOrganizerRating(oldUser.getEventOrganizerRating());
+    karmaPoints = oldUser.karmaPoints;
   }
 
   @Override
