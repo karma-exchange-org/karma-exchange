@@ -51,6 +51,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>ProcessEventCompletionsServlet</servlet-name>
+        <servlet-class>org.karmaexchange.task.ProcessEventCompletionsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProcessEventCompletionsServlet</servlet-name>
+        <url-pattern>/task/process_event_completions</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>PersistProductionResourcesServlet</servlet-name>
         <servlet-class>org.karmaexchange.bootstrap.PersistProductionResourcesServlet</servlet-class>
     </servlet>
