@@ -1,5 +1,7 @@
 package org.karmaexchange.util;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.Set;
 
 import org.karmaexchange.dao.User;
@@ -34,5 +36,20 @@ public class AdminUtil {
 
   public static void setCurrentUser(AdminTaskType type) {
     UserService.setCurrentUser(null, type.getKey());
+  }
+
+  public static void executeSubtaskAsUser(Key<User> userKey, AdminSubtask subtask) {
+    Key<User> prevAdminKey = UserService.getCurrentUserKey();
+    checkState(isAdminKey(prevAdminKey));
+    UserService.setCurrentUser(null, userKey);
+    try {
+      subtask.execute();
+    } finally {
+      UserService.setCurrentUser(null, prevAdminKey);
+    }
+  }
+
+  public interface AdminSubtask {
+    void execute();
   }
 }

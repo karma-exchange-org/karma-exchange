@@ -36,9 +36,9 @@ public class Review extends NameBaseDao<Review> {
   // At this point reviews will have no comments associated with them. Instead comments will
   // be associate with events and organization comments on facebook.
 
-  public void initPreUpsert(Key<?> owner) {
+  public void initPreUpsert(Key<?> owner, Key<User> authorKey) {
     if (name == null) {
-      name = getCurrentUserKey().getString();
+      name = authorKey.getString();
       this.owner = owner;
     }
   }
@@ -98,14 +98,14 @@ public class Review extends NameBaseDao<Review> {
   }
 
   @Override
-  protected void updatePermission() {
+  protected Permission evalPermission() {
     // TODO(avaliani): fill this in. Organizers of events should have
     // the ability to delete pictures also if the picture is owned by an
     // event.
     if (getAuthor().equals(getCurrentUserKey())) {
-      permission = Permission.ALL;
+      return Permission.ALL;
     } else {
-      permission = Permission.READ;
+      return Permission.READ;
     }
   }
 
@@ -114,6 +114,10 @@ public class Review extends NameBaseDao<Review> {
   }
 
   public static Key<Review> getKeyForCurrentUser(Key<?> owner) {
-    return Key.<Review>create(owner, Review.class, getCurrentUserKey().getString());
+    return getKeyForUser(owner, getCurrentUserKey());
+  }
+
+  public static Key<Review> getKeyForUser(Key<?> owner, Key<User> authorKey) {
+    return Key.<Review>create(owner, Review.class, authorKey.getString());
   }
 }

@@ -141,11 +141,11 @@ public final class User extends NameBaseDao<User> {
   }
 
   @Override
-  protected void updatePermission() {
+  protected Permission evalPermission() {
     if (Key.create(this).equals(getCurrentUserKey())) {
-      setPermission(Permission.ALL);
+      return Permission.ALL;
     } else {
-      setPermission(Permission.READ);
+      return Permission.READ;
     }
   }
 

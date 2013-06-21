@@ -239,7 +239,6 @@ public final class Event extends IdBaseDao<Event> {
       if (completionTasks != null) {
         completionTasks.processParticipantMutation(this, participant, mutationType);
       }
-      deleteReviewIfRequired(participant, mutationType);
     }
     validateEvent();
   }
@@ -304,6 +303,9 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   private static Status computeStatus(Event event) {
+    if (event.completionTasks != null) {
+      return Status.COMPLETED;
+    }
     Date now = new Date();
     if (now.before(event.startTime)) {
       return Status.UPCOMING;
@@ -425,7 +427,9 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   private void validateEventUpdate(Event prevObj) {
-    if ((computeStatus(prevObj) == Status.COMPLETED) || (completionTasks != null)) {
+    // Check the prev object's state since some of the fields of the current object can be
+    // manipulated in an update.
+    if (computeStatus(prevObj) == Status.COMPLETED) {
       if (!startTime.equals(prevObj.startTime) || !endTime.equals(prevObj.endTime)) {
         throw ErrorResponseMsg.createException(
           "can not update the start time or end time for a completed event",
@@ -538,16 +542,17 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   @Override
-  protected void updatePermission() {
+  protected Permission evalPermission() {
     if (organizations.isEmpty()) {
       if (isOrganizer(getCurrentUserKey())) {
-        permission = Permission.ALL;
+        return Permission.ALL;
       } else {
-        permission = Permission.READ;
+        return Permission.READ;
       }
     } else {
       // List<Organization> organizations = BaseDao.load(KeyWrapper.toKeys(organizations));
       // TODO(avaliani): fill in when we convert organizations to BaseDao.
+      throw new IllegalStateException("Not implemented: organization permissions");
     }
   }
 
@@ -603,6 +608,20 @@ public final class Event extends IdBaseDao<Event> {
           }
         }
       }
+
+      if (event.status == Status.COMPLETED) {
+        if (participantType == ParticipantType.ORGANIZER) {
+          throw ErrorResponseMsg.createException(
+            "organizers can not be added after event completion",
+            ErrorInfo.Type.BAD_REQUEST);
+        }
+        if (participantType == ParticipantType.WAIT_LISTED) {
+          throw ErrorResponseMsg.createException(
+            "wait listed users can not be added after event completion",
+            ErrorInfo.Type.BAD_REQUEST);
+        }
+      }
+
       MutationType mutationType;
       if (participantToUpsert == null) {
         // TODO(avaliani): organizers should not in theory be allowed to add arbitrary users.
@@ -611,6 +630,17 @@ public final class Event extends IdBaseDao<Event> {
         event.participants.add(participantToUpsert);
         mutationType = MutationType.INSERT;
       } else {
+        ParticipantType prevParticipantType = participantToUpsert.getType();
+        if (participantType == prevParticipantType) {
+          // Nothing to do.
+          return;
+        }
+        if ((event.status == Status.COMPLETED) &&
+            (prevParticipantType == ParticipantType.ORGANIZER)) {
+          throw ErrorResponseMsg.createException(
+            "organizers can not be updated after event completion",
+            ErrorInfo.Type.BAD_REQUEST);
+        }
         participantToUpsert.setType(participantType);
         mutationType = MutationType.UPDATE;
       }
@@ -639,6 +669,22 @@ public final class Event extends IdBaseDao<Event> {
       }
       EventParticipant participant = event.tryFindParticipant(userToRemoveKey);
       if (participant != null) {
+        if (event.status == Status.COMPLETED) {
+          if (participant.getType() == ParticipantType.ORGANIZER) {
+            throw ErrorResponseMsg.createException(
+              "organizers can not be removed after event completion",
+              ErrorInfo.Type.BAD_REQUEST);
+          }
+          if (canWriteReview(participant)) {
+            Review participantReview = BaseDao.load(
+              Review.getKeyForUser(Key.create(event), KeyWrapper.toKey(participant.getUser())));
+            if (participantReview != null) {
+              throw ErrorResponseMsg.createException(
+                "users that have written a review can not be removed after event completion",
+                ErrorInfo.Type.BAD_REQUEST);
+            }
+          }
+        }
         event.participants.remove(participant);
         // validateEvent() ensures that there is at least one organizer.
         event.processParticipantMutation(participant, MutationType.DELETE);
@@ -674,14 +720,15 @@ public final class Event extends IdBaseDao<Event> {
     }
   }
 
-  public static void mutateEventReview(Key<Event> eventKey, @Nullable Review review) {
-    ofy().transact(new MutateEventReviewTxn(eventKey, review));
+  public static void mutateEventReviewForCurrentUser(Key<Event> eventKey, @Nullable Review review) {
+    ofy().transact(new MutateEventReviewTxn(eventKey, getCurrentUserKey(), review));
   }
 
   @Data
   @EqualsAndHashCode(callSuper=false)
   private static class MutateEventReviewTxn extends VoidWork {
     private final Key<Event> eventKey;
+    private final Key<User> userKey;
     @Nullable
     private final Review review;
 
@@ -690,7 +737,7 @@ public final class Event extends IdBaseDao<Event> {
       if (event == null) {
         throw ErrorResponseMsg.createException("event not found", ErrorInfo.Type.BAD_REQUEST);
       }
-      EventParticipant participantDetails = event.tryFindParticipant(getCurrentUserKey());
+      EventParticipant participantDetails = event.tryFindParticipant(userKey);
       if ((participantDetails == null) || !canWriteReview(participantDetails)) {
         throw ErrorResponseMsg.createException(
           "only users that participated in the event (non-organizers) can provide an event review",
@@ -700,16 +747,17 @@ public final class Event extends IdBaseDao<Event> {
         throw ErrorResponseMsg.createException(
           "only events that have completed can be reviewed", ErrorInfo.Type.BAD_REQUEST);
       }
-      processReviewMutation(event, review);
+      processReviewMutation(event, userKey, review);
       BaseDao.partialUpdate(event);
     }
   }
 
-  public static void processReviewMutation(Event event, @Nullable Review review) {
+  public static void processReviewMutation(Event event, Key<User> userKey,
+      @Nullable Review review) {
     boolean ratingMutated = false;
-    Key<Review> expReviewKey = Review.getKeyForCurrentUser(event);
+    Key<Review> expReviewKey = Review.getKeyForUser(Key.create(event), userKey);
     if (review != null) {
-      review.initPreUpsert(Key.create(event));
+      review.initPreUpsert(Key.create(event), userKey);
       if (!Key.create(review).equals(expReviewKey)) {
         throw ErrorResponseMsg.createException(
           format("review key [%s] does not match expected review key [%s]",
@@ -735,14 +783,6 @@ public final class Event extends IdBaseDao<Event> {
     }
     if (ratingMutated) {
       event.processRatingUpdate();
-    }
-  }
-
-  private void deleteReviewIfRequired(EventParticipant updatedParticipant,
-      MutationType mutationType) {
-    if (((mutationType == MutationType.DELETE) && canWriteReview(updatedParticipant)) ||
-        ((mutationType == MutationType.UPDATE) && !canWriteReview(updatedParticipant))) {
-      processReviewMutation(this, null);
     }
   }
 

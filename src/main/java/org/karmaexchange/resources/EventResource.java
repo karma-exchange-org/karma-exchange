@@ -210,14 +210,14 @@ public class EventResource extends BaseDaoResource<Event> {
   public void upsertReview(
       @PathParam("event_key") String eventKeyStr,
       Review review) {
-    Event.mutateEventReview(Key.<Event>create(eventKeyStr), review);
+    Event.mutateEventReviewForCurrentUser(Key.<Event>create(eventKeyStr), review);
   }
 
   @Path("{event_key}/review")
   @DELETE
   public void deleteReview(
       @PathParam("event_key") String eventKeyStr) {
-    Event.mutateEventReview(Key.<Event>create(eventKeyStr), null);
+    Event.mutateEventReviewForCurrentUser(Key.<Event>create(eventKeyStr), null);
   }
 
   @Path("{event_key}/review_comment_view")

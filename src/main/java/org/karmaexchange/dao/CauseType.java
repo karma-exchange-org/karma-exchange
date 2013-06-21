@@ -39,7 +39,7 @@ public class CauseType extends NameBaseDao<CauseType> {
   }
 
   @Override
-  protected void updatePermission() {
-    setPermission(Permission.READ);
+  protected Permission evalPermission() {
+    return Permission.READ;
   }
 }
