@@ -18,6 +18,40 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","u
         $httpProvider.defaults.headers.common['X-'] = 'X';
 
     })
+    .filter('newlines', function () {
+        return function(text) {
+            if(text)
+            {
+              return text.replace(/\n/g, '<br/>');  
+            }    
+            
+        }
+    })
+    .filter('noHTML', function () {
+        return function(text) {
+            if(text)
+            {
+               return text
+                    .replace(/&/g, '&amp;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/</g, '&lt;'); 
+            }    
+            
+        }
+    })
+    .filter('limit10', function () {
+        return function(text) {
+            if(text)
+            {
+               if(text>10)
+               {
+                    return 'More than 10';
+               } 
+               return text;
+            }    
+            
+        }
+    })
     .run(function($rootScope,Me,$location){
         $rootScope.me = Me.get();
         
@@ -319,7 +353,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
 
     $scope.refreshEvent = function(){
 
-        $scope.event = Events.get({ id: $routeParams.eventId } ,function() {
+        $scope.event = Events.get({ id: $routeParams.eventId} ,function() {
                 //$("#location-title").val(''+$scope.event.location.title);
                 //$scope.refreshMap();
                   
@@ -372,7 +406,96 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     {
         $scope.findMe();
         $scope.event = {"location":{"title":null,"description":null,"address":{"street":null,"city":null,"state":null,"country":null,"zip":null,"geoPt":null}}};
+        $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("locationTitle"));
+        google.maps.event.addDomListener(document.getElementById("locationTitle"), 'keydown', function(e) { 
+            if (e.keyCode == 13) 
+            { 
+                    if (e.preventDefault) 
+                    { 
+                            e.preventDefault(); 
+                    } 
+                    else 
+                    { 
 
+                            e.cancelBubble = true; 
+                            e.returnValue = false; 
+                    } 
+            } 
+        }); 
+        google.maps.event.addListener($scope.autocomplete, 'place_changed', function(e) {
+            
+            
+            var marker;
+
+            var place = $scope.autocomplete.getPlace();
+           
+            $scope.event.location.title = place.name;
+            
+            $scope.event.location.address.street = '';
+            for (var i = 0; i < place.address_components.length; i++) {
+                
+                if(place.address_components[i].types[0]=='locality')
+                {
+                    $scope.event.location.address.city = place.address_components[i].long_name;
+                } 
+                else if(place.address_components[i].types[0]=='country')
+                {
+                    $scope.event.location.address.country = place.address_components[i].long_name;
+                } 
+                else if(place.address_components[i].types[0]=='postal_code')
+                {
+                    $scope.event.location.address.zip = place.address_components[i].long_name;
+                } 
+                else if(place.address_components[i].types[0]=='administrative_area_level_1')
+                {
+                    $scope.event.location.address.state = place.address_components[i].long_name;
+                } 
+                else if(place.address_components[i].types[0]=='street_number')
+                {
+                    $scope.event.location.address.street = place.address_components[i].long_name+' '+$scope.event.location.address.street;
+                }
+                else if(place.address_components[i].types[0]=='route')
+                {
+                    $scope.event.location.address.street = $scope.event.location.address.street+' '+place.address_components[i].long_name;
+                }
+
+
+            
+            }    
+
+          
+           
+            $scope.center = {
+                        latitude: place.geometry.location.lat(),
+                        longitude: place.geometry.location.lng()
+                    };
+            $scope.setMarker($scope.center.latitude,$scope.center.longitude)
+            $scope.zoom = 15;
+                    
+            $scope.$apply();
+            
+          });
+        
+
+        $('#startTimePicker')
+            .datetimepicker()
+            .on('changeDate', function(ev){
+                
+
+                
+                $scope.event.startTime = jQuery(ev.target).data('datetimepicker').getDate();
+                $scope.$apply();
+                $('#endTimePicker').datetimepicker('setStartDate', $scope.event.startTime);
+                
+            });
+        $('#endTimePicker')
+            .datetimepicker()
+            .on('changeDate', function(ev){
+                
+                $scope.event.endTime = jQuery(ev.target).data('datetimepicker').getDate();
+                $scope.$apply();
+                
+            });
     }
     else
     {    
@@ -380,96 +503,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     }
     //TDEBT - (hbalijepalli)
 
-    $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("locationTitle"));
-    google.maps.event.addDomListener(document.getElementById("locationTitle"), 'keydown', function(e) { 
-        if (e.keyCode == 13) 
-        { 
-                if (e.preventDefault) 
-                { 
-                        e.preventDefault(); 
-                } 
-                else 
-                { 
-
-                        e.cancelBubble = true; 
-                        e.returnValue = false; 
-                } 
-        } 
-    }); 
-    google.maps.event.addListener($scope.autocomplete, 'place_changed', function(e) {
-        
-        
-        var marker;
-
-        var place = $scope.autocomplete.getPlace();
-       
-        $scope.event.location.title = place.name;
-        
-        $scope.event.location.address.street = '';
-        for (var i = 0; i < place.address_components.length; i++) {
-            
-            if(place.address_components[i].types[0]=='locality')
-            {
-                $scope.event.location.address.city = place.address_components[i].long_name;
-            } 
-            else if(place.address_components[i].types[0]=='country')
-            {
-                $scope.event.location.address.country = place.address_components[i].long_name;
-            } 
-            else if(place.address_components[i].types[0]=='postal_code')
-            {
-                $scope.event.location.address.zip = place.address_components[i].long_name;
-            } 
-            else if(place.address_components[i].types[0]=='administrative_area_level_1')
-            {
-                $scope.event.location.address.state = place.address_components[i].long_name;
-            } 
-            else if(place.address_components[i].types[0]=='street_number')
-            {
-                $scope.event.location.address.street = place.address_components[i].long_name+' '+$scope.event.location.address.street;
-            }
-            else if(place.address_components[i].types[0]=='route')
-            {
-                $scope.event.location.address.street = $scope.event.location.address.street+' '+place.address_components[i].long_name;
-            }
-
-
-        
-        }    
-
-      
-       
-        $scope.center = {
-                    latitude: place.geometry.location.lat(),
-                    longitude: place.geometry.location.lng()
-                };
-        $scope.setMarker($scope.center.latitude,$scope.center.longitude)
-        $scope.zoom = 15;
-                
-        $scope.$apply();
-        
-      });
     
-
-    $('#startTimePicker')
-        .datetimepicker()
-        .on('changeDate', function(ev){
-            
-
-            
-            $scope.event.startTime = jQuery(ev.target).data('datetimepicker').getDate();
-            $scope.$apply();
-            $('#endTimePicker').datetimepicker('setStartDate', $scope.event.startTime);
-            
-        });
-    $('#endTimePicker')
-        .datetimepicker()
-        .on('changeDate', function(ev){
-            
-            $scope.event.endTime = jQuery(ev.target).data('datetimepicker').getDate();
-            $scope.$apply();
-            
-        });
 
     
 };
