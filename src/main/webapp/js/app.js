@@ -30,6 +30,7 @@ var kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","u
 All webservice factories go here
 */
 
+
 kexApp.factory('Events', function($resource) {
     return $resource('/api/event/:id/:registerCtlr/:regType', { id: '@id',registerCtlr:'@registerCtlr',regType:'@regType'}
          
@@ -50,27 +51,9 @@ kexApp.factory('Me', function($resource) {
 All app directives  go here
 */
 
-kexApp.directive('googleplace', function() {
-    return {
-        require: 'ngModel',
-        link: function($scope, element, attrs, model) {
-            var options = {
-                types: [],
-                componentRestrictions: {}
-            };
-            $scope.gPlace = new google.maps.places.Autocomplete(element[0], options);
 
-            google.maps.event.addListener($scope.gPlace, 'place_changed', function() {
-                $scope.$apply(function() {
-                    model.$setViewValue(element.val());
-                                   
-                });
-            });
-        }
-    };
-});
 
-var geocoder = new google.maps.Geocoder();
+
 
 /*
 All app controllers  go here
@@ -329,7 +312,7 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         else
         {    
     		Events.save({id: $scope.event.key}, $scope.event, function () {
-    	        $location.path('/event');
+    	        
     	    });
         }
 	};
@@ -397,12 +380,29 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
     }
     //TDEBT - (hbalijepalli)
 
-    $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("location-title"));
-    google.maps.event.addListener($scope.autocomplete, 'place_changed', function(event) {
+    $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("locationTitle"));
+    google.maps.event.addDomListener(document.getElementById("locationTitle"), 'keydown', function(e) { 
+        if (e.keyCode == 13) 
+        { 
+                if (e.preventDefault) 
+                { 
+                        e.preventDefault(); 
+                } 
+                else 
+                { 
+
+                        e.cancelBubble = true; 
+                        e.returnValue = false; 
+                } 
+        } 
+    }); 
+    google.maps.event.addListener($scope.autocomplete, 'place_changed', function(e) {
+        
         
         var marker;
 
         var place = $scope.autocomplete.getPlace();
+       
         $scope.event.location.title = place.name;
         
         $scope.event.location.address.street = '';
@@ -434,21 +434,22 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
             }
 
 
-            //Do something
+        
         }    
 
-            
+      
        
         $scope.center = {
-                    latitude: place.geometry.location.kb,
-                    longitude: place.geometry.location.lb
+                    latitude: place.geometry.location.lat(),
+                    longitude: place.geometry.location.lng()
                 };
-        $scope.setMarker(place.geometry.location.kb,place.geometry.location.lb)
+        $scope.setMarker($scope.center.latitude,$scope.center.longitude)
         $scope.zoom = 15;
                 
         $scope.$apply();
         
       });
+    
 
     $('#startTimePicker')
         .datetimepicker()
@@ -500,5 +501,14 @@ var logOut = function($location){
     $location.path("/");
     
 };
+
+function getImage(id,size) {
+            if(size=='small')
+            {
+                return "http://graph.facebook.com/" + id + "/picture?access_token=" +$.cookie("facebook-token")+"&width=25&height=25";
+            }  
+            return "http://graph.facebook.com/" + id + "/picture?access_token=" +$.cookie("facebook-token")+"type=square";  
+           
+     };
 
 

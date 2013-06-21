@@ -28,7 +28,7 @@
 						    			<ul class="inline">
 											<li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
 												
-													<a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?type=square"></a>
+													<a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25"></a>
 												
 											</li>
 										</ul>	
@@ -60,7 +60,7 @@
 							            <td>
 							            	<p>Needs : <strong>{{modelEvent.maxRegistrations}}</strong></p>
 							            	<p>Registered: <strong>{{modelEvent.numAttending}}</strong></p>
-							            	<p>Organized by </p><p><a href="#/user/{{modelEvent.firstOrganizer.key}}"><img ng-src="{{modelEvent.firstOrganizer.profileImage.url}}?type=square"/><strong>{{modelEvent.firstOrganizer.firstName}}</strong></a> <rating ng-hide="modelEvent.firstOrganizer.eventOrganizerRating.count==0"value="modelEvent.firstOrganizer.eventOrganizerRating.value" max="5" readonly="true"></rating> </p>
+							            	<p>Organized by </p><p><a href="#/user/{{modelEvent.firstOrganizer.key}}"><img ng-src="{{modelEvent.firstOrganizer.profileImage.url}}?type=square"/><strong>{{modelEvent.firstOrganizer.firstName}}</strong></a> <rating ng-hide="modelEvent.firstOrganizer.eventOrganizerRating.count==0" value="modelEvent.firstOrganizer.eventOrganizerRating.value" max="5" readonly="true"></rating> </p>
 							             </td>  
 							            <td>
 							            	<h4>{{event.karmaPoints}} karma points.</h4>

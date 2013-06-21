@@ -103,12 +103,13 @@
         <div class="span2">
             
                 <!--orgnaizers-->
-                <p ng-hide="eventOrganizers.data.length==0"><legend>Organizers ({{event.organizers.length}})</legend>
+                <p ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
+                <hr>
                 <ul class="inline">
 
                     <li ng-repeat="user in eventOrganizers.data">
                       
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                         
                                 
                            
@@ -119,12 +120,13 @@
                 </p>
                         
            
-                <p ng-hide="eventRegistered.data.length==0"><legend>Registered ({{event.registeredUsers.length}})</legend> 
+                <p ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
+                    <hr>
                         <ul class="inline">
 
                             <li ng-repeat="user in eventRegistered.data">
                                
-                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             
                                        
                                 
@@ -136,12 +138,13 @@
                 </p>
         
             
-                <p ng-hide="eventWaitListed.data.length==0"><legend>Waitlisted ({{event.waitListedUsers.length}})</legend> 
+                <p ng-hide="eventWaitListed.data.length==0"><h4>Waitlisted ({{event.waitListedUsers.length}})</h4> 
+                    <hr>
                         <ul class="inline">
 
                             <li ng-repeat="user in eventWaitListed.data">
                               
-                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                  
                                         
                                 
