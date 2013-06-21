@@ -9,6 +9,9 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
+import lombok.Data;
 import lombok.Getter;
 
 import org.apache.commons.lang3.time.DateUtils;
@@ -22,8 +25,12 @@ import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.OAuthCredential;
+import org.karmaexchange.dao.Rating;
+import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
+import org.karmaexchange.util.AdminUtil;
+import org.karmaexchange.util.AdminUtil.AdminSubtask;
 
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.common.collect.Lists;
@@ -99,17 +106,21 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     }
     statusWriter.println("About to persist test events...");
     Date now = new Date();
-    for (Event event : createEvents()) {
+    CreateEventsResult createEventsResult = createEvents();
+    for (Event event : createEventsResult.getEvents()) {
       BaseDao.upsert(event);
       // Process any completed events.
       if (event.getEndTime().before(now)) {
         Event.processEventCompletionTasks(Key.create(event));
       }
     }
+    for (PendingReview pendingReview : createEventsResult.getPendingReviews()) {
+      pendingReview.persistReview();
+    }
     statusWriter.println("Test users and events persisted.");
   }
 
-  private static Collection<Event> createEvents() {
+  private static CreateEventsResult createEvents() {
     List<Event> events = Lists.newArrayList();
     Date now = DateUtils.round(new Date(), Calendar.HOUR_OF_DAY);
 
@@ -142,37 +153,49 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100));
 
     // Past events.
+    List<PendingReview> pendingReviews = Lists.newArrayList();
 
     organizers = asList(USER1.getKey(), HARISH.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
     waitListedUsers = asList(USER3.getKey());
-    events.add(createEvent("Harish as Organizer, Amir participant - SF Street Cleanup",
+    Event event = createEvent("Harish as Organizer, Amir participant - SF Street Cleanup",
       DateUtils.addDays(now, -6), 1,
-      organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100));
+      organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100);
+    events.add(event);
+    pendingReviews.add(PendingReview.create(event, USER4.getKey(),
+      "I had a great time cleaning up the streets of SF.\n\n" +
+      "Thanks to Harish for organizing such a wonderful event!", 5));
+    pendingReviews.add(PendingReview.create(event, USER8.getKey(),
+      "Some of the areas where we did cleanup were a bit shady...", 3));
+    pendingReviews.add(PendingReview.create(event, USER12.getKey(), null, 3));
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey());
     waitListedUsers = asList(USER3.getKey());
-    events.add(createEvent("Amir as Organizer, Harish participant - SF Street Cleanup",
+    event = createEvent("Amir as Organizer, Harish participant - SF Street Cleanup",
       DateUtils.addDays(now, -13), 1,
-      organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100));
+      organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100);
+    events.add(event);
+    pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
 
     organizers = asList(USER1.getKey(), HARISH.getKey());
-    registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey());
+    registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
-    events.add(createEvent("Harish as Organizer - SF Street Cleanup",
-      DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100));
+    event = createEvent("Harish as Organizer - SF Street Cleanup",
+      DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100);
+    events.add(event);
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
-    registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey());
+    registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
-    events.add(createEvent("Amir as Organizer - SF Street Cleanup",
-      DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100));
+    event = createEvent("Amir as Organizer - SF Street Cleanup",
+      DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100);
+    events.add(event);
 
-    return events;
+    return new CreateEventsResult(events, pendingReviews);
   }
 
   private static Event createEvent(String title, Date startTime, int numHours,
@@ -233,5 +256,44 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       participants.add(EventParticipant.create(waitListedUser, ParticipantType.WAIT_LISTED));
     }
     return participants;
+  }
+
+  @Data
+  private static class CreateEventsResult {
+    private final Collection<Event> events;
+    // Reviews are persisted after the events the belong to are persisted because reviews are
+    // child entities of the events. Meaning the events must be persisted so their event keys
+    // can be generated. The event keys will be used as the parent keys for the reviews.
+    private final Collection<PendingReview> pendingReviews;
+  }
+
+  @Data
+  private static class PendingReview {
+    private final Event event;
+    private final Key<User> userKey;
+    private final Review review;
+
+    public static PendingReview create(Event event, Key<User> userKey, @Nullable String comment,
+      double ratingValue) {
+      return new PendingReview(event, userKey, createReview(comment, ratingValue));
+    }
+
+    private static Review createReview(@Nullable String comment, double ratingValue) {
+      Review review = new Review();
+      if (comment != null) {
+        review.setComment(comment);
+      }
+      review.setRating(Rating.create(ratingValue));
+      return review;
+    }
+
+    public void persistReview() {
+      AdminUtil.executeSubtaskAsUser(userKey, new AdminSubtask() {
+        @Override
+        public void execute() {
+          Event.mutateEventReviewForCurrentUser(Key.create(event), review);
+        }
+      });
+    }
   }
 }

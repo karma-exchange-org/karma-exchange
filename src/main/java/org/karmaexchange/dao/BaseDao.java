@@ -192,20 +192,20 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   protected void processLoad() {
     updateKey();
-    updatePermissionWithAdminCheck();
+    updatePermission();
   }
 
   protected void updateKey() {
     setKey(KeyWrapper.create(this).getKey());
   }
 
-  private final void updatePermissionWithAdminCheck() {
+  protected final void updatePermission() {
     if (isCurrentUserAdmin()) {
       permission = Permission.ALL;
     } else {
-      updatePermission();
+      permission = evalPermission();
     }
   }
 
-  protected abstract void updatePermission();
+  protected abstract Permission evalPermission();
 }

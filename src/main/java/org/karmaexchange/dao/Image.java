@@ -126,14 +126,14 @@ public class Image extends IdBaseDao<Image> {
   }
 
   @Override
-  protected void updatePermission() {
+  protected Permission evalPermission() {
     // TODO(avaliani): fill this in. Organizers of events should have
     // the ability to delete pictures also if the picture is owned by an
     // event.
     if (KeyWrapper.toKey(getModificationInfo().getCreationUser()).equals(getCurrentUserKey())) {
-      permission = Permission.ALL;
+      return Permission.ALL;
     } else {
-      permission = Permission.READ;
+      return Permission.READ;
     }
   }
 }
