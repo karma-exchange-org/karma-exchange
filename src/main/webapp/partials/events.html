@@ -16,7 +16,7 @@
 					    		
 					    		<ul class="inline">
 					    			<li class="pull-left">
-					    				<strong>{{event.startTime | date:'shortTime'}}</strong>
+					    				<strong>{{event.startTime | date:'shortTime'}}</strong> - <small class="muted">{{event.endTime | date:'shortTime'}} </small>
 	    								    					
 					    					
 					    				    				
@@ -28,7 +28,7 @@
 						    			<ul class="inline">
 											<li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
 												
-													<a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?type=square"></a>
+													<a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25"></a>
 												
 											</li>
 										</ul>	
@@ -58,8 +58,9 @@
                         					<p>{{modelEvent.location.address.country}}, {{modelEvent.location.address.zip}}</p>
 							            </td>
 							            <td>
-							            	<p>Needs : <strong>{{modelEvent.maxRegistrations}}</strong></p>
-							            	<p>Registered: <strong>{{modelEvent.participants.length}}</strong></p>
+							            	<p>Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered}}</strong></p>
+							            	<p>Registered: <strong>{{modelEvent.numRegistered}}</strong></p>
+							            	<p>Organized by </p><p><a href="#/user/{{modelEvent.firstOrganizer.key}}"><img ng-src="{{modelEvent.firstOrganizer.profileImage.url}}?type=square"/><strong>{{modelEvent.firstOrganizer.firstName}}</strong></a> <rating ng-hide="modelEvent.firstOrganizer.eventOrganizerRating.count==0" value="modelEvent.firstOrganizer.eventOrganizerRating.value" max="5" readonly="true"></rating> </p>
 							             </td>  
 							            <td>
 							            	<h4>{{event.karmaPoints}} karma points.</h4>
