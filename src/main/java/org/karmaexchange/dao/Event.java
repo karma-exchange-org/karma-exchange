@@ -68,7 +68,7 @@ public final class Event extends IdBaseDao<Event> {
   @Index
   private Date endTime;
   @Ignore
-  protected Status status;
+  private Status status;
 
   private Image primaryImage;
   private List<Image> allImages = Lists.newArrayList();
