@@ -17,6 +17,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.Parameter;
 import com.restfb.exception.FacebookException;
+import com.restfb.exception.FacebookOAuthException;
 
 public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
 
@@ -36,8 +37,10 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     try {
       fbUser = fbClient.fetchObject("me", com.restfb.types.User.class,
         Parameter.with("fields", "id"));
-    } catch(FacebookException e) {
-      throw ErrorResponseMsg.createException(e, ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
+    } catch (FacebookException e) {
+      throw ErrorResponseMsg.createException(e,
+        (e instanceof FacebookOAuthException) ? ErrorInfo.Type.AUTHENTICATION :
+          ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
     }
     if (fbUser.getId().equals(credential.getUid())) {
       return true;
