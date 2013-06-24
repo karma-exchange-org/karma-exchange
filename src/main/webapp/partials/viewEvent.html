@@ -71,7 +71,7 @@
                         <p ng-bind-html-unsafe="event.description | noHTML | newlines"/>
                         
                         <h4>Special instructions</h4>
-                        <p>{{event.specialInstructions}}</p>
+                        <p ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines"/>
                         
                         <input style="display:none" type="text"  class="span12" id="location-title" placeholder="Name of the place" >
                         

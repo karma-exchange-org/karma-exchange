@@ -1,47 +1,22 @@
 <form name="form" class="form-horizontal">
 <div class="container-fluid">
+    <div class="row-fluid">
+        <div class="control-group" ng-class="{error: form.event.$invalid}">
 
+            <label class="control-label" for="event">Event Title</label>
+
+            <div class="controls">
+
+                <input class="span12"  type="text" ng-model="event.title" id="title" placeholder="title">
+
+            </div>
+
+        </div>
+    </div>
     <div class="row-fluid">
 
-        <div class="span5">
+        <div class="span7">
 
-            
-
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                    <label class="control-label" for="event">Event Title</label>
-
-                    <div class="controls">
-
-                        <input type="text" ng-model="event.title" id="title" placeholder="title">
-
-                    </div>
-
-                </div>
-
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                    <label class="control-label" for="organizations">Organization(if any)</label>
-
-                    <div class="controls">
-
-                        <input type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations">
-
-                    </div>
-
-                </div>
-
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                    <label class="control-label" for="description">Description</label>
-
-                    <div class="controls">
-
-                        <textarea rows="3" class="input-large" ng-model="event.description" id="description" placeholder="description"></textarea>
-
-                    </div>
-
-                </div>
 
                 <div class="control-group" ng-class="{error: form.event.$invalid}">
 
@@ -62,7 +37,19 @@
                     
                 </div>
 
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
 
+                    <label class="control-label" for="event">Number of volunteers needed</label>
+
+                    <div class="controls controls-row">
+
+                        <input type="number" ng-model="event.minRegistrations" id="minRegistrations" placeholder="Minimum">
+
+                        <input type="number" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum">
+
+                    </div>
+
+                </div>
 
                 <div class="control-group" ng-class="{error: form.event.$invalid}">
 
@@ -94,8 +81,20 @@
                     
                 </div>
 
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="organizations">Organization(if any)</label>
+
+                    <div class="controls">
+
+                        <input class="span12"  type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations">
+
+                    </div>
+
+                </div>
+
         </div>
-        <div class="span7">
+        <div class="span5">
 
             <div class="google-map" 
                 center="center"
@@ -105,7 +104,7 @@
                 longitude="longitude"
                 mark-click="true"
                 draggable="true"
-                style="height: 400px; width: 100%">
+                style="height: 300px; width: 100%">
             </div>
 
         </div>
@@ -114,15 +113,14 @@
     <div class="row-fluid">
         <div class="span12">
                 
+                
                 <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-                    <label class="control-label" for="event">Number of volunteers needed</label>
+                    <label class="control-label" for="description">Description</label>
 
-                    <div class="controls controls-row">
+                    <div class="controls">
 
-                        <input type="text" ng-model="event.minRegistrations" id="minRegistrations" placeholder="Minimum">
-
-                        <input type="text" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum">
+                        <textarea rows="6" class="span12 input-xxlarge" ng-model="event.description" id="description" placeholder="description"></textarea>
 
                     </div>
 
@@ -193,7 +191,6 @@
             autoclose: true,
             todayHighlight : true,
             minuteStep : 30,
-            todayBtn: true,
             startDate : (new Date()),
             
         });
