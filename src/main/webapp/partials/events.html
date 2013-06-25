@@ -67,8 +67,8 @@
 							            	<p>
 							            		
 							            		
-							            		<button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Register</button>
-							            		<button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Wait list</button>
+							            		<button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i>Register</button>
+							            		<button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i>Wait list</button>
 							            		<p ng-show="{REGISTERED:true,WAIT_LISTED:true}[modelEvent.registrationInfo]"><i class="icon-ok"></i>You have registered!</p>
 							            		
 							            	

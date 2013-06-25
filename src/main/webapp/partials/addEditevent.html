@@ -1,190 +1,198 @@
-<form name="form" class="form-horizontal">
-<div class="container-fluid">
-    <div class="row-fluid">
-        <div class="control-group" ng-class="{error: form.event.$invalid}">
+<tabset>
+    <tab heading="Event Details">
+        <form name="form" class="form-horizontal">
+        <div class="container-fluid">
+            <div class="row-fluid">
+                <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-            <label class="control-label" for="event">Event Title</label>
+                    <label class="control-label" for="event">Event Title</label>
 
-            <div class="controls">
+                    <div class="controls">
 
-                <input class="span12"  type="text" ng-model="event.title" id="title" placeholder="title">
+                        <input class="span12"  type="text" ng-model="event.title" id="title" placeholder="title">
 
+                    </div>
+
+                </div>
             </div>
+            <div class="row-fluid">
 
-        </div>
-    </div>
-    <div class="row-fluid">
-
-        <div class="span7">
+                <div class="span7">
 
 
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-                    <label class="control-label" for="event">When?</label>
+                            <label class="control-label" for="event">When?</label>
 
-                    <div class="controls controls-row ">
-                        <div class="input-append date form_datetime"  data-date-format="dd MM yyyy - HH:ii P" id="startTimePicker">
-                            <input size="16" readonly type="text" value="{{event.startTime | date:'dd MMM yyyy - hh:mm a'}}" id="startTime" placeholder="Start time">
-                            <span class="add-on"><i class="icon-remove"></i></span>
-                             <span class="add-on"><i class="icon-th"></i></span>
+                            <div class="controls controls-row ">
+                                <div class="input-append date form_datetime"  data-date-format="dd MM yyyy - HH:ii P" id="startTimePicker">
+                                    <input size="16" readonly type="text" value="{{event.startTime | date:'dd MMM yyyy - hh:mm a'}}" id="startTime" placeholder="Start time">
+                                    <span class="add-on"><i class="icon-remove"></i></span>
+                                     <span class="add-on"><i class="icon-th"></i></span>
+                                </div>
+                               <div class="input-append date form_datetime" data-date-format="dd MM yyyy - HH:ii P" id="endTimePicker">
+                                    <input size="16" readonly type="text" value="{{event.endTime | date:'dd MMM yyyy - hh:mm a'}}" id="endTime" placeholder="End time">
+                                    <span class="add-on"><i class="icon-remove"></i></span>
+                                    <span class="add-on"><i class="icon-th"></i></span>
+                                </div>
+                            </div>
+                            
                         </div>
-                       <div class="input-append date form_datetime" data-date-format="dd MM yyyy - HH:ii P" id="endTimePicker">
-                            <input size="16" readonly type="text" value="{{event.endTime | date:'dd MMM yyyy - hh:mm a'}}" id="endTime" placeholder="End time">
-                            <span class="add-on"><i class="icon-remove"></i></span>
-                            <span class="add-on"><i class="icon-th"></i></span>
+
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                            <label class="control-label" for="event">Number of volunteers needed</label>
+
+                            <div class="controls controls-row">
+
+                                <input type="number" ng-model="event.minRegistrations" id="minRegistrations" placeholder="Minimum">
+
+                                <input type="number" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum">
+
+                            </div>
+
                         </div>
-                    </div>
-                    
-                </div>
 
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-                    <label class="control-label" for="event">Number of volunteers needed</label>
+                            <label class="control-label" for="event">Where?</label>
 
-                    <div class="controls controls-row">
+                            <div class="controls">
 
-                        <input type="number" ng-model="event.minRegistrations" id="minRegistrations" placeholder="Minimum">
+                                <input type="text"  class="span12"  id="locationTitle" placeholder="Name of the place" >
 
-                        <input type="number" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum">
+                            </div>
 
-                    </div>
+                            <div class="controls">
 
-                </div>
+                                <p>{{event.location.address.street}}</p>
 
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
+                            </div>
 
-                    <label class="control-label" for="event">Where?</label>
+                            <div class="controls controls-row">
 
-                    <div class="controls">
+                                <p>{{event.location.address.city}}, {{event.location.address.state}}, <p>
 
-                        <input type="text"  class="span12"  id="locationTitle" placeholder="Name of the place" >
+                                <p>{{event.location.address.country}}, {{event.location.address.zip}}</p>
+                               
 
-                    </div>
-
-                    <div class="controls">
-
-                        <p>{{event.location.address.street}}</p>
-
-                    </div>
-
-                    <div class="controls controls-row">
-
-                        <p>{{event.location.address.city}}, {{event.location.address.state}}, <p>
-
-                        <p>{{event.location.address.country}}, {{event.location.address.zip}}</p>
-                       
-
-                    </div>
+                            </div>
 
 
 
-                    
-                </div>
+                            
+                        </div>
 
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-                    <label class="control-label" for="organizations">Organization(if any)</label>
+                            <label class="control-label" for="organizations">Organization(if any)</label>
 
-                    <div class="controls">
+                            <div class="controls">
 
-                        <input class="span12"  type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations">
+                                <input class="span12"  type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations">
 
-                    </div>
+                            </div>
+
+                        </div>
 
                 </div>
+                <div class="span5">
 
-        </div>
-        <div class="span5">
+                    <div class="google-map" 
+                        center="center"
+                        zoom="zoom" 
+                        markers="markers"
+                        latitude="latitude"
+                        longitude="longitude"
+                        mark-click="true"
+                        draggable="true"
+                        style="height: 300px; width: 100%">
+                    </div>
 
-            <div class="google-map" 
-                center="center"
-                zoom="zoom" 
-                markers="markers"
-                latitude="latitude"
-                longitude="longitude"
-                mark-click="true"
-                draggable="true"
-                style="height: 300px; width: 100%">
+                </div>
             </div>
-
-        </div>
-    </div>
-    
-    <div class="row-fluid">
-        <div class="span12">
-                
-                
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                    <label class="control-label" for="description">Description</label>
-
-                    <div class="controls">
-
-                        <textarea rows="6" class="span12 input-xxlarge" ng-model="event.description" id="description" placeholder="description"></textarea>
-
-                    </div>
-
-                </div>
-
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
-                    <label class="control-label" for="event">Special instructions</label>
-                    <div class="controls controls-row">
-                       
-                         <textarea rows="3" class="span12 input-xxlarge" ng-model="event.specialInstructions" id="specialInstructions" placeholder="specialInstructions"></textarea>
-                    </div>
-
-                </div>
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                    <label class="control-label" for="event">Causes</label>
-                    <div class="controls controls-row">
-                        <input class="span12" type="text" ng-model="event.causes" id="causes" placeholder="causes">
-                     </div>
-
-                </div>
-
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                    <label class="control-label" for="event">Skills required</label>
-                    <div class="controls controls-row">
-                        <input class="span12"  type="text" ng-model="event.skillsRequired" id="skillsRequired" placeholder="Skills Required">
-                     </div>
-
-                </div>
-
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                    <label class="control-label" for="event">Skills preferred</label>
-                    <div class="controls controls-row">
-                        <input class="span12"  type="text" ng-model="event.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
-                     </div>
-
-                </div>
-
-
-
-                <div class="form-actions">
-
-                    <button class="btn btn-primary" ng-click="save()">
-
-                        Submit
-
-                    </button>
-
-                    <a href="#/events" class="btn">Cancel</a>
-
-                </div>
-
             
+            <div class="row-fluid">
+                <div class="span12">
+                        
+                        
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                            <label class="control-label" for="description">Description</label>
+
+                            <div class="controls">
+
+                                <textarea rows="6" class="span12 input-xxlarge" ng-model="event.description" id="description" placeholder="description"></textarea>
+
+                            </div>
+
+                        </div>
+
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+                            <label class="control-label" for="event">Special instructions</label>
+                            <div class="controls controls-row">
+                               
+                                 <textarea rows="3" class="span12 input-xxlarge" ng-model="event.specialInstructions" id="specialInstructions" placeholder="specialInstructions"></textarea>
+                            </div>
+
+                        </div>
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                            <label class="control-label" for="event">Causes</label>
+                            <div class="controls controls-row">
+                                <input class="span12" type="text" ng-model="event.causes" id="causes" placeholder="causes">
+                             </div>
+
+                        </div>
+
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                            <label class="control-label" for="event">Skills required</label>
+                            <div class="controls controls-row">
+                                <input class="span12"  type="text" ng-model="event.skillsRequired" id="skillsRequired" placeholder="Skills Required">
+                             </div>
+
+                        </div>
+
+                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+
+                            <label class="control-label" for="event">Skills preferred</label>
+                            <div class="controls controls-row">
+                                <input class="span12"  type="text" ng-model="event.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
+                             </div>
+
+                        </div>
+
+
+
+                        <div class="form-actions">
+
+                            <button class="btn btn-primary" ng-click="save()">
+
+                                Submit
+
+                            </button>
+
+                            <a href="#/events" class="btn">Cancel</a>
+
+                        </div>
+
+                    
+
+                </div>
+            </div>
+                
+
+            </div>
 
         </div>
-    </div>
-        
+        </form>
+    </tab>
+    <tab heading="Manage participants">
 
-    </div>
+    </tab>
 
-</div>
-</form>
+</tabset>
 <script type="text/javascript">
         $('.form_datetime').datetimepicker({
             showMeridian: true,
