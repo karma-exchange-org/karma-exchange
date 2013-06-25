@@ -37,8 +37,8 @@
                             <div class="pull-right">
                                 <a ng-show="{ORGANIZER:true}[event.registrationInfo]"class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
                                 
-                                <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Register</button>
-                                <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"class="btn btn-success" ng-click="register()"><i class="icon-ok icon-white"></i>Wait list</button>
+                                <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i>Register</button>
+                                <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i>Wait list</button>
                                 <p ng-show="{REGISTERED:true,WAIT_LISTED:true}[event.registrationInfo]"><i class="icon-ok"></i>You have registered!</p>
                             </div>
 
@@ -111,12 +111,13 @@
                       
                                 <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                         
-                                
+                              <p></p>  
                            
                             
                        
                     </li>
                 </ul>
+                <button class="btn btn-link" ng-show="event.eventOrganizers.length-eventOrganizers.data.length>0" ng-click="getMore('ORGANIZER');">See more ({{event.eventOrganizers.length-eventOrganizers.data.length}})</button>
                 </p>
                         
            
@@ -134,7 +135,9 @@
                               
                                 <p></p>
                             </li>
+
                         </ul>
+                        <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button>
                 </p>
         
             
@@ -151,6 +154,7 @@
                                
                             </li>
                         </ul>
+                        <button class="btn btn-link" ng-show="event.waitListedUsers.length-eventWaitListed.data.length>0" ng-click="getMore('WAIT_LISTED');">See more ({{event.waitListedUsers.length-eventWaitListed.data.length}})</button>
                 </p>
            
         </div>
@@ -163,10 +167,7 @@
 
 </div>
 <script>
-    var mydiv = document.getElementById('myCommentsDiv'); 
-    mydiv.innerHTML =
-      '<div class="fb-comments" href="' + document.location.href + '" data-num-posts="20" data-width="940">'; 
-    FB.XFBML.parse(mydiv); 
+    
 </script>
 
 
