@@ -78,8 +78,8 @@ angular
                 }
                 return $q.reject(errorResponse);
             });
-        };
-    });
+};
+});
 
 $compileProvider.directive('appMessages', function() {
     var directiveDefinitionObject = {
@@ -105,8 +105,8 @@ angular.module('FacebookProvider', [])
             FB.getLoginStatus(function (response) {
                 switch (response.status) {
                     case 'connected':
-                        $rootScope.$broadcast('fb_connected', {facebook_id:response.authResponse.userID});
-                        break;
+                    $rootScope.$broadcast('fb_connected', {facebook_id:response.authResponse.userID});
+                    break;
                     case 'not_authorized' || 'unknown':
                         // 'not_authorized' || 'unknown': doesn't seem to work
                         FB.login(function (response) {
@@ -120,7 +120,7 @@ angular.module('FacebookProvider', [])
                             }
                         }, {scope:'read_stream, publish_stream, email'});
                         break;
-                    default:
+                        default:
                         FB.login(function (response) {
                             if (response.authResponse) {
                                 $rootScope.$broadcast('fb_connected', {facebook_id:response.authResponse.userID});
@@ -130,24 +130,29 @@ angular.module('FacebookProvider', [])
                             }
                         });
                         break;
-                }
-            }, true);
-        },
-        logout:function () {
-            FB.logout(function (response) {
-                if (response) {
-                    $rootScope.$broadcast('fb_logout_succeded');
-                } else {
-                    $rootScope.$broadcast('fb_logout_failed');
-                }
-            });
-        },
-        unsubscribe:function () {
-            FB.api("/me/permissions", "DELETE", function (response) {
-                $rootScope.$broadcast('fb_get_login_status');
-            });
+                    }
+                }, true);
+},
+logout:function () {
+    FB.logout(function (response) {
+        if (response) {
+            $rootScope.$broadcast('fb_logout_succeded');
+        } else {
+            $rootScope.$broadcast('fb_logout_failed');
         }
-    };
+    });
+},
+unsubscribe:function () {
+    FB.api("/me/permissions", "DELETE", function (response) {
+        $rootScope.$broadcast('fb_get_login_status');
+    });
+},
+getFBComments:function(mydiv){
+    mydiv.innerHTML =
+                  '<div class="fb-comments" href="' + $rootScope.location.path + '" data-num-posts="20" data-width="940">'; 
+    FB.XFBML.parse(mydiv); 
+}
+};
 });
 
 kexApp = angular.module("kexApp", ["ngResource","ngCookies","google-maps","ui.bootstrap","SharedServices","FacebookProvider","globalErrors"]).
@@ -182,20 +187,20 @@ config(function($routeProvider,$httpProvider) {
     return function(text) {
         if(text)
         {
-         return text
-         .replace(/&/g, '&amp;')
-         .replace(/>/g, '&gt;')
-         .replace(/</g, '&lt;'); 
-     }    
+           return text
+           .replace(/&/g, '&amp;')
+           .replace(/>/g, '&gt;')
+           .replace(/</g, '&lt;'); 
+       }    
 
- }
+   }
 })
 .filter('limit10', function () {
     return function(text) {
         if(text)
         {
-         if(text>10)
-         {
+           if(text>10)
+           {
             return 'More than 10';
         } 
         return text;
@@ -212,7 +217,7 @@ config(function($routeProvider,$httpProvider) {
     {
         fbAppId = '571265879564450';
     }
-
+    $rootScope.location = $location;
     window.fbAsyncInit = function () {
         FB.init({
             appId:fbAppId,
@@ -221,8 +226,8 @@ config(function($routeProvider,$httpProvider) {
             xfbml:true
         });
         FB.Event.subscribe('auth.statusChange', function(response) {
-        $rootScope.$broadcast("fb_statusChange", {'status': response.status});
-    });
+            $rootScope.$broadcast("fb_statusChange", {'status': response.status});
+        });
     };
 
 
@@ -288,26 +293,26 @@ function fbCntrl(Facebook, $scope, $rootScope, $http, $location, Me) {
         
         if($rootScope.fb_status==='connected')
         {
-           Facebook.getLoginStatus();  
-        } 
-        else
-        {
-              $.removeCookie("facebook-uid");
-              $.removeCookie("facebook-token");
-              $.removeCookie("login");
-        }   
-         
-        $rootScope.$apply();
-    });
+         Facebook.getLoginStatus();  
+     } 
+     else
+     {
+      $.removeCookie("facebook-uid");
+      $.removeCookie("facebook-token");
+      $.removeCookie("login");
+  }   
+
+  $rootScope.$apply();
+});
     $rootScope.$on("fb_get_login_status", function () {
         Facebook.getLoginStatus();
 
     });
     $rootScope.$on("fb_login_failed", function () {
-        
+
     });
     $rootScope.$on("fb_logout_succeded", function () {
-        
+
         $rootScope.id = "";
     });
     $rootScope.$on("fb_logout_failed", function () {
@@ -336,9 +341,9 @@ function fbCntrl(Facebook, $scope, $rootScope, $http, $location, Me) {
          connect and to get some extra data we might need to unthenticated him.
          */
 
-        var params = {};
+         var params = {};
 
-        function authenticateViaFacebook(parameters) {
+         function authenticateViaFacebook(parameters) {
             //posts some user data to a page that will check them against some db
             
         }
@@ -347,14 +352,14 @@ function fbCntrl(Facebook, $scope, $rootScope, $http, $location, Me) {
             //if the user has not authorized the app, we must write his credentials in our database
             //console.log("user is connected to facebook but has not authorized our app");
             FB.api(
-                {
-                    method:'fql.multiquery',
-                    queries:{
-                        'q1':'SELECT uid, first_name, last_name FROM user WHERE uid = ' + args.facebook_id,
-                        'q2':'SELECT url FROM profile_pic WHERE width=800 AND height=800 AND id = ' + args.facebook_id
-                    }
-                },
-                function (data) {
+            {
+                method:'fql.multiquery',
+                queries:{
+                    'q1':'SELECT uid, first_name, last_name FROM user WHERE uid = ' + args.facebook_id,
+                    'q2':'SELECT url FROM profile_pic WHERE width=800 AND height=800 AND id = ' + args.facebook_id
+                }
+            },
+            function (data) {
                     //let's built the data to send to php in order to create our new user
                     params = {
                         facebook_id:data[0]['fql_result_set'][0].uid,
@@ -371,13 +376,13 @@ function fbCntrl(Facebook, $scope, $rootScope, $http, $location, Me) {
             params = {'facebook_id':args.facebook_id};
             authenticateViaFacebook(params);
             $rootScope.facebook_id = args.facebook_id;
-           
+
         }
 
     });
 
 
-    $rootScope.updateSession = function () {
+$rootScope.updateSession = function () {
         //reads the session variables if exist from php
         
     };
@@ -475,7 +480,7 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
 
 };
 
-var eventsCtrl = function ($scope, $location, Events) {
+var eventsCtrl = function ($scope, $location, Events,$rootScope) {
 	if(!checkLogin($location))
     {
         return;
@@ -490,13 +495,22 @@ var eventsCtrl = function ($scope, $location, Events) {
         
 
     };
-    $scope.register = function(){
+    $scope.register = function(type){
         var eventId = this.modelEvent.key;
-        Events.save({ id: eventId , registerCtlr :'participants',regType:'REGISTERED'}, function () {
+        var thisEvent = this.event;
+        Events.save({ id: eventId , registerCtlr :'participants',regType:type}, function (type) {
                 //alert and close
                 $scope.addAlert("Registration successful!");
-                $scope.modelEvent.registrationInfo = 'REGISTERED';                
+                $scope.modelEvent.registrationInfo = type;                
                 $scope.modelEvent.numAttending++;
+                /*
+                thisEvent.cachedParticipantImages.push({"participant": {
+                    "key": $rootScope.me.key
+                    },
+                    "imageUrl": $rootScope.me.profileImage.url,
+                    "imageUrlProvider": "FACEBOOK"}
+                    );
+                */
                 //TODO - push to cached event participants
                 $scope.$apply();
 
@@ -549,12 +563,12 @@ var eventsCtrl = function ($scope, $location, Events) {
         }
         else
         {
-           $('.event-detail').hide();
-           $scope.modelEvent = Events.get({ id: this.event.key , registerCtlr:'expanded_search_view'});
-           $('#'+this.event.key+'_detail').show();
-       }    
+         $('.event-detail').hide();
+         $scope.modelEvent = Events.get({ id: this.event.key , registerCtlr:'expanded_search_view'});
+         $('#'+this.event.key+'_detail').show();
+     }    
 
-   };
+ };
 
 
 
@@ -564,7 +578,7 @@ var eventsCtrl = function ($scope, $location, Events) {
 
 
 
-var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
+var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $location,Events,$http,Facebook) {
     if(!checkLogin($location))
     {
         return;
@@ -589,11 +603,49 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         
     });
 
-    $scope.register = function(){
+    $scope.register = function(type){
         var eventId = $scope.event.key;
-        Events.save({ id: eventId , registerCtlr :'participants',regType:'REGISTERED'}, function () {
+        Events.save({ id: eventId , registerCtlr :'participants',regType : type}, function (req,$rootScope) {
                 //alert and close
                 $scope.refreshEvent();
+                //$scope.addAlert("Registration successful!");
+                $scope.event.registrationInfo = type;                
+                $scope.event.numAttending++;
+                console.log(type);
+                if(type==='REGISTERED')
+                {
+                    $scope.eventRegistered.data.push(
+                        {
+                            "user":{
+                                "key": $rootScope.me.key,
+                                 "profileImage": {
+                                    "url": $rootScope.me.profileImage.url
+                                 },
+                                 "firstName":$rootScope.me.firstName,
+                                 "lastName": $rootScope.me.lastName
+                            }
+                        }
+                        );
+                }
+                else if(type==='WAIT_LISTED')
+                {
+                    $scope.eventWaitListed.data.push(
+                        {
+                            "user":{
+                                "key": $rootScope.me.key,
+                                 "profileImage": {
+                                    "url": $rootScope.me.profileImage.url
+                                 },
+                                 "firstName":$rootScope.me.firstName,
+                                 "lastName": $rootScope.me.lastName
+                            }
+                        }
+
+                        );
+                }  
+                
+               
+                
                 
 
             });
@@ -661,7 +713,61 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
         };            
 
 
-
+        $scope.getMore = function(type)
+        {
+            if($scope.eventRegistered.paging.next==null)
+            {
+                return;
+            }    
+            if(type==='REGISTERED')
+            {
+               
+                $http({method: 'GET', url: $scope.eventRegistered.paging.next}).success(function(data) {
+                    
+                    for(var i=0;i<data.data.length;i++)
+                    {
+                       $scope.eventRegistered.data.push(data.data[i]); 
+                    }    
+                                  
+                    $scope.eventRegistered.paging.next = data.paging?data.paging.next:null;
+                    
+                    
+                });
+                
+            }
+            else if(type==='ORGANIZER')
+            {
+               
+                $http({method: 'GET', url: $scope.eventOrganizers.paging.next}).success(function(data) {
+                    
+                    for(var i=0;i<data.data.length;i++)
+                    {
+                       $scope.eventOrganizers.data.push(data.data[i]); 
+                    }    
+                                  
+                    $scope.eventOrganizers.paging.next = data.paging?data.paging.next:null;
+                    
+                    
+                });
+                
+            }
+            else if(type==='WAIT_LISTED')
+            {
+               
+                $http({method: 'GET', url: $scope.eventWaitListed.paging.next}).success(function(data) {
+                    
+                    for(var i=0;i<data.data.length;i++)
+                    {
+                       $scope.eventWaitListed.data.push(data.data[i]); 
+                    }    
+                                  
+                    $scope.eventWaitListed.paging.next = data.paging?data.paging.next:null;
+                    
+                    
+                });
+                
+            }    
+        };
 
 
         $scope.save = function () {
@@ -689,6 +795,9 @@ var addEditEventsCtrl =  function ($scope, $routeParams, $location,Events) {
                 $scope.eventRegistered = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'REGISTERED'});
                 $scope.eventWaitListed = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'WAIT_LISTED'});
                 
+                var mydiv = document.getElementById('myCommentsDiv'); 
+                
+                Facebook.getFBComments(mydiv,$location);
                 if($scope.event.status=='COMPLETED')
                 {
                     $scope.eventRating = Events.get({ id: $routeParams.eventId, registerCtlr :'review'}, function(){
@@ -850,7 +959,7 @@ var checkLogin = function($location){
 		$.removeCookie("facebook-token");
 		$.removeCookie("login");
         //Facebook.login();
-		
+
         return false;
     }
 };
