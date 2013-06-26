@@ -19,21 +19,27 @@ import org.apache.lucene.analysis.util.StopwordAnalyzerBase;
 import org.apache.lucene.util.Version;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 public class SearchUtil {
 
   private static final Analyzer ANALYZER = new KStemEnglishAnalyzer();
 
-  public static Set<String> getSearchableTokens(String string, int maxTokens) {
-    Set<String> result = Sets.newHashSet();
+  public static Set<String> getSearchableTokens(String textToParse, int maxTokens) {
+    BoundedHashSet<String> searchableTokens = BoundedHashSet.create(maxTokens);
+    addSearchableTokens(searchableTokens, textToParse);
+    return searchableTokens;
+  }
+
+  public static void addSearchableTokens(BoundedHashSet<String> searchableTokens,
+      String textToParse) {
+    textToParse = extractTags(searchableTokens, textToParse);
     try {
-      TokenStream tokenStream  = ANALYZER.tokenStream(null, new StringReader(string));
+      TokenStream tokenStream  = ANALYZER.tokenStream(null, new StringReader(textToParse));
       CharTermAttribute termAttr = tokenStream.addAttribute(CharTermAttribute.class);
       try {
         tokenStream.reset();
-        while ((result.size() < maxTokens) && tokenStream.incrementToken()) {
-          result.add(termAttr.toString());
+        while (!searchableTokens.limitReached() && tokenStream.incrementToken()) {
+          searchableTokens.add(termAttr.toString());
         }
         tokenStream.end();
       } finally {
@@ -43,7 +49,21 @@ public class SearchUtil {
       // Should not be thrown since a string is the input.
       throw new RuntimeException(e);
     }
-    return result;
+  }
+
+  private static String extractTags(BoundedHashSet<String> searchableTokens, String textToParse) {
+    String[] tokens = textToParse.split("\\s+");
+    StringBuilder remainingText = new StringBuilder();
+    for (int tokIdx=0; (tokIdx < tokens.length) && !searchableTokens.limitReached();
+         tokIdx++) {
+      if (TagUtil.TAG_PREFIX_PATTERN.matcher(tokens[tokIdx]).find()) {
+        searchableTokens.add(tokens[tokIdx].toLowerCase());
+      } else {
+        remainingText.append(tokens[tokIdx]);
+        remainingText.append(' ');
+      }
+    }
+    return remainingText.toString();
   }
 
   /**
