@@ -2,9 +2,15 @@ package org.karmaexchange.dao;
 
 import static java.util.Arrays.asList;
 import static org.karmaexchange.util.JsonValidationTestUtil.validateJsonConversion;
+import static org.karmaexchange.util.TestUtil.debug;
+
+import java.util.EnumSet;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.karmaexchange.util.DatastoreTestUtil;
+
+import com.google.common.collect.Lists;
 
 public class EventTest extends PersistenceTestHelper {
 
@@ -27,6 +33,7 @@ public class EventTest extends PersistenceTestHelper {
     event.setRegistrationInfo(Event.RegistrationInfo.CAN_REGISTER);
     event.setMaxRegistrations(20);
     event.setKarmaPoints(100);
+    event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
   }
 
   @Test
@@ -37,5 +44,8 @@ public class EventTest extends PersistenceTestHelper {
   @Test
   public void testPersistence() throws Exception {
     validatePersistence(event);
+    if (debug) {
+      DatastoreTestUtil.dumpEntity(event);
+    }
   }
 }

@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
+import org.karmaexchange.dao.SuitableForType;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.util.AdminUtil;
@@ -131,26 +133,34 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
-    events.add(createEvent("Amir & Harish Organizer - SF Street Cleanup",
-      DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100));
+    Event event = createEvent("Amir & Harish Organizer - SF Street Cleanup",
+      DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100);
+    event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
+    events.add(event);
 
     organizers = asList(USER2.getKey());
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
-    events.add(createEvent("Full event - Learning center",
-      DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 0, 2, 100));
+    event = createEvent("Full event - Learning center",
+      DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 0, 2, 100);
+    event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
+    events.add(event);
 
     organizers = asList(AMIR.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    events.add(createEvent("Amir Organizer - Date conflict - No one signed up",
-      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100));
+    event = createEvent("Amir Organizer - Date conflict - No one signed up",
+      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100);
+    event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
+    events.add(event);
 
     organizers = asList(HARISH.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    events.add(createEvent("Harish Organizer - Date conflict - No one signed up",
-      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100));
+    event = createEvent("Harish Organizer - Date conflict - No one signed up",
+      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100);
+    event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
+    events.add(event);
 
     // Past events.
     List<PendingReview> pendingReviews = Lists.newArrayList();
@@ -160,10 +170,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
     waitListedUsers = asList(USER3.getKey());
-    Event event = createEvent("Harish as Organizer, Amir participant - SF Street Cleanup",
+    event = createEvent("Harish as Organizer, Amir participant - SF Street Cleanup",
       DateUtils.addDays(now, -6), 1,
       organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100);
     events.add(event);
+    event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     pendingReviews.add(PendingReview.create(event, USER4.getKey(),
       "I had a great time cleaning up the streets of SF.\n\n" +
       "Thanks to Harish for organizing such a wonderful event!", 5));
@@ -178,6 +189,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event = createEvent("Amir as Organizer, Harish participant - SF Street Cleanup",
       DateUtils.addDays(now, -13), 1,
       organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100);
+    event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
 

@@ -7,6 +7,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.task.ProcessOrganizerRatingsServlet;
+import org.karmaexchange.util.BoundedHashSet;
 import org.karmaexchange.util.SearchUtil;
 
 import lombok.Data;
@@ -128,6 +130,8 @@ public final class Event extends IdBaseDao<Event> {
   private boolean completionProcessed;
   private EventCompletionTasks completionTasks;
 
+  private List<SuitableForType> suitableForTypes = Lists.newArrayList();
+
   public enum RegistrationInfo {
     ORGANIZER,
     REGISTERED,
@@ -198,6 +202,7 @@ public final class Event extends IdBaseDao<Event> {
       initParticipantLists();
     }
     processParticipants();
+    processSuitableFor();
     validateEvent();
     initKarmaPoints();
     rating = IndexedAggregateRating.create();
@@ -217,6 +222,7 @@ public final class Event extends IdBaseDao<Event> {
     // Participants is independently and transactionally updated.
     participants = Lists.newArrayList(prevObj.participants);
     processParticipants();
+    processSuitableFor();
     validateEvent();
     initSearchableTokens();
     completionProcessed = prevObj.completionProcessed;
@@ -288,6 +294,14 @@ public final class Event extends IdBaseDao<Event> {
     updateCachedParticipantImages();
   }
 
+  private void processSuitableFor() {
+    if (!suitableForTypes.isEmpty()) {
+      // Eliminate any duplicates.
+      EnumSet<SuitableForType> suitableForSet = EnumSet.copyOf(suitableForTypes);
+      suitableForTypes = Lists.newArrayList(suitableForSet);
+    }
+  }
+
   @Override
   protected void processLoad() {
     // initParticipantLists() must be called prior to processLoad so that updatePermissions can
@@ -331,22 +345,30 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   private void initSearchableTokens() {
-    // The lowest priority tokens should be added to the end. Once the token limit is hit
-    // the remaining tokens will be discarded.
+    BoundedHashSet<String> searchableTokensSet = BoundedHashSet.create(MAX_SEARCH_TOKENS);
+    for (SuitableForType suitableForType : suitableForTypes) {
+      searchableTokensSet.addIfSpace(suitableForType.getTag());
+    }
+    // The lowest priority tokens should be added to the end of the searchableContent. Once the
+    // token limit is hit the remaining tokens will be discarded.
     StringBuilder searchableContent = new StringBuilder();
     searchableContent.append(title);
     searchableContent.append(' ');
     for (KeyWrapper<CauseType> causeKeyWrapper : causes) {
-      searchableContent.append(KeyWrapper.toKey(causeKeyWrapper).getName());
+      Key<CauseType> causeKey = KeyWrapper.toKey(causeKeyWrapper);
+      // We add causes both as tags and text strings to be parsed since keywords like
+      // homeless and animals are good for non-tag based keyword search.
+      searchableContent.append(CauseType.getCauseTypeAsString(causeKey));
       searchableContent.append(' ');
+      searchableTokensSet.addIfSpace(CauseType.getTag(causeKey));
     }
     if ((location != null) && (location.getTitle() != null)) {
       searchableContent.append(location.getTitle());
       searchableContent.append(' ');
     }
     searchableContent.append(description);
-    searchableTokens = Lists.newArrayList(
-      SearchUtil.getSearchableTokens(searchableContent.toString(), MAX_SEARCH_TOKENS));
+    SearchUtil.addSearchableTokens(searchableTokensSet, searchableContent.toString());
+    searchableTokens = Lists.newArrayList(searchableTokensSet);
   }
 
   private void initParticipantLists() {
