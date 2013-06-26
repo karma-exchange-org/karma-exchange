@@ -3,6 +3,8 @@ package org.karmaexchange.dao;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.karmaexchange.util.TagUtil;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -31,6 +33,14 @@ public class CauseType extends NameBaseDao<CauseType> {
 
   public static Key<CauseType> getKey(String name) {
     return Key.create(CauseType.class, name);
+  }
+
+  public static String getTag(Key<CauseType> causeKey) {
+    return TagUtil.createTag(getCauseTypeAsString(causeKey));
+  }
+
+  public static String getCauseTypeAsString(Key<CauseType> causeKey) {
+    return causeKey.getName();
   }
 
   private CauseType(String name, @Nullable PageRef pageRef) {
