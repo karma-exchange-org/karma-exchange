@@ -149,7 +149,7 @@ unsubscribe:function () {
 },
 getFBComments:function(mydiv){
     mydiv.innerHTML =
-                  '<div class="fb-comments" href="' + $rootScope.location.path + '" data-num-posts="20" data-width="940">'; 
+                  '<div class="fb-comments" href="' +window.location.href + '" data-num-posts="20" data-width="940">'; 
     FB.XFBML.parse(mydiv); 
 }
 };
@@ -490,11 +490,15 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
     $scope.reset = function() {
 
 
-        $scope.events = Events.get({q: $scope.query});
+        $scope.events = Events.get({keywords: $scope.query});
         
         
 
     };
+    $scope.query = "";
+    $scope.$watch('query',function(){
+        $scope.reset();
+    });
     $scope.register = function(type){
         var eventId = this.modelEvent.key;
         var thisEvent = this.event;
@@ -528,17 +532,16 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
     };
-    $scope.currentDate = new Date(2001, 01, 01, 01, 01, 01, 0);
+    $scope.currentDate = new Date(1001, 01, 01, 01, 01, 01, 0);
     $scope.createHeader = function(dateParam) {
 
         dateVal = new Date(dateParam);
         currentDate = new Date($scope.currentDate);
-
-        showHeader = (dateVal.toDateString()!=currentDate.toDateString()); 
+        showHeader = (''+dateVal.getDate()+dateVal.getMonth()+dateVal.getFullYear()!=''+currentDate.getDate()+currentDate.getMonth()+currentDate.getFullYear()); 
 
         $scope.currentDate = new Date(dateVal);
         
-        return !showHeader;
+        return showHeader;
     }
 
     $scope.reset();
@@ -797,7 +800,7 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $location,Ev
                 
                 var mydiv = document.getElementById('myCommentsDiv'); 
                 
-                Facebook.getFBComments(mydiv,$location);
+                Facebook.getFBComments(mydiv);
                 if($scope.event.status=='COMPLETED')
                 {
                     $scope.eventRating = Events.get({ id: $routeParams.eventId, registerCtlr :'review'}, function(){
@@ -969,9 +972,9 @@ var checkLogin = function($location){
 function getImage(id,size) {
     if(size=='small')
     {
-        return "http://graph.facebook.com/" + id + "/picture?access_token=" +$.cookie("facebook-token")+"&width=25&height=25";
+        return "//graph.facebook.com/" + id + "/picture?access_token=" +$.cookie("facebook-token")+"&width=25&height=25";
     }  
-    return "http://graph.facebook.com/" + id + "/picture?access_token=" +$.cookie("facebook-token")+"type=square";  
+    return "//graph.facebook.com/" + id + "/picture?access_token=" +$.cookie("facebook-token")+"type=square";  
 
 };
 

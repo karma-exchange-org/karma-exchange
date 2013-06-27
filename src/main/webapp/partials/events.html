@@ -1,6 +1,11 @@
 <div class="container-fluid">
+
+		<div class="row-fluid input-append"><input class="span12" type="text" ng-model="query" placeholder="Search.."><span class="add-on"><i class="icon-search"></i></span></div>
 	
-	<alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+
+	<div class="row-fluid">
+		<alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+	</div>
 	<div>
 		
 			<ul class="unstyled">
@@ -8,7 +13,7 @@
 				<li ng-repeat="event in events.data" id="event_{{event.key}}">
 					<div>
 						<h3 ng-show="createHeader(event.startTime)">
-					       {{event.startTime | date:'mediumDate'}}
+					       {{event.startTime | date:'EEE, MMM d, y'}}
 					    </h3>
 					    
 					    	<div class="well text-center row-fluid">
