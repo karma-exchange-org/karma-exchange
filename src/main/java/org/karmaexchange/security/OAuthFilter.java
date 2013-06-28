@@ -62,7 +62,6 @@ public class OAuthFilter implements Filter {
 
     OAuthCredential credential;
     Key<User> userKey;
-    UpdateCredentialResult updateCredentialResult = null;
     AdminUtil.setCurrentUser(AdminTaskType.OAUTH_FILTER);
     try {
       credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
@@ -85,8 +84,8 @@ public class OAuthFilter implements Filter {
           log.log(OAUTH_LOG_LEVEL, "[" + credential + "] updating oauth token");
 
           // The token is valid, so we need to update the token.
-          updateCredentialResult = updateCachedCredential(credential);
-          userKey = Key.create(updateCredentialResult.getUser());
+          updateCachedCredential(credential);
+          userKey = User.getKey(credential);
         } else {
           throw ErrorResponseMsg.createException("authentication credentials are not valid",
             ErrorInfo.Type.AUTHENTICATION);
@@ -104,9 +103,6 @@ public class OAuthFilter implements Filter {
     // Authorization complete. Continue to the resource.
     UserService.setCurrentUser(credential, userKey);
     try {
-      if (updateCredentialResult != null) {
-        updateCredentialResult.finalizeUpdate();
-      }
       filters.doFilter(req, resp);
     } finally {
       UserService.clearCurrentUser();
@@ -128,10 +124,8 @@ public class OAuthFilter implements Filter {
     return SocialNetworkProviderFactory.getProvider(credential).verifyCredential();
   }
 
-  private static UpdateCredentialResult updateCachedCredential(OAuthCredential credential) {
-    UpdateCredentialTxn updateCredentialTxn = new UpdateCredentialTxn(credential);
-    ofy().transact(updateCredentialTxn);
-    return updateCredentialTxn.getResult();
+  private static void updateCachedCredential(OAuthCredential credential) {
+    ofy().transact(new UpdateCredentialTxn(credential));
   }
 
   @Data
@@ -139,7 +133,6 @@ public class OAuthFilter implements Filter {
   private static class UpdateCredentialTxn extends VoidWork {
     private final OAuthCredential credential;
     private final SocialNetworkProvider socialNetworkProvider;
-    private UpdateCredentialResult result;
 
     public UpdateCredentialTxn(OAuthCredential credential) {
       this.credential = credential;
@@ -149,20 +142,11 @@ public class OAuthFilter implements Filter {
     public void vrun() {
       User user = BaseDao.load(User.getKey(credential));
       if (user == null) {
-        result = new NewUserUpdateCredentialResult(createUser(), socialNetworkProvider);
+        throw ErrorResponseMsg.createException("User registration is required",
+          ErrorInfo.Type.UNREGISTERED_USER);
       } else {
         updateCachedCredential(user);
-        result = new UpdateCredentialResult(user);
       }
-    }
-
-    /**
-     * Populate the user based upon information stored in the oAuth provider.
-     */
-    private User createUser() {
-      User user = socialNetworkProvider.createUser();
-      BaseDao.upsert(user);
-      return user;
     }
 
     private void updateCachedCredential(User user) {
@@ -177,34 +161,4 @@ public class OAuthFilter implements Filter {
           "User found by credentials, but credential does not exist for updating");
     }
   }
-
-  @Data
-  private static class UpdateCredentialResult {
-    protected final User user;
-
-    /**
-     * Completes the credential update tasks after {@link UserService#updateCurrentUser} is
-     * invoked.
-     */
-    public void finalizeUpdate() {
-      // No-op
-    }
-  }
-
-  @Data
-  @EqualsAndHashCode(callSuper=true)
-  private static class NewUserUpdateCredentialResult extends UpdateCredentialResult {
-    private final SocialNetworkProvider socialNetworkProvider;
-
-    public NewUserUpdateCredentialResult(User user, SocialNetworkProvider socialNetworkProvider) {
-      super(user);
-      this.socialNetworkProvider = socialNetworkProvider;
-    }
-
-    @Override
-    public void finalizeUpdate() {
-      User.updateProfileImage(Key.create(user), socialNetworkProvider.getProviderType());
-    }
-  }
-
 }

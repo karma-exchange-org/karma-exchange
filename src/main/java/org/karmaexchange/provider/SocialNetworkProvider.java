@@ -1,7 +1,6 @@
 package org.karmaexchange.provider;
 
 import org.karmaexchange.dao.OAuthCredential;
-import org.karmaexchange.dao.User;
 
 public abstract class SocialNetworkProvider {
   protected OAuthCredential credential;
@@ -34,8 +33,6 @@ public abstract class SocialNetworkProvider {
   }
 
   public abstract boolean verifyCredential();
-
-  public abstract User createUser();
 
   public abstract String getProfileImageUrl();
 }
