@@ -3,7 +3,6 @@ package org.karmaexchange.security;
 import static org.karmaexchange.util.OfyService.ofy;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -22,8 +21,6 @@ import javax.ws.rs.core.Response;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
@@ -33,6 +30,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminTaskType;
+import org.karmaexchange.util.ServletUtil;
 import org.karmaexchange.util.UserService;
 
 import com.googlecode.objectify.Key;
@@ -97,7 +95,7 @@ public class OAuthFilter implements Filter {
     } catch (WebApplicationException e) {
       Response errMsg = e.getResponse();
       log.log(OAUTH_LOG_LEVEL, "Failed to authenticate:\n  " + errMsg.getEntity());
-      setResponse(resp, e);
+      ServletUtil.setResponse(resp, e);
       return;
     } finally {
       UserService.clearCurrentUser();
@@ -113,21 +111,6 @@ public class OAuthFilter implements Filter {
     } finally {
       UserService.clearCurrentUser();
     }
-  }
-
-  private static void setResponse(HttpServletResponse resp, WebApplicationException err)
-      throws IOException {
-    Response errMsg = err.getResponse();
-    resp.setStatus(errMsg.getStatus());
-    resp.setContentType("application/json");
-    OutputStream out = resp.getOutputStream();
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      mapper.writeValue(out, errMsg.getEntity());
-    } catch (JsonMappingException e) {
-      log.log(OAUTH_LOG_LEVEL, "Failed to write json error response: " + e.getMessage());
-    }
-    out.flush();
   }
 
   public static Key<User> credentialIsCached(OAuthCredential credential) {

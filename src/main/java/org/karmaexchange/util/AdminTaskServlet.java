@@ -1,4 +1,4 @@
-package org.karmaexchange.task;
+package org.karmaexchange.util;
 
 import java.io.IOException;
 
@@ -6,11 +6,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.karmaexchange.util.AdminUtil;
-import org.karmaexchange.util.UserService;
+import org.karmaexchange.util.AdminUtil.AdminTaskType;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
+
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 @SuppressWarnings("serial")
 public abstract class AdminTaskServlet extends HttpServlet {
+
+  private final AdminTaskType taskType;
 
   protected HttpServletRequest req;
   protected HttpServletResponse resp;
@@ -21,7 +27,7 @@ public abstract class AdminTaskServlet extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     this.req = req;
     this.resp = resp;
-    AdminUtil.setCurrentUser(AdminUtil.AdminTaskType.TASK_QUEUE);
+    AdminUtil.setCurrentUser(taskType);
     try {
       execute();
     } finally {

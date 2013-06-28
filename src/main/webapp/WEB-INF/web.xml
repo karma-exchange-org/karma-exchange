@@ -77,6 +77,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <url-pattern>/bootstrap/test_resources</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>FacebookRegistrationServlet</servlet-name>
+        <servlet-class>org.karmaexchange.provider.FacebookRegistrationServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>FacebookRegistrationServlet</servlet-name>
+        <url-pattern>/provider/fb/register</url-pattern>
+    </servlet-mapping>
+
     <security-constraint>
         <web-resource-collection>
             <url-pattern>/task/*</url-pattern>

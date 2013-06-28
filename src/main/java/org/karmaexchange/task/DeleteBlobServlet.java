@@ -11,7 +11,7 @@ import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 
 @SuppressWarnings("serial")
-public class DeleteBlobServlet extends AdminTaskServlet {
+public class DeleteBlobServlet extends TaskQueueAdminTaskServlet {
 
   private static final Logger logger = Logger.getLogger(DeleteBlobServlet.class.getName());
 

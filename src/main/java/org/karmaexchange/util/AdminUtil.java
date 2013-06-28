@@ -16,7 +16,8 @@ public class AdminUtil {
   public enum AdminTaskType {
     BOOTSTRAP,
     OAUTH_FILTER,
-    TASK_QUEUE;
+    TASK_QUEUE,
+    REGISTRATION;
 
     public Key<User> getKey() {
       return Key.create(User.class, ADMIN_KEY_PREFIX + name());

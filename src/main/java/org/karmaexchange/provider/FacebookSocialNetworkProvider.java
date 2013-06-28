@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import javax.servlet.Filter;
 
 import org.karmaexchange.dao.ContactInfo;
-import org.karmaexchange.dao.ModificationInfo;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
@@ -32,6 +31,10 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
 
   @Override
   public boolean verifyCredential() {
+    return verifyCredential(credential);
+  }
+
+  public static boolean verifyCredential(OAuthCredential credential) {
     DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
     com.restfb.types.User fbUser;
     try {
@@ -58,7 +61,6 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     com.restfb.types.User fbUser;
     fbUser = fbClient.fetchObject("me", com.restfb.types.User.class);
     User user = User.create(credential);
-    user.setModificationInfo(ModificationInfo.create());
     user.setFirstName(fbUser.getFirstName());
     user.setLastName(fbUser.getLastName());
     ContactInfo contactInfo = new ContactInfo();

@@ -17,6 +17,10 @@ public abstract class SocialNetworkProvider {
     };
 
     public abstract SocialNetworkProvider getProvider(OAuthCredential credential);
+
+    public String getOAuthProviderName() {
+      return name();
+    }
   }
 
   protected SocialNetworkProvider(OAuthCredential credential,
