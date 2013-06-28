@@ -61,13 +61,12 @@ body {
                   <li><a href="#/home"><i class="icon-home icon-white"></i> Home</a></li>
                   <li><a href="#/event"><i class="icon-list icon-white"></i> Find Events</a></li>
                   <li><a href="#/event/add"><i class="icon-plus icon-white"></i> Create Events</a></li>
-                  <li><a href="#/thanks"><i class="icon-smile icon-white"></i> Say thanks!</a></li>
-      			  <li><a href="#/me"><i class="icon-user icon-white"></i> Me</a></li>
+	   			  <li><a href="#/me"><i class="icon-user icon-white"></i> Me</a></li>
               </ul>
               <div class="pull-right">
               	
                 <ul class="nav pull-right">
-                	<li><a class="brand" href="index.html"> <img ng-src="{{me.profileImage.url}}"></a></li>
+                	<li><a class="brand" href="#/me"> <img ng-src="{{me.profileImage.url}}?width=25&height=25"></a></li>
                     <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             <li><a href="#/mysettings"><i class="icon-cog"></i>Profile</a></li>
@@ -86,7 +85,7 @@ body {
 	<div class="container">
 		<div class="messagesList" app-messages></div>
 		<div ng-view></div>
-		
+
 	</div>
 
 
