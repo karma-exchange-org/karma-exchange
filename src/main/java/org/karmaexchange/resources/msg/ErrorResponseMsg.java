@@ -57,6 +57,7 @@ public class ErrorResponseMsg {
 
     public enum Type {
       AUTHENTICATION,
+      UNREGISTERED_USER,
       BACKEND_SERVICE_FAILURE,
       BAD_REQUEST,
       LIMIT_REACHED,

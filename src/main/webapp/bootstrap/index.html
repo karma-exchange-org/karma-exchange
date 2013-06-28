@@ -1,0 +1,90 @@
+<html>
+<head>
+<title>Bootstrap Karma Exchange</title>
+<style type="text/css">
+div {
+  padding: 10px;
+}
+</style>
+<meta charset="UTF-8">
+</head>
+<body>
+  <script src="http://code.jquery.com/jquery.js"></script>
+  <script src="/js/vendor/bootstrap.min.js"></script>
+  <script src="/js/initappid.js"></script>
+  <script type="text/javascript">
+    // This is boilerplate code that is used to initialize the Facebook
+    // JS SDK.
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId : fbAppId, // App ID
+        status : true, // check login status
+        cookie : true, // enable cookies to allow the server to access the session
+        xfbml : true
+      // parse page for xfbml or html5 social plugins like login button below
+      });
+
+      // Put additional init code here
+
+      FB.getLoginStatus(function(response) {
+        onStatus(response); // once on page load
+        FB.Event.subscribe('auth.statusChange', onStatus); // every status change
+      });
+    };
+
+    // Load the SDK Asynchronously
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) {
+        return;
+      }
+      js = d.createElement(s);
+      js.id = id;
+      js.src = "//connect.facebook.net/en_US/all.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    function showBootstrapCurrentUserButton(response) {
+      var uid = response.authResponse.userID;
+      var token = response.authResponse.accessToken;
+      var url = '/bootstrap/provider/fb/register';
+      var form = '<form action="/bootstrap/provider/fb/register" method="get">'
+          + '  <input type="hidden" name="uid" value="' + uid + '">'
+          + '  <input type="hidden" name="token" value="' + token + '">'
+          + '  <button type="submit" class="btn btn-primary" >Bootstrap current user (registration bypass)</button>'
+          + '</form>';
+      document.getElementById('account-info').innerHTML = (form);
+    }
+
+    function showLoginButton() {
+      document.getElementById('account-info').innerHTML = ('<button class="btn btn-primary" onclick="FB.login()">Login and connect via facebook</button>');
+    }
+
+    /**
+     * This will be called once on page load, and every time the status changes.
+     */
+    function onStatus(response) {
+      // Log.info('onStatus', response);
+      if (response.status === 'connected') {
+        showBootstrapCurrentUserButton(response);
+      } else {
+        showLoginButton();
+      }
+    }
+  </script>
+
+  <div id="fb-root"></div>
+
+  <div id="account-info"></div>
+
+  <div>
+    <form action="/bootstrap/test_resources">
+      <button type="submit" class="btn btn-primary">Bootstrap test resources</button>
+    </form>
+  </div>
+
+  <!--  Using this as a way to refresh the fb access token. Need to verify it works! -->
+  <fb:facepile></fb:facepile>
+
+</body>
+</html>
