@@ -83,6 +83,7 @@ public final class User extends NameBaseDao<User> {
   private User(OAuthCredential credential) {
     oauthCredentials.add(credential);
     initKey();
+    setModificationInfo(ModificationInfo.create());
   }
 
   public void initKey() {
@@ -188,38 +189,48 @@ public final class User extends NameBaseDao<User> {
         throw ErrorResponseMsg.createException(
           "insufficient privileges to edit user", ErrorInfo.Type.BAD_REQUEST);
       }
-
-      Key<Image> existingImageKey = null;
-      if (user.profileImage != null) {
-        existingImageKey = KeyWrapper.toKey(user.profileImage.getRef());
-        BaseDao.delete(existingImageKey);
-      }
-
-      Image newProfileImage;
-      if (imageProviderType != null) {
-        OAuthCredential credential = Iterables.tryFind(
-          user.oauthCredentials, OAuthCredential.providerPredicate(imageProviderType)).orNull();
-        if (credential == null) {
-          throw ErrorResponseMsg.createException(
-            "no credentials for provider type: " + imageProviderType,
-            ErrorInfo.Type.BAD_REQUEST);
-        }
-        SocialNetworkProvider imageProvider = SocialNetworkProviderFactory.getProvider(credential);
-        newProfileImage = Image.createAndPersist(userKey, imageProvider.getProfileImageUrl(),
-          imageProvider.getProviderType());
-      } else if (blobKey != null) {
-        newProfileImage = Image.createAndPersist(userKey, blobKey, null);
-      } else {
-        newProfileImage = null;
-      }
-      user.updateProfileImage(newProfileImage);
+      setProfileImage(user, imageProviderType, blobKey);
       BaseDao.partialUpdate(user);
-
-      if (existingImageKey != null) {
-        ImageRef.updateRefs(existingImageKey,
-          (newProfileImage == null) ? null : Key.create(newProfileImage));
-      }
     }
+
   }
 
+  // Must be called from within a transaction.
+  public static void bootstrapProfileImage(User user, SocialNetworkProviderType imageProviderType) {
+    setProfileImage(user, imageProviderType, null);
+  }
+
+  private static void setProfileImage(User user, SocialNetworkProviderType imageProviderType,
+      BlobKey blobKey) {
+    Key<User> userKey = Key.create(user);
+    Key<Image> existingImageKey = null;
+    if (user.profileImage != null) {
+      existingImageKey = KeyWrapper.toKey(user.profileImage.getRef());
+      BaseDao.delete(existingImageKey);
+    }
+
+    Image newProfileImage;
+    if (imageProviderType != null) {
+      OAuthCredential credential = Iterables.tryFind(
+        user.oauthCredentials, OAuthCredential.providerPredicate(imageProviderType)).orNull();
+      if (credential == null) {
+        throw ErrorResponseMsg.createException(
+          "no credentials for provider type: " + imageProviderType,
+          ErrorInfo.Type.BAD_REQUEST);
+      }
+      SocialNetworkProvider imageProvider = SocialNetworkProviderFactory.getProvider(credential);
+      newProfileImage = Image.createAndPersist(userKey, imageProvider.getProfileImageUrl(),
+        imageProvider.getProviderType());
+    } else if (blobKey != null) {
+      newProfileImage = Image.createAndPersist(userKey, blobKey, null);
+    } else {
+      newProfileImage = null;
+    }
+    user.updateProfileImage(newProfileImage);
+
+    if (existingImageKey != null) {
+      ImageRef.updateRefs(existingImageKey,
+        (newProfileImage == null) ? null : Key.create(newProfileImage));
+    }
+  }
 }

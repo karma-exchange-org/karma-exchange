@@ -16,7 +16,7 @@ import com.googlecode.objectify.Key;
  *   /task/process_event_completions
  */
 @SuppressWarnings("serial")
-public class ProcessEventCompletionsServlet extends AdminTaskServlet {
+public class ProcessEventCompletionsServlet extends TaskQueueAdminTaskServlet {
 
   private static final Logger logger = Logger.getLogger(
     ProcessOrganizerRatingsServlet.class.getName());

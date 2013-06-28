@@ -12,7 +12,7 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 
 @SuppressWarnings("serial")
-public class ProcessOrganizerRatingsServlet extends AdminTaskServlet {
+public class ProcessOrganizerRatingsServlet extends TaskQueueAdminTaskServlet {
 
   private static final Logger logger = Logger.getLogger(
     ProcessOrganizerRatingsServlet.class.getName());
