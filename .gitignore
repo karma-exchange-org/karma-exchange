@@ -1,4 +1,5 @@
 src/main/webapp/WEB-INF/server_properties.txt
+src/main/webapp/local_test
 hotspot.log
 *.iml
 *.ipr
