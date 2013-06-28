@@ -75,14 +75,14 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
       resp.sendRedirect("/");
     } catch (WebApplicationException e) {
       Response errMsg = e.getResponse();
-      logger.log(REGISTRATION_LOG_LEVEL, "Failed to authenticate:\n  " + errMsg.getEntity());
+      logger.log(REGISTRATION_LOG_LEVEL, "Failed to register user:\n  " + errMsg.getEntity());
       ServletUtil.setResponse(resp, e);
       // TODO(avaliani): If registration fails it would be good to have a redirect page to
       // paste the error to.
     }
   }
 
-  private void persistUser(User user) {
+  static void persistUser(User user) {
     ofy().transact(new PersistUserTxn(user));
   }
 
