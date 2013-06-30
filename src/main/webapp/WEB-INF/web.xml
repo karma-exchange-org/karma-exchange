@@ -78,6 +78,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>GenerateDatastoreIndexesXmlServlet</servlet-name>
+        <servlet-class>org.karmaexchange.bootstrap.GenerateDatastoreIndexesXmlServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GenerateDatastoreIndexesXmlServlet</servlet-name>
+        <url-pattern>/bootstrap/datastore_indexes</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>FacebookRegistrationServlet</servlet-name>
         <servlet-class>org.karmaexchange.provider.FacebookRegistrationServlet</servlet-class>
     </servlet>
