@@ -5,7 +5,7 @@ angular.module("SharedServices", [])
     var spinnerFunction = function (data, headersGetter) {
             // todo start the spinner here
             //$('#loading').show();
-            
+            //TODO - Add FB access token parameter to the FB requests
             return data;
         };
         $httpProvider.defaults.transformRequest.push(spinnerFunction);
@@ -90,15 +90,14 @@ $compileProvider.directive('appMessages', function() {
 });
 
 angular.module('FacebookProvider', [])
-.factory('Facebook', function ($rootScope,Me) {
+.factory('Facebook', function ($rootScope) {
     return {
         getLoginStatus:function () {
             FB.getLoginStatus(function (response) {
                 $rootScope.$broadcast("fb_statusChange", {'status':response.status});
-                $.cookie("facebook-uid",response.authResponse.userID);
-                $.cookie("facebook-token",response.authResponse.accessToken);
-                $.cookie("login","facebook");
-                $rootScope.me = Me.get();
+                
+
+                
             }, true);
         },
         login:function () {
@@ -148,9 +147,13 @@ unsubscribe:function () {
     });
 },
 getFBComments:function(mydiv){
-    mydiv.innerHTML =
+    if(mydiv)
+    {
+         mydiv.innerHTML =
                   '<div class="fb-comments" href="' +window.location.href + '" data-num-posts="20" data-width="940">'; 
-    FB.XFBML.parse(mydiv); 
+        FB.XFBML.parse(mydiv);   
+    }    
+    
 }
 };
 });
@@ -232,6 +235,10 @@ config(function($routeProvider,$httpProvider) {
         FB.Event.subscribe('auth.statusChange', function(response) {
             $rootScope.$broadcast("fb_statusChange", {'status': response.status});
         });
+        FB.Event.subscribe('auth.authResponseChange', function(response) {
+            $rootScope.$broadcast("fb_authResponseChange", {'response': response});
+            
+        });
     };
 
 
@@ -294,19 +301,40 @@ function fbCntrl(Facebook, $scope, $rootScope, $http, $location, Me) {
 
     $rootScope.$on("fb_statusChange", function (event, args) {
         $rootScope.fb_status = args.status;
-        
+
         if($rootScope.fb_status==='connected')
         {
-         Facebook.getLoginStatus();  
-     } 
-     else
-     {
-      $.removeCookie("facebook-uid");
-      $.removeCookie("facebook-token");
-      $.removeCookie("login");
-  }   
+           Facebook.getLoginStatus();  
+           $rootScope.me = Me.get();
+        } 
+        else
+        {
+           $.removeCookie("facebook-uid");
+           $.removeCookie("facebook-token");
+           $.removeCookie("login");
+        }   
 
-  $rootScope.$apply();
+        
+});
+    $rootScope.$on("fb_authResponseChange", function (event, args) {
+        
+        
+        if(args.response.status==='connected')
+        {
+            console.log('auth change called');
+            $.cookie("facebook-uid",args.response.authResponse.userID);
+            $.cookie("facebook-token",args.response.authResponse.accessToken);
+            $.cookie("login","facebook"); 
+            
+        } 
+        else
+        {
+           $.removeCookie("facebook-uid");
+           $.removeCookie("facebook-token");
+           $.removeCookie("login");
+        }   
+
+        $rootScope.$apply();
 });
     $rootScope.$on("fb_get_login_status", function () {
         Facebook.getLoginStatus();
@@ -585,7 +613,7 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
 
 
 
-var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $location,Events,$http,Facebook) {
+var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$location,Events,$http,Facebook) {
     if(!checkLogin($location))
     {
         return;
@@ -607,6 +635,12 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $location,Ev
         // These 2 properties will be set when clicking on the map
         clicked: null,  
         clicked: null,
+
+        eventStartDate : null,
+        eventStartTime : null,
+        eventEndDate : null,
+        eventEndTime : null,
+
         
     });
 
@@ -797,6 +831,15 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $location,Ev
         $scope.event = Events.get({ id: $routeParams.eventId} ,function() {
                 //$("#location-title").val(''+$scope.event.location.title);
                 //$scope.refreshMap();
+                
+                $('#dtst').val($filter('date')($scope.event.startTime, 'MM/dd/yyyy'));
+                $('#tmst').val($filter('date')($scope.event.startTime, 'h:mma'));
+                $('#dtend').val($filter('date')($scope.event.endTime, 'MM/dd/yyyy'));
+                $('#tmend').val($filter('date')($scope.event.endTime, 'h:mma'));
+                
+                //$scope.eventStartTime : null,
+                //$scope.eventEndDate : null,
+                //$scope.eventEndTime : null,
 
                 $scope.eventOrganizers = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'});
                 $scope.eventRegistered = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'REGISTERED'});
@@ -845,6 +888,29 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $location,Ev
             if(response.status === 404) {
             }});
 }
+
+$scope.parseDateReg = function(input) {
+        
+        var dateReg = 
+    /(\d{1,2})\/(\d{1,2})\/(\d{4})\s*(\d{1,2}):(\d{2})*(am|pm|AM|PM)/;
+        var year, month, day, hour, minute, second,
+            result = dateReg.exec(input);
+        if (result) {
+            year = +result[3];
+            month = +result[1];
+            day = +result[2];
+            hour = +result[4];
+            minute = +result[5];
+            second = 0;
+            if ((result[6] === 'pm' || result[6] === 'PM') && hour !== 12) {
+                hour += 12;
+            }       
+        }
+       
+        return new Date(year, month-1, day, hour, minute, second);
+    }
+
+
 
 if($location.$$url=="/event/add")
 {
@@ -919,34 +985,22 @@ if($location.$$url=="/event/add")
         $scope.$apply();
 
     });
+    
+    
 
-
-$('#startTimePicker')
-.datetimepicker()
-.on('changeDate', function(ev){
-
-
-
-    $scope.event.startTime = jQuery(ev.target).data('datetimepicker').getDate();
-    $scope.$apply();
-    $('#endTimePicker').datetimepicker('setStartDate', $scope.event.startTime);
-
-});
-$('#endTimePicker')
-.datetimepicker()
-.on('changeDate', function(ev){
-
-    $scope.event.endTime = jQuery(ev.target).data('datetimepicker').getDate();
-    $scope.$apply();
-
-});
 }
 else
 {    
     $scope.refreshEvent();
 }
     //TDEBT - (hbalijepalli)
+$('.datepair input').change(function(){
+       
 
+        $scope.event.startTime = $scope.parseDateReg($('#dtst').val()+' '+$('#tmst').val());
+        $scope.event.endTime = $scope.parseDateReg($('#dtend').val()+' '+$('#tmend').val());
+
+    });
     
 
     
