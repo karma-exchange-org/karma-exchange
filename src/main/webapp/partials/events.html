@@ -25,7 +25,7 @@
 	    								    					
 					    					
 					    				    				
-						    				<a ng-click="toggleEvent();"><strong>{{event.title}} </strong></a> 
+						    				<a href="" ng-click="toggleEvent();"><strong>{{event.title}} </strong></a> 
 						    				<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
 						    		
 						    		</li>
@@ -84,7 +84,8 @@
 							          </tr>  
 							           
 							        </tbody>  
-							      </table>  
+							      </table> 
+							      <div class="fb-like" data-href=""+window.location.origin+"#/event/"+{{modelEvent.key}} data-send="true" data-width="450" data-show-faces="true" data-colorscheme="dark" data-action="recommend"></div> 
 
 								
 							</div>
