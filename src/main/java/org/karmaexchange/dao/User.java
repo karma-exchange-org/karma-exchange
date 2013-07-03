@@ -88,10 +88,13 @@ public final class User extends NameBaseDao<User> {
 
   public void initKey() {
     owner = null;
+    name = getKeyProviderCredential().getGlobalUid();
+  }
+
+  private OAuthCredential getKeyProviderCredential() {
     for (OAuthCredential credential : oauthCredentials) {
       if (getProviderType(credential) == USER_KEY_PROVIDER) {
-        name = credential.getGlobalUid();
-        return;
+        return credential;
       }
     }
     throw ErrorResponseMsg.createException(
@@ -150,6 +153,26 @@ public final class User extends NameBaseDao<User> {
     }
   }
 
+  public static void persistNewUser(User user) {
+    ofy().transact(new PersistNewUserTxn(user));
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  private static class PersistNewUserTxn extends VoidWork {
+    private final User user;
+
+    public void vrun() {
+      User existingUser = BaseDao.load(Key.create(user));
+      // Don't wipe out an existing user object. State like karma points, etc. should be
+      // retained.
+      if (existingUser == null) {
+        User.bootstrapProfileImage(user);
+        BaseDao.upsert(user);
+      }
+    }
+  }
+
   private void updateProfileImage(@Nullable Image profileImage) {
     this.profileImage = (profileImage == null) ? null : ImageRef.create(profileImage);
   }
@@ -196,8 +219,8 @@ public final class User extends NameBaseDao<User> {
   }
 
   // Must be called from within a transaction.
-  public static void bootstrapProfileImage(User user, SocialNetworkProviderType imageProviderType) {
-    setProfileImage(user, imageProviderType, null);
+  public static void bootstrapProfileImage(User user) {
+    setProfileImage(user, USER_KEY_PROVIDER, null);
   }
 
   private static void setProfileImage(User user, SocialNetworkProviderType imageProviderType,

@@ -1,7 +1,6 @@
 package org.karmaexchange.provider;
 
 import static java.lang.String.format;
-import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_SECRET;
 
 import java.io.IOException;
@@ -12,10 +11,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 
 import org.karmaexchange.dao.Address;
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.ContactInfo;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
@@ -27,8 +24,6 @@ import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.Properties;
 import org.karmaexchange.util.ServletUtil;
 
-import com.googlecode.objectify.Key;
-import com.googlecode.objectify.VoidWork;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.Facebook;
 import com.restfb.exception.FacebookException;
@@ -69,8 +64,8 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
       }
       registrationReq.validate();
 
-      User user = registrationReq.createUser();
-      persistUser(user);
+      User.persistNewUser(
+        registrationReq.createUser());
 
       resp.sendRedirect("/");
     } catch (WebApplicationException e) {
@@ -79,26 +74,6 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
       ServletUtil.setResponse(resp, e);
       // TODO(avaliani): If registration fails it would be good to have a redirect page to
       // paste the error to.
-    }
-  }
-
-  static void persistUser(User user) {
-    ofy().transact(new PersistUserTxn(user));
-  }
-
-  @Data
-  @EqualsAndHashCode(callSuper=false)
-  private static class PersistUserTxn extends VoidWork {
-    private final User user;
-
-    public void vrun() {
-      User existingUser = BaseDao.load(Key.create(user));
-      if (existingUser == null) {
-        // Don't wipe out an existing user object. State like karma points, etc. should be
-        // retained.
-        User.bootstrapProfileImage(user, SocialNetworkProviderType.FACEBOOK);
-        BaseDao.upsert(user);
-      }
     }
   }
 
