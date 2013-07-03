@@ -142,8 +142,9 @@ public class OAuthFilter implements Filter {
     public void vrun() {
       User user = BaseDao.load(User.getKey(credential));
       if (user == null) {
-        throw ErrorResponseMsg.createException("User registration is required",
-          ErrorInfo.Type.UNREGISTERED_USER);
+        // throw ErrorResponseMsg.createException("User registration is required",
+        //   ErrorInfo.Type.UNREGISTERED_USER);
+        User.persistNewUser(socialNetworkProvider.createUser());
       } else {
         updateCachedCredential(user);
       }
