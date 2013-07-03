@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import org.karmaexchange.dao.ContactInfo;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
@@ -17,8 +16,6 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.AdminTaskServlet;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.ServletUtil;
-
-import com.restfb.DefaultFacebookClient;
 
 @SuppressWarnings("serial")
 public class BootstrapFacebookRegistrationServlet extends AdminTaskServlet {
@@ -53,7 +50,8 @@ public class BootstrapFacebookRegistrationServlet extends AdminTaskServlet {
 
       FacebookSocialNetworkProvider.verifyCredential(credential);
 
-      FacebookRegistrationServlet.persistUser(createUser(credential));
+      User.persistNewUser(
+        FacebookSocialNetworkProvider.createUser(credential));
 
       statusWriter.println("Current user bootstrap completed.");
 
@@ -62,18 +60,5 @@ public class BootstrapFacebookRegistrationServlet extends AdminTaskServlet {
       logger.log(Level.SEVERE, "Failed to boostrap user:\n  " + errMsg.getEntity());
       ServletUtil.setResponse(resp, e);
     }
-  }
-
-  private User createUser(OAuthCredential credential) {
-    DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
-    com.restfb.types.User fbUser =
-        FacebookSocialNetworkProvider.fetchObject(fbClient, "me", com.restfb.types.User.class);
-    User user = User.create(credential);
-    user.setFirstName(fbUser.getFirstName());
-    user.setLastName(fbUser.getLastName());
-    ContactInfo contactInfo = new ContactInfo();
-    user.setContactInfo(contactInfo);
-    contactInfo.setEmail(fbUser.getEmail());
-    return user;
   }
 }

@@ -7,7 +7,9 @@ import java.util.logging.Logger;
 
 import javax.servlet.Filter;
 
+import org.karmaexchange.dao.ContactInfo;
 import org.karmaexchange.dao.OAuthCredential;
+import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
@@ -45,6 +47,23 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
           fbUser.getId(), credential.getUid()));
       return false;
     }
+  }
+
+  @Override
+  public User createUser() {
+    return createUser(credential);
+  }
+
+  public static User createUser(OAuthCredential credential) {
+    DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
+    com.restfb.types.User fbUser = fetchObject(fbClient, "me", com.restfb.types.User.class);
+    User user = User.create(credential);
+    user.setFirstName(fbUser.getFirstName());
+    user.setLastName(fbUser.getLastName());
+    ContactInfo contactInfo = new ContactInfo();
+    user.setContactInfo(contactInfo);
+    contactInfo.setEmail(fbUser.getEmail());
+    return user;
   }
 
   @Override
