@@ -288,7 +288,33 @@ All app directives  go here
 */
 
 
+kexApp.directive('uiDraggable', function () {
+            return {
+                restrict:'A',
+                link:function (scope, element, attrs) {
+                    element.draggable({
+                        revert:true
+                    });
+                }
+            };
+        });
 
+kexApp.directive('uiDropListener', function () {
+    return {
+        restrict:'A',
+        link:function (scope, eDroppable, attrs) {
+            eDroppable.droppable({
+                drop:function (event, ui) {
+                    var fnDropListener = scope.$eval(attrs.uiDropListener);
+                    if (fnDropListener && angular.isFunction(fnDropListener)) {
+                        var eDraggable = angular.element(ui.draggable);
+                        fnDropListener(eDraggable, eDroppable, event, ui);
+                    }
+                }
+            });
+        }
+    };
+});
 
 
 /*
@@ -523,7 +549,7 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
 
 
         $scope.events = Events.get({keywords: $scope.query});
-        
+        $scope.currentDate = new Date(1001, 01, 01, 01, 01, 01, 0);
         
 
     };
@@ -564,13 +590,13 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
     $scope.closeAlert = function(index) {
         $scope.alerts.splice(index, 1);
     };
-    $scope.currentDate = new Date(1001, 01, 01, 01, 01, 01, 0);
-    $scope.createHeader = function(dateParam) {
+    
+    $scope.createHeader = function(dateParam, eventobj) {
 
         dateVal = new Date(dateParam);
         currentDate = new Date($scope.currentDate);
         showHeader = (''+dateVal.getDate()+dateVal.getMonth()+dateVal.getFullYear()!=''+currentDate.getDate()+currentDate.getMonth()+currentDate.getFullYear()); 
-
+       
         $scope.currentDate = new Date(dateVal);
         
         return showHeader;
@@ -613,6 +639,7 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
 
 
 
+
 var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$location,Events,$http,Facebook) {
     if(!checkLogin($location))
     {
@@ -643,7 +670,12 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
 
         
     });
-
+    $scope.suitableForList = [
+        { name: 'Kids', key:'KIDS',   checked: false },
+        { name: 'Seniors', key:'AGE_55_PLUS',   checked: false },
+        { name: 'Groups', key:'GROUPS',     checked: false },
+        { name: 'Teens', key:'TEENS',  checked: false }
+      ];
     $scope.register = function(type){
         var eventId = $scope.event.key;
         Events.save({ id: eventId , registerCtlr :'participants',regType : type}, function (req,$rootScope) {
@@ -692,6 +724,50 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
             });
 
     };
+
+    $scope.dropListener = function (eDraggable, eDroppable) {
+
+                var isDropForbidden = function (aTarget, item) {
+                    if (aTarget.some(function (i) {
+                        return i.key == item.key;
+                    })) {
+                        return {reason:'target already contains "' + item.key + '"'};
+                    } else {
+                        return false;
+                    }
+                };
+
+                var onDropRejected = function (error) {
+                    alert('Operation not permitted: ' + error.reason);
+                };
+
+                var onDropComplete = function (eSrc, item, index) {
+                    console.log('moved "' + item.key + ' from ' + eSrc.data('model') + '[' + index + ']' + ' to ' + eDroppable.data('model'));
+                };
+
+                var eSrc = eDraggable.parent();
+                var sSrc = eSrc.data('model');
+                var sTarget = eDroppable.data('model');
+
+                if (sSrc != sTarget) {
+                    $scope.$apply(function () {
+                        var index = eDraggable.data('index');
+                        var aSrc = $scope.$eval(sSrc);
+                        var aTarget = $scope.$eval(sTarget);
+                        var item = aSrc[index];
+                        var error = isDropForbidden(aTarget, item);
+                        if (error) {
+                            onDropRejected(error);
+                        } else {
+                            aTarget.push(item);
+                            aSrc.splice(index, 1);
+                            onDropComplete(eSrc, item, index);
+                        }
+                    });
+                }
+                
+
+            };
     
     $scope.refreshMap = function(){
 
@@ -812,6 +888,13 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
 
 
         $scope.save = function () {
+            for(var i=0;i<$scope.suitableForList.length;i++)
+            {
+                if($scope.suitableForList[i].checked===true)
+                {
+                    $scope.event.suitableForTypes.push($scope.suitableForList[i].key);
+                }    
+            }    
             if($location.$$url=="/addevent")
             {
                 Events.save($scope.event, function() {
@@ -831,19 +914,65 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
         $scope.event = Events.get({ id: $routeParams.eventId} ,function() {
                 //$("#location-title").val(''+$scope.event.location.title);
                 //$scope.refreshMap();
+                //TDEBT - remove DOM references
                 
                 $('#dtst').val($filter('date')($scope.event.startTime, 'MM/dd/yyyy'));
                 $('#tmst').val($filter('date')($scope.event.startTime, 'h:mma'));
                 $('#dtend').val($filter('date')($scope.event.endTime, 'MM/dd/yyyy'));
                 $('#tmend').val($filter('date')($scope.event.endTime, 'h:mma'));
                 
+
                 //$scope.eventStartTime : null,
                 //$scope.eventEndDate : null,
                 //$scope.eventEndTime : null,
 
-                $scope.eventOrganizers = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'});
-                $scope.eventRegistered = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'REGISTERED'});
-                $scope.eventWaitListed = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'WAIT_LISTED'});
+                angular.forEach($scope.suitableForList, function(client){
+                    angular.forEach($scope.event.suitableForTypes , function(server)
+                    {
+                        
+                        if(server===client.key)
+                        {
+                            client.checked = true;
+                        }    
+                    });
+                });
+
+                if($scope.event.location.address.geoPt!=null)
+                {
+                    
+                    $scope.center = {
+                        latitude: $scope.event.location.address.geoPt.latitude,
+                        longitude: $scope.event.location.address.geoPt.longitude
+                    };
+                    
+                    $scope.setMarker($scope.center.latitude,$scope.center.longitude);
+
+                    $scope.zoom = 15;
+
+                }
+
+                $scope.eventOrganizers = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'},function(){
+                    $scope.eventOrganizers.data.push = function (){
+                    Events.save({user:arguments[0].key},{ id: $routeParams.eventId, registerCtlr :'participants',regType:'ORGANIZER'});
+                    return Array.prototype.push.apply(this,arguments);
+                }
+
+                });
+                $scope.eventRegistered = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'REGISTERED'},function(){
+                    $scope.eventRegistered.data.push = function (){
+                    Events.save({user:arguments[0].key},{ id: $routeParams.eventId, registerCtlr :'participants',regType:'REGISTERED'});
+                    return Array.prototype.push.apply(this,arguments);
+                }
+
+                });
+                $scope.eventWaitListed = Events.get({ id: $routeParams.eventId, registerCtlr :'participants',regType:'WAIT_LISTED'},function(){
+                    $scope.eventWaitListed.data.push = function (){
+                    Events.save({user:arguments[0].key},{ id: $routeParams.eventId, registerCtlr :'participants',regType:'WAIT_LISTED'});
+                    return Array.prototype.push.apply(this,arguments);
+                }
+
+                });
+                
                 
                 var mydiv = document.getElementById('myCommentsDiv'); 
                 
@@ -909,13 +1038,8 @@ $scope.parseDateReg = function(input) {
        
         return new Date(year, month-1, day, hour, minute, second);
     }
-
-
-
-if($location.$$url=="/event/add")
+if(document.getElementById("locationTitle"))
 {
-    $scope.findMe();
-    $scope.event = {"location":{"title":null,"description":null,"address":{"street":null,"city":null,"state":null,"country":null,"zip":null,"geoPt":null}}};
     $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("locationTitle"));
     google.maps.event.addDomListener(document.getElementById("locationTitle"), 'keydown', function(e) { 
         if (e.keyCode == 13) 
@@ -979,20 +1103,34 @@ if($location.$$url=="/event/add")
             latitude: place.geometry.location.lat(),
             longitude: place.geometry.location.lng()
         };
-        $scope.setMarker($scope.center.latitude,$scope.center.longitude)
+        $scope.setMarker($scope.center.latitude,$scope.center.longitude);
+
         $scope.zoom = 15;
 
+        $scope.event.location.address.geoPt = {latitude: $scope.center.latitude, longitude : $scope.center.longitude};
         $scope.$apply();
 
     });
+
+}    
+
+
+if($location.$$url=="/event/add")
+{
+    $scope.findMe();
+    $scope.event = {"location":{"title":null,"description":null,"address":{"street":null,"city":null,"state":null,"country":null,"zip":null,"geoPt":null}}};
+    
     
     
 
 }
+
 else
 {    
     $scope.refreshEvent();
 }
+
+
     //TDEBT - (hbalijepalli)
 $('.datepair input').change(function(){
        

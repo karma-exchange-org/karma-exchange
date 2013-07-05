@@ -12,7 +12,7 @@
 
 				<li ng-repeat="event in events.data" id="event_{{event.key}}">
 					<div>
-						<h3 ng-show="createHeader(event.startTime)">
+						<h3 ng-show="createHeader(event.startTime,event)">
 					       {{event.startTime | date:'EEE, MMM d, y'}}
 					    </h3>
 					    
