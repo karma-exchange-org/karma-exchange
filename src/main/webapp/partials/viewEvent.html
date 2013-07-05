@@ -60,7 +60,7 @@
                         <div ng-show="event.status=='COMPLETED'" name="past-events-toolbox">
                             <h4>Rating</h4>
 
-                            <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> </p>
+                            <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> ({{event.rating.count}})</p>
                             
                             <p ng-hide="event.registrationInfo=='ORGANIZER'">Your rating<rating value="eventRating.rating.value" max="5" readonly="false"></rating></p>
                         </div>
@@ -101,7 +101,7 @@
   
 
         <div class="span2">
-            
+                
                 <!--orgnaizers-->
                 <p ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
                 <hr>
