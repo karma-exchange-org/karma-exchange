@@ -316,6 +316,31 @@ kexApp.directive('uiDropListener', function () {
     };
 });
 
+kexApp.directive('googleplace', function() {
+    return {
+        require: 'ngModel',
+        
+        link: function(scope, element, attrs, model) {
+            var options = {
+                types: [],
+                componentRestrictions: {}
+            };
+            scope.gPlace = new google.maps.places.Autocomplete(element[0], options);
+
+            google.maps.event.addListener(scope.gPlace, 'place_changed', function() {
+                var placeListener = scope.$eval(attrs.placeListener);
+                if (placeListener && angular.isFunction(placeListener)) {
+                        
+                        placeListener(scope.gPlace.getPlace());
+                    }
+                scope.$apply(function() {
+                    
+                    model.$setViewValue(element.val());                
+                });
+            });
+        }
+    };
+});
 
 /*
 All app controllers  go here
@@ -742,7 +767,7 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
                 };
 
                 var onDropComplete = function (eSrc, item, index) {
-                    console.log('moved "' + item.key + ' from ' + eSrc.data('model') + '[' + index + ']' + ' to ' + eDroppable.data('model'));
+                    //console.log('moved "' + item.key + ' from ' + eSrc.data('model') + '[' + index + ']' + ' to ' + eDroppable.data('model'));
                 };
 
                 var eSrc = eDraggable.parent();
@@ -1038,31 +1063,8 @@ $scope.parseDateReg = function(input) {
        
         return new Date(year, month-1, day, hour, minute, second);
     }
-if(document.getElementById("locationTitle"))
-{
-    $scope.autocomplete = new google.maps.places.Autocomplete(document.getElementById("locationTitle"));
-    google.maps.event.addDomListener(document.getElementById("locationTitle"), 'keydown', function(e) { 
-        if (e.keyCode == 13) 
-        { 
-            if (e.preventDefault) 
-            { 
-                e.preventDefault(); 
-            } 
-            else 
-            { 
-
-                e.cancelBubble = true; 
-                e.returnValue = false; 
-            } 
-        } 
-    }); 
-    google.maps.event.addListener($scope.autocomplete, 'place_changed', function(e) {
-
-
-        var marker;
-
-        var place = $scope.autocomplete.getPlace();
-
+    $scope.placeChanged = function(place){
+        console.log('place changed'+place.name);
         $scope.event.location.title = place.name;
 
         $scope.event.location.address.street = '';
@@ -1110,9 +1112,10 @@ if(document.getElementById("locationTitle"))
         $scope.event.location.address.geoPt = {latitude: $scope.center.latitude, longitude : $scope.center.longitude};
         $scope.$apply();
 
-    });
+    };
 
-}    
+  
+   
 
 
 if($location.$$url=="/event/add")
