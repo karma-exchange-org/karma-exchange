@@ -65,7 +65,7 @@
 
                             <div class="controls">
 
-                                <input type="text"  class="span12"  id="locationTitle" placeholder="Name of the place" ng-model="event.location.title">
+                                <input type="text"  class="span12"  placeholder="Name of the place" ng-model="event.location.title" googleplace place-listener="placeChanged">
 
                             </div>
 
@@ -213,71 +213,7 @@
 
         </div>
         </form>
-    </tab>
-    <tab heading="Manage participants">
-        <div>
-            
-                <!--orgnaizers-->
-                <p ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
-                <hr>
-                <ul ui-drop-listener="dropListener" data-model="eventOrganizers.data" class="inline">
-
-                    <li ui-draggable  data-index="{{$index}}" ng-repeat="user in eventOrganizers.data">
-                      
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                        
-                              <p></p>  
-                           
-                            
-                       
-                    </li>
-                </ul>
-                <button class="btn btn-link" ng-show="event.eventOrganizers.length-eventOrganizers.data.length>0" ng-click="getMore('ORGANIZER');">See more ({{event.eventOrganizers.length-eventOrganizers.data.length}})</button>
-                </p>
-                        
-           
-                <p ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
-                    <hr>
-                        <ul ui-drop-listener="dropListener" data-model='eventRegistered.data' class="inline">
-
-                            <li ui-draggable  data-index="{{$index}}" ng-repeat="user in eventRegistered.data">
-                               
-                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                            
-                                       
-                                
-                                    
-                              
-                                <p></p>
-                            </li>
-
-                        </ul>
-                        <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button>
-                </p>
-        
-            
-                <p ng-hide="eventWaitListed.data.length==0"><h4>Waitlisted ({{event.waitListedUsers.length}})</h4> 
-                    <hr>
-                        <ul class="inline">
-
-                            <li ng-repeat="user in eventWaitListed.data">
-                              
-                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                                 
-                                        
-                                
-                               
-                            </li>
-                        </ul>
-                        <button class="btn btn-link" ng-show="event.waitListedUsers.length-eventWaitListed.data.length>0" ng-click="getMore('WAIT_LISTED');">See more ({{event.waitListedUsers.length-eventWaitListed.data.length}})</button>
-                </p>
-           
-        </div>
-    </tab>
-    <tab heading="Get Feedback">
-    </tab>
-</tabset>
-<script type="text/javascript">
+        <script type="text/javascript">
         
 $(function() {
     var DATEPICKER_FORMAT = 'mm/dd/yyyy';
@@ -505,3 +441,72 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
 
     
     </script> 
+    </tab>
+    <tab heading="Manage participants">
+        <div>
+            
+                <!--orgnaizers-->
+                <p ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
+                <hr>
+                <ul ui-drop-listener="dropListener" data-model="eventOrganizers.data" class="inline">
+
+                    <li ui-draggable  data-index="{{$index}}" ng-repeat="user in eventOrganizers.data">
+                      
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                        
+                              <p></p>  
+                           
+                            
+                       
+                    </li>
+                    <li></li>
+                </ul>
+                <button class="btn btn-link" ng-show="event.eventOrganizers.length-eventOrganizers.data.length>0" ng-click="getMore('ORGANIZER');">See more ({{event.eventOrganizers.length-eventOrganizers.data.length}})</button>
+                </p>
+                        
+           
+                <p ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
+                    <hr>
+                        <ul ui-drop-listener="dropListener" data-model='eventRegistered.data' class="inline">
+
+                            <li ui-draggable  data-index="{{$index}}" ng-repeat="user in eventRegistered.data">
+                               
+                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            
+                                       
+                                
+                                    
+                              
+                                <p></p>
+                            </li>
+                            <li></li>
+
+                        </ul>
+                        <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button>
+                </p>
+        
+            
+                <p ng-hide="eventWaitListed.data.length==0"><h4>Waitlisted ({{event.waitListedUsers.length}})</h4> 
+                    <hr>
+                        <ul ui-drop-listener="dropListener" data-model='eventWaitListed.data' class="inline">
+
+                            <li ui-draggable  data-index="{{$index}}" ng-repeat="user in eventWaitListed.data">
+                              
+                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                 
+                                        
+                                
+                               
+                            </li>
+                            <li></li>
+
+                        </ul>
+                        <button class="btn btn-link" ng-show="event.waitListedUsers.length-eventWaitListed.data.length>0" ng-click="getMore('WAIT_LISTED');">See more ({{event.waitListedUsers.length-eventWaitListed.data.length}})</button>
+                </p>
+           
+        </div>
+    </tab>
+    <tab heading="Get Feedback">
+    </tab>
+</tabset>
+
