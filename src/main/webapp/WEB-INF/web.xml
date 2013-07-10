@@ -5,6 +5,17 @@
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     version="2.5">
 
+    <!-- Must be the first filter to get invoked. Since objectify state has to be cleaned up by
+         this filter and the OAuthFilter updates objectify entities. -->
+    <filter>
+        <filter-name>ObjectifyFilter</filter-name>
+        <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ObjectifyFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
     <filter>
         <filter-name>OAuthFilter</filter-name>
         <filter-class>org.karmaexchange.security.OAuthFilter</filter-class>
