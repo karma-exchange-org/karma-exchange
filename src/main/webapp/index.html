@@ -80,7 +80,7 @@ body {
                     </li>
 
                 </ul>
-                <div ng-hide="me.firstName"><fb:login-button width="200" max-rows="1"></fb:login-button>
+                <div ng-hide="me.firstName"><fb:login-button scope="email,user_location" width="200" max-rows="1"></fb:login-button>
                 </div>
                 
 
@@ -98,7 +98,7 @@ body {
 
 	<div ng-controller="fbCntrl">
 		<div id="fb-root"></div>
-		<div ng-show="me.firstName"><fb:login-button show-faces="true" width="960" max-rows="1"></fb:login-button> </div>
+		<div ng-show="me.firstName"><fb:login-button scope="email,user_location" show-faces="true" width="960" max-rows="1"></fb:login-button> </div>
 	</div>
 	<script
 		src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
