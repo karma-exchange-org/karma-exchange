@@ -51,6 +51,10 @@ public final class User extends NameBaseDao<User> {
   private String lastName;
   @Index
   private String nickName;
+
+  private Gender gender;
+  private AgeRange ageRange;
+
   private ImageRef profileImage;
   private ContactInfo contactInfo;
   private List<EmergencyContact> emergencyContacts = Lists.newArrayList();
