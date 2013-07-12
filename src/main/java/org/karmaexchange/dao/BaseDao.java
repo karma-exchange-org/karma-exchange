@@ -228,6 +228,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
       if (resource.isKeyComplete()) {
         resourceKey = Key.create(resource).getString();
       }
+      this.field = fieldName;
     }
   }
 
