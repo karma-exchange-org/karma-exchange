@@ -27,6 +27,11 @@ public class ErrorResponseMsg {
     return new WebApplicationException(createErrorResponse(msg));
   }
 
+  public static WebApplicationException createException(ErrorInfo errorInfo) {
+    ErrorResponseMsg msg = new ErrorResponseMsg(errorInfo);
+    return new WebApplicationException(createErrorResponse(msg));
+  }
+
   private static Response createErrorResponse(ErrorResponseMsg msg) {
     return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
   }
@@ -60,6 +65,7 @@ public class ErrorResponseMsg {
       UNREGISTERED_USER,
       BACKEND_SERVICE_FAILURE,
       BAD_REQUEST,
+      VALIDATION_FAILURE,
       LIMIT_REACHED,
       PARTNER_SERVICE_FAILURE
     }
