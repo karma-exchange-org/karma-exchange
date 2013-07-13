@@ -134,7 +134,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
     Event event = createEvent("Amir & Harish Organizer - SF Street Cleanup",
-      DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100);
+      DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
 
@@ -142,7 +142,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
     event = createEvent("Full event - Learning center",
-      DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 0, 2, 100);
+      DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 2);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
     events.add(event);
 
@@ -150,7 +150,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Amir Organizer - Date conflict - No one signed up",
-      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100);
+      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
 
@@ -158,7 +158,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Harish Organizer - Date conflict - No one signed up",
-      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 0, 5, 100);
+      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
 
@@ -172,7 +172,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Harish as Organizer, Amir participant - SF Street Cleanup",
       DateUtils.addDays(now, -6), 1,
-      organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100);
+      organizers, registeredUsers, waitListedUsers, registeredUsers.size());
     events.add(event);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     pendingReviews.add(PendingReview.create(event, USER4.getKey(),
@@ -188,7 +188,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Amir as Organizer, Harish participant - SF Street Cleanup",
       DateUtils.addDays(now, -13), 1,
-      organizers, registeredUsers, waitListedUsers, 0, registeredUsers.size(), 100);
+      organizers, registeredUsers, waitListedUsers, registeredUsers.size());
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
@@ -197,14 +197,14 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
     event = createEvent("Harish as Organizer - SF Street Cleanup",
-      DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100);
+      DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 100);
     events.add(event);
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
     event = createEvent("Amir as Organizer - SF Street Cleanup",
-      DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 0, 100, 100);
+      DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 100);
     events.add(event);
 
     return new CreateEventsResult(events, pendingReviews);
@@ -212,8 +212,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private static Event createEvent(String title, Date startTime, int numHours,
       List<Key<User>> organizers, List<Key<User>> registeredUsers,
-      List<Key<User>> waitListedUsers, int minRegistrations, int maxRegistrations,
-      int maxWaitingList) {
+      List<Key<User>> waitListedUsers, int maxRegistrations) {
     eventNum++;
     Event event = new Event();
     event.setTitle(title);
@@ -232,9 +231,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event.setStartTime(startTime);
     event.setEndTime(DateUtils.addHours(startTime, numHours));
     event.setParticipants(createParticpantsList(organizers, registeredUsers, waitListedUsers));
-    event.setMinRegistrations(minRegistrations);
     event.setMaxRegistrations(maxRegistrations);
-    event.setMaxWaitingList(maxWaitingList);
     return event;
   }
 
