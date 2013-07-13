@@ -59,6 +59,8 @@ public final class User extends NameBaseDao<User> {
   private ContactInfo contactInfo;
   private List<EmergencyContact> emergencyContacts = Lists.newArrayList();
 
+  private String about;
+
   @Index
   private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
 
