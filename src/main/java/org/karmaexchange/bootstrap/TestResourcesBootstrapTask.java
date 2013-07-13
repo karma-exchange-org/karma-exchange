@@ -79,6 +79,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       User user = User.create(createOAuthCredential());
       user.setFirstName(firstName);
       user.setLastName(lastName);
+      user.setAbout("I'm looking forward to making a difference!");
       return user;
     }
 
