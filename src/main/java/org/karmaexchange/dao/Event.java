@@ -96,10 +96,8 @@ public final class Event extends IdBaseDao<Event> {
   @Ignore
   private RegistrationInfo registrationInfo;
 
-  private int minRegistrations;
   // The maxRegistration limit only applies to participants. The limit does not include organizers.
   private int maxRegistrations;
-  private int maxWaitingList;
 
   // Can not be explicitly set. Automatically managed.
   @Index
@@ -556,11 +554,14 @@ public final class Event extends IdBaseDao<Event> {
     if (participant == null) {
       if (registeredUsers.size() < maxRegistrations) {
         registrationInfo = RegistrationInfo.CAN_REGISTER;
-      } else if (waitListedUsers.size() < maxWaitingList) {
-        registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
       } else {
-        registrationInfo = RegistrationInfo.FULL;
+        registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
       }
+      // } else if (waitListedUsers.size() < maxWaitingList) {
+      //  registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
+      // } else {
+      //  registrationInfo = RegistrationInfo.FULL;
+      // }
     } else {
       if (participant.type == ParticipantType.ORGANIZER) {
         registrationInfo = RegistrationInfo.ORGANIZER;
@@ -634,11 +635,11 @@ public final class Event extends IdBaseDao<Event> {
           }
         } else {
           checkState(participantType == ParticipantType.WAIT_LISTED);
-          if (event.waitListedUsers.size() >= event.maxWaitingList) {
-            throw ErrorResponseMsg.createException(
-              "the event has reached the max waiting list limit",
-              ErrorInfo.Type.LIMIT_REACHED);
-          }
+          // if (event.waitListedUsers.size() >= event.maxWaitingList) {
+          //  throw ErrorResponseMsg.createException(
+          //    "the event has reached the max waiting list limit",
+          //    ErrorInfo.Type.LIMIT_REACHED);
+          // }
         }
       }
 
