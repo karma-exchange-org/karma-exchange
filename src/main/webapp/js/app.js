@@ -104,8 +104,8 @@ angular.module('FacebookProvider', [])
             FB.getLoginStatus(function (response) {
                 switch (response.status) {
                     case 'connected':
-                    $rootScope.$broadcast('fb_connected', {facebook_id:response.authResponse.userID});
-                    break;
+                        $rootScope.$broadcast('fb_connected', {facebook_id:response.authResponse.userID});
+                        break;
                     case 'not_authorized' || 'unknown':
                         // 'not_authorized' || 'unknown': doesn't seem to work
                         FB.login(function (response) {
@@ -117,9 +117,9 @@ angular.module('FacebookProvider', [])
                             } else {
                                 $rootScope.$broadcast('fb_login_failed');
                             }
-                        }, {scope:'read_stream, publish_stream, email'});
+                        }, {scope: 'email,user_location'});
                         break;
-                        default:
+                    default:
                         FB.login(function (response) {
                             if (response.authResponse) {
                                 $rootScope.$broadcast('fb_connected', {facebook_id:response.authResponse.userID});
@@ -127,7 +127,7 @@ angular.module('FacebookProvider', [])
                             } else {
                                 $rootScope.$broadcast('fb_login_failed');
                             }
-                        });
+                        }, {scope: 'email,user_location'});
                         break;
                     }
                 }, true);

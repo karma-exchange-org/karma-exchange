@@ -16,6 +16,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.resources.msg.ValidationErrorInfo;
+import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
+import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.task.ProcessOrganizerRatingsServlet;
 import org.karmaexchange.util.BoundedHashSet;
 import org.karmaexchange.util.SearchUtil;
@@ -93,10 +96,8 @@ public final class Event extends IdBaseDao<Event> {
   @Ignore
   private RegistrationInfo registrationInfo;
 
-  private int minRegistrations;
   // The maxRegistration limit only applies to participants. The limit does not include organizers.
   private int maxRegistrations;
-  private int maxWaitingList;
 
   // Can not be explicitly set. Automatically managed.
   @Index
@@ -411,52 +412,60 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   private void validateEvent() {
+    List<ValidationError> validationErrors = Lists.newArrayList();
+
     if ((null == title) || title.isEmpty()) {
-      throw ErrorResponseMsg.createException("all events require an event title",
-        ErrorInfo.Type.BAD_REQUEST);
+      validationErrors.add(new ResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "title"));
     }
     // TODO(avaliani): make sure the description has a minimum length. Avoiding this for now
     //   since we don't have auto event creation.
     if (null == startTime) {
-      throw ErrorResponseMsg.createException("the event start time can not be null",
-        ErrorInfo.Type.BAD_REQUEST);
+      validationErrors.add(new ResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "startTime"));
     }
     if (null == endTime) {
-      throw ErrorResponseMsg.createException("the event end time can not be null",
-        ErrorInfo.Type.BAD_REQUEST);
+      validationErrors.add(new ResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "endTime"));
     }
-    if (endTime.before(startTime)) {
-      throw ErrorResponseMsg.createException(
-        "the event end time must be after the event start time",
-        ErrorInfo.Type.BAD_REQUEST);
+    if ((startTime != null) && (endTime != null) && !startTime.before(endTime)) {
+      validationErrors.add(new MultiFieldResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_MUST_BE_GT_SPECIFIED_FIELD,
+        "endTime", "startTime"));
     }
     if (maxRegistrations < 1) {
-      throw ErrorResponseMsg.createException(
-        "max registrations must be greater than or equal to one",
-        ErrorInfo.Type.BAD_REQUEST);
-    }
-    if (minRegistrations > maxRegistrations) {
-      throw ErrorResponseMsg.createException(
-        "the minimum number of registrations must be less than or equal to the maximum number" +
-            "of registrations",
-        ErrorInfo.Type.BAD_REQUEST);
+      validationErrors.add(new LimitResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_MUST_BE_GTEQ_LIMIT,
+        "maxRegistrations", 1));
     }
     if (organizers.isEmpty()) {
-      throw ErrorResponseMsg.createException(
-        "at least one organizer must be assigned to the event",
-        ErrorInfo.Type.BAD_REQUEST);
+      validationErrors.add(new ResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "organizers"));
+    }
+
+    if (!validationErrors.isEmpty()) {
+      throw ValidationErrorInfo.createException(validationErrors);
     }
   }
 
   private void validateEventUpdate(Event prevObj) {
+    List<ValidationError> validationErrors = Lists.newArrayList();
+
     // Check the prev object's state since some of the fields of the current object can be
     // manipulated in an update.
     if (computeStatus(prevObj) == Status.COMPLETED) {
-      if (!startTime.equals(prevObj.startTime) || !endTime.equals(prevObj.endTime)) {
-        throw ErrorResponseMsg.createException(
-          "can not update the start time or end time for a completed event",
-          ErrorInfo.Type.BAD_REQUEST);
+      if (!startTime.equals(prevObj.startTime)) {
+        validationErrors.add(new ResourceValidationError(
+          this, ValidationErrorType.RESOURCE_FIELD_VALUE_UNMODIFIABLE, "startTime"));
       }
+      if (!endTime.equals(prevObj.endTime)) {
+        validationErrors.add(new ResourceValidationError(
+          this, ValidationErrorType.RESOURCE_FIELD_VALUE_UNMODIFIABLE, "endTime"));
+      }
+    }
+
+    if (!validationErrors.isEmpty()) {
+      throw ValidationErrorInfo.createException(validationErrors);
     }
   }
 
@@ -545,11 +554,14 @@ public final class Event extends IdBaseDao<Event> {
     if (participant == null) {
       if (registeredUsers.size() < maxRegistrations) {
         registrationInfo = RegistrationInfo.CAN_REGISTER;
-      } else if (waitListedUsers.size() < maxWaitingList) {
-        registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
       } else {
-        registrationInfo = RegistrationInfo.FULL;
+        registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
       }
+      // } else if (waitListedUsers.size() < maxWaitingList) {
+      //  registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
+      // } else {
+      //  registrationInfo = RegistrationInfo.FULL;
+      // }
     } else {
       if (participant.type == ParticipantType.ORGANIZER) {
         registrationInfo = RegistrationInfo.ORGANIZER;
@@ -623,11 +635,11 @@ public final class Event extends IdBaseDao<Event> {
           }
         } else {
           checkState(participantType == ParticipantType.WAIT_LISTED);
-          if (event.waitListedUsers.size() >= event.maxWaitingList) {
-            throw ErrorResponseMsg.createException(
-              "the event has reached the max waiting list limit",
-              ErrorInfo.Type.LIMIT_REACHED);
-          }
+          // if (event.waitListedUsers.size() >= event.maxWaitingList) {
+          //  throw ErrorResponseMsg.createException(
+          //    "the event has reached the max waiting list limit",
+          //    ErrorInfo.Type.LIMIT_REACHED);
+          // }
         }
       }
 

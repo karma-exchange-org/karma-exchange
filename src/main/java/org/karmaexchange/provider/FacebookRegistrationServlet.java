@@ -28,6 +28,7 @@ import com.restfb.DefaultFacebookClient;
 import com.restfb.Facebook;
 import com.restfb.exception.FacebookException;
 
+// TODO(avaliani): This class is now out of sync. It's missing age_range, gender
 @SuppressWarnings("serial")
 public class FacebookRegistrationServlet extends AdminTaskServlet {
 
@@ -140,14 +141,7 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
       if ((registrationInfo.currentCity == null) || (registrationInfo.currentCity.name == null)) {
         return null;
       }
-      Address address = new Address();
-      String[] cityState = registrationInfo.currentCity.name.split(",");
-      address.setCity(cityState[0].trim());
-      if (cityState.length > 1) {
-        address.setState(cityState[1].trim());
-      }
-      // TODO(avaliani): use the fb location id to get a complete address.
-      return address;
+      return FacebookSocialNetworkProvider.parseCity(registrationInfo.currentCity.name);
     }
 
     @Data
@@ -177,6 +171,7 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
     }
   }
 
+  // TODO(avaliani): Verify if NamedFacebookType can safely replace it. Most likely it can.
   @Data
   private static class NameAndIdFacebookType {
 
