@@ -599,7 +599,7 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
                     );
                 */
                 //TODO - push to cached event participants
-                $scope.$apply();
+                //$scope.$apply();
 
             });
 
@@ -913,8 +913,10 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
 
 
         $scope.save = function () {
+            $scope.event.suitableForTypes=[];
             for(var i=0;i<$scope.suitableForList.length;i++)
             {
+
                 if($scope.suitableForList[i].checked===true)
                 {
                     $scope.event.suitableForTypes.push($scope.suitableForList[i].key);
