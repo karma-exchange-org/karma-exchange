@@ -3,6 +3,7 @@ package org.karmaexchange.dao;
 import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
+import static com.google.common.base.CharMatcher.WHITESPACE;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collection;
@@ -195,6 +196,9 @@ public final class Event extends IdBaseDao<Event> {
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();
+    if (title != null) {
+      title = WHITESPACE.trimFrom(title);
+    }
     initParticipantLists();
     // Add the current user as an organizer if there are no organizers registered.
     if (organizers.isEmpty()) {
@@ -216,6 +220,9 @@ public final class Event extends IdBaseDao<Event> {
   @Override
   protected void processUpdate(Event prevObj) {
     super.processUpdate(prevObj);
+    if (title != null) {
+      title = WHITESPACE.trimFrom(title);
+    }
     initKarmaPoints();
     // Rating is independently and transactionally updated.
     rating = prevObj.rating;
