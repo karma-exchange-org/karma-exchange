@@ -37,9 +37,10 @@ import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
 import org.karmaexchange.resources.msg.ReviewCommentView;
 import org.karmaexchange.util.PaginatedQuery;
-import org.karmaexchange.util.SearchUtil;
+import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
 import org.karmaexchange.util.PaginatedQuery.FilterQueryClause;
 import org.karmaexchange.util.PaginatedQuery.OrderQueryClause;
+import org.karmaexchange.util.SearchUtil;
 import org.karmaexchange.util.PaginationParam;
 
 import com.google.appengine.api.datastore.Cursor;
@@ -123,7 +124,7 @@ public class EventResource extends BaseDaoResource<Event> {
         paginatedQuery.getPaginationParams()));
   }
 
-  private static class StartTimeFilter extends FilterQueryClause {
+  private static class StartTimeFilter extends ConditionFilter {
     public StartTimeFilter(EventSearchType searchType, Date startTime) {
       super((searchType == EventSearchType.UPCOMING) ? "startTime >=" : "startTime <",
           startTime);
@@ -138,7 +139,7 @@ public class EventResource extends BaseDaoResource<Event> {
     }
   }
 
-  private static class KeywordsFilter extends FilterQueryClause {
+  private static class KeywordsFilter extends ConditionFilter {
     public KeywordsFilter(String keywords) {
       super("searchableTokens",
         SearchUtil.getSearchableTokens(keywords, MAX_SEARCH_KEYWORDS).toArray());

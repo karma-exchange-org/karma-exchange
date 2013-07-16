@@ -3,9 +3,11 @@ package org.karmaexchange.provider;
 import static java.lang.String.format;
 import static org.karmaexchange.security.OAuthFilter.OAUTH_LOG_LEVEL;
 
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
 import javax.servlet.Filter;
 
 import lombok.Data;
@@ -15,17 +17,23 @@ import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AgeRange;
 import org.karmaexchange.dao.ContactInfo;
 import org.karmaexchange.dao.Gender;
+import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.OAuthCredential;
+import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.PageRef;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
+import com.google.appengine.api.datastore.GeoPt;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.Facebook;
 import com.restfb.FacebookClient;
 import com.restfb.Parameter;
 import com.restfb.exception.FacebookException;
 import com.restfb.exception.FacebookOAuthException;
+import com.restfb.types.Location;
+import com.restfb.types.Page;
 
 public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
 
@@ -117,6 +125,38 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
   @Override
   public String getProfileImageUrl() {
     return String.format(PROFILE_IMAGE_URL_FMT, credential.getUid());
+  }
+
+  @Override
+  public Organization createOrganization(String pageUrl) throws URISyntaxException {
+    DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
+    // Getting age_range unfortunately requires explicitly specifiying the fields.
+    String fbPageName = getPageNameFromUrl(pageUrl);
+    Page fbPage = fetchObject(fbClient, fbPageName, Page.class);
+
+    Organization org = new Organization();
+    org.setName(fbPageName);
+    org.setOrgName(fbPage.getName());
+    org.setPage(PageRef.create(pageUrl, providerType));
+    org.setAddress(getAddress(fbPage.getLocation()));
+    return org;
+  }
+
+  private Address getAddress(@Nullable Location fbLocation) {
+    if (fbLocation == null) {
+      return null;
+    }
+    Address address = new Address();
+    address.setStreet(fbLocation.getStreet());
+    address.setCity(fbLocation.getCity());
+    address.setState(fbLocation.getState());
+    address.setCountry(fbLocation.getCountry());
+    address.setZip(fbLocation.getZip());
+    if ((fbLocation.getLatitude() != null) && (fbLocation.getLongitude() != null)) {
+      address.setGeoPt(GeoPtWrapper.create(
+        new GeoPt(fbLocation.getLatitude().floatValue(), fbLocation.getLongitude().floatValue())));
+    }
+    return address;
   }
 
   public static <T> T fetchObject(FacebookClient fbClient, String name, Class<T> objClass,

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
+import org.karmaexchange.dao.Organization;
 import org.karmaexchange.util.URLUtil;
 
 import com.google.appengine.api.datastore.Cursor;
@@ -19,7 +20,8 @@ import lombok.NoArgsConstructor;
 @XmlRootElement
 @Data
 @NoArgsConstructor
-@XmlSeeAlso({EventParticipantView.class, EventSearchView.class, ReviewCommentView.class})
+@XmlSeeAlso({EventParticipantView.class, EventSearchView.class, ReviewCommentView.class,
+  Organization.class})
 public class ListResponseMsg<T> {
 
   private List<T> data;
