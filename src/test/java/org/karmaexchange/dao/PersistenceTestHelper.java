@@ -6,6 +6,7 @@ import static org.karmaexchange.util.TestUtil.debug;
 
 import org.junit.After;
 import org.junit.Before;
+import org.karmaexchange.util.DatastoreTestUtil;
 import org.karmaexchange.util.OfyService;
 
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
@@ -29,9 +30,11 @@ public class PersistenceTestHelper {
     appEngineHelper.tearDown();
   }
 
-  protected <T> void validatePersistence(T entity) {
+  protected <T> void validatePersistence(T entity) throws Exception {
     if (debug) {
       System.out.println("Before: " + entity);
+      System.out.println("Before datastore entity: ");
+      DatastoreTestUtil.dumpEntity(entity);
     }
 
     Key<T> key = ofy().save().entity(entity).now();
@@ -39,6 +42,8 @@ public class PersistenceTestHelper {
 
     if (debug) {
       System.out.println("After: " + persistedEntity);
+      System.out.println("After datastore  entity: ");
+      DatastoreTestUtil.dumpEntity(entity);
     }
 
     assertEquals(entity, persistedEntity);

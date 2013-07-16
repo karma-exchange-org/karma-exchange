@@ -122,15 +122,18 @@ public class PaginatedQuery<T> {
     public abstract <T> Query<T> apply(Query<T> query);
   }
 
+  public static abstract class FilterQueryClause extends QueryClause {
+  }
+
   @Data
   @EqualsAndHashCode(callSuper=true)
   @ToString(callSuper=true)
-  public static class FilterQueryClause extends QueryClause {
+  public static class ConditionFilter extends FilterQueryClause {
 
     private final String condition;
     private final Object[] values;
 
-    public FilterQueryClause(String condition, Object... values) {
+    public ConditionFilter(String condition, Object... values) {
       this.condition = condition;
       this.values = values;
     }
@@ -141,6 +144,21 @@ public class PaginatedQuery<T> {
         query = query.filter(condition, value);
       }
       return query;
+    }
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=true)
+  @ToString(callSuper=true)
+  public static class StartsWithFilter extends FilterQueryClause {
+
+    private final String fieldName;
+    private final String prefix;
+
+    @Override
+    public <T> Query<T> apply(Query<T> query) {
+      return query.filter(fieldName + " >=", prefix)
+          .filter(fieldName + " <", prefix + "\uFFFD");
     }
   }
 

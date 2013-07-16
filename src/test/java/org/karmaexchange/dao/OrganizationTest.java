@@ -6,6 +6,7 @@ import static org.karmaexchange.util.JsonValidationTestUtil.validateJsonConversi
 
 import org.junit.Before;
 import org.junit.Test;
+import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 
 public class OrganizationTest extends PersistenceTestHelper {
 
@@ -17,7 +18,9 @@ public class OrganizationTest extends PersistenceTestHelper {
     super.setUp();
 
     org = new Organization();
-    org.setId(Long.valueOf(25));
+    org.setName("org");
+    org.setOrgName("My Org");
+    org.setPage(PageRef.create("http://facebook.com/org", SocialNetworkProviderType.FACEBOOK));
     // org.setType(Organization.Type.NON_PROFIT);
     org.setCauses(asList(
       KeyWrapper.create(CauseType.create("homeless")),
