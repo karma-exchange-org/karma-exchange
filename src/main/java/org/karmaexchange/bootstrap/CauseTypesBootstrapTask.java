@@ -3,6 +3,8 @@ package org.karmaexchange.bootstrap;
 import java.io.PrintWriter;
 import java.util.Collection;
 
+import javax.servlet.http.Cookie;
+
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.PageRef;
@@ -17,8 +19,8 @@ import com.google.common.collect.Lists;
  */
 public class CauseTypesBootstrapTask extends BootstrapTask {
 
-  public CauseTypesBootstrapTask(PrintWriter statusWriter) {
-    super(statusWriter);
+  public CauseTypesBootstrapTask(PrintWriter statusWriter, Cookie[] cookies) {
+    super(statusWriter, cookies);
   }
 
   @Override

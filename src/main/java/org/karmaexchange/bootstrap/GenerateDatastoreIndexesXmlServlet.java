@@ -15,8 +15,10 @@ import javax.ws.rs.core.Response;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
+import org.karmaexchange.dao.Organization;
 import org.karmaexchange.resources.EventResource;
 import org.karmaexchange.resources.EventResource.EventSearchType;
+import org.karmaexchange.resources.OrganizationResource;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.util.AdminTaskServlet;
 import org.karmaexchange.util.AdminUtil;
@@ -101,6 +103,22 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
       .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.PAST.toString())
       .queryParam(EventResource.KEYWORDS_PARAM, "animals"));
 
+    Key<Organization> arbitraryOrgKey = getArbitraryOrganizationKey();
+    issueGetRequestAndCheckRespone(
+      service.path("api/org")
+      .path(arbitraryOrgKey.getString())
+      .path("member"));
+    issueGetRequestAndCheckRespone(
+      service.path("api/org")
+      .path(arbitraryOrgKey.getString())
+      .path("member")
+      .queryParam(OrganizationResource.ROLE_PARAM, Organization.Role.ADMIN.toString()));
+    issueGetRequestAndCheckRespone(
+      service.path("api/org")
+      .path(arbitraryOrgKey.getString())
+      .path("member")
+      .queryParam(OrganizationResource.ROLE_PARAM, Organization.Role.ORGANIZER.toString()));
+
     statusWriter.println("Completed issuing queries.");
   }
 
@@ -143,6 +161,17 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
     } else {
       throw new RuntimeException(
         "At least one event is required in order to generate the datastore-indexes.xml ");
+    }
+  }
+
+  private Key<Organization> getArbitraryOrganizationKey() {
+    Iterator<Key<Organization>> keysIter =
+        ofy().load().type(Organization.class).limit(1).keys().iterator();
+    if (keysIter.hasNext()) {
+      return keysIter.next();
+    } else {
+      throw new RuntimeException(
+        "At least one organization is required in order to generate the datastore-indexes.xml ");
     }
   }
 }
