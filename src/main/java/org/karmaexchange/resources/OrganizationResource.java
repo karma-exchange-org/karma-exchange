@@ -72,6 +72,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
     if (afterCursorStr != null) {
       queryBuilder.setAfterCursor(Cursor.fromWebSafeString(afterCursorStr));
     }
+    queryBuilder.setOrder(new OrderQueryClause("searchableOrgName"));
     if (namePrefix != null) {
       queryBuilder.addFilter(new NamePrefixFilter(namePrefix.toLowerCase()));
     }
