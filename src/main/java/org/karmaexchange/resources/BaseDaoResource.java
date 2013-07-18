@@ -83,7 +83,6 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
           Key.create(resource).getString(), key),
         ErrorInfo.Type.BAD_REQUEST);
     }
-    System.out.println("POST " + uriInfo.getAbsolutePath());
     BaseDao.<T>upsert(resource);
     return Response.created(uriInfo.getAbsolutePath()).build();
   }
