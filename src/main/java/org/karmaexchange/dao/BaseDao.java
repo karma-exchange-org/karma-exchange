@@ -12,13 +12,9 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
 
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
-import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
-import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -212,54 +208,4 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   protected abstract Permission evalPermission();
-
-  @Data
-  @NoArgsConstructor
-  @EqualsAndHashCode(callSuper=true)
-  @ToString(callSuper=true)
-  public static class ResourceValidationError extends ValidationError {
-
-    private String resourceKey;
-    private String field;
-
-    public ResourceValidationError(BaseDao<?> resource, ValidationErrorType errorType,
-        String fieldName) {
-      super(errorType);
-      if (resource.isKeyComplete()) {
-        resourceKey = Key.create(resource).getString();
-      }
-      this.field = fieldName;
-    }
-  }
-
-  @Data
-  @NoArgsConstructor
-  @EqualsAndHashCode(callSuper=true)
-  @ToString(callSuper=true)
-  public static class MultiFieldResourceValidationError extends ResourceValidationError {
-
-    private String otherField;
-
-    public MultiFieldResourceValidationError(BaseDao<?> resource, ValidationErrorType errorType,
-        String fieldName, String otherFieldName) {
-      super(resource, errorType, fieldName);
-      this.otherField = otherFieldName;
-    }
-  }
-
-  @Data
-  @NoArgsConstructor
-  @EqualsAndHashCode(callSuper=true)
-  @ToString(callSuper=true)
-  public static class LimitResourceValidationError extends ResourceValidationError {
-
-    private int limit;
-
-    public LimitResourceValidationError(BaseDao<?> resource, ValidationErrorType errorType,
-        String fieldName, int limit) {
-      super(resource, errorType, fieldName);
-      this.limit = limit;
-    }
-  }
-
 }

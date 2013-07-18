@@ -1,13 +1,15 @@
 package org.karmaexchange.dao;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.ToString;
 
 import com.google.appengine.api.datastore.GeoPt;
 import com.googlecode.objectify.annotation.Embed;
+import com.googlecode.objectify.annotation.Ignore;
 
 @Embed
-@ToString
+@ToString(exclude={"latitude", "longitude"})
 @EqualsAndHashCode
 public class GeoPtWrapper {
 
@@ -16,25 +18,29 @@ public class GeoPtWrapper {
   // because it doesn't have setters and getters for JAXB conversion.
   private GeoPt geoPt;
 
+  @Ignore
+  @Getter
+  private float latitude;
+
+  @Ignore
+  @Getter
+  private float longitude;
+
   public static GeoPtWrapper create(GeoPt geoPt) {
     GeoPtWrapper wrapper = new GeoPtWrapper();
     wrapper.geoPt = geoPt;
+    wrapper.latitude = geoPt.getLatitude();
+    wrapper.longitude = geoPt.getLongitude();
     return wrapper;
   }
 
-  public float getLatitude() {
-    return (geoPt == null) ? 0f : geoPt.getLatitude();
-  }
-
-  public float getLongitude() {
-    return (geoPt == null) ? 0f : geoPt.getLongitude();
-  }
-
   public void setLatitude(float latitude) {
-    geoPt = new GeoPt(latitude, getLongitude());
+    geoPt = new GeoPt(latitude, longitude);
+    this.latitude = latitude;
   }
 
   public void setLongitude(float longitude) {
-    geoPt = new GeoPt(getLatitude(), longitude);
+    geoPt = new GeoPt(latitude, longitude);
+    this.longitude = longitude;
   }
 }
