@@ -33,11 +33,17 @@ public final class SocialNetworkProviderFactory {
   }
 
   public static OAuthCredential getLoginProviderCredential(HttpServletRequest req) {
-    Map<String, Cookie> cookies = getCookies(req);
-    String provider = getCookieValue(cookies, OAUTH_LOGIN);
+    return getLoginProviderCredential(req.getCookies());
+  }
+
+  public static OAuthCredential getLoginProviderCredential(Cookie[] cookiesArray) {
+    Map<String, Cookie> cookiesMap = getCookiesMap(cookiesArray);
+    String provider = getCookieValue(cookiesMap, OAUTH_LOGIN);
     if (provider != null) {
-      String uid = getCookieValue(cookies, getProviderCookieName(provider, OAUTH_UID_SUFFIX));
-      String token = getCookieValue(cookies, getProviderCookieName(provider, OAUTH_TOKEN_SUFFIX));
+      String uid = getCookieValue(cookiesMap,
+        getProviderCookieName(provider, OAUTH_UID_SUFFIX));
+      String token = getCookieValue(cookiesMap,
+        getProviderCookieName(provider, OAUTH_TOKEN_SUFFIX));
       if ((uid != null) && (token != null)) {
         return OAuthCredential.create(provider, uid, token);
       }
@@ -45,9 +51,8 @@ public final class SocialNetworkProviderFactory {
     return null;
   }
 
-  private static Map<String, Cookie> getCookies(HttpServletRequest req) {
+  private static Map<String, Cookie> getCookiesMap(Cookie[] cookiesArray) {
     Map<String, Cookie> cookiesMap = Maps.newHashMap();
-    Cookie[] cookiesArray = req.getCookies();
     if (cookiesArray != null) {
       for (Cookie cookie : cookiesArray) {
         cookiesMap.put(cookie.getName(), cookie);

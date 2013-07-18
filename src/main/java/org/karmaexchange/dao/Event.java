@@ -739,8 +739,8 @@ public final class Event extends IdBaseDao<Event> {
   @NoArgsConstructor
   public static final class EventParticipant {
     @Index
-    KeyWrapper<User> user;
-    ParticipantType type;
+    private KeyWrapper<User> user;
+    private ParticipantType type;
 
     public static EventParticipant create(Key<User> user, ParticipantType type) {
       return new EventParticipant(KeyWrapper.create(user), type);

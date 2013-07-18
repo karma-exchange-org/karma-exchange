@@ -21,7 +21,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @XmlSeeAlso({EventParticipantView.class, EventSearchView.class, ReviewCommentView.class,
-  Organization.class})
+  Organization.class, OrganizationMemberView.class})
 public class ListResponseMsg<T> {
 
   private List<T> data;

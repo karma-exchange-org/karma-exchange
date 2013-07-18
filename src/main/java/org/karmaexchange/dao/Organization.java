@@ -1,19 +1,26 @@
 package org.karmaexchange.dao;
 
 import static com.google.common.base.CharMatcher.WHITESPACE;
+import static org.karmaexchange.util.UserService.getCurrentUser;
 import static org.karmaexchange.util.UserService.getCurrentUserCredential;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
+import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
 import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.validator.routines.EmailValidator;
+import org.karmaexchange.dao.User.OrganizationMembership;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
+import org.karmaexchange.task.AddOrgAdminServlet;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -21,6 +28,7 @@ import lombok.ToString;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Index;
 
@@ -30,17 +38,6 @@ import com.googlecode.objectify.annotation.Index;
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
 public class Organization extends NameBaseDao<Organization> {
-
-  /*
-   * TODO(avaliani): is the type information useful for people to know? Non-profits and for
-   * profits can both generate volunteer events.
-   *
-   * | public enum Type {
-   * |   NON_PROFIT,
-   * |   COMMERCIAL
-   * | }
-   * | private Type type;
-  */
 
   private String orgName;
   @Index
@@ -57,19 +54,32 @@ public class Organization extends NameBaseDao<Organization> {
   // Email address is not a field in facebook pages.
   private String email;
 
+  private List<String> domains = Lists.newArrayList();
+
   private Address address;
 
   private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
 
-  private List<KeyWrapper<User>> admins = Lists.newArrayList();
-
-  // Users that have given permission for Organizations to use their ids as organizers for events.
-  // By default admins are organizers.
-  private List<KeyWrapper<User>> organizers = Lists.newArrayList();
-
   @Index
   private long karmaPoints;
   private IndexedAggregateRating eventRating;
+
+  public enum Role {
+    ADMIN,
+    ORGANIZER,
+    MEMBER
+  }
+
+  /*
+   * TODO(avaliani): is the type information useful for people to know? Non-profits and for
+   * profits can both generate volunteer events.
+   *
+   * | public enum Type {
+   * |   NON_PROFIT,
+   * |   COMMERCIAL
+   * | }
+   * | private Type type;
+  */
 
   @Override
   public void setName(String name) {
@@ -119,15 +129,25 @@ public class Organization extends NameBaseDao<Organization> {
       orgName = WHITESPACE.trimFrom(orgName);
       searchableOrgName = orgName.toLowerCase();
     }
-    // Add the current user as an admin if no admins are specified
-    if (admins.isEmpty()) {
-      admins.add(KeyWrapper.create(getCurrentUserKey()));
-    }
+    // For now, avoid doing this unless we are sure the email address is not a generic email
+    // address like gmail, yahoo, hotmail, etc. We don't want to accidentally give permissions
+    // to arbitrary users. The UI can do this and warn the user.
+    //
+    //    if (domains.isEmpty() && (email != null)) {
+    //      String[] splitEmail = email.split("@", 2);
+    //      if (splitEmail.length > 1) {
+    //        domains.add(splitEmail[1]);
+    //      }
+    //    }
 
     eventRating = IndexedAggregateRating.create();
     karmaPoints = 0;
 
     validateOrganization();
+
+    // Transactionally add the current user as the admin. This will be replaced later by
+    // an email verification process.
+    AddOrgAdminServlet.enqueueTask(Key.create(this), getCurrentUserKey());
   }
 
   @Override
@@ -154,11 +174,6 @@ public class Organization extends NameBaseDao<Organization> {
         this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "orgName"));
     }
 
-    if (admins.isEmpty()) {
-      validationErrors.add(new ResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "admins"));
-    }
-
     if (pageIsInitialized()) {
       String pageDerivedName = null;
       try {
@@ -174,6 +189,17 @@ public class Organization extends NameBaseDao<Organization> {
     } else {
       validationErrors.add(new ResourceValidationError(
         this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "page"));
+    }
+
+    if ((email != null) && !EmailValidator.getInstance().isValid(email)) {
+      validationErrors.add(new ResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "email"));
+    }
+    for (String domain : domains) {
+      if (!EmailValidator.getInstance().isValid("user@" + domain)) {
+        validationErrors.add(new ResourceValidationError(
+          this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "domains"));
+      }
     }
 
     if (!validationErrors.isEmpty()) {
@@ -200,11 +226,26 @@ public class Organization extends NameBaseDao<Organization> {
 
   @Override
   protected Permission evalPermission() {
-    for (KeyWrapper<User> adminKeyWrapper : admins) {
-      if (KeyWrapper.toKey(adminKeyWrapper).equals(getCurrentUserKey())) {
-        return Permission.ALL;
-      }
+    if (isCurrentUserOrgAdmin()) {
+      return Permission.ALL;
     }
     return Permission.READ;
+  }
+
+  /*
+   * Note that this call fetches the current user's user object to evaluate the users role in
+   * the org.
+   */
+  public boolean isCurrentUserOrgAdmin() {
+    if (isCurrentUserAdmin()) {
+      return true;
+    }
+    User currentUser = getCurrentUser();
+    if (currentUser == null) {
+      throw ErrorResponseMsg.createException("current user not found", ErrorInfo.Type.BAD_REQUEST);
+    }
+    // In the future we can support hierarchical ADMIN roles if people request it.
+    OrganizationMembership membership = currentUser.tryFindOrganizationMembership(Key.create(this));
+    return (membership != null) && (membership.getRole() == Role.ADMIN);
   }
 }

@@ -16,16 +16,16 @@ import com.google.common.collect.Maps;
 import com.googlecode.objectify.Key;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @XmlRootElement
 @Data
-public class EventParticipantView {
-  private String firstName;
-  private String lastName;
-  private String nickName;
-  private String key;
-  private ImageUrlView profileImage;
-  private long karmaPoints;
+@NoArgsConstructor
+@EqualsAndHashCode(callSuper=true)
+@ToString(callSuper=true)
+public class EventParticipantView extends UserSummaryInfoView {
   private AggregateRating eventOrganizerRating;
 
   public static List<EventParticipantView> get(List<KeyWrapper<User>> usersBatch) {
@@ -50,16 +50,11 @@ public class EventParticipantView {
   }
 
   public static EventParticipantView create(User user) {
-    EventParticipantView participantView = new EventParticipantView();
-    participantView.setFirstName(user.getFirstName());
-    participantView.setLastName(user.getLastName());
-    participantView.setNickName(user.getNickName());
-    participantView.setKey(user.getKey());
-    if (user.getProfileImage() != null) {
-      participantView.setProfileImage(ImageUrlView.create(user.getProfileImage()));
-    }
-    participantView.setKarmaPoints(user.getKarmaPoints());
-    participantView.setEventOrganizerRating(user.getEventOrganizerRating());
-    return participantView;
+    return new EventParticipantView(user);
+  }
+
+  public EventParticipantView(User user) {
+    super(user);
+    eventOrganizerRating = user.getEventOrganizerRating();
   }
 }
