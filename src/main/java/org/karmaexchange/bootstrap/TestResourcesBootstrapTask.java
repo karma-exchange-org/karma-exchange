@@ -103,6 +103,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   public enum TestOrganization {
     BGCSF("https://www.facebook.com/BGCSF", AMIR,
       asList(USER1, USER2, USER5, USER6)),
+    BGCSF_COLUMBIA_PARK("https://www.facebook.com/columbia.park", AMIR, asList(USER1), BGCSF),
+    BGCSF_TENDERLOIN("https://www.facebook.com/Tenderloin.clubhouse", AMIR, asList(USER2), BGCSF),
     BENEVOLENT("https://www.facebook.com/benevolent.net", HARISH,
       asList(USER1, USER2, USER3, USER4, USER7, USER9));
 
@@ -112,11 +114,19 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final TestUser initialAdmin;
     @Getter
     private final List<TestUser> initialMembers;
+    @Getter
+    private final TestOrganization parentOrg;
 
     private TestOrganization(String pageUrl, TestUser initialAdmin, List<TestUser> initialMembers) {
+      this(pageUrl, initialAdmin, initialMembers, null);
+    }
+
+    private TestOrganization(String pageUrl, TestUser initialAdmin, List<TestUser> initialMembers,
+        @Nullable TestOrganization parentOrg) {
       this.pageUrl = pageUrl;
       this.initialAdmin = initialAdmin;
       this.initialMembers = initialMembers;
+      this.parentOrg = parentOrg;
     }
 
     public PageRef getPageRef() {
@@ -359,6 +369,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
           public void execute() {
             Organization org = new Organization();
             org.setPage(testOrg.getPageRef());
+            if (testOrg.parentOrg != null) {
+              org.setParentOrg(KeyWrapper.create(testOrg.parentOrg.getKey()));
+            }
             org.initFromPage();
             BaseDao.upsert(org);
           }

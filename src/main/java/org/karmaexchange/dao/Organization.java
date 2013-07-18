@@ -44,7 +44,7 @@ public class Organization extends NameBaseDao<Organization> {
   private String searchableOrgName;
 
   private PageRef page;
-  private KeyWrapper<Organization> parentPage;
+  private KeyWrapper<Organization> parentOrg;
 
   // TODO(avaliani): Should we replicate this info or always fetch it from facebook from the UI?
   // private String about;
