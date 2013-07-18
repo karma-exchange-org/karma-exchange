@@ -4,6 +4,9 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 
 import com.google.common.collect.Sets;
@@ -39,14 +42,17 @@ public class AdminUtil {
     UserService.setCurrentUser(null, type.getKey());
   }
 
-  public static void executeSubtaskAsUser(Key<User> userKey, AdminSubtask subtask) {
+  public static void executeSubtaskAsUser(Key<User> userKey, @Nullable OAuthCredential credential,
+      AdminSubtask subtask) {
     Key<User> prevAdminKey = UserService.getCurrentUserKey();
+    // PrevCredential is currently null for admin tasks by default.
+    OAuthCredential prevCredential = UserService.getCurrentUserCredential();
     checkState(isAdminKey(prevAdminKey));
-    UserService.setCurrentUser(null, userKey);
+    UserService.setCurrentUser(credential, userKey);
     try {
       subtask.execute();
     } finally {
-      UserService.setCurrentUser(null, prevAdminKey);
+      UserService.setCurrentUser(prevCredential, prevAdminKey);
     }
   }
 

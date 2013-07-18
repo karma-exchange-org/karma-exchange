@@ -342,6 +342,22 @@ kexApp.directive('googleplace', function() {
     };
 });
 
+kexApp.directive ('unfocus', function() { return {
+
+  restrict: 'A',
+  link: function (scope, element, attribs) {
+      
+    element[0].focus();
+      
+    element.bind ("blur", function() {
+        scope.$apply(attribs["unfocus"]);
+        console.log("??");
+      });
+                                   
+  } 
+    
+} });
+
 /*
 All app controllers  go here
 */   
@@ -533,7 +549,12 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
         if($location.$$url=="/me"||$location.$$url=="/mysettings")
         {
             $scope.who = 'My';
-            $scope.me = Me.get();
+            $scope.me = Me.get(function(){
+                if(!$scope.me.about)
+                {
+                    $scope.me.about='Click to add about yourself!';
+                }    
+            });
             $rootScope.me = $scope.me;
             $scope.events = Me.get({resource: 'event'});
             $scope.pastEvents = Me.get({type: 'PAST'},{resource: 'event'});
@@ -542,6 +563,10 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
         {
             $scope.me = User.get({id:$routeParams.userId},function(){
                 $scope.who = $scope.me.firstName+"'s";
+                if(!$scope.me.about)
+                {
+                    $scope.me.about='No description added yet!';
+                } 
             });
             $scope.events = User.get({id :$routeParams.userId, resource: 'event'});
             $scope.pastEvents = User.get({type: 'PAST'},{id:$routeParams.userId,resource: 'event'});
@@ -550,6 +575,17 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
     };
     $scope.save = function(){
         Me.save($scope.me);
+    };
+    $scope.enableEdit = function() {
+         if($scope.me.permission==="ALL")
+         {
+            $scope.edit = true;   
+         }   
+         
+    };
+    $scope.disableEdit = function() { 
+        $scope.edit = false;
+        User.save({id:$scope.me.key},$scope.me);
     };
 
     $scope.load($location,$routeParams);

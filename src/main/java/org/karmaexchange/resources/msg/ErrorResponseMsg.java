@@ -1,5 +1,6 @@
 package org.karmaexchange.resources.msg;
 
+import javax.annotation.Nullable;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -49,15 +50,20 @@ public class ErrorResponseMsg {
     // private int code;
     // private int subcode
 
-    public ErrorInfo(String message, Type type) {
+    public ErrorInfo(String message, Type type, @Nullable Throwable e) {
       this.message = message;
       this.type = type;
+      if (e != null) {
+        this.stackTrace = Throwables.getStackTraceAsString(e);
+      }
+    }
+
+    public ErrorInfo(String message, Type type) {
+      this(message, type, null);
     }
 
     public ErrorInfo(Throwable e, Type type) {
-      message = e.getMessage();
-      this.type = type;
-      stackTrace = Throwables.getStackTraceAsString(e);
+      this(e.getMessage(), type, e);
     }
 
     public enum Type {
@@ -65,6 +71,7 @@ public class ErrorResponseMsg {
       UNREGISTERED_USER,
       BACKEND_SERVICE_FAILURE,
       BAD_REQUEST,
+      NOT_AUTHORIZED,
       VALIDATION_FAILURE,
       LIMIT_REACHED,
       PARTNER_SERVICE_FAILURE

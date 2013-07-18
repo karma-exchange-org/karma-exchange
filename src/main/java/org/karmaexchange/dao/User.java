@@ -11,6 +11,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
@@ -24,11 +25,13 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import com.google.appengine.api.blobstore.BlobKey;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Cache;
+import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Index;
 
@@ -49,6 +52,8 @@ public final class User extends NameBaseDao<User> {
   private String firstName;
   @Index
   private String lastName;
+  @Index
+  private String searchableFullName;
   @Index
   private String nickName;
 
@@ -82,6 +87,8 @@ public final class User extends NameBaseDao<User> {
 
   // TODO(avaliani): profileSecurityPrefs
 
+  private List<OrganizationMembership> organizationMemberships = Lists.newArrayList();
+
   public static User create(OAuthCredential credential) {
     return new User(credential);
   }
@@ -111,7 +118,7 @@ public final class User extends NameBaseDao<User> {
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();
-
+    initSearchableFullName();
     if (AdminUtil.isAdminKey(Key.create(this))) {
       throw ErrorResponseMsg.createException(
         "can not use reserved admin key as user object key: " + Key.create(this),
@@ -123,6 +130,7 @@ public final class User extends NameBaseDao<User> {
     // profileImage = null;
     eventOrganizerRating = IndexedAggregateRating.create();
     karmaPoints = 0;
+    organizationMemberships = Lists.newArrayList();
   }
 
   @Override
@@ -130,12 +138,21 @@ public final class User extends NameBaseDao<User> {
     super.processUpdate(oldUser);
     // Some fields can not be manipulated by updating the user.
     oauthCredentials = oldUser.getOauthCredentials();
+    initSearchableFullName();
 
     // Some fields are explicitly updated.
     profileImage = oldUser.profileImage;
     eventOrganizerRating = oldUser.eventOrganizerRating;
     oauthCredentials = Lists.newArrayList(oldUser.oauthCredentials);
     karmaPoints = oldUser.karmaPoints;
+    organizationMemberships = oldUser.organizationMemberships;
+  }
+
+  private void initSearchableFullName() {
+    if (searchableFullName == null) {
+      searchableFullName = firstName + " " + lastName;
+    }
+    searchableFullName = searchableFullName.toLowerCase();
   }
 
   @Override
@@ -260,6 +277,112 @@ public final class User extends NameBaseDao<User> {
     if (existingImageKey != null) {
       ImageRef.updateRefs(existingImageKey,
         (newProfileImage == null) ? null : Key.create(newProfileImage));
+    }
+  }
+
+  @Embed
+  @Data
+  @NoArgsConstructor
+  public static final class OrganizationMembership {
+    @Index
+    private KeyWrapper<Organization> organization;
+    private Organization.Role role;
+
+    // Added to enable querying
+    @Index
+    @Nullable
+    private KeyWrapper<Organization> organizationWithAdminRole;
+    @Index
+    @Nullable
+    private KeyWrapper<Organization> organizationWithOrganizerRole;
+
+    public OrganizationMembership(Key<Organization> orgKey, Organization.Role role) {
+      organization = KeyWrapper.create(orgKey);
+      this.role = role;
+      if (role == Role.ADMIN) {
+        organizationWithAdminRole = organization;
+      }
+      if (role == Role.ORGANIZER) {
+        organizationWithOrganizerRole = organization;
+      }
+    }
+
+    public static Predicate<OrganizationMembership> userPredicate(final Key<Organization> orgKey) {
+      return new Predicate<OrganizationMembership>() {
+        @Override
+        public boolean apply(@Nullable OrganizationMembership input) {
+          return KeyWrapper.toKey(input.organization).equals(orgKey);
+        }
+      };
+    }
+  }
+
+  @Nullable
+  public OrganizationMembership tryFindOrganizationMembership(Key<Organization> orgKey) {
+    return Iterables.tryFind(organizationMemberships, OrganizationMembership.userPredicate(orgKey))
+        .orNull();
+  }
+
+  public static void updateMembership(Key<User> userToUpdateKey, Key<Organization> organizationKey,
+      @Nullable Organization.Role role) {
+    Organization org = BaseDao.load(organizationKey);
+    if (org == null) {
+      throw ErrorResponseMsg.createException("org not found", ErrorInfo.Type.BAD_REQUEST);
+    }
+    ofy().transact(new UpdateMembershipTxn(userToUpdateKey, org, org.isCurrentUserOrgAdmin(), role));
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  public static class UpdateMembershipTxn extends VoidWork {
+    private final Key<User> userToUpdateKey;
+    private final Organization organization;
+    private final boolean currentUserIsOrgAdmin;
+    @Nullable
+    private final Organization.Role role;
+
+    public void vrun() {
+      User user = BaseDao.load(userToUpdateKey);
+      if (user == null) {
+        throw ErrorResponseMsg.createException("user not found", ErrorInfo.Type.BAD_REQUEST);
+      }
+      // TODO(avaliani): If the current user is an org admin and the target user is not a member
+      //     of the org, we should validate via email that the user wants to join the org.
+      if (!currentUserIsOrgAdmin) {
+        if (role == null) {
+          // Delete role.
+          if (!getCurrentUserKey().equals(userToUpdateKey)) {
+            throw ErrorResponseMsg.createException(
+              "not authorized to modify membership of target user", ErrorInfo.Type.NOT_AUTHORIZED);
+          }
+        } else {
+          // Add role.
+          boolean roleAuthorized = false;
+          if (role == Organization.Role.MEMBER) {
+            // TODO(avaliani): add verified user email support.
+          }
+          if (!roleAuthorized) {
+            throw ErrorResponseMsg.createException(
+              "not authorized to add role " + role + " for target user",
+              ErrorInfo.Type.NOT_AUTHORIZED);
+          }
+        }
+      }
+
+      // First remove any existing membership.
+      OrganizationMembership membership =
+          user.tryFindOrganizationMembership(Key.create(organization));
+      if (membership != null) {
+        user.getOrganizationMemberships().remove(membership);
+      }
+      // Then add the new role if any.
+      if (role != null) {
+        membership = new OrganizationMembership(Key.create(organization), role);
+        user.getOrganizationMemberships().add(membership);
+      }
+
+      // Persist the changes.
+      BaseDao.partialUpdate(user);
     }
   }
 }

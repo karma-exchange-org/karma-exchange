@@ -61,4 +61,19 @@
 
     -->
 
+    <datastore-index kind="User" ancestor="false" source="manual">
+        <property name="organizationMemberships.organization.key" direction="asc"/>
+        <property name="searchableFullName" direction="asc"/>
+    </datastore-index>
+
+    <datastore-index kind="User" ancestor="false" source="manual">
+        <property name="organizationMemberships.organizationWithAdminRole.key" direction="asc"/>
+        <property name="searchableFullName" direction="asc"/>
+    </datastore-index>
+
+    <datastore-index kind="User" ancestor="false" source="manual">
+        <property name="organizationMemberships.organizationWithOrganizerRole.key" direction="asc"/>
+        <property name="searchableFullName" direction="asc"/>
+    </datastore-index>
+
 </datastore-indexes>

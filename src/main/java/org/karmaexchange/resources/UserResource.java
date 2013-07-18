@@ -20,7 +20,7 @@ import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.util.PaginationParam;
-import org.karmaexchange.util.PaginatedQuery.FilterQueryClause;
+import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -59,13 +59,13 @@ public class UserResource extends BaseDaoResource<User> {
     MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
     ParticipantType participantType = queryParams.containsKey(PARTICIPANT_TYPE_PARAM) ?
         ParticipantType.valueOf(queryParams.getFirst(PARTICIPANT_TYPE_PARAM)) : null;
-    FilterQueryClause participantFilter;
+    ConditionFilter participantFilter;
     boolean loadReviews = userKey.equals(getCurrentUserKey());
     if (participantType == null) {
-      participantFilter = new FilterQueryClause(Event.getParticipantPropertyName(), userKey);
+      participantFilter = new ConditionFilter(Event.getParticipantPropertyName(), userKey);
     } else {
       participantFilter =
-          new FilterQueryClause(Event.getParticipantPropertyName(participantType), userKey);
+          new ConditionFilter(Event.getParticipantPropertyName(participantType), userKey);
       participantFilter.setPaginationParam(
         new PaginationParam(PARTICIPANT_TYPE_PARAM, participantType.toString()));
     }
