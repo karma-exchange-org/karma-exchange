@@ -142,8 +142,6 @@
                                <label class="checkbox inline" ng-repeat="suitableFor in suitableForList">
                                 <input
                                   type="checkbox"
-                                  value="{{suitableFor.name}}"
-                                  ng-checked="suitableFor.checked"
                                   ng-model="suitableFor.checked"
                                 >
 
@@ -256,15 +254,7 @@ $(function() {
         }       
 
     });
-
-    function updateHiddenFields()
-    {
-        
-        
-        
-    }
-
-    
+   
 
     function convertDateTime(dateTime){
         dateTime = myArr[0][0].split(" ");
@@ -443,6 +433,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
     </script> 
     </tab>
     <tab heading="Manage participants">
+        <p class="muted">Drag and drop to change lists</p>
         <div>
             
                 <!--orgnaizers-->
@@ -450,7 +441,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
                 <hr>
                 <ul ui-drop-listener="dropListener" data-model="eventOrganizers.data" class="inline">
 
-                    <li ui-draggable  data-index="{{$index}}" ng-repeat="user in eventOrganizers.data">
+                    <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventOrganizers.data">
                       
                                 <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                         
@@ -469,7 +460,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
                     <hr>
                         <ul ui-drop-listener="dropListener" data-model='eventRegistered.data' class="inline">
 
-                            <li ui-draggable  data-index="{{$index}}" ng-repeat="user in eventRegistered.data">
+                            <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventRegistered.data">
                                
                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             
@@ -490,7 +481,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
                     <hr>
                         <ul ui-drop-listener="dropListener" data-model='eventWaitListed.data' class="inline">
 
-                            <li ui-draggable  data-index="{{$index}}" ng-repeat="user in eventWaitListed.data">
+                            <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventWaitListed.data">
                               
                                         <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                  
