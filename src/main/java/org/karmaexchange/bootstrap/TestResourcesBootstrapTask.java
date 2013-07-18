@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static org.karmaexchange.bootstrap.TestResourcesBootstrapTask.TestUser.*;
 
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -11,6 +12,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.servlet.http.Cookie;
 
 import lombok.Data;
 import lombok.Getter;
@@ -26,11 +28,16 @@ import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.OAuthCredential;
+import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.Organization.Role;
+import org.karmaexchange.dao.PageRef;
 import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.SuitableForType;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
+import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
 
@@ -93,8 +100,42 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     }
   }
 
-  public TestResourcesBootstrapTask(PrintWriter statusWriter) {
-    super(statusWriter);
+  public enum TestOrganization {
+    BGCSF("https://www.facebook.com/BGCSF", AMIR,
+      asList(USER1, USER2, USER5, USER6)),
+    BENEVOLENT("https://www.facebook.com/benevolent.net", HARISH,
+      asList(USER1, USER2, USER3, USER4, USER7, USER9));
+
+    @Getter
+    private final String pageUrl;
+    @Getter
+    private final TestUser initialAdmin;
+    @Getter
+    private final List<TestUser> initialMembers;
+
+    private TestOrganization(String pageUrl, TestUser initialAdmin, List<TestUser> initialMembers) {
+      this.pageUrl = pageUrl;
+      this.initialAdmin = initialAdmin;
+      this.initialMembers = initialMembers;
+    }
+
+    public PageRef getPageRef() {
+      return PageRef.create(pageUrl, SocialNetworkProviderType.FACEBOOK);
+    }
+
+    public Key<Organization> getKey() {
+      String pageName;
+      try {
+        pageName = SocialNetworkProvider.getPageNameFromUrl(pageUrl);
+      } catch (URISyntaxException e) {
+        throw new RuntimeException(e);
+      }
+      return Key.create(Organization.class, Organization.getNameFromPageName(pageName));
+    }
+  }
+
+  public TestResourcesBootstrapTask(PrintWriter statusWriter, Cookie[] cookies) {
+    super(statusWriter, cookies);
   }
 
   @Override
@@ -107,6 +148,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         User.updateProfileImage(testUser.getKey(), testUser.getSocialNetworkProviderType());
       }
     }
+    statusWriter.println("About to persist organizations...");
+    persistOrganizations();
     statusWriter.println("About to persist test events...");
     Date now = new Date();
     CreateEventsResult createEventsResult = createEvents();
@@ -120,7 +163,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     for (PendingReview pendingReview : createEventsResult.getPendingReviews()) {
       pendingReview.persistReview();
     }
-    statusWriter.println("Test users and events persisted.");
+    statusWriter.println("Test resources persisted.");
   }
 
   private static CreateEventsResult createEvents() {
@@ -298,12 +341,36 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     }
 
     public void persistReview() {
-      AdminUtil.executeSubtaskAsUser(userKey, new AdminSubtask() {
+      AdminUtil.executeSubtaskAsUser(userKey, null, new AdminSubtask() {
         @Override
         public void execute() {
           Event.mutateEventReviewForCurrentUser(Key.create(event), review);
         }
       });
+    }
+  }
+
+  private void persistOrganizations() {
+    for (final TestOrganization testOrg : TestOrganization.values()) {
+      AdminUtil.executeSubtaskAsUser(testOrg.initialAdmin.getKey(),
+        SocialNetworkProviderFactory.getLoginProviderCredential(cookies),
+        new AdminSubtask() {
+          @Override
+          public void execute() {
+            Organization org = new Organization();
+            org.setPage(testOrg.getPageRef());
+            org.initFromPage();
+            BaseDao.upsert(org);
+          }
+        });
+    }
+    // The org is created right away but a task queue task is created to add the admins.
+    // Instead of waiting for the task to complete, we'll use the admin task privileges to
+    // forcibly add membership.
+    for (TestOrganization testOrg : TestOrganization.values()) {
+      for (TestUser testUser : testOrg.initialMembers) {
+        User.updateMembership(testUser.getKey(), testOrg.getKey(), Role.MEMBER);
+      }
     }
   }
 }

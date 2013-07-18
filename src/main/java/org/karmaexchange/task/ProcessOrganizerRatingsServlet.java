@@ -1,10 +1,10 @@
 package org.karmaexchange.task;
 
 import java.io.IOException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.util.OfyUtil;
 
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
@@ -25,16 +25,10 @@ public class ProcessOrganizerRatingsServlet extends TaskQueueAdminTaskServlet {
     String eventKeyStr = req.getParameter(EVENT_KEY_PARAM);
     if (eventKeyStr == null) {
       logger.warning("no event key specified");
-    } else {
-      Key<Event> eventKey;
-      try {
-        eventKey = Key.create(eventKeyStr);
-      } catch (IllegalArgumentException e) {
-        logger.log(Level.WARNING, "unable to parse event key: " + eventKeyStr, e);
-        return;
-      }
-      Event.processDerivedOrganizerRatings(eventKey);
+      return;
     }
+    Key<Event> eventKey = OfyUtil.createKey(eventKeyStr);
+    Event.processDerivedOrganizerRatings(eventKey);
   }
 
   public static void enqueueTask(Event event) {

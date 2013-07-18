@@ -71,6 +71,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>AddOrgAdminServlet</servlet-name>
+        <servlet-class>org.karmaexchange.task.AddOrgAdminServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddOrgAdminServlet</servlet-name>
+        <url-pattern>/task/add_org_admin</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>PersistProductionResourcesServlet</servlet-name>
         <servlet-class>org.karmaexchange.bootstrap.PersistProductionResourcesServlet</servlet-class>
     </servlet>

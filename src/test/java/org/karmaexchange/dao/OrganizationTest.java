@@ -30,9 +30,6 @@ public class OrganizationTest extends PersistenceTestHelper {
     u1.setName("fake name1");
     User u2 = new User();
     u2.setName("fake name2");
-    org.setAdmins(asList(
-      KeyWrapper.create(u1),
-      KeyWrapper.create(u2)));
   }
 
   @Test
