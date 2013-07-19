@@ -16,6 +16,7 @@ import javax.ws.rs.core.Response;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.RequestStatus;
 import org.karmaexchange.resources.EventResource;
 import org.karmaexchange.resources.EventResource.EventSearchType;
 import org.karmaexchange.resources.OrganizationResource;
@@ -118,6 +119,11 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
       .path(arbitraryOrgKey.getString())
       .path("member")
       .queryParam(OrganizationResource.ROLE_PARAM, Organization.Role.ORGANIZER.toString()));
+    issueGetRequestAndCheckRespone(
+      service.path("api/org")
+      .path(arbitraryOrgKey.getString())
+      .path("member")
+      .queryParam(OrganizationResource.MEMBERSHIP_STATUS_PARAM, RequestStatus.PENDING.toString()));
 
     statusWriter.println("Completed issuing queries.");
   }

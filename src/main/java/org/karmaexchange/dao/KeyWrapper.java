@@ -16,9 +16,9 @@ import com.googlecode.objectify.annotation.Embed;
  */
 @Data
 @Embed
-public final class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
+public class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
 
-  private Key<T> key;
+  protected Key<T> key;
 
   public static <T> KeyWrapper<T> create(T obj) {
     return create(Key.create(obj));

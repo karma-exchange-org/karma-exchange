@@ -21,12 +21,16 @@ import javax.ws.rs.core.Response;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.RequestStatus;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.OrganizationMemberView;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
 import org.karmaexchange.util.PaginatedQuery;
 import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
+import org.karmaexchange.util.PaginatedQuery.FilterQueryClause;
 import org.karmaexchange.util.PaginatedQuery.OrderQueryClause;
 import org.karmaexchange.util.PaginatedQuery.StartsWithFilter;
 import org.karmaexchange.util.PaginationParam;
@@ -43,6 +47,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
 
   public static final String NAME_PREFIX_PARAM = "name_prefix";
   public static final String ROLE_PARAM = "role";
+  public static final String MEMBERSHIP_STATUS_PARAM = "membership_status";
 
   @Override
   protected Class<Organization> getResourceClass() {
@@ -107,6 +112,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   public ListResponseMsg<OrganizationMemberView> getMember(
       @PathParam("org") String orgKeyStr,
       @QueryParam(ROLE_PARAM) Organization.Role role,
+      @QueryParam(MEMBERSHIP_STATUS_PARAM) RequestStatus membershipStatus,
       @QueryParam(PagingInfo.AFTER_CURSOR_PARAM) String afterCursorStr,
       @QueryParam(PagingInfo.LIMIT_PARAM) @DefaultValue(DEFAULT_NUM_SEARCH_RESULTS) int limit) {
     Key<Organization> orgKey = Key.<Organization>create(orgKeyStr);
@@ -115,16 +121,33 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
     if (afterCursorStr != null) {
       queryBuilder.setAfterCursor(Cursor.fromWebSafeString(afterCursorStr));
     }
-    String orgCondition;
-    if ((role == null) || (role == Organization.Role.MEMBER)) {
-      orgCondition = "organizationMemberships.organization.key";
-    } else if (role == Organization.Role.ADMIN) {
-      orgCondition = "organizationMemberships.organizationWithAdminRole.key";
+    PaginationParam paginationParam;
+    String membershipCondition;
+    if (membershipStatus == RequestStatus.PENDING) {
+      paginationParam = new PaginationParam(MEMBERSHIP_STATUS_PARAM, membershipStatus.toString());
+      if (role != null) {
+        throw ErrorResponseMsg.createException(
+          "role can not be specified for PENDING membership requests",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
+      membershipCondition = "organizationMemberships.organizationPendingMembershipRequest.key";
     } else {
-      checkState(role == Organization.Role.ORGANIZER);
-      orgCondition = "organizationMemberships.organizationWithOrganizerRole.key";
+      if (role == null) {
+        role = Organization.Role.MEMBER;
+      }
+      paginationParam = new PaginationParam(ROLE_PARAM, role.toString());
+      if (role == Organization.Role.MEMBER) {
+        membershipCondition = "organizationMemberships.organizationMember.key";
+      } else if (role == Organization.Role.ADMIN) {
+        membershipCondition = "organizationMemberships.organizationMemberWithAdminRole.key";
+      } else {
+        checkState(role == Organization.Role.ORGANIZER);
+        membershipCondition = "organizationMemberships.organizationMemberWithOrganizerRole.key";
+      }
     }
-    queryBuilder.addFilter(new RoleFilter(role, orgCondition, orgKey));
+    FilterQueryClause membershipFilter = new ConditionFilter(membershipCondition, orgKey);
+    membershipFilter.setPaginationParam(paginationParam);
+    queryBuilder.addFilter(membershipFilter);
     queryBuilder.setOrder(new OrderQueryClause("searchableFullName"));
     // Query one more than the limit to see if we need to provide a link to additional results.
     queryBuilder.setLimit(limit + 1);
@@ -143,15 +166,6 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
       OrganizationMemberView.create(searchResults, orgKey),
       PagingInfo.create(afterCursor, limit, queryIter.hasNext(), uriInfo.getAbsolutePath(),
         paginatedQuery.getPaginationParams()));
-  }
-
-  private static class RoleFilter extends ConditionFilter {
-    public RoleFilter(Organization.Role role, String condition, Key<Organization> orgKey) {
-      super(condition, orgKey);
-      if (role != null) {
-        paginationParam = new PaginationParam(ROLE_PARAM, role.toString());
-      }
-    }
   }
 
   @Path("{org}/member")

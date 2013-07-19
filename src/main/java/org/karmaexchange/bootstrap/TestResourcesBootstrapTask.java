@@ -29,7 +29,6 @@ import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.Organization;
-import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.dao.PageRef;
 import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
@@ -102,30 +101,48 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   public enum TestOrganization {
     BGCSF("https://www.facebook.com/BGCSF", AMIR,
-      asList(USER1, USER2, USER5, USER6)),
-    BGCSF_COLUMBIA_PARK("https://www.facebook.com/columbia.park", AMIR, asList(USER1), BGCSF),
-    BGCSF_TENDERLOIN("https://www.facebook.com/Tenderloin.clubhouse", AMIR, asList(USER2), BGCSF),
+      asList(
+        TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
+        TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
+        TestOrgMembership.of(USER5, Organization.Role.ORGANIZER, Organization.Role.ADMIN),
+        TestOrgMembership.of(USER1, Organization.Role.MEMBER, null),
+        TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
+        TestOrgMembership.of(USER3, null, Organization.Role.ADMIN))),
+    BGCSF_COLUMBIA_PARK("https://www.facebook.com/columbia.park", AMIR,
+      asList(TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER)),
+      BGCSF),
+    BGCSF_TENDERLOIN("https://www.facebook.com/Tenderloin.clubhouse", AMIR,
+      asList(TestOrgMembership.of(USER2, null, Organization.Role.ORGANIZER)),
+      BGCSF),
+
     BENEVOLENT("https://www.facebook.com/benevolent.net", HARISH,
-      asList(USER1, USER2, USER3, USER4, USER7, USER9));
+      asList(
+        TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
+        TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
+        TestOrgMembership.of(USER5, Organization.Role.ORGANIZER, Organization.Role.ADMIN),
+        TestOrgMembership.of(USER1, Organization.Role.MEMBER, null),
+        TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
+        TestOrgMembership.of(USER3, null, Organization.Role.ADMIN)));
 
     @Getter
     private final String pageUrl;
     @Getter
     private final TestUser initialAdmin;
     @Getter
-    private final List<TestUser> initialMembers;
+    private final List<TestOrgMembership> memberships;
     @Getter
     private final TestOrganization parentOrg;
 
-    private TestOrganization(String pageUrl, TestUser initialAdmin, List<TestUser> initialMembers) {
-      this(pageUrl, initialAdmin, initialMembers, null);
+    private TestOrganization(String pageUrl, TestUser initialAdmin,
+        List<TestOrgMembership> memberships) {
+      this(pageUrl, initialAdmin, memberships, null);
     }
 
-    private TestOrganization(String pageUrl, TestUser initialAdmin, List<TestUser> initialMembers,
-        @Nullable TestOrganization parentOrg) {
+    private TestOrganization(String pageUrl, TestUser initialAdmin,
+        List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg) {
       this.pageUrl = pageUrl;
       this.initialAdmin = initialAdmin;
-      this.initialMembers = initialMembers;
+      this.memberships = memberships;
       this.parentOrg = parentOrg;
     }
 
@@ -142,6 +159,13 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       }
       return Key.create(Organization.class, Organization.getNameFromPageName(pageName));
     }
+  }
+
+  @Data(staticConstructor="of")
+  private static class TestOrgMembership {
+    private final TestUser user;
+    private final Organization.Role grantedRole;
+    private final Organization.Role requestedRole;
   }
 
   public TestResourcesBootstrapTask(PrintWriter statusWriter, Cookie[] cookies) {
@@ -381,8 +405,26 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     // Instead of waiting for the task to complete, we'll use the admin task privileges to
     // forcibly add membership.
     for (TestOrganization testOrg : TestOrganization.values()) {
-      for (TestUser testUser : testOrg.initialMembers) {
-        User.updateMembership(testUser.getKey(), testOrg.getKey(), Role.MEMBER);
+      for (TestOrgMembership membership : testOrg.memberships) {
+        if (membership.grantedRole != null) {
+          User.updateMembership(membership.user.getKey(), testOrg.getKey(), membership.grantedRole);
+        }
+      }
+    }
+
+    for (final TestOrganization testOrg : TestOrganization.values()) {
+      for (final TestOrgMembership membership : testOrg.memberships) {
+        AdminUtil.executeSubtaskAsUser(membership.user.getKey(),
+          null,
+          new AdminSubtask() {
+            @Override
+            public void execute() {
+              if (membership.requestedRole != null) {
+                User.updateMembership(membership.user.getKey(), testOrg.getKey(),
+                  membership.requestedRole);
+              }
+            }
+          });
       }
     }
   }
