@@ -284,26 +284,48 @@ public final class User extends NameBaseDao<User> {
   @Data
   @NoArgsConstructor
   public static final class OrganizationMembership {
-    @Index
     private KeyWrapper<Organization> organization;
+    @Nullable
     private Organization.Role role;
+    @Nullable
+    private Organization.Role requestedRole;
 
     // Added to enable querying
     @Index
     @Nullable
-    private KeyWrapper<Organization> organizationWithAdminRole;
+    private NullableKeyWrapper<Organization> organizationMember =
+        NullableKeyWrapper.create();
     @Index
     @Nullable
-    private KeyWrapper<Organization> organizationWithOrganizerRole;
+    private NullableKeyWrapper<Organization> organizationMemberWithAdminRole =
+        NullableKeyWrapper.create();
+    @Index
+    @Nullable
+    private NullableKeyWrapper<Organization> organizationMemberWithOrganizerRole =
+        NullableKeyWrapper.create();
 
-    public OrganizationMembership(Key<Organization> orgKey, Organization.Role role) {
+    @Index
+    @Nullable
+    private NullableKeyWrapper<Organization> organizationPendingMembershipRequest =
+        NullableKeyWrapper.create();
+
+    public OrganizationMembership(Key<Organization> orgKey,
+        @Nullable Organization.Role grantedRole, @Nullable Organization.Role requestedRole) {
       organization = KeyWrapper.create(orgKey);
-      this.role = role;
-      if (role == Role.ADMIN) {
-        organizationWithAdminRole = organization;
+      this.role = grantedRole;
+      this.requestedRole = requestedRole;
+
+      if (grantedRole != null) {
+        organizationMember = NullableKeyWrapper.create(orgKey);
+        if (grantedRole == Role.ADMIN) {
+          organizationMemberWithAdminRole = NullableKeyWrapper.create(orgKey);
+        } else if (grantedRole == Role.ORGANIZER) {
+          organizationMemberWithOrganizerRole = NullableKeyWrapper.create(orgKey);
+        }
       }
-      if (role == Role.ORGANIZER) {
-        organizationWithOrganizerRole = organization;
+
+      if (requestedRole != null) {
+        organizationPendingMembershipRequest = NullableKeyWrapper.create(orgKey);
       }
     }
 
@@ -329,7 +351,8 @@ public final class User extends NameBaseDao<User> {
     if (org == null) {
       throw ErrorResponseMsg.createException("org not found", ErrorInfo.Type.BAD_REQUEST);
     }
-    ofy().transact(new UpdateMembershipTxn(userToUpdateKey, org, org.isCurrentUserOrgAdmin(), role));
+    ofy().transact(new UpdateMembershipTxn(
+      userToUpdateKey, org, org.isCurrentUserOrgAdmin(), role));
   }
 
   @Data
@@ -339,46 +362,55 @@ public final class User extends NameBaseDao<User> {
     private final Organization organization;
     private final boolean currentUserIsOrgAdmin;
     @Nullable
-    private final Organization.Role role;
+    private final Organization.Role reqRole;
 
     public void vrun() {
       User user = BaseDao.load(userToUpdateKey);
       if (user == null) {
         throw ErrorResponseMsg.createException("user not found", ErrorInfo.Type.BAD_REQUEST);
       }
-      // TODO(avaliani): If the current user is an org admin and the target user is not a member
-      //     of the org, we should validate via email that the user wants to join the org.
-      if (!currentUserIsOrgAdmin) {
-        if (role == null) {
-          // Delete role.
+
+      OrganizationMembership existingMembership =
+          user.tryFindOrganizationMembership(Key.create(organization));
+
+      RequestStatus membershipStatus = null;
+      if (currentUserIsOrgAdmin) {
+        // TODO(avaliani): If the current user is an org admin and the target user is not a member
+        //     of the org, we should validate via email that the user wants to join the org.
+        membershipStatus = RequestStatus.ACCEPTED;
+      } else {
+        if (reqRole == null) {
+          // Delete membership.
           if (!getCurrentUserKey().equals(userToUpdateKey)) {
             throw ErrorResponseMsg.createException(
               "not authorized to modify membership of target user", ErrorInfo.Type.NOT_AUTHORIZED);
           }
         } else {
-          // Add role.
-          boolean roleAuthorized = false;
-          if (role == Organization.Role.MEMBER) {
-            // TODO(avaliani): add verified user email support.
-          }
-          if (!roleAuthorized) {
-            throw ErrorResponseMsg.createException(
-              "not authorized to add role " + role + " for target user",
-              ErrorInfo.Type.NOT_AUTHORIZED);
+          // Add / modify role.
+          membershipStatus = RequestStatus.PENDING;
+          if ((existingMembership != null) &&
+              (existingMembership.role.hasEqualOrMoreCapabilities(reqRole))) {
+            membershipStatus = RequestStatus.ACCEPTED;
+          } else if (reqRole == Organization.Role.MEMBER) {
+            // TODO(avaliani): add domain verified membership.
           }
         }
       }
 
       // First remove any existing membership.
-      OrganizationMembership membership =
-          user.tryFindOrganizationMembership(Key.create(organization));
-      if (membership != null) {
-        user.getOrganizationMemberships().remove(membership);
+      if (existingMembership != null) {
+        user.organizationMemberships.remove(existingMembership);
       }
       // Then add the new role if any.
-      if (role != null) {
-        membership = new OrganizationMembership(Key.create(organization), role);
-        user.getOrganizationMemberships().add(membership);
+      if (reqRole != null) {
+        OrganizationMembership membershipToUpsert;
+        if (membershipStatus == RequestStatus.ACCEPTED) {
+          membershipToUpsert = new OrganizationMembership(Key.create(organization), reqRole, null);
+        } else {
+          membershipToUpsert = new OrganizationMembership(Key.create(organization),
+            (existingMembership == null) ? null : existingMembership.role, reqRole);
+        }
+        user.organizationMemberships.add(membershipToUpsert);
       }
 
       // Persist the changes.

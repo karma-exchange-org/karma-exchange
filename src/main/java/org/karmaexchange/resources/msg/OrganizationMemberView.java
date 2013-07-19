@@ -3,6 +3,7 @@ package org.karmaexchange.resources.msg;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
@@ -24,7 +25,10 @@ import com.googlecode.objectify.Key;
 @ToString(callSuper=true)
 public class OrganizationMemberView extends UserSummaryInfoView {
 
+  @Nullable
   private Organization.Role role;
+  @Nullable
+  private Organization.Role requestedRole;
 
   public static List<OrganizationMemberView> create(Collection<User> usersBatch,
       Key<Organization> orgKey) {
@@ -42,5 +46,6 @@ public class OrganizationMemberView extends UserSummaryInfoView {
   public OrganizationMemberView(User user, OrganizationMembership membership) {
     super(user);
     role = membership.getRole();
+    requestedRole = membership.getRequestedRole();
   }
 }

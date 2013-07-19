@@ -62,17 +62,22 @@
     -->
 
     <datastore-index kind="User" ancestor="false" source="manual">
-        <property name="organizationMemberships.organization.key" direction="asc"/>
+        <property name="organizationMemberships.organizationMember.key" direction="asc"/>
         <property name="searchableFullName" direction="asc"/>
     </datastore-index>
 
     <datastore-index kind="User" ancestor="false" source="manual">
-        <property name="organizationMemberships.organizationWithAdminRole.key" direction="asc"/>
+        <property name="organizationMemberships.organizationPendingMembershipRequest.key" direction="asc"/>
         <property name="searchableFullName" direction="asc"/>
     </datastore-index>
 
     <datastore-index kind="User" ancestor="false" source="manual">
-        <property name="organizationMemberships.organizationWithOrganizerRole.key" direction="asc"/>
+        <property name="organizationMemberships.organizationMemberWithAdminRole.key" direction="asc"/>
+        <property name="searchableFullName" direction="asc"/>
+    </datastore-index>
+
+    <datastore-index kind="User" ancestor="false" source="manual">
+        <property name="organizationMemberships.organizationMemberWithOrganizerRole.key" direction="asc"/>
         <property name="searchableFullName" direction="asc"/>
     </datastore-index>
 
