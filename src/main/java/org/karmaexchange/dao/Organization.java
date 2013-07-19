@@ -65,9 +65,19 @@ public class Organization extends NameBaseDao<Organization> {
   private IndexedAggregateRating eventRating;
 
   public enum Role {
-    ADMIN,
-    ORGANIZER,
-    MEMBER
+    ADMIN(3),
+    ORGANIZER(2),
+    MEMBER(1);
+
+    private int capabilityLevel;
+
+    private Role(int capabilityLevel) {
+      this.capabilityLevel = capabilityLevel;
+    }
+
+    public boolean hasEqualOrMoreCapabilities(Role prevRole) {
+      return capabilityLevel >= prevRole.capabilityLevel;
+    }
   }
 
   /*
