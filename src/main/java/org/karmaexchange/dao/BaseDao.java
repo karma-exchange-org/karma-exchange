@@ -63,7 +63,6 @@ public abstract class BaseDao<T extends BaseDao<T>> {
       if (resource.isKeyComplete()) {
         prevResource = load(Key.create(resource));
       }
-      System.out.println("BaseDao.upsert: " + resource.getClass().getName());
       if (prevResource == null) {
         resource.insert();
       } else {
@@ -141,32 +140,27 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   final void insert() {
-    System.out.println("BaseDao(this).insert: " + getClass().getName());
     preProcessInsert();
     ofy().save().entity(this).now();
     postProcessInsert();
   }
 
   final void update(T prevObj) {
-    System.out.println("BaseDao(this).update: " + getClass().getName());
     processUpdate(prevObj);
     ofy().save().entity(this).now();
   }
 
   final void partialUpdate() {
-    System.out.println("BaseDao(this).partialUpdate: " + getClass().getName());
     processPartialUpdate(null);
     ofy().save().entity(this).now();
   }
 
   final void delete() {
-    System.out.println("BaseDao(this).delete: " + getClass().getName());
     processDelete();
     ofy().delete().key(Key.create(this)).now();
   }
 
   protected void preProcessInsert() {
-    System.out.println("BaseDao.preProcessInsert(modificationInfo): " + getClass().getName());
     setModificationInfo(ModificationInfo.create());
   }
 
@@ -186,7 +180,6 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   final void processPartialUpdate(T prevObj) {
-    System.out.println("BaseDao.processPartialUpdate(modificationInfo): " + getClass().getName());
     if (getModificationInfo() == null) {
       // Handle objects that were created without modification info.
       if ((prevObj == null) || (prevObj.getModificationInfo() == null)) {
