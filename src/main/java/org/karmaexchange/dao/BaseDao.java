@@ -19,6 +19,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
+import org.karmaexchange.util.OfyUtil;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -82,7 +83,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   @Nullable
   public static <T extends BaseDao<T>> T load(String keyStr) {
-    return load(Key.<T>create(keyStr));
+    return load(OfyUtil.<T>createKey(keyStr));
   }
 
   @Nullable
