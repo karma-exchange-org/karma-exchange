@@ -171,10 +171,12 @@ config(function($routeProvider,$httpProvider) {
     when('/event/add', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
     when('/event/:eventId/edit', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
     when('/event/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/viewEvent.html' }).
-    when('/thanks', { controller: meCtrl, templateUrl: 'partials/thanks.html' }).
+    when('/orgs', { controller: orgCtrl, templateUrl: 'partials/organization.html' }).
+    when('/orgs/:orgId', { controller: orgDetailCtrl, templateUrl: 'partials/organizationDetail.html' }).
     otherwise({ redirectTo: '/' });
 
-    $httpProvider.defaults.headers.common['X-'] = 'X';
+    delete $httpProvider.defaults.headers.common['X-Requested-With'];
+    //$httpProvider.defaults.headers.common['X-'] = 'X';
 
 })
 .filter('newlines', function () {
@@ -281,6 +283,10 @@ kexApp.factory('Me', function($resource) {
     return $resource('/api/me/:resource/:filter',{ resource: '@resource',filter:'@filter'});
 }); 
 
+kexApp.factory('Org', function($resource) {
+    return $resource('/api/org/:id/:resource/:filter',{ id: '@id',resource:'@resource',filter:'@filter'});
+}); 
+
 
 
 /*
@@ -365,7 +371,7 @@ All app controllers  go here
 function fbCntrl(Facebook, $scope, $rootScope, $http, $location, Me) {
     $scope.info = {};
     $rootScope.location = $location;
-
+    $rootScope.fbGraphAPIURL = "https://graph.facebook.com";
     $rootScope.$on("fb_statusChange", function (event, args) {
         $rootScope.fb_status = args.status;
 
@@ -595,6 +601,96 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
     
 
 
+
+
+};
+
+var orgDetailCtrl = function($scope,$location,$routeParams,$rootScope,$http,Org)
+{
+    if(!checkLogin($location))
+    {
+        return;
+    };
+    console.log("check");
+    $scope.parser = document.createElement('a');
+    $scope.org = Org.get({id:$routeParams.orgId},function(){
+        $scope.parser.href = $scope.org.page.url;
+        $http({method: 'GET', url: $rootScope.fbGraphAPIURL+""+$scope.parser.pathname}).success(function(data) {
+                    
+                    $scope.fbPage = data;
+                    console.log(data);
+                    
+        });
+
+    });
+    $scope.orgOwners = Org.get({role:"ADMIN"},{id:$routeParams.orgId, resource : "member"});
+    $scope.orgOrgnaizers = Org.get({role:"ADMIN"},{id:$routeParams.orgId, resource : "member"});
+
+
+     
+
+}
+
+var orgCtrl = function($scope,$location,$routeParams,Org){
+    $scope.query = "";
+    $scope.newOrg = {page:{url:null,urlProvider:"FACEBOOK"}};
+
+
+    if(!checkLogin($location))
+    {
+        return;
+    };
+
+    $scope.refresh = function(){
+        
+            
+        
+            $scope.orgs = Org.get({name_prefix : $scope.query});
+         
+         
+     };
+
+     $scope.save = function(){
+        if($scope.newOrg.page.url)
+        {
+            Org.save($scope.newOrg,function(){
+                $scope.refresh();
+                $scope.newOrg = {page:{url:null,urlProvider:"FACEBOOK"}};
+            });
+        }
+        $scope.close(); 
+     };
+
+     $scope.join = function(){
+        Org.save($scope.newOrg,function(){
+                $scope.refresh();
+                $scope.newOrg = {page:{url:null,urlProvider:"FACEBOOK"}};
+            });
+     };
+
+     $scope.close = function(){
+        $scope.newOrg = {page:{url:null,urlProvider:"FACEBOOK"}};
+        $scope.shouldBeOpen = false;
+    };
+
+     $scope.open = function () {
+        $scope.shouldBeOpen = true;
+      };
+
+       $scope.opts = {
+        backdropFade: true,
+        dialogFade:true
+      };
+
+
+   
+    $scope.$watch('query',function(){
+        $scope.refresh();
+    });
+    
+    $scope.refresh();
+       
+    
 
 
 };
