@@ -62,6 +62,7 @@ public final class User extends NameBaseDao<User> {
 
   private ImageRef profileImage;
   private ContactInfo contactInfo;
+  // NOTE: Embedded list is safe since EmergencyContact has no embedded objects.
   private List<EmergencyContact> emergencyContacts = Lists.newArrayList();
 
   private String about;
@@ -83,10 +84,13 @@ public final class User extends NameBaseDao<User> {
   private EventSearch lastEventSearch;
 
   // TODO(avaliani): jackson doesn't like oAuth. It converts it to "oauth".
+  // NOTE: Embedded list is safe since OAuthCredential has no embedded objects.
   private List<OAuthCredential> oauthCredentials = Lists.newArrayList();
 
   // TODO(avaliani): profileSecurityPrefs
 
+  // NOTE: Embedded list is safe since OrganizationMembership has been modified to avoid
+  //       encountering the objectify serialization bug (issue #127).
   private List<OrganizationMembership> organizationMemberships = Lists.newArrayList();
 
   public static User create(OAuthCredential credential) {

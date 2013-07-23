@@ -1,18 +1,25 @@
 package org.karmaexchange.resources.msg;
 
-import java.net.URI;
+import static java.util.Arrays.asList;
+
 import java.util.List;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.PaginatedQuery;
 import org.karmaexchange.util.URLUtil;
 
 import com.google.appengine.api.datastore.Cursor;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -29,6 +36,11 @@ public class ListResponseMsg<T> {
 
   public static <T> ListResponseMsg<T> create(List<T> data) {
     return create(data, null);
+  }
+
+  public static <T extends BaseDao<T>> ListResponseMsg<T> create(
+      PaginatedQuery.Result<T> queryResult) {
+    return create(queryResult.getSearchResults(), queryResult.getPagingInfo());
   }
 
   public static <T> ListResponseMsg<T> create(List<T> data, @Nullable PagingInfo paging) {
@@ -56,17 +68,17 @@ public class ListResponseMsg<T> {
 
     @Nullable
     public static PagingInfo create(@Nullable Cursor afterCursor, int limit, boolean moreResults,
-                                    URI resourceUri, Map<String, Object> params) {
+        UriInfo uriInfo) {
       String afterCursorStr = (afterCursor == null) ? "" : afterCursor.toWebSafeString();
       if (afterCursorStr.isEmpty()) {
         return null;
       } else {
         String nextUrl;
         if (moreResults) {
-          Map<String, Object> finalParams = Maps.newHashMap(params);
-          finalParams.put(AFTER_CURSOR_PARAM, afterCursorStr);
-          finalParams.put(LIMIT_PARAM, limit);
-          nextUrl = URLUtil.buildURL(resourceUri, finalParams);
+          Multimap<String, String> queryParams = toMultimap(uriInfo.getQueryParameters());
+          queryParams.replaceValues(AFTER_CURSOR_PARAM, asList(afterCursorStr));
+          queryParams.replaceValues(LIMIT_PARAM, asList(String.valueOf(limit)));
+          nextUrl = URLUtil.buildURL(uriInfo.getAbsolutePath(), queryParams);
         } else {
           nextUrl = null;
         }
@@ -75,28 +87,47 @@ public class ListResponseMsg<T> {
     }
 
     @Nullable
-    public static PagingInfo create(int currentOffset, int limit, int listSize,
-                                    URI resourceUri, @Nullable Map<String, Object> params) {
+    public static PagingInfo create(int currentOffset, int limit, int listSize, UriInfo uriInfo) {
       int nextOffset = currentOffset + limit;
       if (nextOffset >= listSize) {
         // No more results.
         return null;
       }
-      Map<String, Object> finalParams =
-          (params == null) ? Maps.<String, Object>newHashMap() : Maps.newHashMap(params);
-      finalParams.put(OFFSET_PARAM, nextOffset);
-      finalParams.put(LIMIT_PARAM, limit);
-      String nextUrl = URLUtil.buildURL(resourceUri, finalParams);
+      Multimap<String, String> queryParams = toMultimap(uriInfo.getQueryParameters());
+      queryParams.replaceValues(OFFSET_PARAM, asList(String.valueOf(nextOffset)));
+      queryParams.replaceValues(LIMIT_PARAM, asList(String.valueOf(limit)));
+      String nextUrl = URLUtil.buildURL(uriInfo.getAbsolutePath(), queryParams);
       return new PagingInfo(nextUrl, null);
     }
 
     public static <T> List<T> createOffsettedResult(List<T> result, int offset, int limit) {
+      validateOffsettedResultParams(offset, limit);
       if (offset >= result.size()) {
         return result.subList(0, 0);
       } else {
         limit = Math.min(limit, result.size() - offset);
         return result.subList(offset, offset + limit);
       }
+    }
+
+    private static void validateOffsettedResultParams(int offset, int limit) {
+      if (limit <= 0) {
+        throw ErrorResponseMsg.createException("limit must be greater than zero",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
+      if (offset < 0) {
+        throw ErrorResponseMsg.createException("offset must be greater than or equal to zero",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
+    }
+
+    private static Multimap<String, String> toMultimap(
+        MultivaluedMap<String, String> multivaluedMap) {
+      Multimap<String, String> multimap = ArrayListMultimap.create();
+      for (Map.Entry<String, List<String>> entry : multivaluedMap.entrySet()) {
+        multimap.putAll(entry.getKey(), entry.getValue());
+      }
+      return multimap;
     }
 
     private PagingInfo(@Nullable String nextUrl, @Nullable String afterCursor) {
