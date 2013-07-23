@@ -27,7 +27,7 @@ import com.googlecode.objectify.Key;
 
 public abstract class BaseDaoResource<T extends BaseDao<T>> {
 
-  public static final String DEFAULT_NUM_SEARCH_RESULTS = 25 + "";
+  public static final int DEFAULT_NUM_SEARCH_RESULTS = 25;
 
   @Context
   protected UriInfo uriInfo;
@@ -37,8 +37,7 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
   protected ServletContext servletContext;
 
 
-  // TODO(avaliani): re-add support for list resources. Dig into why response objects don't parse
-  //     lists.
+  // TODO(avaliani): re-add support for list resources using GenericEntity.
   /*
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
@@ -71,7 +70,6 @@ public abstract class BaseDaoResource<T extends BaseDao<T>> {
     return resource;
   }
 
-  // TODO(avaliani): This is a non CAS update. This may not be safe.
   @Path("{resource}")
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

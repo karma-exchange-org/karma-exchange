@@ -19,7 +19,6 @@ import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
-import org.karmaexchange.util.PaginationParam;
 import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
 
 import com.google.common.collect.Lists;
@@ -66,8 +65,6 @@ public class UserResource extends BaseDaoResource<User> {
     } else {
       participantFilter =
           new ConditionFilter(Event.getParticipantPropertyName(participantType), userKey);
-      participantFilter.setPaginationParam(
-        new PaginationParam(PARTICIPANT_TYPE_PARAM, participantType.toString()));
     }
     return EventResource.eventSearch(uriInfo, Lists.newArrayList(participantFilter), loadReviews);
   }

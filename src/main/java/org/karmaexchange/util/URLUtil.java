@@ -8,6 +8,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Map;
 
+import com.google.common.collect.Multimap;
 
 /**
  * Some basic utilities for manipulating urls.
@@ -17,21 +18,22 @@ import java.util.Map;
  */
 public class URLUtil {
 
-  public static String buildURL(URI base, Map<String, Object> params) {
+  public static String buildURL(URI base, Multimap<String, String> params) {
     if (params.isEmpty()) {
       return base.toString();
+    } else {
+      return base + "?" + buildQueryString(params);
     }
-    return base + "?" + buildQueryString(params);
   }
 
   /**
    * Create a query string
    */
-  public static String buildQueryString(Map<String, Object> params) {
+  private static String buildQueryString(Multimap<String, String> params) {
     StringBuilder bld = new StringBuilder();
 
     boolean afterFirst = false;
-    for (Map.Entry<String, Object> entry : params.entrySet()) {
+    for (Map.Entry<String, String> entry : params.entries()) {
       if (afterFirst)
         bld.append("&");
       else
