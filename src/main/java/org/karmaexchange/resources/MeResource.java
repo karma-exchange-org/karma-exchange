@@ -24,6 +24,7 @@ import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderTyp
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
+import org.karmaexchange.resources.msg.OrganizationMembershipView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.ImageUploadUtil;
 
@@ -70,6 +71,13 @@ public class MeResource {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventSearchView> getEvents() {
     return UserResource.userEventSearch(uriInfo, getCurrentUserKey());
+  }
+
+  @Path("org")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public ListResponseMsg<OrganizationMembershipView> getOrgs() {
+    return UserResource.getOrgs(getCurrentUserKey());
   }
 
   @Path("profile_image")

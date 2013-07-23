@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @XmlSeeAlso({EventParticipantView.class, EventSearchView.class, ReviewCommentView.class,
-  Organization.class, OrganizationMemberView.class})
+  Organization.class, OrganizationMemberView.class, OrganizationMembershipView.class})
 public class ListResponseMsg<T> {
 
   private List<T> data;
@@ -87,20 +87,30 @@ public class ListResponseMsg<T> {
     }
 
     @Nullable
-    public static PagingInfo create(int currentOffset, int limit, int listSize, UriInfo uriInfo) {
+    public static PagingInfo create(int listSize, UriInfo uriInfo, int defaultLimit) {
+      MultivaluedMap<String, String> inputQueryParams = uriInfo.getQueryParameters();
+      int currentOffset = inputQueryParams.containsKey(OFFSET_PARAM) ?
+          Integer.valueOf(inputQueryParams.getFirst(OFFSET_PARAM)) : 0;
+      int limit = inputQueryParams.containsKey(LIMIT_PARAM) ?
+          Integer.valueOf(inputQueryParams.getFirst(LIMIT_PARAM)) : defaultLimit;
       int nextOffset = currentOffset + limit;
       if (nextOffset >= listSize) {
         // No more results.
         return null;
       }
-      Multimap<String, String> queryParams = toMultimap(uriInfo.getQueryParameters());
-      queryParams.replaceValues(OFFSET_PARAM, asList(String.valueOf(nextOffset)));
-      queryParams.replaceValues(LIMIT_PARAM, asList(String.valueOf(limit)));
-      String nextUrl = URLUtil.buildURL(uriInfo.getAbsolutePath(), queryParams);
+      Multimap<String, String> outputQueryParams = toMultimap(uriInfo.getQueryParameters());
+      outputQueryParams.replaceValues(OFFSET_PARAM, asList(String.valueOf(nextOffset)));
+      outputQueryParams.replaceValues(LIMIT_PARAM, asList(String.valueOf(limit)));
+      String nextUrl = URLUtil.buildURL(uriInfo.getAbsolutePath(), outputQueryParams);
       return new PagingInfo(nextUrl, null);
     }
 
-    public static <T> List<T> createOffsettedResult(List<T> result, int offset, int limit) {
+    public static <T> List<T> offsetResult(List<T> result, UriInfo uriInfo, int defaultLimit) {
+      MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
+      int offset = queryParams.containsKey(OFFSET_PARAM) ?
+          Integer.valueOf(queryParams.getFirst(OFFSET_PARAM)) : 0;
+      int limit = queryParams.containsKey(LIMIT_PARAM) ?
+          Integer.valueOf(queryParams.getFirst(LIMIT_PARAM)) : defaultLimit;
       validateOffsettedResultParams(offset, limit);
       if (offset >= result.size()) {
         return result.subList(0, 0);

@@ -52,7 +52,7 @@ public class EventResource extends BaseDaoResource<Event> {
   public static final String PARTICIPANT_TYPE_PARAM = "participant_type";
   public static final String KEYWORDS_PARAM = "keywords";
 
-  public static final String DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS = 10 + "";
+  public static final int DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS = 10;
   public static final int DEFAULT_NUM_REVIEWS = 3;
 
   public static final int MAX_SEARCH_KEYWORDS = 20;
@@ -117,17 +117,14 @@ public class EventResource extends BaseDaoResource<Event> {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventParticipantView> getParticipants(
       @PathParam("event_key") String eventKeyStr,
-      @PathParam("participant_type") ParticipantType participantType,
-      @QueryParam(PagingInfo.OFFSET_PARAM) @DefaultValue("0") int offset,
-      @QueryParam(PagingInfo.LIMIT_PARAM)
-      @DefaultValue(DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS) int limit) {
+      @PathParam("participant_type") ParticipantType participantType) {
     Event event = getResourceObj(eventKeyStr);
     List<KeyWrapper<User>> participants = event.getParticipants(participantType);
     List<KeyWrapper<User>> offsettedResult =
-        PagingInfo.createOffsettedResult(participants, offset, limit);
+        PagingInfo.offsetResult(participants, uriInfo, DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS);
     return ListResponseMsg.create(
       EventParticipantView.get(offsettedResult),
-      PagingInfo.create(offset, limit, participants.size(), uriInfo));
+      PagingInfo.create(participants.size(), uriInfo, DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS));
   }
 
   @Path("{event_key}/participants/{participant_type}")
