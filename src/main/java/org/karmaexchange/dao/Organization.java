@@ -7,6 +7,7 @@ import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
 import java.net.URISyntaxException;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -257,5 +258,14 @@ public class Organization extends NameBaseDao<Organization> {
     // In the future we can support hierarchical ADMIN roles if people request it.
     OrganizationMembership membership = currentUser.tryFindOrganizationMembership(Key.create(this));
     return (membership != null) && (membership.getRole() == Role.ADMIN);
+  }
+
+  public static class OrgNameComparator implements Comparator<Organization> {
+    public static final OrgNameComparator INSTANCE = new OrgNameComparator();
+
+    @Override
+    public int compare(Organization org1, Organization org2) {
+      return org1.searchableOrgName.compareTo(org2.searchableOrgName);
+    }
   }
 }

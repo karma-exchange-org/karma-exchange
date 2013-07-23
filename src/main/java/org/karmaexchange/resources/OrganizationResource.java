@@ -68,7 +68,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   @Path("{org}/member")
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public ListResponseMsg<OrganizationMemberView> getMember(
+  public ListResponseMsg<OrganizationMemberView> getMembers(
       @PathParam("org") String orgKeyStr,
       @QueryParam(ROLE_PARAM) Organization.Role role,
       @QueryParam(MEMBERSHIP_STATUS_PARAM) RequestStatus membershipStatus) {

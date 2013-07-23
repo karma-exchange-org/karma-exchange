@@ -19,6 +19,8 @@ import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
+import org.karmaexchange.resources.msg.OrganizationMembershipView;
+import org.karmaexchange.util.OfyUtil;
 import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
 
 import com.google.common.collect.Lists;
@@ -50,7 +52,7 @@ public class UserResource extends BaseDaoResource<User> {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventSearchView> getEvents(
       @PathParam("user_key") String userKeyStr) {
-    return userEventSearch(uriInfo, Key.<User>create(userKeyStr));
+    return userEventSearch(uriInfo, OfyUtil.<User>createKey(userKeyStr));
   }
 
   public static ListResponseMsg<EventSearchView> userEventSearch(UriInfo uriInfo,
@@ -67,5 +69,21 @@ public class UserResource extends BaseDaoResource<User> {
           new ConditionFilter(Event.getParticipantPropertyName(participantType), userKey);
     }
     return EventResource.eventSearch(uriInfo, Lists.newArrayList(participantFilter), loadReviews);
+  }
+
+  @Path("{user_key}/org")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public ListResponseMsg<OrganizationMembershipView> getOrgs(
+      @PathParam("user_key") String userKeyStr) {
+    return getOrgs(OfyUtil.<User>createKey(userKeyStr));
+  }
+
+  public static ListResponseMsg<OrganizationMembershipView> getOrgs(Key<User> userKey) {
+    User user = BaseDao.load(userKey);
+    // For now we always fetch all the organizations. Implementing offsetted results requires
+    // fetching all the organizations and sorting them by name. So it doesn't save us anything
+    // to return a smaller batch at a time.
+    return ListResponseMsg.create(OrganizationMembershipView.create(user));
   }
 }
