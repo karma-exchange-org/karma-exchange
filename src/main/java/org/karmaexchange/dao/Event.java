@@ -77,6 +77,9 @@ public final class Event extends IdBaseDao<Event> {
   private Status status;
 
   private Image primaryImage;
+  // BUG: This embedded list is not safe since Image has embedded objects that can be
+  //      optionally null. See objectify serialization bug (issue #127).
+  // TODO(avaliani): fix this embedded list.
   private List<Image> allImages = Lists.newArrayList();
 
   @Index
@@ -108,11 +111,15 @@ public final class Event extends IdBaseDao<Event> {
   private List<KeyWrapper<User>> waitListedUsers = Lists.newArrayList();
 
   // We need a consolidated list because pagination does not support OR queries.
+  // NOTE: Embedded list is safe since EventParticipant has embedded objects that are always
+  //       non-null.
   @Index
   private List<EventParticipant> participants = Lists.newArrayList();
 
   // Can not be set. Automatically managed. Only includes organizers and registered users. Wait
   // listed users images are skipped.
+  // NOTE: Embedded list is safe since ParticipantImage has embedded objects that are always
+  //       non-null.
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
   private IndexedAggregateRating rating;
