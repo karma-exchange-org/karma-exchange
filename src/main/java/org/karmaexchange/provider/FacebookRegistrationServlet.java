@@ -13,9 +13,9 @@ import javax.ws.rs.core.Response;
 import lombok.Data;
 
 import org.karmaexchange.dao.Address;
-import org.karmaexchange.dao.ContactInfo;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
@@ -130,10 +130,10 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
       User user = User.create(credential);
       user.setFirstName(registrationInfo.firstName);
       user.setLastName(registrationInfo.lastName);
-      ContactInfo contactInfo = new ContactInfo();
-      user.setContactInfo(contactInfo);
-      contactInfo.setEmail(registrationInfo.email);
-      contactInfo.setAddress(parseCity());
+      if (registrationInfo.email != null) {
+        user.getRegisteredEmails().add(new RegisteredEmail(registrationInfo.email, true));
+      }
+      user.setAddress(parseCity());
       return user;
     }
 
