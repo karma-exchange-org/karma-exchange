@@ -309,11 +309,7 @@ public class Organization extends NameBaseDao<Organization> {
   public boolean canAutoGrantMembership(String email, Role reqRole) {
     AutoMembershipRule rule = Iterables.tryFind(autoMembershipRules,
       AutoMembershipRule.emailPredicate(email)).orNull();
-    if ((rule != null) &&
-        rule.getMaxGrantableRole().hasEqualOrMoreCapabilities(reqRole)) {
-      return true;
-    } else {
-      return false;
-    }
+    return (rule != null) &&
+        rule.getMaxGrantableRole().hasEqualOrMoreCapabilities(reqRole);
   }
 }
