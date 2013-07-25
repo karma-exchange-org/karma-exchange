@@ -43,7 +43,7 @@
 		<div class="control-group">
 		  <label class="control-label" for="phoneNumber">Phone#</label>
 		  <div class="controls">
-		    <input ng-model="me.contactInfo.phoneNumber"  id="contactInfo.phoneNumber" name="contactInfo.phoneNumber" type="text" placeholder="xxx-xxx-xxxx" class="input-xlarge">
+		    <input ng-model="me.phoneNumber"  id="phoneNumber" name="phoneNumber" type="text" placeholder="xxx-xxx-xxxx" class="input-xlarge">
 		    
 		  </div>
 		</div>
@@ -52,7 +52,7 @@
 			<label for="address" class="control-label">	
 				Street Address
 			</label>
-			<div class="controls"><input ng-model="me.contactInfo.address.street"  name="address" placeholder="W 123 Street" type="text" value="" id="address">
+			<div class="controls"><input ng-model="me.address.street"  name="address" placeholder="W 123 Street" type="text" value="" id="address">
 			</div>
 		</div>
 
@@ -60,7 +60,7 @@
 			<label for="zip" class="control-label">	
 				Zip Code
 			</label>
-			<div class="controls"><input ng-model="me.contactInfo.address.zip"  name="zip" type="text" value="" id="zip">
+			<div class="controls"><input ng-model="me.address.zip"  name="zip" type="text" value="" id="zip">
 			</div>
 		</div>
 
@@ -68,7 +68,7 @@
 			<label for="city" class="control-label">	
 				City
 			</label>
-			<div class="controls"><input ng-model="me.contactInfo.address.city"  name="city" type="text" value="" id="city">
+			<div class="controls"><input ng-model="me.address.city"  name="city" type="text" value="" id="city">
 			</div>
 		</div>
 
@@ -77,7 +77,7 @@
 				Country
 			</label>
 			<div class="controls">
-				<select ng-model="me.contactInfo.address.country"  name="country" id="country">
+				<select ng-model="me.address.country"  name="country" id="country">
 					<option value=""></option>
 					<option value="AR">Argentina</option>
 					<option value="AU">Australia</option>

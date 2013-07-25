@@ -11,14 +11,19 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.apache.commons.validator.routines.EmailValidator;
 import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
+import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
+import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.util.AdminUtil;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -61,7 +66,11 @@ public final class User extends NameBaseDao<User> {
   private AgeRange ageRange;
 
   private ImageRef profileImage;
-  private ContactInfo contactInfo;
+
+  private List<RegisteredEmail> registeredEmails = Lists.newArrayList();
+  private String phoneNumber;
+  private Address address;
+
   // NOTE: Embedded list is safe since EmergencyContact has no embedded objects.
   private List<EmergencyContact> emergencyContacts = Lists.newArrayList();
 
@@ -135,6 +144,8 @@ public final class User extends NameBaseDao<User> {
     eventOrganizerRating = IndexedAggregateRating.create();
     karmaPoints = 0;
     organizationMemberships = Lists.newArrayList();
+
+    validateUser();
   }
 
   @Override
@@ -150,6 +161,36 @@ public final class User extends NameBaseDao<User> {
     oauthCredentials = Lists.newArrayList(oldUser.oauthCredentials);
     karmaPoints = oldUser.karmaPoints;
     organizationMemberships = oldUser.organizationMemberships;
+
+    validateUser();
+  }
+
+  private void validateUser() {
+    List<ValidationError> validationErrors = Lists.newArrayList();
+
+    boolean primaryEmailFound = false;
+    for (RegisteredEmail registeredEmail : registeredEmails) {
+      validationErrors.addAll(registeredEmail.validate(this));
+      if (registeredEmail.isPrimary) {
+        if (primaryEmailFound) {
+          // Multiple primary emails.
+          validationErrors.add(new ResourceValidationError(
+            this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID,
+            "registeredEmails.isPrimary"));
+        }
+        primaryEmailFound = true;
+      }
+    }
+    if (!registeredEmails.isEmpty() && !primaryEmailFound) {
+      // Emails registered but no primary email.
+      validationErrors.add(new ResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID,
+        "registeredEmails.isPrimary"));
+    }
+
+    if (!validationErrors.isEmpty()) {
+      throw ValidationErrorInfo.createException(validationErrors);
+    }
   }
 
   private void initSearchableFullName() {
@@ -380,7 +421,8 @@ public final class User extends NameBaseDao<User> {
       RequestStatus membershipStatus = null;
       if (currentUserIsOrgAdmin) {
         // TODO(avaliani): If the current user is an org admin and the target user is not a member
-        //     of the org, we should validate via email that the user wants to join the org.
+        //     of the org and has not requested to be a member of the org, we should validate
+        //     via email that the user wants to join the org.
         membershipStatus = RequestStatus.ACCEPTED;
       } else {
         if (reqRole == null) {
@@ -395,8 +437,13 @@ public final class User extends NameBaseDao<User> {
           if ((existingMembership != null) &&
               (existingMembership.role.hasEqualOrMoreCapabilities(reqRole))) {
             membershipStatus = RequestStatus.ACCEPTED;
-          } else if (reqRole == Organization.Role.MEMBER) {
-            // TODO(avaliani): add domain verified membership.
+          } else {
+            for (RegisteredEmail registeredEmail : user.registeredEmails) {
+              if (organization.canAutoGrantMembership(registeredEmail.email, reqRole)) {
+                membershipStatus = RequestStatus.ACCEPTED;
+                break;
+              }
+            }
           }
         }
       }
@@ -419,6 +466,26 @@ public final class User extends NameBaseDao<User> {
 
       // Persist the changes.
       BaseDao.partialUpdate(user);
+    }
+  }
+
+  @Embed
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class RegisteredEmail {
+    private String email;
+    private boolean isPrimary;
+    // TODO(avaliani): private boolean verified
+
+    public List<ValidationError> validate(User user) {
+      List<ValidationError> validationErrors = Lists.newArrayList();
+      if (!EmailValidator.getInstance().isValid(email)) {
+        validationErrors.add(new ResourceValidationError(
+          user, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID,
+          "registeredEmails[email=\"" + email + "\"]"));
+      }
+      return validationErrors;
     }
   }
 }

@@ -24,6 +24,8 @@ import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.Event.ParticipantType;
+import org.karmaexchange.dao.Organization.AutoMembershipRule;
+import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Location;
@@ -50,16 +52,16 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   public enum TestUser {
     USER1("100006074376957", "Susan", "Liangberg"),
-    USER2("100006058506752", "John", "Occhinostein"),
-    USER3("100006051787601", "Rick", "Narayananson"),
+    USER2("100006058506752", "John", "Occhinostein", "john.ocho@KidsClub.org"),
+    USER3("100006051787601", "Rick", "Narayananson", "rick.narayananson@kidsclub.org"),
     USER4("100006076592978", "Joe", "Warmanescu"),
     USER5("100006052237443", "Joe", "Narayananwitz"),
     USER6("100006093303024", "Ruth", "Carrierostein"),
     USER7("100006045731576", "Mary", "Greenestein"),
     USER8("100006080162988", "Richard", "Dinglewitz"),
-    USER9("100006054577389", "Dick", "McDonaldberg"),
+    USER9("100006054577389", "Dick", "McDonaldberg", "dick@fakekidsclub.org"),
     USER10("100006053377578", "Linda", "Laverdetberg"),
-    USER11("100006084302920", "Carol", "Wisemanwitz"),
+    USER11("100006084302920", "Carol", "Wisemanwitz", "carol@kidsclub.org"),
     USER12("100006069696646", "Donna", "Zuckerson"),
     USER13("100006083973038", "Harry", "Occhinoman"),
     AMIR("1111368160", "Amir", "Valiani"),
@@ -70,11 +72,19 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final String firstName;
     @Getter
     private final String lastName;
+    @Getter
+    @Nullable
+    private final String email;
 
     private TestUser(String fbId, String firstName, String lastName) {
+      this(fbId, firstName, lastName, null);
+    }
+
+    private TestUser(String fbId, String firstName, String lastName, @Nullable String email) {
       this.fbId = fbId;
       this.firstName = firstName;
       this.lastName = lastName;
+      this.email = email;
     }
 
     public Key<User> getKey() {
@@ -86,6 +96,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       user.setFirstName(firstName);
       user.setLastName(lastName);
       user.setAbout("I'm looking forward to making a difference!");
+      if (email != null) {
+        user.getRegisteredEmails().add(new RegisteredEmail(email, true));
+      }
       return user;
     }
 
@@ -106,8 +119,13 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
         TestOrgMembership.of(USER5, Organization.Role.ORGANIZER, Organization.Role.ADMIN),
         TestOrgMembership.of(USER1, Organization.Role.MEMBER, null),
-        TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
-        TestOrgMembership.of(USER3, null, Organization.Role.ADMIN))),
+        TestOrgMembership.of(USER9, null, Organization.Role.MEMBER), // fake email, not granted
+        TestOrgMembership.of(USER10, null, Organization.Role.ADMIN),
+        TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),  // auto-grant
+        TestOrgMembership.of(USER11, null, Organization.Role.ORGANIZER),  // auto-grant
+        TestOrgMembership.of(USER3, null, Organization.Role.ADMIN)), // not-auto-granted
+      null,
+      asList(new AutoMembershipRule("kidsclub.org", Organization.Role.ORGANIZER))),
     BGCSF_COLUMBIA_PARK("https://www.facebook.com/columbia.park", AMIR,
       asList(TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER)),
       BGCSF),
@@ -132,6 +150,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final List<TestOrgMembership> memberships;
     @Getter
     private final TestOrganization parentOrg;
+    @Getter
+    private final List<AutoMembershipRule> autoMembershipRules;
 
     private TestOrganization(String pageUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships) {
@@ -140,10 +160,30 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     private TestOrganization(String pageUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg) {
+      this(pageUrl, initialAdmin, memberships, parentOrg, null);
+    }
+
+    private TestOrganization(String pageUrl, TestUser initialAdmin,
+        List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg,
+        @Nullable List<AutoMembershipRule> autoMembershipRules) {
       this.pageUrl = pageUrl;
       this.initialAdmin = initialAdmin;
       this.memberships = memberships;
       this.parentOrg = parentOrg;
+      this.autoMembershipRules = autoMembershipRules;
+    }
+
+    public Organization createOrganization() {
+      Organization org = new Organization();
+      org.setPage(getPageRef());
+      if (parentOrg != null) {
+        org.setParentOrg(KeyWrapper.create(parentOrg.getKey()));
+      }
+      if (autoMembershipRules != null) {
+        org.getAutoMembershipRules().addAll(autoMembershipRules);
+      }
+      org.initFromPage();
+      return org;
     }
 
     public PageRef getPageRef() {
@@ -391,13 +431,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         new AdminSubtask() {
           @Override
           public void execute() {
-            Organization org = new Organization();
-            org.setPage(testOrg.getPageRef());
-            if (testOrg.parentOrg != null) {
-              org.setParentOrg(KeyWrapper.create(testOrg.parentOrg.getKey()));
-            }
-            org.initFromPage();
-            BaseDao.upsert(org);
+            BaseDao.upsert(testOrg.createOrganization());
           }
         });
     }

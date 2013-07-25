@@ -14,6 +14,7 @@ import java.util.Set;
 import org.junit.Before;
 import org.junit.Test;
 import org.karmaexchange.dao.Image.ImageProviderType;
+import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.util.DatastoreTestUtil;
 
 import com.google.appengine.api.datastore.GeoPt;
@@ -49,11 +50,10 @@ public class UserTest extends PersistenceTestHelper {
     image.setUrlProvider(ImageProviderType.BLOBSTORE);
     user1.setProfileImage(ImageRef.create(image));
 
-    ContactInfo contactInfo = new ContactInfo();
-    user1.setContactInfo(contactInfo);
-    contactInfo.setEmail("test@karmaexchange.org");
+    user1.getRegisteredEmails().add(new RegisteredEmail("test@karmaexchange.org", true));
+    user1.getRegisteredEmails().add(new RegisteredEmail("test2@karmaexchange.org", false));
     Address address = new Address();
-    contactInfo.setAddress(address);
+    user1.setAddress(address);
     address.setZip("94105");
     address.setGeoPt(GeoPtWrapper.create(new GeoPt(1.9f, 1.0f)));
 
