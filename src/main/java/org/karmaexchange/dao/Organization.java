@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.validator.routines.EmailValidator;
@@ -23,13 +24,18 @@ import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.task.AddOrgAdminServlet;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Index;
 
@@ -55,7 +61,7 @@ public class Organization extends NameBaseDao<Organization> {
   // Email address is not a field in facebook pages.
   private String email;
 
-  private List<String> domains = Lists.newArrayList();
+  private List<AutoMembershipRule> autoMembershipRules = Lists.newArrayList();
 
   private Address address;
 
@@ -206,11 +212,8 @@ public class Organization extends NameBaseDao<Organization> {
       validationErrors.add(new ResourceValidationError(
         this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "email"));
     }
-    for (String domain : domains) {
-      if (!EmailValidator.getInstance().isValid("user@" + domain)) {
-        validationErrors.add(new ResourceValidationError(
-          this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "domains"));
-      }
+    for (AutoMembershipRule autoMembershipRule : autoMembershipRules) {
+      validationErrors.addAll(autoMembershipRule.validate(this));
     }
 
     if (!validationErrors.isEmpty()) {
@@ -266,6 +269,51 @@ public class Organization extends NameBaseDao<Organization> {
     @Override
     public int compare(Organization org1, Organization org2) {
       return org1.searchableOrgName.compareTo(org2.searchableOrgName);
+    }
+  }
+
+  /**
+   * This class represents the roles that can be granted automatically based upon user email
+   * domain based membership.
+   */
+  @Embed
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class AutoMembershipRule {
+    private String domain;
+    private Role maxGrantableRole;
+
+    public List<ValidationError> validate(Organization org) {
+      List<ValidationError> validationErrors = Lists.newArrayList();
+      if ((!EmailValidator.getInstance().isValid("user@" + domain)) ||
+          (maxGrantableRole == null)) {
+        validationErrors.add(new ResourceValidationError(
+          org, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID,
+          "autoMembershipRules[domain=\"" + domain + "\"]"));
+      }
+      return validationErrors;
+    }
+
+    public static Predicate<AutoMembershipRule> emailPredicate(final String email) {
+      return new Predicate<AutoMembershipRule>() {
+        @Override
+        public boolean apply(@Nullable AutoMembershipRule input) {
+          return email.toLowerCase().endsWith("." + input.domain.toLowerCase()) ||
+              email.toLowerCase().endsWith("@" + input.domain.toLowerCase());
+        }
+      };
+    }
+  }
+
+  public boolean canAutoGrantMembership(String email, Role reqRole) {
+    AutoMembershipRule rule = Iterables.tryFind(autoMembershipRules,
+      AutoMembershipRule.emailPredicate(email)).orNull();
+    if ((rule != null) &&
+        rule.getMaxGrantableRole().hasEqualOrMoreCapabilities(reqRole)) {
+      return true;
+    } else {
+      return false;
     }
   }
 }

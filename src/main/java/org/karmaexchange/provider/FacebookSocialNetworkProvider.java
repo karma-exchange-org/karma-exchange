@@ -15,13 +15,13 @@ import lombok.Getter;
 
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AgeRange;
-import org.karmaexchange.dao.ContactInfo;
 import org.karmaexchange.dao.Gender;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.PageRef;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
@@ -78,10 +78,10 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     User user = User.create(credential);
     user.setFirstName(fbUser.getFirstName());
     user.setLastName(fbUser.getLastName());
-    ContactInfo contactInfo = new ContactInfo();
-    user.setContactInfo(contactInfo);
-    contactInfo.setEmail(fbUser.getEmail());
-    contactInfo.setAddress(parseCity(fbUser));
+    if (fbUser.getEmail() != null) {
+      user.getRegisteredEmails().add(new RegisteredEmail(fbUser.getEmail(), true));
+    }
+    user.setAddress(parseCity(fbUser));
     user.setGender(parseGender(fbUser));
     user.setAgeRange(parseAgeRange(fbUser));
     return user;
