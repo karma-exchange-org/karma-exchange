@@ -12,12 +12,12 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 
 @SuppressWarnings("serial")
-public class ProcessOrganizerRatingsServlet extends TaskQueueAdminTaskServlet {
+public class ProcessRatingsServlet extends TaskQueueAdminTaskServlet {
 
   private static final Logger logger = Logger.getLogger(
-    ProcessOrganizerRatingsServlet.class.getName());
+    ProcessRatingsServlet.class.getName());
 
-  private static final String PATH = "/task/process_organizer_ratings";
+  private static final String PATH = "/task/process_ratings";
   private static final String EVENT_KEY_PARAM = "event_key";
 
   @Override

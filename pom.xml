@@ -185,6 +185,10 @@
                   </jvmFlags>
                   <!-- Bind the default port to all ips / interfaces. -->
                   <address>0.0.0.0</address>
+                  <!-- Disable target directory rescans because of this issue in the 1.8.1 sdk:
+                       https://code.google.com/p/googleappengine/issues/detail?id=9492
+                  -->
+                  <fullScanSeconds>-1</fullScanSeconds>
                 </configuration>
 
                 <!-- in order to debug in eclipse -->
