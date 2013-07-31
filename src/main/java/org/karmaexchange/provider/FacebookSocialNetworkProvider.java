@@ -8,7 +8,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
-import javax.servlet.Filter;
 
 import lombok.Data;
 import lombok.Getter;
@@ -37,7 +36,8 @@ import com.restfb.types.Page;
 
 public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
 
-  private static final Logger logger = Logger.getLogger(Filter.class.getName());
+  private static final Logger logger =
+      Logger.getLogger(FacebookSocialNetworkProvider.class.getName());
 
   private static final String PROFILE_IMAGE_URL_FMT = "https://graph.facebook.com/%s/picture";
 
@@ -164,9 +164,11 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     try {
       return fbClient.fetchObject(name, objClass, parameters);
     } catch(FacebookException e) {
-      throw ErrorResponseMsg.createException(e,
-        (e instanceof FacebookOAuthException) ? ErrorInfo.Type.AUTHENTICATION :
-          ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
+      if (e instanceof FacebookOAuthException) {
+        throw ErrorResponseMsg.createException(e.getMessage(), ErrorInfo.Type.AUTHENTICATION);
+      } else {
+        throw ErrorResponseMsg.createException(e, ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
+      }
     }
   }
 

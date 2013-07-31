@@ -14,8 +14,6 @@ import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Event.RegistrationInfo;
 
-import com.google.common.collect.Lists;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -35,7 +33,7 @@ public class ExpandedEventSearchView extends EventSearchView {
   // TODO(avaliani): need to expand causes.
   private List<KeyWrapper<CauseType>> causes;
   // TODO(avaliani): need to expand organizations.
-  private List<KeyWrapper<Organization>> organizations = Lists.newArrayList();
+  private KeyWrapper<Organization> organization;
 
   public static ExpandedEventSearchView create(Event event) {
     // Only fetch the review if the current user is registered for the event.
@@ -57,6 +55,6 @@ public class ExpandedEventSearchView extends EventSearchView {
     numOrganizers = event.getOrganizers().size();
 
     causes = event.getCauses();
-    organizations = event.getOrganizations();
+    organization = event.getOrganization();
   }
 }

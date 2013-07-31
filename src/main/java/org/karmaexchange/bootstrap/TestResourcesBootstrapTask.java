@@ -2,6 +2,7 @@ package org.karmaexchange.bootstrap;
 
 import static java.util.Arrays.asList;
 import static org.karmaexchange.bootstrap.TestResourcesBootstrapTask.TestUser.*;
+import static org.karmaexchange.bootstrap.TestResourcesBootstrapTask.TestOrganization.*;
 
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
@@ -127,13 +128,27 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       null,
       asList(new AutoMembershipRule("kidsclub.org", Organization.Role.ORGANIZER))),
     BGCSF_COLUMBIA_PARK("https://www.facebook.com/columbia.park", AMIR,
-      asList(TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER)),
+      asList(
+        TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
+        TestOrgMembership.of(HARISH, Organization.Role.ORGANIZER, null)),
       BGCSF),
-    BGCSF_TENDERLOIN("https://www.facebook.com/Tenderloin.clubhouse", AMIR,
-      asList(TestOrgMembership.of(USER2, null, Organization.Role.ORGANIZER)),
+    BGCSF_TENDERLOIN("https://www.facebook.com/Tenderloin.clubhouse", HARISH,
+      asList(
+        TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
+        TestOrgMembership.of(USER2, Organization.Role.ORGANIZER, null),
+        TestOrgMembership.of(AMIR, Organization.Role.ORGANIZER, null)),
       BGCSF),
 
     BENEVOLENT("https://www.facebook.com/benevolent.net", HARISH,
+      asList(
+        TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
+        TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
+        TestOrgMembership.of(USER5, Organization.Role.ORGANIZER, Organization.Role.ADMIN),
+        TestOrgMembership.of(USER1, Organization.Role.MEMBER, null),
+        TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
+        TestOrgMembership.of(USER3, null, Organization.Role.ADMIN))),
+
+    UNITED_WAY("https://www.facebook.com/UnitedWay", AMIR,
       asList(
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
@@ -251,7 +266,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
-    Event event = createEvent("Amir & Harish Organizer - SF Street Cleanup",
+    Event event = createEvent("Amir & Harish Organizer - Soccer Camp", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
@@ -259,7 +274,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER2.getKey());
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
-    event = createEvent("Full event - Learning center",
+    event = createEvent("Full event - Learning center", BGCSF_TENDERLOIN,
       DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 2);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
     events.add(event);
@@ -267,7 +282,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(AMIR.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    event = createEvent("Amir Organizer - Date conflict - No one signed up",
+    event = createEvent("Amir Organizer - Date conflict - No one signed up", UNITED_WAY,
       DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
@@ -275,7 +290,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(HARISH.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    event = createEvent("Harish Organizer - Date conflict - No one signed up",
+    event = createEvent("Harish Organizer - Date conflict - No one signed up", BENEVOLENT,
       DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
@@ -288,7 +303,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
     waitListedUsers = asList(USER3.getKey());
-    event = createEvent("Harish as Organizer, Amir participant - SF Street Cleanup",
+    event = createEvent("Harish as Organizer, Amir participant - Soccer Camp", BGCSF_TENDERLOIN,
       DateUtils.addDays(now, -6), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size());
     events.add(event);
@@ -304,7 +319,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey());
     waitListedUsers = asList(USER3.getKey());
-    event = createEvent("Amir as Organizer, Harish participant - SF Street Cleanup",
+    event = createEvent("Amir as Organizer, Harish participant - Soccer Camp", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, -13), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size());
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
@@ -314,26 +329,27 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER1.getKey(), HARISH.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
-    event = createEvent("Harish as Organizer - SF Street Cleanup",
+    event = createEvent("Harish as Organizer - SF Street Cleanup", BENEVOLENT,
       DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 100);
     events.add(event);
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
-    event = createEvent("Amir as Organizer - SF Street Cleanup",
+    event = createEvent("Amir as Organizer - SF Street Cleanup", UNITED_WAY,
       DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 100);
     events.add(event);
 
     return new CreateEventsResult(events, pendingReviews);
   }
 
-  private static Event createEvent(String title, Date startTime, int numHours,
-      List<Key<User>> organizers, List<Key<User>> registeredUsers,
+  private static Event createEvent(String title, TestOrganization testOrg, Date startTime,
+      int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
       List<Key<User>> waitListedUsers, int maxRegistrations) {
     eventNum++;
     Event event = new Event();
     event.setTitle(title);
+    event.setOrganization(KeyWrapper.create(testOrg.getKey()));
     if (eventNum % 2 == 0) {
       event.setDescription("The Eastmont Garden of Hope receives and distributes donated clothing, hygiene products, household items, canned goods, and other necessities to Social Services Agency clients in urgent need year-round. This program serves as many as 400 households monthly. Whether providing food for a struggling family, a warm coat for a shivering child, or diapers for a desperate mother’s newborn, the Eastmont Garden of Hope seeks to ensure that those in greatest need are served expeditiously and with utmost compassion. Volunteers play a vital role in the program's operations by managing donations and keeping the service area open and available to customers in need throughout the week.\n\n" +
           "Volunteers are requested to participate for at least one shift (3-4 hours) per week, for at least 3 months. Scheduling is flexible, Monday-Friday, between the hours of 9:00am-12:00pm and 1:00-5:00pm.");

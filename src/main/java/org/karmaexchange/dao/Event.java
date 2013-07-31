@@ -15,6 +15,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
@@ -48,6 +49,16 @@ import com.googlecode.objectify.annotation.Index;
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
 public final class Event extends IdBaseDao<Event> {
+
+  /*
+   * DESIGN DETAILS
+   *
+   * Event permissions
+   * -----------------
+   * The current permissions scheme is that there is one organization for each event. And that any
+   * organizer or admin for the organization can edit the event. This simple model handles the
+   * 99% usage scenario.
+   */
 
   public static final int MAX_EVENT_KARMA_POINTS = 500;
 
@@ -87,9 +98,9 @@ public final class Event extends IdBaseDao<Event> {
   @Index
   private List<KeyWrapper<Skill>> skillsRequired = Lists.newArrayList();
 
-  // Organizations can co-host events. Admins of the organization can edit the event.
+  // TODO(avaliani): Organizations can co-host events.
   @Index
-  private List<KeyWrapper<Organization>> organizations = Lists.newArrayList();
+  private KeyWrapper<Organization> organization;
   // Organizers can also edit the event.
 
   // Can not be explicitly set. Automatically managed.
@@ -123,7 +134,7 @@ public final class Event extends IdBaseDao<Event> {
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
   private IndexedAggregateRating rating;
-  private DerivedOrganizerRatings derivedOrganizerRatings;
+  private DerivedRatingTracker derivedRatings;
 
   /**
    * The number of karma points earned by participating in the event. This is derived from the
@@ -137,7 +148,7 @@ public final class Event extends IdBaseDao<Event> {
 
   @Index
   private boolean completionProcessed;
-  private EventCompletionTasks completionTasks;
+  private CompletionTaskTracker completionTasks;
 
   private List<SuitableForType> suitableForTypes = Lists.newArrayList();
 
@@ -215,10 +226,12 @@ public final class Event extends IdBaseDao<Event> {
     }
     processParticipants();
     processSuitableFor();
+
     validateEvent();
+
     initKarmaPoints();
     rating = IndexedAggregateRating.create();
-    initDerivedOrganizerRatings();
+    initDerivedRatings();
     initSearchableTokens();
     completionProcessed = false;
     completionTasks = null;
@@ -233,7 +246,7 @@ public final class Event extends IdBaseDao<Event> {
     initKarmaPoints();
     // Rating is independently and transactionally updated.
     rating = prevObj.rating;
-    derivedOrganizerRatings = prevObj.derivedOrganizerRatings;
+    derivedRatings = prevObj.derivedRatings;
     // Participants is independently and transactionally updated.
     participants = Lists.newArrayList(prevObj.participants);
     processParticipants();
@@ -256,24 +269,25 @@ public final class Event extends IdBaseDao<Event> {
                                           MutationType mutationType) {
     processParticipants();
     for (EventParticipant participant : mutatedParticipants) {
-      derivedOrganizerRatings.processParticipantMutation(this, participant, mutationType);
+      derivedRatings.processParticipantMutation(this, participant, mutationType);
       if (completionTasks != null) {
         completionTasks.processParticipantMutation(this, participant, mutationType);
+        updateCompletionProcessed();
       }
     }
     validateEvent();
   }
 
   private void processRatingUpdate() {
-    derivedOrganizerRatings.processRatingUpdate(this);
+    derivedRatings.processRatingUpdate(this);
   }
 
   private void processPendingRating() {
-    derivedOrganizerRatings.processPendingRating(this);
+    derivedRatings.processPendingRating(this);
   }
 
   private boolean hasPendingRatings() {
-    return derivedOrganizerRatings.hasPendingRatings();
+    return derivedRatings.hasPendingRatings();
   }
 
   private void processCompletionTasks() {
@@ -285,9 +299,14 @@ public final class Event extends IdBaseDao<Event> {
       // event object state must be cleaned up.
       removeWaitListedUsers();
       // After the state is cleaned up we process the remaining event completion tasks.
-      completionTasks = new EventCompletionTasks(this);
+      completionTasks = new CompletionTaskTracker(this);
     }
     completionTasks.processPendingTask(this);
+    updateCompletionProcessed();
+  }
+
+  private void updateCompletionProcessed() {
+    completionProcessed = !completionTasks.tasksPending();
   }
 
   private void removeWaitListedUsers() {
@@ -350,13 +369,8 @@ public final class Event extends IdBaseDao<Event> {
     karmaPoints = (int) Math.min(eventDurationMins, MAX_EVENT_KARMA_POINTS);
   }
 
-  private void initDerivedOrganizerRatings() {
-    derivedOrganizerRatings = new DerivedOrganizerRatings();
-    for (EventParticipant participant : participants) {
-      if (participant.getType() == ParticipantType.ORGANIZER) {
-        derivedOrganizerRatings.processParticipantMutation(this, participant, MutationType.INSERT);
-      }
-    }
+  private void initDerivedRatings() {
+    derivedRatings = new DerivedRatingTracker(this);
   }
 
   private void initSearchableTokens() {
@@ -452,9 +466,23 @@ public final class Event extends IdBaseDao<Event> {
         this, ValidationErrorType.RESOURCE_FIELD_VALUE_MUST_BE_GTEQ_LIMIT,
         "maxRegistrations", 1));
     }
-    if (organizers.isEmpty()) {
+    if (organization == null) {
       validationErrors.add(new ResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "organizers"));
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "organization"));
+    } else {
+      if (organizers.isEmpty()) {
+        validationErrors.add(new ResourceValidationError(
+          this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "organizers"));
+        List<User> organizerEntities =
+            BaseDao.load(KeyWrapper.toKeys(organizers), ofy().transactionless());
+        for (User organizer : organizerEntities) {
+          if (!organizer.hasOrgMembership(KeyWrapper.toKey(organization), Role.ORGANIZER)) {
+            validationErrors.add(new ListValueValidationError(
+              this, ValidationErrorType.RESOURCE_FIELD_LIST_VALUE_INVALID_PERMISSIONS, "organizers",
+              organizer.getKey()));
+          }
+        }
+      }
     }
 
     if (!validationErrors.isEmpty()) {
@@ -475,6 +503,12 @@ public final class Event extends IdBaseDao<Event> {
       if (!endTime.equals(prevObj.endTime)) {
         validationErrors.add(new ResourceValidationError(
           this, ValidationErrorType.RESOURCE_FIELD_VALUE_UNMODIFIABLE, "endTime"));
+      }
+      // To simplify completion task processing, we don't allow organizations to be modifiable
+      // after event completion.
+      if (!organization.equals(prevObj.organization)) {
+        validationErrors.add(new ResourceValidationError(
+          this, ValidationErrorType.RESOURCE_FIELD_VALUE_UNMODIFIABLE, "organization"));
       }
     }
 
@@ -527,7 +561,7 @@ public final class Event extends IdBaseDao<Event> {
           }
         }
       }
-      List<User> participantsToCache = BaseDao.load(usersToFetch, true);
+      List<User> participantsToCache = BaseDao.load(usersToFetch, ofy().transactionless());
       for (User participantToCache : participantsToCache) {
         cachedParticipantImages.add(ParticipantImage.create(participantToCache));
       }
@@ -589,23 +623,18 @@ public final class Event extends IdBaseDao<Event> {
     }
   }
 
+  // TODO(avaliani): Always calculating eval permission is expensive in the long run. It results
+  //     in additional loads even for read operations. Since we're fetching the current user
+  //     transactionless the user should be saved in the session cache, so the overhead is not
+  //     terrible. But this should be eliminated if possible.
   @Override
   protected Permission evalPermission() {
-    if (organizations.isEmpty()) {
-      if (isOrganizer(getCurrentUserKey())) {
-        return Permission.ALL;
-      } else {
-        return Permission.READ;
-      }
-    } else {
-      // List<Organization> organizations = BaseDao.load(KeyWrapper.toKeys(organizations));
-      // TODO(avaliani): fill in when we convert organizations to BaseDao.
-      throw new IllegalStateException("Not implemented: organization permissions");
+    User currentUser = BaseDao.load(getCurrentUserKey(), ofy().transactionless());
+    if (currentUser.hasOrgMembership(KeyWrapper.toKey(organization),
+          Organization.Role.ORGANIZER)) {
+      return Permission.ALL;
     }
-  }
-
-  private boolean isOrganizer(Key<User> userKey) {
-    return organizers.contains(KeyWrapper.create(userKey));
+    return Permission.READ;
   }
 
   @Data
@@ -712,7 +741,7 @@ public final class Event extends IdBaseDao<Event> {
       }
       if (!event.permission.canEdit() && !userToRemoveKey.equals(getCurrentUserKey())) {
         throw ErrorResponseMsg.createException(
-          "only prganizers can remove any participant from the event",
+          "only organizers can remove any participant from the event",
           ErrorInfo.Type.BAD_REQUEST);
       }
       EventParticipant participant = event.tryFindParticipant(userToRemoveKey);
@@ -845,15 +874,23 @@ public final class Event extends IdBaseDao<Event> {
    */
   @Data
   @Embed
-  public static class DerivedOrganizerRatings {
+  @NoArgsConstructor
+  public static class DerivedRatingTracker {
 
-    /*
-     * Event has to be explicitly passed as an argument since inner classes are not supported by
-     * objectify.
-     */
+    // NOTE: The embedded lists are safe since DerivedRatingWrapper has been modified to avoid
+    //       encountering the objectify serialization bug (issue #127).
+    List<DerivedRatingWrapper> processed = Lists.newArrayList();
+    List<DerivedRatingWrapper> pending = Lists.newArrayList();
 
-    List<DerivedOrganizerRating> processed = Lists.newArrayList();
-    List<DerivedOrganizerRating> pending = Lists.newArrayList();
+    public DerivedRatingTracker(Event event) {
+      for (EventParticipant participant : event.participants) {
+        if (participant.getType() == ParticipantType.ORGANIZER) {
+          processParticipantMutation(event, participant, MutationType.INSERT);
+        }
+      }
+      processed.add(new DerivedRatingWrapper(
+        new OrganizationDerivedRating(KeyWrapper.toKey(event.organization))));
+    }
 
     public void processParticipantMutation(Event event, EventParticipant participant,
         MutationType mutationType) {
@@ -864,29 +901,29 @@ public final class Event extends IdBaseDao<Event> {
 
     private void processParticipantMutation(Event event, Key<User> userKey, boolean isOrganizer) {
       boolean pendingQueueWasEmpty = pending.isEmpty();
-      DerivedOrganizerRating derivedRating = tryFindDerivedRating(pending, userKey);
+      DerivedRatingWrapper derivedRating = tryFindOrganizerDerivedRating(pending, userKey);
       if (derivedRating != null) {
         // Nothing to do, already queued.
         return;
       }
-      derivedRating = tryFindDerivedRating(processed, userKey);
+      derivedRating = tryFindOrganizerDerivedRating(processed, userKey);
       if (derivedRating == null) {
         if (isOrganizer) {
           if (event.getRating().getCount() > 0) {
-            pending.add(new DerivedOrganizerRating(userKey));
+            pending.add(new DerivedRatingWrapper(new OrganizerDerivedRating(userKey)));
           } else {
-            processed.add(new DerivedOrganizerRating(userKey));
+            processed.add(new DerivedRatingWrapper(new OrganizerDerivedRating(userKey)));
           }
         }
       } else {
         if (isOrganizer) {
-          if (!event.getRating().equals(derivedRating.getAccumulatedRating())) {
+          if (!event.getRating().equals(derivedRating.getOrganizerRating().accumulatedRating)) {
             processed.remove(derivedRating);
             pending.add(derivedRating);
           }
         } else {
           processed.remove(derivedRating);
-          if (derivedRating.getAccumulatedRating().getCount() > 0) {
+          if (derivedRating.getOrganizerRating().accumulatedRating.getCount() > 0) {
             pending.add(derivedRating);
           }
         }
@@ -894,10 +931,23 @@ public final class Event extends IdBaseDao<Event> {
       queueProcessingTask(event, pendingQueueWasEmpty);
     }
 
-    private static DerivedOrganizerRating tryFindDerivedRating(
-        List<DerivedOrganizerRating> list, Key<User> organizerKey) {
-      return Iterables.tryFind(list,
-        DerivedOrganizerRating.organizerPredicate(organizerKey)).orNull();
+    private static DerivedRatingWrapper tryFindOrganizerDerivedRating(
+        List<DerivedRatingWrapper> list, Key<User> organizerKey) {
+      return Iterables.tryFind(list, organizerPredicate(organizerKey)).orNull();
+    }
+
+    public static Predicate<DerivedRatingWrapper> organizerPredicate(
+        final Key<User> organizerKey) {
+      return new Predicate<DerivedRatingWrapper>() {
+        @Override
+        public boolean apply(@Nullable DerivedRatingWrapper input) {
+          if (input.getOrganizerRating() != null) {
+            return KeyWrapper.toKey(input.getOrganizerRating().organizer).equals(organizerKey);
+          } else {
+            return false;
+          }
+        }
+      };
     }
 
     public void processRatingUpdate(Event event) {
@@ -914,72 +964,157 @@ public final class Event extends IdBaseDao<Event> {
     }
 
     public void processPendingRating(Event event) {
-      if (pending.isEmpty()) {
-        return;
+      DerivedRatingWrapper pendingRating = pending.remove(0);
+      DerivedRatingWrapper processedRating = pendingRating.processPendingRating(event);
+      if (processedRating != null) {
+        processed.add(processedRating);
       }
-      DerivedOrganizerRating derivedRating = pending.remove(0);
-      Key<User> userKey = KeyWrapper.toKey(derivedRating.getOrganizer());
-      User user = BaseDao.load(userKey);
-      if (user == null) {
-        // Nothing to do. User no longer exists.
-        return;
-      }
-      // Delete the old rating.
-      user.getEventOrganizerRating().deleteAggregateRating(derivedRating.getAccumulatedRating());
-      // Add the new rating.
-      EventParticipant eventParticipant = event.tryFindParticipant(userKey);
-      if ((eventParticipant != null) && (eventParticipant.getType() == ParticipantType.ORGANIZER)) {
-        derivedRating = new DerivedOrganizerRating(userKey, event.getRating());
-        user.getEventOrganizerRating().addAggregateRating(derivedRating.getAccumulatedRating());
-        processed.add(derivedRating);
-      }
-      BaseDao.partialUpdate(user);
     }
 
     public boolean hasPendingRatings() {
       return !pending.isEmpty();
     }
 
+    private interface DerivedRating {
+
+      public DerivedRatingWrapper processPendingRating(Event event);
+
+    }
+
+    /*
+     * This class works around the objectify limitation that embedded classes can not be
+     * polymorphic.
+     */
     @Data
     @Embed
     @NoArgsConstructor
-    public static class DerivedOrganizerRating {
-      KeyWrapper<User> organizer;
-      AggregateRating accumulatedRating;
+    private static class DerivedRatingWrapper implements DerivedRating {
 
-      public DerivedOrganizerRating(Key<User> organizerKey) {
+      private OrganizerDerivedRating organizerRating = new OrganizerDerivedRating();
+      private OrganizationDerivedRating organizationRating = new OrganizationDerivedRating();
+
+      public DerivedRatingWrapper(OrganizerDerivedRating organizerRating) {
+        this.organizerRating = organizerRating;
+      }
+
+      public DerivedRatingWrapper(OrganizationDerivedRating organizationRating) {
+        this.organizationRating = organizationRating;
+      }
+
+      public OrganizerDerivedRating getOrganizerRating() {
+        return organizerRating.isNull() ? null : organizerRating;
+      }
+
+      public OrganizationDerivedRating getOrganizationRating() {
+        return organizationRating.isNull() ? null : organizationRating;
+      }
+
+      @Override
+      public DerivedRatingWrapper processPendingRating(Event event) {
+        if (!organizerRating.isNull()) {
+          return organizerRating.processPendingRating(event);
+        } else {
+          return organizationRating.processPendingRating(event);
+        }
+      }
+    }
+
+    @Data
+    @Embed
+    @NoArgsConstructor
+    public static class OrganizerDerivedRating implements DerivedRating {
+      NullableKeyWrapper<User> organizer = NullableKeyWrapper.create();
+      AggregateRating accumulatedRating = AggregateRating.create();
+
+      public OrganizerDerivedRating(Key<User> organizerKey) {
         this(organizerKey, null);
       }
 
-      public DerivedOrganizerRating(Key<User> organizerKey,
+      public OrganizerDerivedRating(Key<User> organizerKey,
           @Nullable AggregateRating ratingToCopy) {
-        this.organizer = KeyWrapper.create(organizerKey);
+        this.organizer = NullableKeyWrapper.create(organizerKey);
         accumulatedRating = AggregateRating.create(ratingToCopy);
       }
 
-      public static Predicate<DerivedOrganizerRating> organizerPredicate(
-          final Key<User> organizerKey) {
-        return new Predicate<DerivedOrganizerRating>() {
-          @Override
-          public boolean apply(@Nullable DerivedOrganizerRating input) {
-            return KeyWrapper.toKey(input.organizer).equals(organizerKey);
-          }
-        };
+      public boolean isNull() {
+        return organizer.isNull();
+      }
+
+      @Override
+      public DerivedRatingWrapper processPendingRating(Event event) {
+        Key<User> userKey = KeyWrapper.toKey(organizer);
+        User user = BaseDao.load(userKey);
+        if (user == null) {
+          // Nothing to do. User no longer exists.
+          return null;
+        }
+        // Delete the old rating.
+        user.getEventOrganizerRating().deleteAggregateRating(accumulatedRating);
+        // Add the new rating.
+        DerivedRatingWrapper processedRating = null;
+        EventParticipant eventParticipant = event.tryFindParticipant(userKey);
+        if ((eventParticipant != null) &&
+            (eventParticipant.getType() == ParticipantType.ORGANIZER)) {
+          user.getEventOrganizerRating().addAggregateRating(event.getRating());
+          processedRating = new DerivedRatingWrapper(
+            new OrganizerDerivedRating(userKey, event.getRating()));
+        }
+        BaseDao.partialUpdate(user);
+        return processedRating;
+      }
+    }
+
+    @Data
+    @Embed
+    @NoArgsConstructor
+    public static class OrganizationDerivedRating implements DerivedRating {
+      NullableKeyWrapper<Organization> organization = NullableKeyWrapper.create();
+      AggregateRating accumulatedRating = AggregateRating.create();
+
+      public OrganizationDerivedRating(Key<Organization> organizerKey) {
+        this(organizerKey, null);
+      }
+
+      private OrganizationDerivedRating(Key<Organization> organizerKey,
+          @Nullable AggregateRating ratingToCopy) {
+        this.organization = NullableKeyWrapper.create(organizerKey);
+        accumulatedRating = AggregateRating.create(ratingToCopy);
+      }
+
+      public boolean isNull() {
+        return organization.isNull();
+      }
+
+      @Override
+      public DerivedRatingWrapper processPendingRating(Event event) {
+        Key<Organization> orgKey = KeyWrapper.toKey(organization);
+        Organization org = BaseDao.load(orgKey);
+        if (org == null) {
+          // Nothing to do. Org no longer exists.
+          return null;
+        }
+        // Delete the old rating.
+        org.getEventRating().deleteAggregateRating(accumulatedRating);
+        // Add the new rating.
+        org.getEventRating().addAggregateRating(event.getRating());
+        BaseDao.partialUpdate(org);
+        return new DerivedRatingWrapper(
+          new OrganizationDerivedRating(orgKey, event.getRating()));
       }
     }
   }
 
-  public static void processDerivedOrganizerRatings(Key<Event> eventKey) {
-    ProcessDerivedOrganizerRatingsTxn organizerRatingsTxn;
+  public static void processDerivedRatings(Key<Event> eventKey) {
+    ProcessDerivedRatingsTxn ratingsTxn;
     do {
-      organizerRatingsTxn = new ProcessDerivedOrganizerRatingsTxn(eventKey);
-      ofy().transact(organizerRatingsTxn);
-    } while (organizerRatingsTxn.isWorkPending());
+      ratingsTxn = new ProcessDerivedRatingsTxn(eventKey);
+      ofy().transact(ratingsTxn);
+    } while (ratingsTxn.isWorkPending());
   }
 
   @Data
   @EqualsAndHashCode(callSuper=false)
-  public static class ProcessDerivedOrganizerRatingsTxn extends VoidWork {
+  public static class ProcessDerivedRatingsTxn extends VoidWork {
     private final Key<Event> eventKey;
     private boolean workPending;
 
@@ -998,96 +1133,213 @@ public final class Event extends IdBaseDao<Event> {
   @Data
   @Embed
   @NoArgsConstructor
-  private static class EventCompletionTasks {
+  private static class CompletionTaskTracker {
 
-    List<ParticipantCompletionTask> tasksPending = Lists.newArrayList();
-    List<ParticipantCompletionTask> tasksProcessed = Lists.newArrayList();
+    // NOTE: The embedded lists are safe since CompletionTaskWrapper has been modified to avoid
+    //       encountering the objectify serialization bug (issue #127).
+    List<CompletionTaskWrapper> tasksPending = Lists.newArrayList();
+    List<CompletionTaskWrapper> tasksProcessed = Lists.newArrayList();
 
-    public EventCompletionTasks(Event event) {
+    public CompletionTaskTracker(Event event) {
       List<KeyWrapper<User>> participantsToProcess = Lists.newArrayList();
       participantsToProcess.addAll(event.organizers);
       participantsToProcess.addAll(event.registeredUsers);
       for (KeyWrapper<User> participant : participantsToProcess) {
-        tasksPending.add(new ParticipantCompletionTask(KeyWrapper.toKey(participant), 0));
+        tasksPending.add(
+          new CompletionTaskWrapper(
+            new ParticipantCompletionTask(KeyWrapper.toKey(participant), 0)));
+      }
+      List<Key<Organization>> allOrgs = Lists.newArrayList();
+      Key<Organization> eventOrgKey = KeyWrapper.toKey(event.organization);
+      allOrgs.add(eventOrgKey);
+      // Parent orgs also accrue Karma points.
+      allOrgs.addAll(Organization.getAncestorOrgs(eventOrgKey));
+      for (Key<Organization> orgKey : allOrgs) {
+        tasksPending.add(
+          new CompletionTaskWrapper(
+            new OrganizationCompletionTask(orgKey)));
       }
     }
 
     public void processParticipantMutation(Event event, EventParticipant participant,
                                            MutationType mutationType) {
       Key<User> participantKey = KeyWrapper.toKey(participant.getUser());
-      ParticipantCompletionTask completionTask =
-          tryFindCompletionTask(tasksPending, participantKey);
+      CompletionTaskWrapper completionTask =
+          tryFindParticipantCompletionTask(tasksPending, participantKey);
       if (completionTask != null) {
         // Nothing to do, already queued.
         return;
       }
-      completionTask = tryFindCompletionTask(tasksProcessed, participantKey);
+      completionTask = tryFindParticipantCompletionTask(tasksProcessed, participantKey);
       if (completionTask == null) {
         // Since participant mutation post-event completion is rare, we'll always take the hit
         // of updating the event.
-        tasksPending.add(new ParticipantCompletionTask(participantKey, 0));
+        tasksPending.add(new CompletionTaskWrapper(
+          new ParticipantCompletionTask(participantKey, 0)));
       } else {
         tasksProcessed.remove(completionTask);
-        tasksPending.add(completionTask);
+        tasksPending.add(new CompletionTaskWrapper(
+          new ParticipantCompletionTask(completionTask.getParticipantTask())));
       }
-      event.completionProcessed = false;
     }
 
     private void processPendingTask(Event event) {
       if (tasksPending()) {
-        ParticipantCompletionTask participantTask = tasksPending.remove(0);
-        Key<User> participantKey = KeyWrapper.toKey(participantTask.participant);
-        User participant = BaseDao.load(participantKey);
-        if (participant == null) {
-          // Nothing to do. User no longer exists.
-          return;
+        CompletionTaskWrapper pendingTask = tasksPending.remove(0);
+        CompletionTaskWrapper completedTask = pendingTask.processPendingTask(event);
+        if (completedTask != null) {
+          tasksProcessed.add(completedTask);
         }
-        // Delete the previously assigned karma points.
-        participant.setKarmaPoints(
-          participant.getKarmaPoints() - participantTask.karmaPointsAssigned);
-        // Assign the new karma points if the participant is still part of the event.
-        EventParticipant eventParticipant = event.tryFindParticipant(participantKey);
-        if ((eventParticipant != null) &&
-            ((eventParticipant.getType() == ParticipantType.ORGANIZER) ||
-             (eventParticipant.getType() == ParticipantType.REGISTERED))) {
-          participant.setKarmaPoints(participant.getKarmaPoints() + event.karmaPoints);
-          tasksProcessed.add(new ParticipantCompletionTask(participantKey, event.karmaPoints));
-        }
-        BaseDao.partialUpdate(participant);
       }
-      event.completionProcessed = !tasksPending();
     }
 
     public boolean tasksPending() {
       return tasksPending.size() > 0;
     }
 
-    private static ParticipantCompletionTask tryFindCompletionTask(
-        List<ParticipantCompletionTask> list, Key<User> participantKey) {
-      return Iterables.tryFind(list,
-        ParticipantCompletionTask.participantPredicate(participantKey)).orNull();
+    private static CompletionTaskWrapper tryFindParticipantCompletionTask(
+        List<CompletionTaskWrapper> list, Key<User> participantKey) {
+      CompletionTaskWrapper task =
+          Iterables.tryFind(list, participantPredicate(participantKey)).orNull();
+      return task;
+    }
+
+    private static Predicate<CompletionTaskWrapper> participantPredicate(
+        final Key<User> participantKey) {
+      return new Predicate<CompletionTaskWrapper>() {
+        @Override
+        public boolean apply(@Nullable CompletionTaskWrapper input) {
+          if (input.getParticipantTask() != null) {
+            return KeyWrapper.toKey(input.getParticipantTask().participant).equals(participantKey);
+          } else {
+            return false;
+          }
+        }
+      };
+    }
+
+    private interface CompletionTask {
+      @Nullable
+      public CompletionTaskWrapper processPendingTask(Event event);
+    }
+
+    /*
+     * This class works around the objectify limitation that embedded classes can not be
+     * polymorphic.
+     */
+    @Data
+    @Embed
+    @NoArgsConstructor
+    private static class CompletionTaskWrapper implements CompletionTask {
+      // Instantiate each object to workaround objectify serialization bug (issue #127).
+      private ParticipantCompletionTask participantTask = new ParticipantCompletionTask();
+      private OrganizationCompletionTask organizationTask = new OrganizationCompletionTask();
+
+      public CompletionTaskWrapper(ParticipantCompletionTask participantTask) {
+        this.participantTask = participantTask;
+      }
+
+      public CompletionTaskWrapper(OrganizationCompletionTask organizationTask) {
+        this.organizationTask = organizationTask;
+      }
+
+      @Override
+      public CompletionTaskWrapper processPendingTask(Event event) {
+        if (getParticipantTask() != null) {
+          return participantTask.processPendingTask(event);
+        } else {
+          return organizationTask.processPendingTask(event);
+        }
+      }
+
+      public ParticipantCompletionTask getParticipantTask() {
+        return participantTask.isNull() ? null : participantTask;
+      }
+
+      public OrganizationCompletionTask getOrganizationTask() {
+        return organizationTask.isNull() ? null : organizationTask;
+      }
     }
 
     @Data
     @Embed
     @NoArgsConstructor
-    private static class ParticipantCompletionTask {
-      private KeyWrapper<User> participant;
+    private static class ParticipantCompletionTask implements CompletionTask {
+
+      private NullableKeyWrapper<User> participant = NullableKeyWrapper.create();
       private int karmaPointsAssigned;
 
+      public ParticipantCompletionTask(ParticipantCompletionTask completedTask) {
+        participant = completedTask.participant;
+        karmaPointsAssigned = completedTask.karmaPointsAssigned;
+      }
+
       public ParticipantCompletionTask(Key<User> participantKey, int karmaPointsAssigned) {
-        this.participant = KeyWrapper.create(participantKey);
+        this.participant = NullableKeyWrapper.create(participantKey);
         this.karmaPointsAssigned = karmaPointsAssigned;
       }
 
-      public static Predicate<ParticipantCompletionTask> participantPredicate(
-          final Key<User> participantKey) {
-        return new Predicate<ParticipantCompletionTask>() {
-          @Override
-          public boolean apply(@Nullable ParticipantCompletionTask input) {
-            return KeyWrapper.toKey(input.participant).equals(participantKey);
-          }
-        };
+      public boolean isNull() {
+        return participant.isNull();
+      }
+
+      @Override
+      public CompletionTaskWrapper processPendingTask(Event event) {
+        Key<User> participantKey = KeyWrapper.toKey(participant);
+        User participant = BaseDao.load(participantKey);
+        if (participant == null) {
+          // Nothing to do. User no longer exists.
+          return null;
+        }
+        // Delete the previously assigned karma points.
+        participant.setKarmaPoints(participant.getKarmaPoints() - karmaPointsAssigned);
+        // Assign the new karma points if the participant is still part of the event.
+        CompletionTaskWrapper completedTask = null;
+        EventParticipant eventParticipant = event.tryFindParticipant(participantKey);
+        if ((eventParticipant != null) &&
+            ((eventParticipant.getType() == ParticipantType.ORGANIZER) ||
+             (eventParticipant.getType() == ParticipantType.REGISTERED))) {
+          participant.setKarmaPoints(participant.getKarmaPoints() + event.karmaPoints);
+          completedTask = new CompletionTaskWrapper(
+            new ParticipantCompletionTask(participantKey, event.karmaPoints));
+        }
+        BaseDao.partialUpdate(participant);
+        return completedTask;
+      }
+
+    }
+
+    @Data
+    @Embed
+    @NoArgsConstructor
+    private static class OrganizationCompletionTask implements CompletionTask {
+
+      private NullableKeyWrapper<Organization> organization = NullableKeyWrapper.create();
+      private int karmaPointsAssigned;
+
+      public OrganizationCompletionTask(Key<Organization> orgKey) {
+        this(orgKey, 0);
+      }
+
+      private OrganizationCompletionTask(Key<Organization> orgKey, int karmaPointsAssigned) {
+        this.organization = NullableKeyWrapper.create(orgKey);
+        this.karmaPointsAssigned = karmaPointsAssigned;
+      }
+
+      public boolean isNull() {
+        return organization.isNull();
+      }
+
+      @Override
+      public CompletionTaskWrapper processPendingTask(Event event) {
+        Key<Organization> orgKey = KeyWrapper.toKey(organization);
+        Organization org = BaseDao.load(orgKey);
+        if (org == null) {
+          // Nothing to do. Org no longer exists.
+        }
+        org.setKarmaPoints(org.getKarmaPoints() + event.karmaPoints);
+        BaseDao.partialUpdate(org);
+        return new CompletionTaskWrapper(new OrganizationCompletionTask(orgKey, event.karmaPoints));
       }
     }
   }
