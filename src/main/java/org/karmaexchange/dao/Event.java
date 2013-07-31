@@ -21,7 +21,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
-import org.karmaexchange.task.ProcessOrganizerRatingsServlet;
+import org.karmaexchange.task.ProcessRatingsServlet;
 import org.karmaexchange.util.BoundedHashSet;
 import org.karmaexchange.util.SearchUtil;
 
@@ -959,7 +959,7 @@ public final class Event extends IdBaseDao<Event> {
 
     private void queueProcessingTask(Event event, boolean pendingQueueWasEmpty) {
       if (pendingQueueWasEmpty && !pending.isEmpty()) {
-        ProcessOrganizerRatingsServlet.enqueueTask(event);
+        ProcessRatingsServlet.enqueueTask(event);
       }
     }
 
@@ -976,9 +976,8 @@ public final class Event extends IdBaseDao<Event> {
     }
 
     private interface DerivedRating {
-
+      @Nullable
       public DerivedRatingWrapper processPendingRating(Event event);
-
     }
 
     /*
@@ -1336,6 +1335,7 @@ public final class Event extends IdBaseDao<Event> {
         Organization org = BaseDao.load(orgKey);
         if (org == null) {
           // Nothing to do. Org no longer exists.
+          return null;
         }
         org.setKarmaPoints(org.getKarmaPoints() + event.karmaPoints);
         BaseDao.partialUpdate(org);

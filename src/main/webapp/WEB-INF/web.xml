@@ -53,12 +53,12 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>ProcessOrganizerRatingsServlet</servlet-name>
-        <servlet-class>org.karmaexchange.task.ProcessOrganizerRatingsServlet</servlet-class>
+        <servlet-name>ProcessRatingsServlet</servlet-name>
+        <servlet-class>org.karmaexchange.task.ProcessRatingsServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>ProcessOrganizerRatingsServlet</servlet-name>
-        <url-pattern>/task/process_organizer_ratings</url-pattern>
+        <servlet-name>ProcessRatingsServlet</servlet-name>
+        <url-pattern>/task/process_ratings</url-pattern>
     </servlet-mapping>
 
     <servlet>
