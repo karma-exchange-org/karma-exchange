@@ -384,6 +384,12 @@ public final class User extends NameBaseDao<User> {
     }
   }
 
+  public boolean hasOrgMembership(Key<Organization> org, Organization.Role role) {
+    OrganizationMembership membership = tryFindOrganizationMembership(org);
+    return (membership != null) && (membership.role != null) &&
+        membership.role.hasEqualOrMoreCapabilities(role);
+  }
+
   @Nullable
   public OrganizationMembership tryFindOrganizationMembership(Key<Organization> orgKey) {
     return Iterables.tryFind(organizationMemberships, OrganizationMembership.userPredicate(orgKey))

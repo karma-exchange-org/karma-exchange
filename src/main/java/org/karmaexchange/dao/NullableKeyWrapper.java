@@ -42,6 +42,10 @@ public final class NullableKeyWrapper<T> extends KeyWrapper<T> {
     return (key == null) ? null : key.getString();
   }
 
+  public boolean isNull() {
+    return (key == null);
+  }
+
   @Override
   public int compareTo(KeyWrapper<T> other) {
     if (key == other.key) {

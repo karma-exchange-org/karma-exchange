@@ -2,10 +2,12 @@ package org.karmaexchange.dao;
 
 import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlTransient;
@@ -30,6 +32,9 @@ import com.googlecode.objectify.annotation.Parent;
 
 @Data
 public abstract class BaseDao<T extends BaseDao<T>> {
+
+  private static final Logger logger = Logger.getLogger(BaseDao.class.getName());
+
   @Parent
   protected Key<?> owner;
   @Ignore
@@ -88,7 +93,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   @Nullable
   public static <T extends BaseDao<T>> T load(Key<T> key) {
-    T resource = ofy().load().key(key).now();
+    return load(key, ofy());
+  }
+
+  @Nullable
+  public static <T extends BaseDao<T>> T load(Key<T> key, Objectify ofyService) {
+    T resource = ofyService.load().key(key).now();
     if (resource != null) {
       resource.processLoad();
     }
@@ -96,12 +106,11 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   public static <T extends BaseDao<T>> List<T> load(Collection<Key<T>> keys) {
-    return load(keys, false);
+    return load(keys, ofy());
   }
 
   public static <T extends BaseDao<T>> List<T> load(Collection<Key<T>> keys,
-      boolean transactionless) {
-    Objectify ofyService = transactionless ? ofy().transactionless() : ofy();
+      Objectify ofyService) {
     List<T> resources = Lists.newArrayList(ofyService.load().keys(keys).values());
     for (T resource : resources) {
       resource.processLoad();
@@ -142,17 +151,32 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   final void insert() {
     preProcessInsert();
+    validateMutationPermission();
     ofy().save().entity(this).now();
     postProcessInsert();
   }
 
   final void update(T prevObj) {
     processUpdate(prevObj);
+    validateMutationPermission();
     ofy().save().entity(this).now();
+  }
+
+  private void validateMutationPermission() {
+    updatePermission();
+    if (!permission.canEdit()) {
+      // Too important for testing to throw an error right now.
+      logger.warning(format("invalid permissions for user[%s] to mutate resource[%s]",
+        getCurrentUserKey().getString(), Key.create(this).toString()));
+      //      throw ValidationErrorInfo.createException(asList(new ResourceValidationError(this,
+      //          ValidationErrorType.RESOURCE_MUTATION_PERMISSION_REQUIRED, null)));
+    }
   }
 
   final void partialUpdate() {
     processPartialUpdate(null);
+    // Partial updates don't require validating mutation permissions since they manipulate
+    // internally managed fields.
     ofy().save().entity(this).now();
   }
 
@@ -221,10 +245,11 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   public static class ResourceValidationError extends ValidationError {
 
     private String resourceKey;
+    @Nullable
     private String field;
 
     public ResourceValidationError(BaseDao<?> resource, ValidationErrorType errorType,
-        String fieldName) {
+        @Nullable String fieldName) {
       super(errorType);
       if (resource.isKeyComplete()) {
         resourceKey = Key.create(resource).getString();
@@ -263,4 +288,18 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     }
   }
 
+  @Data
+  @NoArgsConstructor
+  @EqualsAndHashCode(callSuper=true)
+  @ToString(callSuper=true)
+  public static class ListValueValidationError extends ResourceValidationError {
+
+    private String memberValue;
+
+    public ListValueValidationError(BaseDao<?> resource, ValidationErrorType errorType,
+        String fieldName, String memberValue) {
+      super(resource, errorType, fieldName);
+      this.memberValue = memberValue;
+    }
+  }
 }

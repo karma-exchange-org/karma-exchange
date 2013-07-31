@@ -81,4 +81,9 @@
         <property name="searchableFullName" direction="asc"/>
     </datastore-index>
 
+    <datastore-index kind="Event" ancestor="false" source="manual">
+        <property name="completionProcessed" direction="asc"/>
+        <property name="endTime" direction="asc"/>
+    </datastore-index>
+
 </datastore-indexes>

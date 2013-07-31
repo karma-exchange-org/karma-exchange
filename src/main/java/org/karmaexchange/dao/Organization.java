@@ -1,7 +1,7 @@
 package org.karmaexchange.dao;
 
 import static com.google.common.base.CharMatcher.WHITESPACE;
-import static org.karmaexchange.util.UserService.getCurrentUser;
+import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserCredential;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
@@ -14,7 +14,6 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.validator.routines.EmailValidator;
-import org.karmaexchange.dao.User.OrganizationMembership;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
@@ -82,8 +81,8 @@ public class Organization extends NameBaseDao<Organization> {
       this.capabilityLevel = capabilityLevel;
     }
 
-    public boolean hasEqualOrMoreCapabilities(Role prevRole) {
-      return capabilityLevel >= prevRole.capabilityLevel;
+    public boolean hasEqualOrMoreCapabilities(Role otherRole) {
+      return capabilityLevel >= otherRole.capabilityLevel;
     }
   }
 
@@ -238,6 +237,7 @@ public class Organization extends NameBaseDao<Organization> {
     return (page != null) || (page.getUrlProvider() != null) || (page.getUrl() != null);
   }
 
+  // TODO(avaliani): remove the load in eval permissions.
   @Override
   protected Permission evalPermission() {
     if (isCurrentUserOrgAdmin()) {
@@ -254,13 +254,12 @@ public class Organization extends NameBaseDao<Organization> {
     if (isCurrentUserAdmin()) {
       return true;
     }
-    User currentUser = getCurrentUser();
+    User currentUser = BaseDao.load(getCurrentUserKey(), ofy().transactionless());
     if (currentUser == null) {
       throw ErrorResponseMsg.createException("current user not found", ErrorInfo.Type.BAD_REQUEST);
     }
     // In the future we can support hierarchical ADMIN roles if people request it.
-    OrganizationMembership membership = currentUser.tryFindOrganizationMembership(Key.create(this));
-    return (membership != null) && (membership.getRole() == Role.ADMIN);
+    return currentUser.hasOrgMembership(Key.create(this), Role.ADMIN);
   }
 
   public static class OrgNameComparator implements Comparator<Organization> {
@@ -311,5 +310,19 @@ public class Organization extends NameBaseDao<Organization> {
       AutoMembershipRule.emailPredicate(email)).orNull();
     return (rule != null) &&
         rule.getMaxGrantableRole().hasEqualOrMoreCapabilities(reqRole);
+  }
+
+  public static List<Key<Organization>> getAncestorOrgs(Key<Organization> orgKey) {
+    List<Key<Organization>> ancestorOrgKeys = Lists.newArrayList();
+    while (orgKey != null) {
+      Organization org = BaseDao.load(orgKey, ofy().transactionless());
+      if ((org != null) && (org.parentOrg != null)) {
+        orgKey = KeyWrapper.toKey(org.parentOrg);
+        ancestorOrgKeys.add(orgKey);
+      } else {
+        break;
+      }
+    }
+    return ancestorOrgKeys;
   }
 }

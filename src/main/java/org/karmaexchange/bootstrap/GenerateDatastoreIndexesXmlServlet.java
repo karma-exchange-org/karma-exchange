@@ -125,6 +125,9 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
       .path("member")
       .queryParam(OrganizationResource.MEMBERSHIP_STATUS_PARAM, RequestStatus.PENDING.toString()));
 
+    issueGetRequestAndCheckRespone(
+      service.path("task/process_event_completions"));
+
     statusWriter.println("Completed issuing queries.");
   }
 

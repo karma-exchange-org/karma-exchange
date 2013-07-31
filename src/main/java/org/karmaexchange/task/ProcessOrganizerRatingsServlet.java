@@ -28,7 +28,7 @@ public class ProcessOrganizerRatingsServlet extends TaskQueueAdminTaskServlet {
       return;
     }
     Key<Event> eventKey = OfyUtil.createKey(eventKeyStr);
-    Event.processDerivedOrganizerRatings(eventKey);
+    Event.processDerivedRatings(eventKey);
   }
 
   public static void enqueueTask(Event event) {
