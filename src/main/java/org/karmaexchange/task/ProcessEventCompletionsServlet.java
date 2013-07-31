@@ -19,7 +19,7 @@ import com.googlecode.objectify.Key;
 public class ProcessEventCompletionsServlet extends TaskQueueAdminTaskServlet {
 
   private static final Logger logger = Logger.getLogger(
-    ProcessOrganizerRatingsServlet.class.getName());
+    ProcessEventCompletionsServlet.class.getName());
 
   @Override
   protected void execute() throws IOException {
