@@ -1,6 +1,7 @@
 package org.karmaexchange.dao;
 
 import javax.annotation.Nullable;
+import javax.xml.bind.annotation.XmlTransient;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -42,6 +43,7 @@ public final class NullableKeyWrapper<T> extends KeyWrapper<T> {
     return (key == null) ? null : key.getString();
   }
 
+  @XmlTransient
   public boolean isNull() {
     return (key == null);
   }
