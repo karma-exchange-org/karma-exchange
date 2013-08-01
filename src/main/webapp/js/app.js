@@ -41,7 +41,7 @@ angular
     var elementsList = $();
 
     var showMessage = function(content, cl, time) {
-        $('<div/>')
+        $('<alert/>')
         .addClass('message')
         .addClass(cl)
         .hide()
@@ -52,15 +52,17 @@ angular
         .text(content);
     };
 
-    $httpProvider.responseInterceptors.push(function($timeout, $q) {
+    $httpProvider.responseInterceptors.push(function($rootScope,$timeout, $q) {
         return function(promise) {
             return promise.then(function(successResponse) {
                 if (successResponse.config.method.toUpperCase() != 'GET')
-                    showMessage('Success', 'successMessage', 5000);
+                    $rootScope.showAlert("Saved successfully!");
                 return successResponse;
 
             }, function(errorResponse) {
                 switch (errorResponse.status) {
+                    case 400: $rootScope.showAlert(errorResponse.data.error.message);
+                    	    break;
                     case 401:
                     showMessage('Wrong usename or password', 'errorMessage', 20000);
                     break;
@@ -139,6 +141,7 @@ logout:function () {
         } else {
             $rootScope.$broadcast('fb_logout_failed');
         }
+
     });
 },
 unsubscribe:function () {
@@ -171,8 +174,8 @@ config(function($routeProvider,$httpProvider) {
     when('/event/add', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
     when('/event/:eventId/edit', { controller: addEditEventsCtrl, templateUrl: 'partials/addEditevent.html' }).
     when('/event/:eventId', { controller: addEditEventsCtrl, templateUrl: 'partials/viewEvent.html' }).
-    when('/orgs', { controller: orgCtrl, templateUrl: 'partials/organization.html' }).
-    when('/orgs/:orgId', { controller: orgDetailCtrl, templateUrl: 'partials/organizationDetail.html' }).
+    when('/org', { controller: orgCtrl, templateUrl: 'partials/organization.html' }).
+    when('/org/:orgId', { controller: orgDetailCtrl, templateUrl: 'partials/organizationDetail.html' }).
     otherwise({ redirectTo: '/' });
 
     delete $httpProvider.defaults.headers.common['X-Requested-With'];
@@ -226,7 +229,23 @@ config(function($routeProvider,$httpProvider) {
     {
         fbAppId = '571265879564450';
     }
+    $rootScope.fbScope = "email,user_location";
     $rootScope.location = $location;
+    $rootScope.addAlert = function(message) {
+        if(!$rootScope.alerts)
+        {    
+            $rootScope.alerts = [];
+        }
+        $rootScope.alerts.push({msg: message});
+    };
+    $rootScope.showAlert = function(message) {
+        $rootScope.alerts = [];
+        $rootScope.alerts.push({msg: message});
+    };
+
+    $rootScope.closeAlert = function(index) {
+        $rootScope.alerts.splice(index, 1);
+    };
     window.fbAsyncInit = function () {
         FB.init({
             appId:fbAppId,
@@ -357,7 +376,7 @@ kexApp.directive ('unfocus', function() { return {
       
     element.bind ("blur", function() {
         scope.$apply(attribs["unfocus"]);
-        console.log("??");
+        
       });
                                    
   } 
@@ -379,6 +398,7 @@ function fbCntrl(Facebook, $scope, $rootScope, $http, $location, Me) {
         {
            Facebook.getLoginStatus();  
            $rootScope.me = Me.get();
+           $rootScope.orgs = Me.get({resource: 'org'});
         } 
         else
         {
@@ -552,6 +572,7 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
     } 
 
     $scope.load = function($location,$routeParams){
+
         if($location.$$url=="/me"||$location.$$url=="/mysettings")
         {
             $scope.who = 'My';
@@ -559,11 +580,13 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
                 if(!$scope.me.about)
                 {
                     $scope.me.about='Click to add about yourself!';
-                }    
+                } 
+                $scope.getOtherData($scope.me.key); 
+                $rootScope.me = $scope.me;
+
             });
-            $rootScope.me = $scope.me;
-            $scope.events = Me.get({resource: 'event'});
-            $scope.pastEvents = Me.get({type: 'PAST'},{resource: 'event'});
+            
+            
         }
         else
         {
@@ -573,10 +596,20 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
                 {
                     $scope.me.about='No description added yet!';
                 } 
+
             });
-            $scope.events = User.get({id :$routeParams.userId, resource: 'event'});
-            $scope.pastEvents = User.get({type: 'PAST'},{id:$routeParams.userId,resource: 'event'});
+            $scope.getOtherData($routeParams.userId);
+            
         }
+        
+
+    };
+    
+    $scope.getOtherData = function(key){
+        $scope.events = User.get({id :key, resource: 'event'});
+        $scope.pastEvents = User.get({type: 'PAST'},{id:key,resource: 'event'});
+        $scope.orgs = User.get({id :key, resource: 'org'});
+        $rootScope.orgs = $scope.orgs;
 
     };
     $scope.save = function(){
@@ -719,7 +752,7 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
         var thisEvent = this.event;
         Events.save({ id: eventId , registerCtlr :'participants',regType:type}, function (type) {
                 //alert and close
-                $scope.addAlert("Registration successful!");
+                $rootScope.showAlert("Registration successful!");
                 $scope.modelEvent.registrationInfo = type;                
                 $scope.modelEvent.numAttending++;
                 /*
@@ -736,17 +769,7 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
             });
 
     };
-    $scope.addAlert = function(message) {
-        if(!$scope.alerts)
-        {    
-            $scope.alerts = [];
-        }
-        $scope.alerts.push({msg: message});
-    };
-
-    $scope.closeAlert = function(index) {
-        $scope.alerts.splice(index, 1);
-    };
+    
     
     $scope.createHeader = function(dateParam, eventobj) {
 
@@ -833,6 +856,14 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
         { name: 'Groups', key:'GROUPS',     checked: false },
         { name: 'Teens', key:'TEENS',  checked: false }
       ];
+
+    $scope.unregister = function()
+    {
+        Events.delete({ id: $scope.event.key , registerCtlr :'participants'}, function () {
+            $scope.refreshEvent();
+
+        });
+    }
     $scope.register = function(type){
         var eventId = $scope.event.key;
         Events.save({ id: eventId , registerCtlr :'participants',regType : type}, function (req,$rootScope) {
@@ -1045,6 +1076,8 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
 
 
         $scope.save = function () {
+            $scope.event.startTime = $scope.parseDateReg($('#dtst').val()+' '+$('#tmst').val());
+            $scope.event.endTime = $scope.parseDateReg($('#dtend').val()+' '+$('#tmend').val());
             $scope.event.suitableForTypes=[];
             for(var i=0;i<$scope.suitableForList.length;i++)
             {
@@ -1054,15 +1087,17 @@ var addEditEventsCtrl =  function ($scope, $rootScope,$routeParams, $filter,$loc
                     $scope.event.suitableForTypes.push($scope.suitableForList[i].key);
                 }    
             }    
-            if($location.$$url=="/addevent")
+            if($location.$$url=="/event/add")
             {
-                Events.save($scope.event, function() {
+                Events.save($scope.event, function(data, status, headers, config) {
+                		
                     $location.path('/event');
                 });
             }
             else
             {    
-              Events.save({id: $scope.event.key}, $scope.event, function () {
+              Events.save({id: $scope.event.key}, $scope.event, function (data, status, headers, config) {
+              		      c
 
               });
           }
@@ -1198,7 +1233,7 @@ $scope.parseDateReg = function(input) {
         return new Date(year, month-1, day, hour, minute, second);
     }
     $scope.placeChanged = function(place){
-        console.log('place changed'+place.name);
+        
         $scope.event.location.title = place.name;
 
         $scope.event.location.address.street = '';
@@ -1267,16 +1302,7 @@ else
     $scope.refreshEvent();
 }
 
-
-    //TDEBT - (hbalijepalli)
-$('.datepair input').change(function(){
-       
-
-        $scope.event.startTime = $scope.parseDateReg($('#dtst').val()+' '+$('#tmst').val());
-        $scope.event.endTime = $scope.parseDateReg($('#dtend').val()+' '+$('#tmend').val());
-
-    });
-    
+ 
 
     
 };

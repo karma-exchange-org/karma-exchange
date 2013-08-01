@@ -94,8 +94,11 @@
                             <label class="control-label" for="organizations">Organization(if any)</label>
 
                             <div class="controls">
+                            	<select  ng-model="event.organization.key" class="input-xlarge" >
+                            		<option ng-repeat="org in orgs.data" value="{{org.org.key}}">{{org.orgName}}</option>
+                            	</select>
 
-                                <input class="span12"  type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations">
+                                <!-- <input class="span12"  type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations"> -->
 
                             </div>
 
@@ -224,18 +227,31 @@ $(function() {
     var checkin = $('#dtst').datepicker({
           startDate : now,
           todayHighlight : true
-        }).on('changeDate', function(ev) {
-            checkout.update(ev.date);
-            checkout.setStartDate(ev.date);
-            checkin.hide();
-          //$('#dpd2')[0].focus();
         }).data('datepicker');
     var checkout = $('#dtend').datepicker({
           startDate : now
         }).on('changeDate', function(ev) {
-          checkout.hide();
+          //checkout.hide();
         }).data('datepicker');
-
+    
+        $('#dtst').on('change', function(ev){
+            if (!/^\d{4}​​​​​​​​​​​​​​​​​​​​​​​$/.test(ev.target.value)) {
+            	    fixYear(this);
+            }	
+            
+            checkout.update(ev.target.value);
+            checkout.setStartDate(ev.target.value);
+            //checkin.hide();
+        });
+        $('#dtend').on('change', function(ev){
+            if (!/^\d{4}​​​​​​​​​​​​​​​​​​​​​​​$/.test(ev.target.value)) {
+            	    fixYear(this);
+            }	
+            
+            
+        });
+        
+        
     $('.datepair input.time').each(function() {
         var $this = $(this);
         
@@ -255,7 +271,26 @@ $(function() {
 
     });
    
+    function fixYear(elem) {
+        if(elem.value.indexOf('/') != -1 ) {
+            var strYear = elem.value.substring(elem.value.lastIndexOf('/') + 1);
 
+
+            if(strYear.length == 2) {
+                
+
+
+             
+                    strYear = '20' + strYear;
+
+
+                elem.value = elem.value.substring(0, elem.value.lastIndexOf('/') + 1) + strYear;
+            }
+        }
+    }
+
+
+   
     function convertDateTime(dateTime){
         dateTime = myArr[0][0].split(" ");
 
@@ -274,7 +309,7 @@ $(function() {
 
     function doDatepair()
     {
-        updateHiddenFields();
+        
         var target = $(this);
         if (target.val() == '') {
             return;
