@@ -14,6 +14,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
@@ -1035,6 +1036,7 @@ public final class Event extends IdBaseDao<Event> {
         accumulatedRating = AggregateRating.create(ratingToCopy);
       }
 
+      @XmlTransient
       public boolean isNull() {
         return organizer.isNull();
       }
@@ -1080,6 +1082,7 @@ public final class Event extends IdBaseDao<Event> {
         accumulatedRating = AggregateRating.create(ratingToCopy);
       }
 
+      @XmlTransient
       public boolean isNull() {
         return organization.isNull();
       }
@@ -1278,6 +1281,7 @@ public final class Event extends IdBaseDao<Event> {
         this.karmaPointsAssigned = karmaPointsAssigned;
       }
 
+      @XmlTransient
       public boolean isNull() {
         return participant.isNull();
       }
@@ -1325,6 +1329,7 @@ public final class Event extends IdBaseDao<Event> {
         this.karmaPointsAssigned = karmaPointsAssigned;
       }
 
+      @XmlTransient
       public boolean isNull() {
         return organization.isNull();
       }

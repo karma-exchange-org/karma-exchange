@@ -2,12 +2,10 @@ package org.karmaexchange.dao;
 
 import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
-import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlTransient;
@@ -32,8 +30,6 @@ import com.googlecode.objectify.annotation.Parent;
 
 @Data
 public abstract class BaseDao<T extends BaseDao<T>> {
-
-  private static final Logger logger = Logger.getLogger(BaseDao.class.getName());
 
   @Parent
   protected Key<?> owner;
