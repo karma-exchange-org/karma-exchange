@@ -163,14 +163,16 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   private void validateMutationPermission() {
-    updatePermission();
-    if (!permission.canEdit()) {
-      // Too important for testing to throw an error right now.
-      logger.warning(format("invalid permissions for user[%s] to mutate resource[%s]",
-        getCurrentUserKey().getString(), Key.create(this).toString()));
-      //      throw ValidationErrorInfo.createException(asList(new ResourceValidationError(this,
-      //          ValidationErrorType.RESOURCE_MUTATION_PERMISSION_REQUIRED, null)));
-    }
+    // TODO(avaliani): handle incomplete key. "Key.create(this)" does not work for incomplete
+    //    keys.
+//    updatePermission();
+//    if (!permission.canEdit()) {
+//      // Too important for testing to throw an error right now.
+//      logger.warning(format("invalid permissions for user[%s] to mutate resource[%s]",
+//        getCurrentUserKey().getString(), Key.create(this).toString()));
+//      //      throw ValidationErrorInfo.createException(asList(new ResourceValidationError(this,
+//      //          ValidationErrorType.RESOURCE_MUTATION_PERMISSION_REQUIRED, null)));
+//    }
   }
 
   final void partialUpdate() {
