@@ -65,7 +65,7 @@ body {
                   <li><a href="#/event"><i class="icon-search icon-white"></i> Find Events</a></li>
                   <li><a href="#/event/add"><i class="icon-plus icon-white"></i> Create Events</a></li>
 	   			  <li><a href="#/me"><i class="icon-dashboard icon-white"></i> Dashboard</a></li>
-	   			  <li><a href="#/orgs"><i class="icon-dashboard icon-white"></i> Orgnaizations</a></li>
+	   			  <li><a href="#/org"><i class="icon-group icon-white"></i> Organizations</a></li>
               </ul>
               <div class="pull-right">
               	
@@ -92,6 +92,9 @@ body {
 </div>
 	<div class="container">
 		<div class="messagesList" app-messages></div>
+		<div class="row-fluid">
+			<alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert>
+		</div>
 		<div ng-view></div>
 
 	</div>
