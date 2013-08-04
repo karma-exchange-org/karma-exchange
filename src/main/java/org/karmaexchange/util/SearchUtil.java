@@ -3,6 +3,7 @@ package org.karmaexchange.util;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.EnumSet;
 import java.util.Set;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -24,15 +25,45 @@ public class SearchUtil {
 
   private static final Analyzer ANALYZER = new KStemEnglishAnalyzer();
 
+  public enum ReservedToken {
+    ORG("org"),
+    PRIMARY_ORG("org-primary");
+
+    public static final String RESERVED_TOKEN_SEPERATOR = ":";
+
+    private final String prefix;
+
+    private ReservedToken(String prefix) {
+      this.prefix = prefix + RESERVED_TOKEN_SEPERATOR;
+    }
+
+    public String create(String tokenSuffix) {
+      return prefix + tokenSuffix;
+    }
+
+    public static boolean conflictsWithAnyReservedToken(String lowercasedToken) {
+      for (ReservedToken reservedToken : ReservedToken.values()) {
+        if (lowercasedToken.startsWith(reservedToken.prefix)) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+
+  public enum ParseOptions {
+    EXCLUDE_RESERVED_TOKENS
+  }
+
   public static Set<String> getSearchableTokens(String textToParse, int maxTokens) {
     BoundedHashSet<String> searchableTokens = BoundedHashSet.create(maxTokens);
-    addSearchableTokens(searchableTokens, textToParse);
+    addSearchableTokens(searchableTokens, textToParse, EnumSet.noneOf(ParseOptions.class));
     return searchableTokens;
   }
 
   public static void addSearchableTokens(BoundedHashSet<String> searchableTokens,
-      String textToParse) {
-    textToParse = extractTags(searchableTokens, textToParse);
+      String textToParse, EnumSet<ParseOptions> parseOptions) {
+    textToParse = extractSpecialTokens(searchableTokens, textToParse, parseOptions);
     try {
       TokenStream tokenStream  = ANALYZER.tokenStream(null, new StringReader(textToParse));
       CharTermAttribute termAttr = tokenStream.addAttribute(CharTermAttribute.class);
@@ -51,15 +82,25 @@ public class SearchUtil {
     }
   }
 
-  private static String extractTags(BoundedHashSet<String> searchableTokens, String textToParse) {
+  private static String extractSpecialTokens(BoundedHashSet<String> searchableTokens,
+      String textToParse, EnumSet<ParseOptions> parseOptions) {
     String[] tokens = textToParse.split("\\s+");
     StringBuilder remainingText = new StringBuilder();
     for (int tokIdx=0; (tokIdx < tokens.length) && !searchableTokens.limitReached();
          tokIdx++) {
-      if (TagUtil.TAG_PREFIX_PATTERN.matcher(tokens[tokIdx]).find()) {
-        searchableTokens.add(tokens[tokIdx].toLowerCase());
+      String token = tokens[tokIdx].toLowerCase();
+      if (ReservedToken.conflictsWithAnyReservedToken(token)) {
+        // Doing this prioritizes conflicting tokens in the text being parsed. Not doing this
+        // causes us to deal with reserved token parsing nuances. Revisit if this becomes an issue.
+        if (!parseOptions.contains(ParseOptions.EXCLUDE_RESERVED_TOKENS)) {
+          searchableTokens.add(token);
+        }
+        // else remove this token from the searchable token stream by not adding it to
+        //      remainingText.
+      } else if (TagUtil.TAG_PREFIX_PATTERN.matcher(token).find()) {
+        searchableTokens.add(token);
       } else {
-        remainingText.append(tokens[tokIdx]);
+        remainingText.append(token);
         remainingText.append(' ');
       }
     }

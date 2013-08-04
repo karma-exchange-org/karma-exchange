@@ -1,7 +1,11 @@
 package org.karmaexchange.resources;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
+
+import java.util.Collections;
+import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -16,6 +20,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.RequestStatus;
 import org.karmaexchange.dao.User;
@@ -63,6 +68,18 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
 
     ListResponseMsg<Organization> orgs = ListResponseMsg.create(queryBuilder.build().execute());
     return Response.ok(new GenericEntity<ListResponseMsg<Organization>>(orgs) {}).build();
+  }
+
+  @Path("{org}/children")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public ListResponseMsg<Organization> getChildren(
+      @PathParam("org") String orgKeyStr) {
+    Key<Organization> orgKey = Key.<Organization>create(orgKeyStr);
+    List<Organization> childOrgs = BaseDao.load(
+      ofy().load().type(Organization.class).filter("parentOrg.key", orgKey));
+    Collections.sort(childOrgs, Organization.OrgNameComparator.INSTANCE);
+    return ListResponseMsg.create(childOrgs);
   }
 
   @Path("{org}/member")
