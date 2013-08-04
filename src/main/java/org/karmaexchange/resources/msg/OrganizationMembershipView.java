@@ -34,6 +34,7 @@ public class OrganizationMembershipView {
   private long orgKarmaPoints;
   private AggregateRating orgEventRating;
   private List<KeyWrapper<CauseType>> orgCauses;
+  private String searchTokenSuffix;
 
   @Nullable
   private Organization.Role role;
@@ -66,5 +67,6 @@ public class OrganizationMembershipView {
     orgCauses = org.getCauses();
     role = membership.getRole();
     requestedRole = membership.getRequestedRole();
+    searchTokenSuffix = org.getSearchTokenSuffix();
   }
 }

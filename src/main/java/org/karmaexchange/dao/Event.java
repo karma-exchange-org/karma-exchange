@@ -376,6 +376,19 @@ public final class Event extends IdBaseDao<Event> {
 
   private void initSearchableTokens() {
     BoundedHashSet<String> searchableTokensSet = BoundedHashSet.create(MAX_SEARCH_TOKENS);
+
+    Key<Organization> primaryOrgKey = KeyWrapper.toKey(organization);
+    // Throw an exception if we can't add the primary org token.
+    searchableTokensSet.add(
+      SearchUtil.ReservedToken.PRIMARY_ORG.create(
+        Organization.getSearchTokenSuffix(primaryOrgKey)));
+    List<Key<Organization>> allOrgs = Organization.getOrgAndAncestorOrgs(primaryOrgKey);
+    for (Key<Organization> orgKey : allOrgs) {
+      // Throw an exception if we can't add the org token.
+      searchableTokensSet.add(
+        SearchUtil.ReservedToken.ORG.create(Organization.getSearchTokenSuffix(orgKey)));
+    }
+
     for (SuitableForType suitableForType : suitableForTypes) {
       searchableTokensSet.addIfSpace(suitableForType.getTag());
     }
@@ -397,7 +410,8 @@ public final class Event extends IdBaseDao<Event> {
       searchableContent.append(' ');
     }
     searchableContent.append(description);
-    SearchUtil.addSearchableTokens(searchableTokensSet, searchableContent.toString());
+    SearchUtil.addSearchableTokens(searchableTokensSet, searchableContent.toString(),
+      EnumSet.of(SearchUtil.ParseOptions.EXCLUDE_RESERVED_TOKENS));
     searchableTokens = Lists.newArrayList(searchableTokensSet);
   }
 
@@ -1151,11 +1165,9 @@ public final class Event extends IdBaseDao<Event> {
           new CompletionTaskWrapper(
             new ParticipantCompletionTask(KeyWrapper.toKey(participant), 0)));
       }
-      List<Key<Organization>> allOrgs = Lists.newArrayList();
-      Key<Organization> eventOrgKey = KeyWrapper.toKey(event.organization);
-      allOrgs.add(eventOrgKey);
       // Parent orgs also accrue Karma points.
-      allOrgs.addAll(Organization.getAncestorOrgs(eventOrgKey));
+      List<Key<Organization>> allOrgs =
+          Organization.getOrgAndAncestorOrgs(KeyWrapper.toKey(event.organization));
       for (Key<Organization> orgKey : allOrgs) {
         tasksPending.add(
           new CompletionTaskWrapper(
