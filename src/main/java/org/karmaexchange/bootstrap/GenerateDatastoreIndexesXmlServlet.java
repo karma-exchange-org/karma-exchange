@@ -61,7 +61,7 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
       service.path("api/event")
       .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.UPCOMING.toString())
       .queryParam(EventResource.KEYWORDS_PARAM, "animals"));
-    // Not currently used by the UI.
+    // Used for past-event search of events associated with an organization.
     issueGetRequestAndCheckRespone(
       service.path("api/event")
       .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.PAST.toString())

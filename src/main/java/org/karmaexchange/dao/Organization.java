@@ -36,6 +36,7 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 
 @XmlRootElement
@@ -50,6 +51,7 @@ public class Organization extends NameBaseDao<Organization> {
   private String searchableOrgName;
 
   private PageRef page;
+  @Index
   private KeyWrapper<Organization> parentOrg;
 
   // TODO(avaliani): Should we replicate this info or always fetch it from facebook from the UI?
@@ -69,6 +71,9 @@ public class Organization extends NameBaseDao<Organization> {
   @Index
   private long karmaPoints;
   private IndexedAggregateRating eventRating;
+
+  @Ignore
+  private String searchTokenSuffix;
 
   public enum Role {
     ADMIN(3),
@@ -105,6 +110,14 @@ public class Organization extends NameBaseDao<Organization> {
 
   public static String getNameFromPageName(String pageName) {
     return pageName.toLowerCase();
+  }
+
+  public static String getSearchTokenSuffix(Key<Organization> orgKey) {
+    return orgKey.getName();
+  }
+
+  public String getSearchTokenSuffix() {
+    return name;
   }
 
   public void initFromPage() {
@@ -310,6 +323,13 @@ public class Organization extends NameBaseDao<Organization> {
       AutoMembershipRule.emailPredicate(email)).orNull();
     return (rule != null) &&
         rule.getMaxGrantableRole().hasEqualOrMoreCapabilities(reqRole);
+  }
+
+  public static List<Key<Organization>> getOrgAndAncestorOrgs(Key<Organization> orgKey) {
+    List<Key<Organization>> allOrgs = Lists.newArrayList();
+    allOrgs.add(orgKey);
+    allOrgs.addAll(getAncestorOrgs(orgKey));
+    return allOrgs;
   }
 
   public static List<Key<Organization>> getAncestorOrgs(Key<Organization> orgKey) {

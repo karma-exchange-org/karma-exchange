@@ -27,6 +27,7 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Parent;
+import com.googlecode.objectify.cmd.Query;
 
 @Data
 public abstract class BaseDao<T extends BaseDao<T>> {
@@ -108,17 +109,19 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   public static <T extends BaseDao<T>> List<T> load(Collection<Key<T>> keys,
       Objectify ofyService) {
     List<T> resources = Lists.newArrayList(ofyService.load().keys(keys).values());
-    for (T resource : resources) {
-      resource.processLoad();
-    }
+    processLoadResults(resources);
     return resources;
+  }
+
+  public static <T extends BaseDao<T>> List<T> load(Query<T> query) {
+    List<T> results = query.list();
+    processLoadResults(results);
+    return results;
   }
 
   public static <T extends BaseDao<T>> List<T> loadAll(Class<T> resourceClass) {
     List<T> resources = ofy().load().type(resourceClass).list();
-    for (T resource : resources) {
-      resource.processLoad();
-    }
+    processLoadResults(resources);
     return resources;
   }
 
