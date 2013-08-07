@@ -13,7 +13,10 @@ import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.RegistrationInfo;
 import org.karmaexchange.dao.Event.Status;
+import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Location;
+import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.ParticipantImage;
 import org.karmaexchange.dao.Permission;
 import org.karmaexchange.dao.AggregateRating;
@@ -35,6 +38,9 @@ public class EventSearchView {
 
   private String key;
   private Permission permission;
+
+  private KeyWrapper<Organization> organization;
+  private List<OrganizationNamedKeyWrapper> associatedOrganizations = Lists.newArrayList();
 
   private String title;
   private Location location;
@@ -86,6 +92,10 @@ public class EventSearchView {
   protected EventSearchView(Event event, @Nullable Review currentUserReview) {
     key = event.getKey();
     permission = event.getPermission();
+
+    organization = event.getOrganization();
+    associatedOrganizations = event.getAssociatedOrganizations();
+
     title = event.getTitle();
     location = event.getLocation();
     startTime = event.getStartTime();
