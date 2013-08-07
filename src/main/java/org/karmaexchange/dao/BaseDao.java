@@ -239,6 +239,10 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   protected abstract Permission evalPermission();
 
+  public void updateDependentNamedKeys() {
+    // Do nothing by default.
+  }
+
   @Data
   @NoArgsConstructor
   @EqualsAndHashCode(callSuper=true)

@@ -1,6 +1,7 @@
 package org.karmaexchange.dao;
 
 import static com.google.common.base.CharMatcher.WHITESPACE;
+import static java.util.Arrays.asList;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserCredential;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.karmaexchange.provider.SocialNetworkProvider;
@@ -22,6 +24,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.task.AddOrgAdminServlet;
+import org.karmaexchange.task.UpdateNamedKeysAdminTaskServlet;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -29,11 +32,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Ignore;
@@ -52,7 +57,7 @@ public class Organization extends NameBaseDao<Organization> {
 
   private PageRef page;
   @Index
-  private KeyWrapper<Organization> parentOrg;
+  private OrganizationNamedKeyWrapper parentOrg;
 
   // TODO(avaliani): Should we replicate this info or always fetch it from facebook from the UI?
   // private String about;
@@ -158,6 +163,7 @@ public class Organization extends NameBaseDao<Organization> {
       orgName = WHITESPACE.trimFrom(orgName);
       searchableOrgName = orgName.toLowerCase();
     }
+    updateParentOrgName();
     // For now, avoid doing this unless we are sure the email address is not a generic email
     // address like gmail, yahoo, hotmail, etc. We don't want to accidentally give permissions
     // to arbitrary users. The UI can do this and warn the user.
@@ -186,6 +192,9 @@ public class Organization extends NameBaseDao<Organization> {
       orgName = WHITESPACE.trimFrom(orgName);
       searchableOrgName = orgName.toLowerCase();
     }
+    if (!Objects.equal(parentOrg, oldOrg.parentOrg)) {
+      updateParentOrgName();
+    }
 
     // Restore fields that are explicitly updated by the backend.
     karmaPoints = oldOrg.karmaPoints;
@@ -193,6 +202,22 @@ public class Organization extends NameBaseDao<Organization> {
 
     validateOrganizationUpdate(oldOrg);
     validateOrganization();
+
+    if (!orgName.equals(oldOrg.orgName)) {
+      UpdateNamedKeysAdminTaskServlet.enqueueTask(Key.create(this));
+    }
+  }
+
+  private void updateParentOrgName() {
+    if (parentOrg != null) {
+      try {
+        parentOrg.updateName();
+      } catch (IllegalArgumentException e) {
+        throw ValidationErrorInfo.createException(asList(
+          new ResourceValidationError(this,
+            ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "parentOrg")));
+      }
+    }
   }
 
   private void validateOrganization() {
@@ -263,6 +288,7 @@ public class Organization extends NameBaseDao<Organization> {
    * Note that this call fetches the current user's user object to evaluate the users role in
    * the org.
    */
+  @XmlTransient
   public boolean isCurrentUserOrgAdmin() {
     if (isCurrentUserAdmin()) {
       return true;
@@ -344,5 +370,32 @@ public class Organization extends NameBaseDao<Organization> {
       }
     }
     return ancestorOrgKeys;
+  }
+
+  @Override
+  public void updateDependentNamedKeys() {
+    Iterable<Key<Organization>> childOrgKeys =
+        ofy().load().type(Organization.class).filter("parentOrg.key", Key.create(this)).keys();
+    for (Key<Organization> childOrgKey : childOrgKeys) {
+      ofy().transact(new UpdateDependentNamedKeyTxn(childOrgKey,
+        new OrganizationNamedKeyWrapper(this)));
+    }
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  public static class UpdateDependentNamedKeyTxn extends VoidWork {
+    private final Key<Organization> childOrgKey;
+    private final OrganizationNamedKeyWrapper parentOrgNamedKey;
+
+    public void vrun() {
+      Organization childOrg = BaseDao.load(childOrgKey);
+      if ((childOrg != null) && (childOrg.parentOrg != null) &&
+          childOrg.parentOrg.getKey().equals(parentOrgNamedKey.getKey()) &&
+          !childOrg.parentOrg.getName().equals(parentOrgNamedKey.getName())) {
+        childOrg.parentOrg = parentOrgNamedKey;
+        BaseDao.partialUpdate(childOrg);
+      }
+    }
   }
 }
