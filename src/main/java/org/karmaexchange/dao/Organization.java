@@ -351,25 +351,27 @@ public class Organization extends NameBaseDao<Organization> {
         rule.getMaxGrantableRole().hasEqualOrMoreCapabilities(reqRole);
   }
 
-  public static List<Key<Organization>> getOrgAndAncestorOrgs(Key<Organization> orgKey) {
+  public static List<Key<Organization>> getOrgAndAncestorOrgKeys(Key<Organization> orgKey) {
     List<Key<Organization>> allOrgs = Lists.newArrayList();
-    allOrgs.add(orgKey);
-    allOrgs.addAll(getAncestorOrgs(orgKey));
+    for (Organization org : getOrgAndAncestorOrgs(orgKey)) {
+      allOrgs.add(Key.create(org));
+    }
     return allOrgs;
   }
 
-  public static List<Key<Organization>> getAncestorOrgs(Key<Organization> orgKey) {
-    List<Key<Organization>> ancestorOrgKeys = Lists.newArrayList();
+  public static List<Organization> getOrgAndAncestorOrgs(Key<Organization> orgKey) {
+    List<Organization> allOrgs = Lists.newArrayList();
     while (orgKey != null) {
       Organization org = BaseDao.load(orgKey, ofy().transactionless());
-      if ((org != null) && (org.parentOrg != null)) {
-        orgKey = KeyWrapper.toKey(org.parentOrg);
-        ancestorOrgKeys.add(orgKey);
-      } else {
-        break;
+      orgKey = null;  // For next iteration.
+      if (org != null) {
+        allOrgs.add(org);
+        if (org.parentOrg != null) {
+          orgKey = KeyWrapper.toKey(org.parentOrg);
+        }
       }
     }
-    return ancestorOrgKeys;
+    return allOrgs;
   }
 
   @Override
