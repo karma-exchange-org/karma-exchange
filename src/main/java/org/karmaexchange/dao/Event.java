@@ -102,7 +102,8 @@ public final class Event extends IdBaseDao<Event> {
   // TODO(avaliani): Organizations can co-host events.
   @Index
   private KeyWrapper<Organization> organization;
-  // Organizers can also edit the event.
+
+  private List<OrganizationNamedKeyWrapper> associatedOrganizations = Lists.newArrayList();
 
   // Can not be explicitly set. Automatically managed.
   @Index
@@ -233,6 +234,9 @@ public final class Event extends IdBaseDao<Event> {
     initKarmaPoints();
     rating = IndexedAggregateRating.create();
     initDerivedRatings();
+    // The list of associated organizations is consumed by initSearchableTokens(), so the
+    // associated organizations must be set prior to invoking initSearchableTokens().
+    initAssociatedOrganizations();
     initSearchableTokens();
     completionProcessed = false;
     completionTasks = null;
@@ -253,6 +257,9 @@ public final class Event extends IdBaseDao<Event> {
     processParticipants();
     processSuitableFor();
     validateEvent();
+    // The list of associated organizations is consumed by initSearchableTokens(), so the
+    // associated organizations must be set prior to invoking initSearchableTokens().
+    associatedOrganizations = prevObj.associatedOrganizations;
     initSearchableTokens();
     completionProcessed = prevObj.completionProcessed;
     completionTasks = prevObj.completionTasks;
@@ -374,19 +381,26 @@ public final class Event extends IdBaseDao<Event> {
     derivedRatings = new DerivedRatingTracker(this);
   }
 
+  private void initAssociatedOrganizations() {
+    associatedOrganizations = Lists.newArrayList();
+    for (Organization org : Organization.getOrgAndAncestorOrgs(KeyWrapper.toKey(organization))) {
+      associatedOrganizations.add(new OrganizationNamedKeyWrapper(org));
+    }
+  }
+
   private void initSearchableTokens() {
     BoundedHashSet<String> searchableTokensSet = BoundedHashSet.create(MAX_SEARCH_TOKENS);
 
     Key<Organization> primaryOrgKey = KeyWrapper.toKey(organization);
-    // Throw an exception if we can't add the primary org token.
+    // Throw an exception if we can't add the primary org token to the searchableTokensSet.
     searchableTokensSet.add(
       SearchUtil.ReservedToken.PRIMARY_ORG.create(
         Organization.getSearchTokenSuffix(primaryOrgKey)));
-    List<Key<Organization>> allOrgs = Organization.getOrgAndAncestorOrgs(primaryOrgKey);
-    for (Key<Organization> orgKey : allOrgs) {
-      // Throw an exception if we can't add the org token.
+    for (OrganizationNamedKeyWrapper orgKeyWrapper : associatedOrganizations) {
+      // Throw an exception if we can't add the org token to the searchableTokensSet.
       searchableTokensSet.add(
-        SearchUtil.ReservedToken.ORG.create(Organization.getSearchTokenSuffix(orgKey)));
+        SearchUtil.ReservedToken.ORG.create(
+          Organization.getSearchTokenSuffix(KeyWrapper.toKey(orgKeyWrapper))));
     }
 
     for (SuitableForType suitableForType : suitableForTypes) {
@@ -1167,7 +1181,7 @@ public final class Event extends IdBaseDao<Event> {
       }
       // Parent orgs also accrue Karma points.
       List<Key<Organization>> allOrgs =
-          Organization.getOrgAndAncestorOrgs(KeyWrapper.toKey(event.organization));
+          Organization.getOrgAndAncestorOrgKeys(KeyWrapper.toKey(event.organization));
       for (Key<Organization> orgKey : allOrgs) {
         tasksPending.add(
           new CompletionTaskWrapper(
