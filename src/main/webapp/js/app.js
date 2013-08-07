@@ -56,12 +56,12 @@ angular
         return function(promise) {
             return promise.then(function(successResponse) {
                 if (successResponse.config.method.toUpperCase() != 'GET')
-                    $rootScope.showAlert("Saved successfully!");
+                    $rootScope.showAlert("Saved successfully!","success");
                 return successResponse;
 
             }, function(errorResponse) {
                 switch (errorResponse.status) {
-                    case 400: $rootScope.showAlert(errorResponse.data.error.message);
+                    case 400: $rootScope.showAlert(errorResponse.data.error.message,"error");
                     	    break;
                     case 401:
                     showMessage('Wrong usename or password', 'errorMessage', 20000);
@@ -231,6 +231,10 @@ config(function($routeProvider,$httpProvider) {
     }
     $rootScope.fbScope = "email,user_location";
     $rootScope.location = $location;
+    $rootScope.$on("$routeChangeStart", function (event, next, current) {
+	$rootScope.alerts = [];
+	
+    });
     $rootScope.addAlert = function(message) {
         if(!$rootScope.alerts)
         {    
@@ -238,9 +242,9 @@ config(function($routeProvider,$httpProvider) {
         }
         $rootScope.alerts.push({msg: message});
     };
-    $rootScope.showAlert = function(message) {
+    $rootScope.showAlert = function(message,alertType) {
         $rootScope.alerts = [];
-        $rootScope.alerts.push({msg: message});
+        $rootScope.alerts.push({type:alertType, msg: message});
     };
 
     $rootScope.closeAlert = function(index) {
@@ -367,6 +371,41 @@ kexApp.directive('googleplace', function() {
     };
 });
 
+
+
+kexApp.directive('fbgallery', function($compile) {
+return {
+ 
+    scope: {
+        userid: '@'
+    },
+  
+    restrict: 'A',
+    // linking method
+    link: function(scope, element, attrs) {
+        //$(element).plusGallery(scope.$eval(attrs.fbgallery));
+        scope.$watch('userid', function(val){
+        	if(val)
+        	{
+        		$(element).plusGallery(scope.$eval(attrs.fbgallery));	
+        	}
+        });
+    }
+  }
+});
+
+kexApp.directive("gallery", function() {
+  return function(scope, element, attrs) {
+    var doStuff = function(element,attrs) {
+    	    console.log(attrs.userid);
+      $(element).plusGallery(scope.$eval(attrs.fbgallery));
+    }
+    scope.$watch(attrs.userid, doStuff(element,attrs));
+   // scope.$watch(attrs.testTwo, doStuff(element,attrs));
+
+  }
+})
+
 kexApp.directive ('unfocus', function() { return {
 
   restrict: 'A',
@@ -418,6 +457,7 @@ function fbCntrl(Facebook, $scope, $rootScope, $http, $location, Me) {
             $.cookie("facebook-uid",args.response.authResponse.userID);
             $.cookie("facebook-token",args.response.authResponse.accessToken);
             $.cookie("login","facebook"); 
+            $rootScope.fbAccessToken = args.response.authResponse.accessToken;
             
         } 
         else
@@ -570,7 +610,7 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
     {
         return;
     } 
-
+    $scope.newMail = {email:null,primary:null};
     $scope.load = function($location,$routeParams){
 
         if($location.$$url=="/me"||$location.$$url=="/mysettings")
@@ -626,7 +666,19 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
         $scope.edit = false;
         User.save({id:$scope.me.key},$scope.me);
     };
-
+    
+    $scope.addEmail = function(){
+    	//TO-DO check if the new one is marked primary and unmark the current primary one
+    	$scope.me.registeredEmails.push($scope.newMail);
+    	$scope.save();
+    };
+    
+    $scope.removeEmail = function(){
+    	console.log(" remove "+this.$index);   
+    	$scope.me.registeredEmails.splice(this.$index,1);
+    	$scope.save();
+    };
+    $scope.mailPrimaryIndex = { index: 0 };
     $scope.load($location,$routeParams);
 
 
@@ -638,7 +690,7 @@ var meCtrl = function($scope, $location, User,Me,$rootScope, $routeParams) {
 
 };
 
-var orgDetailCtrl = function($scope,$location,$routeParams,$rootScope,$http,Org)
+var orgDetailCtrl = function($scope,$location,$routeParams,$rootScope,$http,Org,Events)
 {
     if(!checkLogin($location))
     {
@@ -651,13 +703,27 @@ var orgDetailCtrl = function($scope,$location,$routeParams,$rootScope,$http,Org)
         $http({method: 'GET', url: $rootScope.fbGraphAPIURL+""+$scope.parser.pathname}).success(function(data) {
                     
                     $scope.fbPage = data;
-                    console.log(data);
+                    
                     
         });
+        $scope.pastEvents = Events.get({type:"PAST",keywords:"org:"+$scope.org.searchTokenSuffix});
+        $scope.upcomingEvents = Events.get({type:"UPCOMING",keywords:"org:"+$scope.org.searchTokenSuffix});
+        
 
     });
     $scope.orgOwners = Org.get({role:"ADMIN"},{id:$routeParams.orgId, resource : "member"});
     $scope.orgOrgnaizers = Org.get({role:"ADMIN"},{id:$routeParams.orgId, resource : "member"});
+    
+    $scope.isMessageOpen = false;
+    $scope.showMessage = function(){
+    	    $scope.isMessageOpen = true;
+    };
+    $scope.cancelMessage = function(){
+    	    $scope.isMessageOpen = false;
+    };
+    $scope.sendMessage = function(){
+    	    $scope.isMessageOpen = false;
+    };
 
 
      
@@ -752,7 +818,7 @@ var eventsCtrl = function ($scope, $location, Events,$rootScope) {
         var thisEvent = this.event;
         Events.save({ id: eventId , registerCtlr :'participants',regType:type}, function (type) {
                 //alert and close
-                $rootScope.showAlert("Registration successful!");
+                $rootScope.showAlert("Registration successful!","success");
                 $scope.modelEvent.registrationInfo = type;                
                 $scope.modelEvent.numAttending++;
                 /*
