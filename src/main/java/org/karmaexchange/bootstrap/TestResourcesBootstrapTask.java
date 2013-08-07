@@ -26,6 +26,7 @@ import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Organization.AutoMembershipRule;
+import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.KeyWrapper;
@@ -192,7 +193,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       Organization org = new Organization();
       org.setPage(getPageRef());
       if (parentOrg != null) {
-        org.setParentOrg(KeyWrapper.create(parentOrg.getKey()));
+        org.setParentOrg(new OrganizationNamedKeyWrapper(parentOrg.getKey()));
       }
       if (autoMembershipRules != null) {
         org.getAutoMembershipRules().addAll(autoMembershipRules);
