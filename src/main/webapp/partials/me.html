@@ -20,7 +20,7 @@
 	        </div>
 	        
 	    </ng-switch>
-	    <legend>I am organizer for (<rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating>)</legend>
+	    <legend>I am an organizer for</legend>
 	    <div>
 	    	
 	    		<ul class="inline">
@@ -28,7 +28,7 @@
 	    				<div class="well well-small"><a href="#/org/{{org.org.key}}">{{org.orgName}}</a></div>
 	    			</li>
 	    		</ul>
-
+	    		<p>{{who}} rating<rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating></p>
 	    </div>
 
   	</div>
@@ -47,8 +47,7 @@
 				    		<div class="row-fluid">
 		    					<strong >{{event.startTime | date:'mediumDate'}}</strong>
 		    					<a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a> 
-		    					<div class="pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" class="pull-right"><small class="muted">Orgnaizer</small></div>
-		    				</div>
+		    					<button disabled="disabled" type="button" class="btn btn-info btn-mini pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" ><small>organizer</small></button>		    				</div>
 		    				<div class="row-fluid">
 		    					<small class="muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>					
 		    					<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
@@ -77,6 +76,7 @@
 			    		<div class="row-fluid">
 	    					<strong >{{event.startTime | date:'mediumDate'}}</strong>
 	    					<a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a> 
+	    					<button disabled="disabled" type="button" class="btn btn-info btn-mini pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" ><small>organizer</small></button>
 	    				</div>
 	    				<div class="row-fluid">
 	    					<small class="muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>					

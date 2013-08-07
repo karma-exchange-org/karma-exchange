@@ -1,6 +1,6 @@
 <tabset>
     <tab heading="Event Details">
-        <form name="form" class="form-horizontal">
+        <form name="form" class="form-horizontal" ng-submit="save()" >
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="control-group" ng-class="{error: form.event.$invalid}">
@@ -9,7 +9,7 @@
 
                     <div class="controls">
 
-                        <input class="span12"  type="text" ng-model="event.title" id="title" placeholder="title">
+                        <input class="span12"  type="text" ng-model="event.title" id="title" placeholder="title" required>
 
                     </div>
 
@@ -53,7 +53,7 @@
 
                                 
 
-                                <input type="number" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum">
+                                <input type="number" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum" required>
 
                             </div>
 
@@ -65,7 +65,7 @@
 
                             <div class="controls">
 
-                                <input type="text"  class="span12"  placeholder="Name of the place" ng-model="event.location.title" googleplace place-listener="placeChanged">
+                                <input type="text"  class="span12"  placeholder="Name of the place" ng-model="event.location.title" googleplace place-listener="placeChanged" required>
 
                             </div>
 
@@ -91,10 +91,10 @@
 
                         <div class="control-group" ng-class="{error: form.event.$invalid}">
 
-                            <label class="control-label" for="organizations">Organization(if any)</label>
+                            <label class="control-label" for="organizations">Organization</label>
 
                             <div class="controls">
-                            	<select  ng-model="event.organization.key" class="input-xlarge" >
+                            	<select  ng-model="event.organization.key" class="input-xlarge" required>
                             		<option ng-repeat="org in orgs.data" value="{{org.org.key}}">{{org.orgName}}</option>
                             	</select>
 
@@ -194,11 +194,11 @@
 
                         <div class="form-actions">
 
-                            <button class="btn btn-primary" ng-click="save()">
+                            <input type="submit" class="btn btn-primary" value="Submit">
 
-                                Submit
+                                
 
-                            </button>
+                            
 
                             <a href="#/events" class="btn">Cancel</a>
 
