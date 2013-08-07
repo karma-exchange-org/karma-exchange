@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.List;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -16,7 +17,8 @@ import com.googlecode.objectify.annotation.Embed;
  */
 @Data
 @Embed
-public class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
+@NoArgsConstructor
+public class KeyWrapper<T> implements Comparable<KeyWrapper<T>> {
 
   protected Key<T> key;
 
@@ -25,9 +27,11 @@ public class KeyWrapper<T> implements Comparable<KeyWrapper<T>>{
   }
 
   public static <T> KeyWrapper<T> create(Key<T> key) {
-    KeyWrapper<T> wrapper = new KeyWrapper<T>();
-    wrapper.key = key;
-    return wrapper;
+    return new KeyWrapper<T>(key);
+  }
+
+  protected KeyWrapper(Key<T> key) {
+    this.key = key;
   }
 
   public static <T> List<KeyWrapper<T>> create(Collection<Key<T>> keys) {

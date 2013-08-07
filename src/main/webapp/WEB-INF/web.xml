@@ -87,6 +87,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>UpdateNamedKeysAdminTaskServlet</servlet-name>
+        <servlet-class>org.karmaexchange.task.UpdateNamedKeysAdminTaskServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateNamedKeysAdminTaskServlet</servlet-name>
+        <url-pattern>/task/update_named_keys</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>PersistProductionResourcesServlet</servlet-name>
         <servlet-class>org.karmaexchange.bootstrap.PersistProductionResourcesServlet</servlet-class>
     </servlet>
