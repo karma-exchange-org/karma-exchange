@@ -20,6 +20,7 @@ import lombok.Getter;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.karmaexchange.dao.Address;
+import org.karmaexchange.dao.AlbumRef;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
@@ -29,6 +30,7 @@ import org.karmaexchange.dao.Organization.AutoMembershipRule;
 import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.dao.GeoPtWrapper;
+import org.karmaexchange.dao.ImageProviderType;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.OAuthCredential;
@@ -268,7 +270,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
     Event event = createEvent("Amir & Harish Organizer - Soccer Camp", BGCSF_COLUMBIA_PARK,
-      DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100);
+      DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
+      "502904489789649");
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
 
@@ -276,7 +279,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
     event = createEvent("Full event - Learning center", BGCSF_TENDERLOIN,
-      DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 2);
+      DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 2,
+      "502905379789560");
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
     events.add(event);
 
@@ -284,7 +288,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Amir Organizer - Date conflict - No one signed up", UNITED_WAY,
-      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5);
+      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5, null);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
 
@@ -292,7 +296,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Harish Organizer - Date conflict - No one signed up", BENEVOLENT,
-      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5);
+      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5,
+      "502906079789490");
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
 
@@ -306,7 +311,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Harish as Organizer, Amir participant - Soccer Camp", BGCSF_TENDERLOIN,
       DateUtils.addDays(now, -6), 1,
-      organizers, registeredUsers, waitListedUsers, registeredUsers.size());
+      organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904833122948");
     events.add(event);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     pendingReviews.add(PendingReview.create(event, USER4.getKey(),
@@ -322,7 +327,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Amir as Organizer, Harish participant - Soccer Camp", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, -13), 1,
-      organizers, registeredUsers, waitListedUsers, registeredUsers.size());
+      organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904726456292");
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
@@ -331,14 +336,16 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
     event = createEvent("Harish as Organizer - SF Street Cleanup", BENEVOLENT,
-      DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 100);
+      DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 100,
+      "502906933122738");
     events.add(event);
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
     event = createEvent("Amir as Organizer - SF Street Cleanup", UNITED_WAY,
-      DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 100);
+      DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 100,
+      "502906759789422");
     events.add(event);
 
     return new CreateEventsResult(events, pendingReviews);
@@ -346,7 +353,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private static Event createEvent(String title, TestOrganization testOrg, Date startTime,
       int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
-      List<Key<User>> waitListedUsers, int maxRegistrations) {
+      List<Key<User>> waitListedUsers, int maxRegistrations, @Nullable String albumId) {
     eventNum++;
     Event event = new Event();
     event.setTitle(title);
@@ -367,6 +374,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event.setEndTime(DateUtils.addHours(startTime, numHours));
     event.setParticipants(createParticpantsList(organizers, registeredUsers, waitListedUsers));
     event.setMaxRegistrations(maxRegistrations);
+    if (albumId != null) {
+      event.setAlbum(new AlbumRef(albumId, ImageProviderType.FACEBOOK));
+    }
     return event;
   }
 

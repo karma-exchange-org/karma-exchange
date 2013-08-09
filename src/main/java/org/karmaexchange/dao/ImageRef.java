@@ -2,7 +2,6 @@ package org.karmaexchange.dao;
 
 import javax.annotation.Nullable;
 
-import org.karmaexchange.dao.Image.ImageProviderType;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

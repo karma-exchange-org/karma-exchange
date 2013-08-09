@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.karmaexchange.dao.AlbumRef;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.RegistrationInfo;
@@ -47,7 +48,7 @@ public class EventSearchView {
   private Date startTime;
   private Date endTime;
   private Status status;
-  private ImageUrlView primaryImage;
+  private AlbumRef album;
   private RegistrationInfo registrationInfo;
 
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
@@ -101,9 +102,7 @@ public class EventSearchView {
     startTime = event.getStartTime();
     endTime = event.getEndTime();
     status = event.getStatus();
-    if (event.getPrimaryImage() != null) {
-      // PrimaryImage(ImageUrlView.create(event.getPrimaryImage()));
-    }
+    album = event.getAlbum();
     karmaPoints = event.getKarmaPoints();
     cachedParticipantImages = event.getCachedParticipantImages();
     numAttending = event.getNumAttending();
