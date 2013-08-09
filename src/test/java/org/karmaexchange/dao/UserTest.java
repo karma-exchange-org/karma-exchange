@@ -13,7 +13,6 @@ import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.karmaexchange.dao.Image.ImageProviderType;
 import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.util.DatastoreTestUtil;
 

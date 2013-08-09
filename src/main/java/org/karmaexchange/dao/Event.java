@@ -88,11 +88,13 @@ public final class Event extends IdBaseDao<Event> {
   @Ignore
   private Status status;
 
-  private Image primaryImage;
+  private AlbumRef album;
+
+  // private Image primaryImage;
   // BUG: This embedded list is not safe since Image has embedded objects that can be
   //      optionally null. See objectify serialization bug (issue #127).
   // TODO(avaliani): fix this embedded list.
-  private List<Image> allImages = Lists.newArrayList();
+  // private List<Image> allImages = Lists.newArrayList();
 
   @Index
   private List<KeyWrapper<Skill>> skillsPreferred = Lists.newArrayList();

@@ -4,7 +4,6 @@ import javax.annotation.Nullable;
 
 import lombok.Data;
 
-import org.karmaexchange.dao.Image.ImageProviderType;
 
 import com.google.common.base.Predicate;
 import com.googlecode.objectify.annotation.Embed;
