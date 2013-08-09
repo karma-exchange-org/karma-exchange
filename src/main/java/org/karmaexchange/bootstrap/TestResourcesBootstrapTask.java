@@ -269,7 +269,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
-    Event event = createEvent("Amir & Harish Organizer - Soccer Camp", BGCSF_COLUMBIA_PARK,
+    Event event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502904489789649");
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
@@ -278,7 +278,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER2.getKey());
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
-    event = createEvent("Full event - Learning center", BGCSF_TENDERLOIN,
+    event = createEvent("After School Tutoring", BGCSF_TENDERLOIN,
       DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 2,
       "502905379789560");
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
@@ -287,7 +287,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(AMIR.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    event = createEvent("Amir Organizer - Date conflict - No one signed up", UNITED_WAY,
+    event = createEvent("Credit Coaching", UNITED_WAY,
       DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5, null);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
@@ -295,7 +295,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(HARISH.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    event = createEvent("Harish Organizer - Date conflict - No one signed up", BENEVOLENT,
+    event = createEvent("Resume Workshop", BENEVOLENT,
       DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5,
       "502906079789490");
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
@@ -309,7 +309,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
     waitListedUsers = asList(USER3.getKey());
-    event = createEvent("Harish as Organizer, Amir participant - Soccer Camp", BGCSF_TENDERLOIN,
+    event = createEvent("Youth Soccer Clinic", BGCSF_TENDERLOIN,
       DateUtils.addDays(now, -6), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904833122948");
     events.add(event);
@@ -325,7 +325,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey());
     waitListedUsers = asList(USER3.getKey());
-    event = createEvent("Amir as Organizer, Harish participant - Soccer Camp", BGCSF_COLUMBIA_PARK,
+    event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, -13), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904726456292");
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
@@ -335,7 +335,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER1.getKey(), HARISH.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
-    event = createEvent("Harish as Organizer - SF Street Cleanup", BENEVOLENT,
+    event = createEvent("San Francisco Street Cleanup", BENEVOLENT,
       DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906933122738");
     events.add(event);
@@ -343,7 +343,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
-    event = createEvent("Amir as Organizer - SF Street Cleanup", UNITED_WAY,
+    event = createEvent("San Jose Street Cleanup", UNITED_WAY,
       DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906759789422");
     events.add(event);
