@@ -111,27 +111,22 @@ text-align:center;
   color: #1c2733 !important;
 }
 
-.kex-labelstyle-bright-aquamarine, .kex-labelstyle-tag-2 {
-  background-color: #006b75 !important;
-  color: #fff !important;
-}
-
-.kex-labelstyle-light-yellow, .kex-labelstyle-tag-3 {
+.kex-labelstyle-light-yellow, .kex-labelstyle-tag-2 {
   background-color: #fef2c0 !important;
   color: #333026 !important;
 }
 
-.kex-labelstyle-light-green, .kex-labelstyle-tag-4 {
+.kex-labelstyle-light-green, .kex-labelstyle-tag-3 {
   background-color: #bfe5bf !important;
   color: #2a332a !important;
 }
 
-.kex-labelstyle-light-blue, .kex-labelstyle-tag-5 {
+.kex-labelstyle-light-blue, .kex-labelstyle-tag-4 {
   background-color: #bfdadc !important;
   color: #2c3233 !important;
 }
 
-.kex-labelstyle-light-gray, .kex-labelstyle-tag-6 {
+.kex-labelstyle-light-gray, .kex-labelstyle-tag-5 {
   background-color: #cccccc !important;
   color: #333333 !important;
 }
