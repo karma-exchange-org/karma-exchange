@@ -15,7 +15,6 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import com.google.appengine.api.blobstore.BlobKey;
-import com.google.appengine.api.images.ImagesService;
 import com.google.appengine.api.images.ImagesServiceFactory;
 import com.google.appengine.api.images.ServingUrlOptions;
 import com.googlecode.objectify.Key;
@@ -38,27 +37,6 @@ public class Image extends IdBaseDao<Image> {
 
   private String caption;
   private GeoPtWrapper gpsLocation;  // Most images are tagged with gps information automatically.
-
-  public enum ImageProviderType {
-    FACEBOOK,
-
-    /**
-     * To get a 32 pixel sized version (aspect-ratio preserved) simply append
-     * "=s32" to the url:
-     * {@code "http://lh3.ggpht.com/SomeCharactersGoesHere=s32"}
-     * <p>
-     * To get a 32 pixel cropped version simply append "=s32-c":
-     * {@code "http://lh3.ggpht.com/SomeCharactersGoesHere=s32-c"}
-     *
-     * @see ImagesService#getServingUrl(ServingUrlOptions)
-     */
-    BLOBSTORE;
-
-    public static ImageProviderType toImageProviderType(
-        SocialNetworkProviderType socialNetworkProviderType) {
-      return ImageProviderType.valueOf(socialNetworkProviderType.name());
-    }
-  }
 
   public static Image createAndPersist(Key<?> owner, BlobKey blobKey, String caption) {
     ServingUrlOptions options = ServingUrlOptions.Builder.withBlobKey(blobKey).secureUrl(true);

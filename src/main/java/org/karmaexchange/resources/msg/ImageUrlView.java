@@ -2,7 +2,7 @@ package org.karmaexchange.resources.msg;
 
 import lombok.Data;
 
-import org.karmaexchange.dao.Image.ImageProviderType;
+import org.karmaexchange.dao.ImageProviderType;
 import org.karmaexchange.dao.ImageRef;
 
 @Data
