@@ -102,12 +102,41 @@ text-align:center;
   padding: 5px 20px;
 }
 
-span.kex-labelstyle-84b6eb {
+/* 
+ * The kex-labelstyle-tag* colors are all colors that can be shown together to highlight 
+ * different tags. Currently these colors consist of blue, green, yellow, and grey.
+ */
+.kex-labelstyle-bright-blue, .kex-labelstyle-tag-1 {
   background-color: #84b6eb !important;
   color: #1c2733 !important;
 }
 
-span.kex-label {
+.kex-labelstyle-bright-aquamarine, .kex-labelstyle-tag-2 {
+  background-color: #006b75 !important;
+  color: #fff !important;
+}
+
+.kex-labelstyle-light-yellow, .kex-labelstyle-tag-3 {
+  background-color: #fef2c0 !important;
+  color: #333026 !important;
+}
+
+.kex-labelstyle-light-green, .kex-labelstyle-tag-4 {
+  background-color: #bfe5bf !important;
+  color: #2a332a !important;
+}
+
+.kex-labelstyle-light-blue, .kex-labelstyle-tag-5 {
+  background-color: #bfdadc !important;
+  color: #2c3233 !important;
+}
+
+.kex-labelstyle-light-gray, .kex-labelstyle-tag-6 {
+  background-color: #cccccc !important;
+  color: #333333 !important;
+}
+
+.kex-label {
   display: inline-block;
   padding: 2px 4px;
   border-radius: 2px;
