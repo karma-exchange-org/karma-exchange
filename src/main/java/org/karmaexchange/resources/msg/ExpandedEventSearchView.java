@@ -41,11 +41,13 @@ public class ExpandedEventSearchView extends EventSearchView {
     if (event.getRegistrationInfo() == RegistrationInfo.REGISTERED) {
       review = BaseDao.load(Review.getKeyForCurrentUser(event));
     }
-    return new ExpandedEventSearchView(event, review);
+    Organization org = BaseDao.load(KeyWrapper.toKey(event.getOrganization()));
+    return new ExpandedEventSearchView(event, org, review);
   }
 
-  private ExpandedEventSearchView(Event event, @Nullable Review currentUserReview) {
-    super(event, currentUserReview);
+  private ExpandedEventSearchView(Event event, @Nullable Organization fetchedOrg,
+      @Nullable Review currentUserReview) {
+    super(event, fetchedOrg, currentUserReview);
     description = event.getDescription();
 
     User user = BaseDao.load(KeyWrapper.toKey(event.getOrganizers().get(0)));

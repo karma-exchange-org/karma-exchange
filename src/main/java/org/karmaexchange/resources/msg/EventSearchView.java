@@ -5,6 +5,7 @@ import static org.karmaexchange.util.OfyService.ofy;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -24,9 +25,11 @@ import org.karmaexchange.dao.AggregateRating;
 import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.resources.EventResource.EventSearchType;
+import org.karmaexchange.resources.msg.EventView.OrgDetails;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.googlecode.objectify.Key;
 
 import lombok.Data;
@@ -41,6 +44,7 @@ public class EventSearchView {
   private Permission permission;
 
   private KeyWrapper<Organization> organization;
+  private OrgDetails organizationDetails;
   private List<OrganizationNamedKeyWrapper> associatedOrganizations = Lists.newArrayList();
 
   private String title;
@@ -63,18 +67,35 @@ public class EventSearchView {
 
   public static List<EventSearchView> create(List<Event> events, EventSearchType searchType,
       boolean loadReviews) {
+    // Do this first since the load of reviews is currently blocking.
+    Map<Key<Organization>, Organization> orgs = unprocessedLoadOrgs(events);
+
     Map<Key<Review>, Review> reviews;
     if (loadReviews && (searchType == EventSearchType.PAST)) {
       reviews = loadEventReviews(events);
     } else {
       reviews = Maps.newHashMap();
     }
-    List<EventSearchView> searchResults = Lists.newArrayListWithCapacity(events.size());
+
+    // Finish the processing. This is a bit hacky... ideally BaseDao would provide an
+    // asynchronous wrapper that would process the object on first access.
+    BaseDao.processLoadResults(orgs.values());
+
+    List<EventSearchView> searchResults = Lists.newArrayList();
     for (Event event : events) {
       searchResults.add(
-        new EventSearchView(event, reviews.get(Review.getKeyForCurrentUser(event))));
+        new EventSearchView(event, orgs.get(KeyWrapper.toKey(event.getOrganization())),
+          reviews.get(Review.getKeyForCurrentUser(event))));
     }
     return searchResults;
+  }
+
+  private static Map<Key<Organization>, Organization> unprocessedLoadOrgs(List<Event> events) {
+    Set<Key<Organization>> orgs = Sets.newHashSet();
+    for (Event event : events) {
+      orgs.add(KeyWrapper.toKey(event.getOrganization()));
+    }
+    return ofy().load().keys(orgs);
   }
 
   private static Map<Key<Review>, Review> loadEventReviews(List<Event> events) {
@@ -90,11 +111,15 @@ public class EventSearchView {
     return reviews;
   }
 
-  protected EventSearchView(Event event, @Nullable Review currentUserReview) {
+  protected EventSearchView(Event event, @Nullable Organization fetchedOrg,
+      @Nullable Review currentUserReview) {
     key = event.getKey();
     permission = event.getPermission();
 
     organization = event.getOrganization();
+    if (fetchedOrg != null) {
+      organizationDetails = new OrgDetails(fetchedOrg);
+    }
     associatedOrganizations = event.getAssociatedOrganizations();
 
     title = event.getTitle();

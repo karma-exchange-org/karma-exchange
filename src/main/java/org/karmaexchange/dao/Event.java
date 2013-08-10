@@ -1165,7 +1165,7 @@ public final class Event extends IdBaseDao<Event> {
   @Data
   @Embed
   @NoArgsConstructor
-  private static class CompletionTaskTracker {
+  public static class CompletionTaskTracker {
 
     // NOTE: The embedded lists are safe since CompletionTaskWrapper has been modified to avoid
     //       encountering the objectify serialization bug (issue #127).
