@@ -30,6 +30,7 @@ import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.EventParticipantView;
 import org.karmaexchange.resources.msg.EventSearchView;
+import org.karmaexchange.resources.msg.EventView;
 import org.karmaexchange.resources.msg.ExpandedEventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg.PagingInfo;
@@ -44,7 +45,7 @@ import com.google.common.collect.ImmutableList;
 import com.googlecode.objectify.Key;
 
 @Path("/event")
-public class EventResource extends BaseDaoResource<Event> {
+public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   public static final String START_TIME_PARAM = "start_time";
   public static final String SEARCH_TYPE_PARAM = "type";
@@ -64,6 +65,11 @@ public class EventResource extends BaseDaoResource<Event> {
   @Override
   protected Class<Event> getResourceClass() {
     return Event.class;
+  }
+
+  @Override
+  protected EventView createBaseDaoView(Event event) {
+    return new EventView(event);
   }
 
   @GET
