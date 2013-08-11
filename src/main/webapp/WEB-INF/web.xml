@@ -144,6 +144,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <web-resource-collection>
             <url-pattern>/task/*</url-pattern>
             <url-pattern>/bootstrap/*</url-pattern>
+            <url-pattern>/local_test/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>admin</role-name>
