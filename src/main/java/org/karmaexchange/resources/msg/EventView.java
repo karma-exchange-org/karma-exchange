@@ -12,6 +12,7 @@ import lombok.Setter;
 import org.karmaexchange.dao.AggregateRating;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.PageRef;
@@ -21,7 +22,7 @@ import org.karmaexchange.dao.PageRef;
 @NoArgsConstructor
 public class EventView implements BaseDaoView<Event> {
 
-  @Delegate
+  @Delegate(types={Event.class, IdBaseDao.class, BaseDao.class})
   @Getter(AccessLevel.NONE)
   @Setter(AccessLevel.NONE)
   private Event event = new Event();
