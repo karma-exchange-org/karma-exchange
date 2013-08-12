@@ -38,7 +38,7 @@ import com.googlecode.objectify.VoidWork;
 
 public class OAuthFilter implements Filter {
 
-  public static final Level OAUTH_LOG_LEVEL = Level.OFF;
+  public static final Level OAUTH_LOG_LEVEL = Level.FINE;
   private static final Logger log = Logger.getLogger(OAuthFilter.class.getName());
 
   @SuppressWarnings("unused")
