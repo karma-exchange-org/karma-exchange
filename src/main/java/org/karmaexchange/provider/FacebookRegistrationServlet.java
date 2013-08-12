@@ -34,7 +34,7 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
 
   private static final Logger logger =
       Logger.getLogger(FacebookRegistrationServlet.class.getName());
-  public static final Level REGISTRATION_LOG_LEVEL = Level.OFF;
+  public static final Level REGISTRATION_LOG_LEVEL = Level.FINE;
 
   private static final String SIGNED_REQUEST_PARAM = "signed_request";
 
