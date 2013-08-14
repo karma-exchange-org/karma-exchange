@@ -718,10 +718,14 @@ SLIDEFADE
 			
 			loadZoomImg:function(idx){
 				if($('#pgzoomimg' + idx).length === 0){
-					$('#pgzoomslide' + idx + ' .pgzoomspacer').after('<img src="' + pg.imgArray[idx] + '" data-src="' + pg.imgArray[idx] + '" title="' + pg.titleArray[idx] + '" alt="' + pg.titleArray[idx] + '" id="pgzoomimg' + idx + '" class="pgzoomimg">');
+					//$('#pgzoomslide' + idx + ' .pgzoomspacer').after('<img src="' + pg.imgArray[idx] + '" data-src="' + pg.imgArray[idx] + '" title="' + pg.titleArray[idx] + '" alt="' + pg.titleArray[idx] + '" id="pgzoomimg' + idx + '" class="pgzoomimg"> <div id="fbZooom'+ idx+'" class="fb-comments" href="' +pg.imgArray[idx]  + '" data-num-posts="20" data-width="940">');
+					//.after('<div class="fb-comments" href="' +window.location.href + '" data-num-posts="20" data-width="940">');
+					//FB.XFBML.parse(document.getElementById("fbZooom"+ idx ));
+					$('#pgzoomslide' + idx + ' .pgzoomspacer').after('<img src="' + pg.imgArray[idx] + '" data-src="' + pg.imgArray[idx] + '" title="' + pg.titleArray[idx] + '" alt="' + pg.titleArray[idx] + '" id="pgzoomimg' + idx + '" class="pgzoomimg"> <iframe src="http://www.facebook.com/plugins/comments.php?href='+pg.imgArray[idx] +'"  scrolling="no" frameborder="0" style="border:none; width:450px; height:80px"></iframe>');
 					$('#pgzoomimg' + idx).load(function(){
 						$(this).addClass('active');
 					});
+					$('#pgzoomslide' + idx).removeClass('loading');
 				}
 			},
 			
