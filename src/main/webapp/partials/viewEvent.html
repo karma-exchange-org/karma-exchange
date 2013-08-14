@@ -1,79 +1,79 @@
-
-<div class="container-fluid">
+	
 
     <div class="row-fluid">
 
-        <div class="span10">
-
-    
-
-                <div class="span12 row-fluid well-large well">
-                    <h2>{{event.title}} <div class="fb-like" data-href=""+window.location.href data-send="true" data-width="450" data-show-faces="true" data-colorscheme="dark" data-action="recommend"></div></h2> 
-                    <div class="span6">   
-
-                        
-                        <p>{{event.startTime | date:'mediumDate'}} - {{event.startTime|date:'shortTime'}} - {{event.endTime|date:'shortTime'}}</p>
-                    </div>
-                    <div class="span6">
-                        <p>Volunteers needed : <strong>{{event.maxRegistrations - event.registeredUsers.length | limit10}}</strong></p>
-                        <p>Registered: <strong>{{event.registeredUsers.length}}</strong></p>
-                        
-                    </div>
-                    <div class="row-fluid">
-                        <p>{{event.location.address.street}}</p>
+        <div class="span8">
+        	<div class="row-fluid">
+        		<div class="pull-left">
+				 <h2>{{event.title}}<em><small class="muted"> (<i class="icon-plus"></i>{{event.karmaPoints}} karma)</small></em></h2>  
+				<p>on <strong>{{event.startTime | date:'EEE, MMM d, y'}}</strong> from <strong>{{event.startTime|date:'shortTime'}}</strong> - <strong>{{event.endTime|date:'shortTime'}}</strong> by <a href="#/org/{{event.associatedOrganizations[0].key}}">{{event.associatedOrganizations[0].name}} </a> </p>
+				<p>at {{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}</p>
 
 
 
-                        <p>{{event.location.address.city}}, {{event.location.address.state}}, <p>
-
-                        <p>{{event.location.address.country}}, {{event.location.address.zip}}</p>
-                    </div>
-                    <p ng-hide="event.organizations.length==0">Benefitting : 
-                        <ul class="inline"><li  ng-repeat="org in events.organizations">{{org.name}}</li></ul>
-                    </p>
-                    <div class="row-fluid">
-                        
-                            <div class="pull-left"><strong>{{event.karmaPoints}} karma points</strong></div>
-                            <div class="pull-right">
-                                <a ng-show="{ORGANIZER:true}[event.registrationInfo]"class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
-                                
-                                <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i>Register</button>
-                                <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i>Wait list</button>
-                                <p ng-show="{REGISTERED:true,WAIT_LISTED:true}[event.registrationInfo]"><i class="icon-ok"></i>You have registered!</p>
-                                <p ng-show="{REGISTERED:true,WAIT_LISTED:true}[event.registrationInfo]"><small class="muted"><a href="" ng-click="unregister()">Unregister</a></small></p>
-                            </div>
-
-                             
-                        
-
-                        
-                    </div>
+			</div>
+			<div class="pull-right">
+				<a ng-show="{ORGANIZER:true}[event.registrationInfo]"class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
+				<div ng-show="event.status!='COMPLETED'" >
+					<p><strong>{{event.maxRegistrations - event.registeredUsers.length | limit10 }}</strong></p>
+					
+					
+					<button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i>Register</button>
+					<button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i>Wait list</button>
+					<p ng-show="{REGISTERED:true}[event.registrationInfo]"><i class="icon-ok"></i>You are registered!</p>
+					<p ng-show="{WAIT_LISTED:true}[event.registrationInfo]"><i class="icon-ok"></i>You are waitlisted!</p>
+					<p ng-hide="event.registrationInfo!='REGISTERED'" <small class="muted"><a href="" ng-click="unregister()">Unregister</a></small></p>
+					<p ng-hide="event.registrationInfo!='WAIT_LISTED'" ><small class="muted"><a href="" ng-click="unregister()">Remove from waitlist</a></small></p>
+					<p><small class="muted">(<strong>{{event.registeredUsers.length }} </strong>registered so far!)</small></p>
+				</div>
+                                <div ng-show="event.status=='COMPLETED'" >
+				    <h4>Rating</h4>
+	
+				    <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> ({{event.rating.count}})</p>
+				    
+				    <p ng-hide="event.registrationInfo=='ORGANIZER'">Your rating<rating value="eventRating.rating.value" max="5" readonly="false"></rating></p>
+				</div>
+                       </div> 
                 </div>
-                        
-                        <p ng-hide="event.causes.length==0">Causes 
-                        <ul class="inline">
-                            <li ng-repeat="cause in event.causes">
-                                {{cause.id}}
-
-                            </li>
-                        </ul>
-                        </p>
-                        <div ng-show="event.status=='COMPLETED'" name="past-events-toolbox">
-                            <h4>Rating</h4>
-
-                            <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> ({{event.rating.count}})</p>
-                            
-                            <p ng-hide="event.registrationInfo=='ORGANIZER'">Your rating<rating value="eventRating.rating.value" max="5" readonly="false"></rating></p>
+                <hr>
+		<div class="row-fluid" ng-show="event.status=='COMPLETED'" name="past-events-album">
+			  <carousel interval="myInterval">
+			    <slide ng-repeat="image in fbAlbum" active="slide.active">
+			    	<div class="span12 pagination-centered">
+			    		<img ng-src="{{image.picture}}" max-height="500">
+			    	</div>
+			      
+			      <div ng-show="image.name" class="carousel-caption">
+				<p></p>
+				<p  >{{image.name}}</p>
+			      </div>
+			    </slide>
+			  </carousel>
+			
+		<div class="fileupload fileupload-new" data-provides="fileupload">
+		  <div ng-show="isImageModelOpen" class="fileupload-preview thumbnail" style="width: 200px; height: 150px;"></div>
+		  <div>
+		    <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()" ><span class="fileupload-new"><i class="icon-plus"></i> Add a photo</span><input type="file" /></span>
+		    <span ng-show="isImageModelOpen" data-dismiss="fileupload" class="btn btn-primary fileupload-exists" ng-click="closeImageUpload()">Upload</span>
+		    <a href="" class="btn fileupload-exists" data-dismiss="fileupload" ng-click="closeImageUpload()" >Cancel</a>
+		  </div>
+		</div>
+		       
+		
+		<!-- <button ng-show="{REGISTERED:true,ORGANIZER:true}[event.registrationInfo]" class="btn btn-file fileupload-new" ng-click="openImageUpload()">Add pics</button> -->
+		
+		</div>
+			 
+			 
+		 	<div ng-show="event.description">
+			       <h4>What?</h4>
+				
+				<p ng-bind-html-unsafe="event.description | noHTML | newlines"/>
                         </div>
-
-
-                        <h4>What?</h4>
-                        
-                        <p ng-bind-html-unsafe="event.description | noHTML | newlines"/>
-                        
-                        <h4>Special instructions</h4>
-                        <p ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines"/>
-                        
+                        <div ng-show="event.specialInstructions">
+				<h4 >Special instructions</h4>
+				<p ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines"/>
+                        </div>
                         <input style="display:none" type="text"  class="span12" id="location-title" placeholder="Name of the place" >
                         
                         
@@ -101,8 +101,17 @@
          </div>                
   
 
-        <div class="span2">
-                
+        <div class="span4">
+                <div class="google-map" 
+                        center="center"
+                        zoom="zoom" 
+                        markers="markers"
+                        latitude="latitude"
+                        longitude="longitude"
+                        mark-click="true"
+                        draggable="true"
+                        style="height: 300px; width: 100%">
+                    </div>
                 <!--orgnaizers-->
                 <p ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
                 <hr>
@@ -110,7 +119,7 @@
 
                     <li ng-repeat="user in eventOrganizers.data">
                       
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> <em><i class="icon-plus"></i>{{user.karmaPoints}}</em></a>
                         
                               <p></p>  
                            
@@ -128,7 +137,7 @@
 
                             <li ng-repeat="user in eventRegistered.data">
                                
-                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> <em><i class="icon-plus"></i>{{user.karmaPoints}}</em></a>
                             
                                        
                                 
@@ -148,7 +157,7 @@
 
                             <li ng-repeat="user in eventWaitListed.data">
                               
-                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> <em><i class="icon-plus"></i>{{user.karmaPoints}}</em></a>
                                  
                                         
                                 
@@ -162,11 +171,7 @@
          
        
     </div>
-    
-        
 
-
-</div>
 
 
 
