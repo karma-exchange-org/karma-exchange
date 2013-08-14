@@ -10,21 +10,23 @@
 
 				<li ng-repeat="event in events.data" id="event_{{event.key}}">
 					<div>
-						<h3 ng-show="createHeader(event.startTime,event)">
-					       {{event.startTime | date:'EEE, MMM d, y'}}
-					    </h3>
+						<h4 ng-show="createHeader(event.startTime,event)">
+					       {{event.startTime | date:'EEEE, MMM d, y'}}
+					    </h4>
 					    
 					    	<div class="well text-center row-fluid">
 					    		
 					    		
 					    		<ul class="inline">
 					    			<li class="pull-left">
-					    				<strong>{{event.startTime | date:'shortTime'}}</strong> - <small class="muted">{{event.endTime | date:'shortTime'}} </small>
+					    				<p><strong>{{event.startTime | date:'shortTime'}}</strong> - <small class="muted">{{event.endTime | date:'shortTime'}} </small> 
 	    								    					
-					    					
+					    					&nbsp
+
 					    				    				
-						    				<a href="" ng-click="toggleEvent();"><strong>{{event.title}} </strong></a> 
+						    				<a href="" ng-click="toggleEvent();"><strong> {{event.title}} </strong></a> 
 						    				<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
+						    			</p>
 						    		
 						    		</li>
 						    		<div class="pull-right">
@@ -45,7 +47,7 @@
 							            <th>What?</th>  
 							            <th>When? Where?</th> 
 							            <th>Who?</th>  
-							            <th>I wanna help</th>  
+							            <th></th>  
 							          </tr>  
 							        </thead>  
 							        <tbody>  
@@ -61,9 +63,10 @@
                         					<p>{{modelEvent.location.address.country}}, {{modelEvent.location.address.zip}}</p>
 							            </td>
 							            <td>
-							            	<p>Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered}}</strong></p>
+							            	<p>Organization : <a href="#/org/{{modelEvent.associatedOrganizations[0].key}}">{{modelEvent.associatedOrganizations[0].name}}</a></p>
+							            	<p>Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered | limit10 }}</strong></p>
 							            	<p>Registered: <strong>{{modelEvent.numRegistered}}</strong></p>
-							            	<p>Organized by </p><p><a href="#/user/{{modelEvent.firstOrganizer.key}}"><img ng-src="{{modelEvent.firstOrganizer.profileImage.url}}?type=square"/><strong>{{modelEvent.firstOrganizer.firstName}}</strong></a> <rating ng-hide="modelEvent.firstOrganizer.eventOrganizerRating.count==0" value="modelEvent.firstOrganizer.eventOrganizerRating.value" max="5" readonly="true"></rating> </p>
+							            	<p>Organized by </p><p><a href="#/user/{{modelEvent.firstOrganizer.key}}"><img ng-src="{{modelEvent.firstOrganizer.profileImage.url}}?type=square"/><strong>{{modelEvent.firstOrganizer.firstName}}</strong></a> <rating ng-hide="modelEvent.firstOrganizer.eventOrganizerRating.count==0" value="modelEvent.firstOrganizer.eventOrganizerRating.value" max="5" readonly="true"></rating>({{modelEvent.firstOrganizer.eventOrganizerRating.count}}) </p>
 							             </td>  
 							            <td>
 							            	<h4>{{event.karmaPoints}} karma points.</h4>
@@ -72,8 +75,8 @@
 							            		
 							            		<button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i>Register</button>
 							            		<button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]"class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i>Wait list</button>
-							            		<p ng-show="{REGISTERED:true,WAIT_LISTED:true}[modelEvent.registrationInfo]"><i class="icon-ok"></i>You have registered!</p>
-							            		
+							            		<p ng-show="{REGISTERED:true}[modelEvent.registrationInfo]"><i class="icon-ok"></i>You are registered!</p>
+							            		<p ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]"><i class="icon-ok"></i>You are waitlisted!</p>
 							            	
 
 							            	</p>
