@@ -193,6 +193,10 @@ kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "
 	{ 
 		fbAppId = '1381630838720301'; 
 	} 
+    else if( document.location.hostname === "kex-latest.appspot.com" ) 
+    { 
+        fbAppId = '166052360247234'; 
+    } 
 	else
 	{ 
 		fbAppId = '571265879564450'; 
