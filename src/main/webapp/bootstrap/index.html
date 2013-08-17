@@ -6,6 +6,7 @@ div {
   padding: 10px;
 }
 </style>
+<link rel="stylesheet" href="/css/bootstrap.min.css">
 <meta charset="UTF-8">
 </head>
 <body>
@@ -51,7 +52,7 @@ div {
       var form = '<form action="/bootstrap/provider/fb/register" method="get">'
           + '  <input type="hidden" name="uid" value="' + uid + '">'
           + '  <input type="hidden" name="token" value="' + token + '">'
-          + '  <button type="submit" class="btn btn-primary" >Bootstrap current user (registration bypass)</button>'
+          + '  <button type="submit" class="btn" >Bootstrap current user (registration bypass)</button>'
           + '</form>';
       document.getElementById('account-info').innerHTML = (form);
     }
@@ -85,13 +86,13 @@ div {
 
   <div>
     <form action="/bootstrap/datastore_indexes">
-      <button type="submit" class="btn btn-primary">Update datastore-indexes-auto.xml</button>
+      <button type="submit" class="btn">Update datastore-indexes-auto.xml</button>
     </form>
   </div>
 
   <div>
     <form action="/task/process_event_completions">
-      <button type="submit" class="btn btn-primary">Process newly completed events</button>
+      <button type="submit" class="btn">Process newly completed events</button>
     </form>
   </div>
 
