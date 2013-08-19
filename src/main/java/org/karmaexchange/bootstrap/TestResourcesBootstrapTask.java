@@ -69,7 +69,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     USER12("100006069696646", "Donna", "Zuckerson"),
     USER13("100006083973038", "Harry", "Occhinoman"),
     AMIR("1111368160", "Amir", "Valiani"),
-    HARISH("537854733", "Harish", "Balijepalli");
+    HARISH("537854733", "Harish", "Balijepalli"),
+    POONUM("3205292", "Poonum", "Kaberwal");
 
     private final String fbId;
     @Getter
@@ -133,10 +134,12 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     BGCSF_COLUMBIA_PARK("https://www.facebook.com/columbia.park", AMIR,
       asList(
         TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
-        TestOrgMembership.of(HARISH, Organization.Role.ORGANIZER, null)),
+        TestOrgMembership.of(HARISH, Organization.Role.ORGANIZER, null),
+        TestOrgMembership.of(POONUM, Organization.Role.ORGANIZER, null)),
       BGCSF),
     BGCSF_TENDERLOIN("https://www.facebook.com/Tenderloin.clubhouse", HARISH,
       asList(
+        TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null),
         TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER2, Organization.Role.ORGANIZER, null),
         TestOrgMembership.of(AMIR, Organization.Role.ORGANIZER, null)),
@@ -144,6 +147,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     BENEVOLENT("https://www.facebook.com/benevolent.net", HARISH,
       asList(
+        TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null),
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
         TestOrgMembership.of(USER5, Organization.Role.ORGANIZER, Organization.Role.ADMIN),
@@ -264,7 +268,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     // Upcoming events.
 
-    List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey());
+    List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
+      POONUM.getKey());
     List<Key<User>> registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey());
@@ -292,7 +297,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
 
-    organizers = asList(HARISH.getKey());
+    organizers = asList(HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Resume Workshop", BENEVOLENT,
@@ -304,7 +309,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     // Past events.
     List<PendingReview> pendingReviews = Lists.newArrayList();
 
-    organizers = asList(USER1.getKey(), HARISH.getKey());
+    organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
@@ -316,14 +321,14 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     pendingReviews.add(PendingReview.create(event, USER4.getKey(),
       "I had a great time cleaning up the streets of SF.\n\n" +
-      "Thanks to Harish for organizing such a wonderful event!", 5));
+      "Thanks to Harish and Poonum for organizing such a wonderful event!", 5));
     pendingReviews.add(PendingReview.create(event, USER8.getKey(),
       "Some of the areas where we did cleanup were a bit shady...", 3));
     pendingReviews.add(PendingReview.create(event, USER12.getKey(), null, 3));
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
-      USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey());
+      USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey(), POONUM.getKey());
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, -13), 1,
@@ -332,7 +337,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     events.add(event);
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
 
-    organizers = asList(USER1.getKey(), HARISH.getKey());
+    organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
     event = createEvent("San Francisco Street Cleanup", BENEVOLENT,
