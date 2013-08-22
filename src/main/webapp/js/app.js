@@ -133,7 +133,7 @@ angular.module( 'FacebookProvider', [ ] ).factory( 'Facebook', function( $rootSc
                         } 
                 }; 
 } );
-kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "FacebookProvider", "globalErrors" ] ).config( function( $routeProvider, $httpProvider ) { 
+kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "FacebookProvider", "globalErrors" ,"ui.calendar"] ).config( function( $routeProvider, $httpProvider ) { 
 		$routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } ).when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } ).when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } ).when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html' } ).when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html' } ).when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html' } ).when( '/events2', { controller : eventsCtrl, templateUrl : 'partials/eventsAccord.html' } ).when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } ).when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } ).when( '/event/:eventId', { controller : addEditEventsCtrl, templateUrl : 'partials/viewEvent.html' } ).when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html' } ).when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html' } ).otherwise( { redirectTo : '/' } );
 		delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ]; 
 		//$httpProvider.defaults.headers.common['X-'] = 'X';
@@ -350,6 +350,49 @@ kexApp.directive( 'unfocus', function( ) { return {
 			} );
 		}
 } } );
+
+
+kexApp.directive('fullCalendar', function() {
+
+    return {
+                restrict : "A",
+                replace : true,
+                transclude : true,
+                scope: {
+                  events: '='
+                },   
+
+    template : 
+
+                "<div  style=\"height:800px;width:100%\"></div>",
+
+                link : function( scope,$element, $attrs ) {
+                	
+                	console.log(scope.events);
+
+                      //Call the fullCalendar Method. 
+                      scope.calendar = $( $element ).fullCalendar({
+                            
+                      		header: {
+				left: 'prev,next today',
+				center: 'title',
+				right: 'month,agendaWeek,agendaDay'
+			},      
+			editable:false,
+                            events: scope.events,
+                            year : 2013,
+                            month : 7
+                        });
+                      
+                      $( $element ).fullCalendar('today');
+                      
+                      
+                      
+
+              
+                }
+              }
+ });
 /*
 All app controllers  go here
 */
@@ -535,7 +578,7 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) {
 		$scope.events = User.get( { id : key, resource : 'event' } ); 
 		$scope.pastEvents = User.get( { type : 'PAST' }, { id : key, resource : 'event' } ); 
 		$scope.orgs = User.get( { id : key, resource : 'org' } ); 
-		$rootScope.orgs = $scope.orgs;
+		
 	}; 
 	$scope.save = function( ) { 
 		Me.save( $scope.me ); 
@@ -568,14 +611,32 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
 	{ 
 		return; 
 	};
+	$scope.events = [];
 	$scope.parser = document.createElement( 'a' ); 
 	$scope.org = Org.get( { id : $routeParams.orgId }, function( ) { 
 			$scope.parser.href = $scope.org.page.url; 
 			$http( { method : 'GET', url : $rootScope.fbGraphAPIURL + "" + $scope.parser.pathname } ).success( function( data ) {
 					$scope.fbPage = data;
 			} ); 
-			$scope.pastEvents = Events.get( { type : "PAST", keywords : "org:" + $scope.org.searchTokenSuffix } ); 
-			$scope.upcomingEvents = Events.get( { type : "UPCOMING", keywords : "org:" + $scope.org.searchTokenSuffix } ); 
+			$scope.pastEvents = Events.get( { type : "PAST", keywords : "org:" + $scope.org.searchTokenSuffix },function(){
+			
+					angular.forEach($scope.pastEvents.data, function(event) {
+							$http( { method : 'GET', url : $rootScope.fbGraphAPIURL +"/" + event.album.id +"/photos"} ).success( function( data ) {
+									event.fbAlbum = data;
+							} );
+							$scope.events.push({title:event.title, start:(new Date(event.startTime)), end:(new Date(event.endTime)),allDay:false, url:"/#/event/"+event.key});
+			});
+			} ); 
+			$scope.upcomingEvents = Events.get( { type : "UPCOMING", keywords : "org:" + $scope.org.searchTokenSuffix }, function(){
+			
+					angular.forEach($scope.upcomingEvents.data, function(event) {
+						
+							$scope.events.push({title:event.title, start:(new Date(event.startTime)),end:(new Date(event.endTime)),allDay:false, url:"/#/event/"+event.key});
+			});
+			} ); 
+			
+			
+			
 			if( $scope.org.permission === "ALL" ) 
 			{ 
 				$scope.pendingMembers = Org.get( { membership_status : "PENDING" }, { id : $routeParams.orgId, resource : "member" } ); 
@@ -598,6 +659,25 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
 	{
 		return colorClass [ index ]; 
 	}
+	$scope.calendarRender = function(myCal){
+		myCal.fullCalendar('changeView','month');
+	}
+	/* config object */
+    $scope.uiConfig = {
+      calendar:{
+        height: 450,
+        editable: false,
+        header:{
+          left: 'month agendaWeek agendaDay',
+          center: 'title',
+          right: 'today prev,next'
+        }
+      }
+    };
+    //$scope.myCalendar.fullCalendar('render');
+	$scope.eventSources = [$scope.events];
+	
+	
 }
 var orgCtrl = function( $scope, $location, $routeParams, Org ) { 
 	$scope.query = ""; 
@@ -784,6 +864,10 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
 				}
 		} );
 	};
+	$scope.fbUpload = function()
+	{
+		//https://graph.facebook.com/{{event.album.id}}/photos?access_token={{fbAccessToken}}
+	}
 	$scope.dropListener = function( eDraggable, eDroppable ) {
                 var isDropForbidden = function( aTarget, item ) { 
                 	if( aTarget.some( function( i ) { 

@@ -7,7 +7,7 @@
         		<div class="pull-left">
 				 <h2>{{event.title}}<em><small class="muted"> (<i class="icon-plus"></i>{{event.karmaPoints}} karma)</small></em></h2>  
 				<p>on <strong>{{event.startTime | date:'EEE, MMM d, y'}}</strong> from <strong>{{event.startTime|date:'shortTime'}}</strong> - <strong>{{event.endTime|date:'shortTime'}}</strong> by <a href="#/org/{{event.associatedOrganizations[0].key}}">{{event.associatedOrganizations[0].name}} </a> </p>
-				<p>at {{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}</p>
+				<p>at <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}" target="_blank">{{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}</a></p>
 
 
 
@@ -27,8 +27,7 @@
 					<p><small class="muted">(<strong>{{event.registeredUsers.length }} </strong>registered so far!)</small></p>
 				</div>
                                 <div ng-show="event.status=='COMPLETED'" >
-				    <h4>Rating</h4>
-	
+			
 				    <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> ({{event.rating.count}})</p>
 				    
 				    <p ng-hide="event.registrationInfo=='ORGANIZER'">Your rating<rating value="eventRating.rating.value" max="5" readonly="false"></rating></p>
@@ -52,11 +51,12 @@
 			
 		<div class="fileupload fileupload-new" data-provides="fileupload">
 		  <div ng-show="isImageModelOpen" class="fileupload-preview thumbnail" style="width: 200px; height: 150px;"></div>
-		  <div>
-		    <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()" ><span class="fileupload-new"><i class="icon-plus"></i> Add a photo</span><input type="file" /></span>
-		    <span ng-show="isImageModelOpen" data-dismiss="fileupload" class="btn btn-primary fileupload-exists" ng-click="closeImageUpload()">Upload</span>
+		  <form name="fbPhotoUpload" action="https://graph.facebook.com/{{event.album.id}}/photos?access_token={{fbAccessToken}}" enctype="multipart/form-data" method="POST">
+		    <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()" ><span class="fileupload-new"><i class="icon-plus"></i> Add a photo</span><input id="source" type="file" /></span>
+		    <span ng-show="isImageModelOpen" class="fileupload-exists"><input class="span12" type="text" id="message" placeholder="Description" ></span>
+		    <input type="submit" value="Upload" ng-show="isImageModelOpen" data-dismiss="fileupload" class="btn btn-primary fileupload-exists" onclick="document.fbPhotoUpload.submit()">
 		    <a href="" class="btn fileupload-exists" data-dismiss="fileupload" ng-click="closeImageUpload()" >Cancel</a>
-		  </div>
+		  </form>
 		</div>
 		       
 		
@@ -108,7 +108,7 @@
                         markers="markers"
                         latitude="latitude"
                         longitude="longitude"
-                        mark-click="true"
+                        mark-click="false"
                         draggable="true"
                         style="height: 300px; width: 100%">
                     </div>
