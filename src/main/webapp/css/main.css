@@ -3,9 +3,13 @@
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
+   
+.ng-cloak {
+    display: none;
+}   
 
 .angular-google-map {
-	height: 400px;
+	height: 100%;
 	border: 1px #ccc solid;
 	margin-bottom: 20px;
 	display: block;
@@ -226,6 +230,8 @@ text-align:center;
          -o-transform:skew(8deg) rotate(3deg); 
             transform:skew(8deg) rotate(3deg);
 }
+
+
 
 
 
