@@ -4,6 +4,7 @@
   <div class="row-fluid">
   	<div class="span2">
   		<img ng-src="{{me.profileImage.url}}?type=large"/>
+  		<h3><i class="icon-plus"></i>{{me.karmaPoints}} karma</h3>
   	</div>
   	<div class="span10">
   		
@@ -28,7 +29,7 @@
 	    				<div class="well well-small"><a href="#/org/{{org.org.key}}">{{org.orgName}}</a></div>
 	    			</li>
 	    		</ul>
-	    		<p><strong>{{who}} rating: </strong><rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{me.eventOrganizerRating.count}})</p>
+	    		<p><strong>{{who}} organizer rating: </strong><rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{me.eventOrganizerRating.count}})</p>
 	    </div>
 
   	</div>
