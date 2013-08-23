@@ -6,6 +6,7 @@ import static org.karmaexchange.provider.SocialNetworkProviderFactory.getProvide
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -38,6 +39,7 @@ import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Cache;
 import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
 
 @XmlRootElement
@@ -49,6 +51,8 @@ import com.googlecode.objectify.annotation.Index;
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
 public final class User extends NameBaseDao<User> {
+
+  private static final int MAX_ATTENDANCE_HISTORY = 10;
 
   private static final SocialNetworkProviderType USER_KEY_PROVIDER =
       SocialNetworkProviderType.FACEBOOK;
@@ -87,6 +91,10 @@ public final class User extends NameBaseDao<User> {
 
   @Index
   private long karmaPoints;
+
+  private List<AttendanceRecord> eventAttendanceHistory = Lists.newArrayList();
+  @Ignore
+  private Double eventAttendanceHistoryPct;
 
   private IndexedAggregateRating eventOrganizerRating;
 
@@ -143,6 +151,7 @@ public final class User extends NameBaseDao<User> {
     // profileImage = null;
     eventOrganizerRating = IndexedAggregateRating.create();
     karmaPoints = 0;
+    eventAttendanceHistory = Lists.newArrayList();
     organizationMemberships = Lists.newArrayList();
 
     validateUser();
@@ -160,9 +169,16 @@ public final class User extends NameBaseDao<User> {
     eventOrganizerRating = oldUser.eventOrganizerRating;
     oauthCredentials = Lists.newArrayList(oldUser.oauthCredentials);
     karmaPoints = oldUser.karmaPoints;
+    eventAttendanceHistory = oldUser.eventAttendanceHistory;
     organizationMemberships = oldUser.organizationMemberships;
 
     validateUser();
+  }
+
+  @Override
+  protected void processLoad() {
+    super.processLoad();
+    updateEventAttendanceHistoryPct();
   }
 
   private void validateUser() {
@@ -441,6 +457,7 @@ public final class User extends NameBaseDao<User> {
           // Add / modify role.
           membershipStatus = RequestStatus.PENDING;
           if ((existingMembership != null) &&
+              (existingMembership.role != null) &&
               (existingMembership.role.hasEqualOrMoreCapabilities(reqRole))) {
             membershipStatus = RequestStatus.ACCEPTED;
           } else {
@@ -493,5 +510,27 @@ public final class User extends NameBaseDao<User> {
       }
       return validationErrors;
     }
+  }
+
+  public void removeFromEventAttendanceHistory(Key<Event> eventKey) {
+    Iterables.removeIf(eventAttendanceHistory, AttendanceRecord.eventPredicate(eventKey));
+  }
+
+  public void addToAttendanceHistory(AttendanceRecord newRec) {
+    eventAttendanceHistory.add(newRec);
+    Collections.sort(eventAttendanceHistory, AttendanceRecord.EventStartTimeComparator.INSTANCE);
+    if (eventAttendanceHistory.size() > MAX_ATTENDANCE_HISTORY) {
+      eventAttendanceHistory.subList(MAX_ATTENDANCE_HISTORY, eventAttendanceHistory.size()).clear();
+    }
+  }
+
+  public void updateEventAttendanceHistoryPct() {
+    int eventsAttended = 0;
+    for (AttendanceRecord rec : eventAttendanceHistory) {
+      if (rec.isAttended()) {
+        eventsAttended++;
+      }
+    }
+    eventAttendanceHistoryPct = ((double) eventsAttended) / eventAttendanceHistory.size() * 100;
   }
 }

@@ -49,7 +49,6 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   public static final String START_TIME_PARAM = "start_time";
   public static final String SEARCH_TYPE_PARAM = "type";
-  public static final String PARTICIPANT_TYPE_PARAM = "participant_type";
   public static final String KEYWORDS_PARAM = "keywords";
 
   public static final int DEFAULT_NUM_PARTICIPANT_VIEW_RESULTS = 10;
