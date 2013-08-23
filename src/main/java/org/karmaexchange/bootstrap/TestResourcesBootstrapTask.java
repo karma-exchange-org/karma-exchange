@@ -1,8 +1,10 @@
 package org.karmaexchange.bootstrap;
 
+import static com.google.common.base.Preconditions.checkState;
 import static java.util.Arrays.asList;
 import static org.karmaexchange.bootstrap.TestResourcesBootstrapTask.TestUser.*;
 import static org.karmaexchange.bootstrap.TestResourcesBootstrapTask.TestOrganization.*;
+import static org.karmaexchange.util.OfyService.ofy;
 
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
@@ -26,6 +28,7 @@ import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.Event.ParticipantType;
+import org.karmaexchange.dao.Event.UpsertParticipantTxn;
 import org.karmaexchange.dao.Organization.AutoMembershipRule;
 import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.User.RegisteredEmail;
@@ -100,7 +103,10 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       User user = User.create(createOAuthCredential());
       user.setFirstName(firstName);
       user.setLastName(lastName);
-      user.setAbout("I'm looking forward to making a difference!");
+      if ((this != AMIR) && (this != HARISH) && (this != POONUM) &&
+          ((Long.valueOf(fbId) % 2) != 0)) {
+        user.setAbout("I'm looking forward to making a difference!");
+      }
       if (email != null) {
         user.getRegisteredEmails().add(new RegisteredEmail(email, true));
       }
@@ -256,6 +262,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         Event.processEventCompletionTasks(Key.create(event));
       }
     }
+    for (EventNoShowInfo noShowInfo : createEventsResult.eventNoShowInfo) {
+      noShowInfo.persist();
+      checkState(noShowInfo.event.getEndTime().before(now));
+      Event.processEventCompletionTasks(Key.create(noShowInfo.event));
+    }
     for (PendingReview pendingReview : createEventsResult.getPendingReviews()) {
       pendingReview.persistReview();
     }
@@ -265,8 +276,6 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   private static CreateEventsResult createEvents() {
     List<Event> events = Lists.newArrayList();
     Date now = DateUtils.round(new Date(), Calendar.HOUR_OF_DAY);
-
-    // Upcoming events.
 
     List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
       POONUM.getKey());
@@ -308,6 +317,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     // Past events.
     List<PendingReview> pendingReviews = Lists.newArrayList();
+    List<EventNoShowInfo> eventNoShowInfo = Lists.newArrayList();
 
     organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
@@ -325,6 +335,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     pendingReviews.add(PendingReview.create(event, USER8.getKey(),
       "Some of the areas where we did cleanup were a bit shady...", 3));
     pendingReviews.add(PendingReview.create(event, USER12.getKey(), null, 3));
+    eventNoShowInfo.add(new EventNoShowInfo(event, asList(USER2.getKey())));
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
@@ -336,6 +347,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
+    eventNoShowInfo.add(new EventNoShowInfo(event, asList(USER2.getKey())));
 
     organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
@@ -353,7 +365,27 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       "502906759789422");
     events.add(event);
 
-    return new CreateEventsResult(events, pendingReviews);
+    organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
+    registeredUsers = asList(USER2.getKey(), USER5.getKey(), AMIR.getKey());
+    waitListedUsers = asList();
+    event = createEvent("San Francisco Street Cleanup", BENEVOLENT,
+      DateUtils.addDays(now, -30), 1, organizers, registeredUsers, waitListedUsers, 100,
+      "502906933122738");
+    events.add(event);
+    eventNoShowInfo.add(new EventNoShowInfo(event,
+      asList(AMIR.getKey(), USER2.getKey())));
+
+    organizers = asList(USER1.getKey(), AMIR.getKey());
+    registeredUsers = asList(USER2.getKey(), USER5.getKey(), HARISH.getKey(), POONUM.getKey());
+    waitListedUsers = asList();
+    event = createEvent("San Jose Street Cleanup", UNITED_WAY,
+      DateUtils.addDays(now, -37), 1, organizers, registeredUsers, waitListedUsers, 100,
+      "502906759789422");
+    events.add(event);
+    eventNoShowInfo.add(new EventNoShowInfo(event,
+      asList(HARISH.getKey(), POONUM.getKey(), USER2.getKey())));
+
+    return new CreateEventsResult(events, eventNoShowInfo, pendingReviews);
   }
 
   private static Event createEvent(String title, TestOrganization testOrg, Date startTime,
@@ -420,10 +452,24 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   @Data
   private static class CreateEventsResult {
     private final Collection<Event> events;
+    private final List<EventNoShowInfo> eventNoShowInfo;
     // Reviews are persisted after the events the belong to are persisted because reviews are
     // child entities of the events. Meaning the events must be persisted so their event keys
     // can be generated. The event keys will be used as the parent keys for the reviews.
     private final Collection<PendingReview> pendingReviews;
+  }
+
+  @Data
+  private static class EventNoShowInfo {
+    private final Event event;
+    private final List<Key<User>> noShowUsers;
+
+    public void persist() {
+      for (Key<User> noShowUserKey : noShowUsers) {
+        ofy().transact(new UpsertParticipantTxn(
+          Key.create(event), noShowUserKey, ParticipantType.REGISTERED_NO_SHOW));
+      }
+    }
   }
 
   @Data
