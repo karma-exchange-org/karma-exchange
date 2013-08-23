@@ -2,7 +2,7 @@ package org.karmaexchange.dao;
 
 import static java.util.Arrays.asList;
 import static org.karmaexchange.util.JsonValidationTestUtil.validateJsonConversion;
-import static org.karmaexchange.util.TestUtil.debug;
+import static org.karmaexchange.util.TestUtil.DEBUG;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -68,7 +68,7 @@ public class EventTest extends PersistenceTestHelper {
   @Test
   public void testPersistence() throws Exception {
     validatePersistence(event);
-    if (debug) {
+    if (DEBUG) {
       DatastoreTestUtil.dumpEntity(event);
     }
   }

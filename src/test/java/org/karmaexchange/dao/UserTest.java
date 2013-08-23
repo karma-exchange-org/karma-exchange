@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.karmaexchange.util.JsonValidationTestUtil.validateJsonConversion;
 import static org.karmaexchange.util.OfyService.ofy;
-import static org.karmaexchange.util.TestUtil.debug;
+import static org.karmaexchange.util.TestUtil.DEBUG;
 
 import java.util.Date;
 import java.util.List;
@@ -139,7 +139,7 @@ public class UserTest extends PersistenceTestHelper {
     assertEquals(1, userKeys.size());
     assertTrue(userKeys.contains(Key.create(user1)));
 
-    if (debug) {
+    if (DEBUG) {
       DatastoreTestUtil.dumpEntity(user1);
     }
   }
