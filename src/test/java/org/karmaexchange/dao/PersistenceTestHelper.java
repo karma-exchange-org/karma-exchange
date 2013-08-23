@@ -12,6 +12,7 @@ import org.karmaexchange.util.OfyService;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.Work;
 
 public class PersistenceTestHelper {
 
@@ -30,15 +31,21 @@ public class PersistenceTestHelper {
     appEngineHelper.tearDown();
   }
 
-  protected <T> void validatePersistence(T entity) throws Exception {
+  protected <T> T validatePersistence(T entity) throws Exception {
     if (debug) {
       System.out.println("Before: " + entity);
       System.out.println("Before datastore entity: ");
       DatastoreTestUtil.dumpEntity(entity);
     }
 
-    Key<T> key = ofy().save().entity(entity).now();
-    T persistedEntity = ofy().load().key(key).now();
+    final Key<T> key = ofy().save().entity(entity).now();
+
+    // Bypass the Objectify session cache to see how the entity is actually persisted on disk.
+    T persistedEntity = ofy().transact(new Work<T>() {
+      public T run() {
+        return ofy().load().key(key).now();
+      }
+    });
 
     if (debug) {
       System.out.println("After: " + persistedEntity);
@@ -47,5 +54,6 @@ public class PersistenceTestHelper {
     }
 
     assertEquals(entity, persistedEntity);
+    return persistedEntity;
   }
 }

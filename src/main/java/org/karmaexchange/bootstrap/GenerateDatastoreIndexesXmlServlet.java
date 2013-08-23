@@ -14,7 +14,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.RequestStatus;
 import org.karmaexchange.resources.EventResource;
@@ -79,19 +78,6 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
     issueGetRequestAndCheckRespone(
       service.path("api/me/event")
       .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.PAST.toString()));
-
-    // Not currently used by the UI.
-    issueGetRequestAndCheckRespone(
-      service.path("api/me/event")
-      .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.UPCOMING.toString())
-      .queryParam(EventResource.PARTICIPANT_TYPE_PARAM, ParticipantType.ORGANIZER.toString()));
-    // Not currently used by the UI.
-    issueGetRequestAndCheckRespone(
-      service.path("api/me/event")
-      .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.PAST.toString())
-      .queryParam(EventResource.PARTICIPANT_TYPE_PARAM, ParticipantType.ORGANIZER.toString()));
-    // Seeing upcoming or past events by registered / wait listed doesn't seem as useful.
-    // Just the full list of events will do in that case.
 
     // Not currently used by the UI.
     issueGetRequestAndCheckRespone(

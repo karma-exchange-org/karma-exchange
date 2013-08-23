@@ -1,7 +1,6 @@
 package org.karmaexchange.resources;
 
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
-import static org.karmaexchange.resources.EventResource.PARTICIPANT_TYPE_PARAM;
 
 import java.util.List;
 
@@ -10,13 +9,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.User;
-import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.OrganizationMembershipView;
@@ -57,17 +54,9 @@ public class UserResource extends BaseDaoResource<User> {
 
   public static ListResponseMsg<EventSearchView> userEventSearch(UriInfo uriInfo,
       Key<User> userKey) {
-    MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
-    ParticipantType participantType = queryParams.containsKey(PARTICIPANT_TYPE_PARAM) ?
-        ParticipantType.valueOf(queryParams.getFirst(PARTICIPANT_TYPE_PARAM)) : null;
-    ConditionFilter participantFilter;
     boolean loadReviews = userKey.equals(getCurrentUserKey());
-    if (participantType == null) {
-      participantFilter = new ConditionFilter(Event.getParticipantPropertyName(), userKey);
-    } else {
-      participantFilter =
-          new ConditionFilter(Event.getParticipantPropertyName(participantType), userKey);
-    }
+    ConditionFilter participantFilter =
+        new ConditionFilter(Event.getParticipantPropertyName(), userKey);
     return EventResource.eventSearch(uriInfo, Lists.newArrayList(participantFilter), loadReviews);
   }
 

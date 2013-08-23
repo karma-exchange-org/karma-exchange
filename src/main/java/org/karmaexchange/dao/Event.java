@@ -31,6 +31,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -108,7 +109,7 @@ public final class Event extends IdBaseDao<Event> {
   private List<OrganizationNamedKeyWrapper> associatedOrganizations = Lists.newArrayList();
 
   // Can not be explicitly set. Automatically managed.
-  @Index
+  @Ignore
   private List<KeyWrapper<User>> organizers = Lists.newArrayList();
 
   // Can not be explicitly set. Automatically managed.
@@ -119,17 +120,22 @@ public final class Event extends IdBaseDao<Event> {
   private int maxRegistrations;
 
   // Can not be explicitly set. Automatically managed.
-  @Index
+  @Ignore
   private List<KeyWrapper<User>> registeredUsers = Lists.newArrayList();
   // Can not be explicitly set. Automatically managed.
-  @Index
+  @Ignore
   private List<KeyWrapper<User>> waitListedUsers = Lists.newArrayList();
 
-  // We need a consolidated list because pagination does not support OR queries.
   // NOTE: Embedded list is safe since EventParticipant has embedded objects that are always
   //       non-null.
-  @Index
   private List<EventParticipant> participants = Lists.newArrayList();
+
+  // We need a consolidated list because pagination does not support OR queries.
+  // NOTE: We can try adding a conditional index parameter to EventParticipant in the future.
+  //       Need to make sure that there are no objectify serialization / deserialization bugs with
+  //       that model.
+  @Index
+  private List<KeyWrapper<User>> indexedParticipants = Lists.newArrayList();
 
   // Can not be set. Automatically managed. Only includes organizers and registered users. Wait
   // listed users images are skipped.
@@ -154,11 +160,18 @@ public final class Event extends IdBaseDao<Event> {
   private boolean completionProcessed;
   private CompletionTaskTracker completionTasks;
 
+  /*
+   * If this is false and the event is complete then the organizer should be asked to update
+   * the attendance info and write an event thank you note.
+   */
+  private boolean organizerProcessedCompletion;
+
   private List<SuitableForType> suitableForTypes = Lists.newArrayList();
 
   public enum RegistrationInfo {
     ORGANIZER,
     REGISTERED,
+    REGISTERED_NO_SHOW,
     WAIT_LISTED,
     CAN_REGISTER,
     CAN_WAIT_LIST,
@@ -174,6 +187,7 @@ public final class Event extends IdBaseDao<Event> {
   public enum ParticipantType {
     ORGANIZER,
     REGISTERED,
+    REGISTERED_NO_SHOW,
     WAIT_LISTED
   }
 
@@ -200,19 +214,7 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   public static String getParticipantPropertyName() {
-    return "participants.user.key";
-  }
-
-  public static String getParticipantPropertyName(ParticipantType type) {
-    switch (type) {
-      case ORGANIZER:
-        return "organizers.key";
-      case REGISTERED:
-        return "registeredUsers.key";
-      case WAIT_LISTED:
-        return "waitListedUsers.key";
-    }
-    throw new IllegalStateException("Unknown participant type: " + type);
+    return "indexedParticipants.key";
   }
 
   @Override
@@ -220,6 +222,13 @@ public final class Event extends IdBaseDao<Event> {
     super.preProcessInsert();
     if (title != null) {
       title = WHITESPACE.trimFrom(title);
+    }
+    for (EventParticipant participant : participants) {
+      if (participant.type == ParticipantType.REGISTERED_NO_SHOW) {
+        throw ErrorResponseMsg.createException(
+          "only events that have completed can have no show participants",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
     }
     initParticipantLists();
     // Add the current user as an organizer if there are no organizers registered.
@@ -435,16 +444,23 @@ public final class Event extends IdBaseDao<Event> {
     organizers = Lists.newArrayList();
     registeredUsers = Lists.newArrayList();
     waitListedUsers = Lists.newArrayList();;
+    indexedParticipants = Lists.newArrayList();;
     for (EventParticipant participant : participants) {
       switch (participant.getType()) {
         case ORGANIZER:
           organizers.add(participant.getUser());
+          indexedParticipants.add(participant.getUser());
           break;
         case REGISTERED:
           registeredUsers.add(participant.getUser());
+          indexedParticipants.add(participant.getUser());
+          break;
+        case REGISTERED_NO_SHOW:
+          // Do nothing.
           break;
         case WAIT_LISTED:
           waitListedUsers.add(participant.getUser());
+          indexedParticipants.add(participant.getUser());
           break;
         default:
           checkState(false, "unknown participant type: " + participant.getType());
@@ -457,17 +473,14 @@ public final class Event extends IdBaseDao<Event> {
     return Iterables.tryFind(participants, EventParticipant.userPredicate(userKey)).orNull();
   }
 
-  public List<KeyWrapper<User>> getParticipants(ParticipantType paticipantType) {
-    switch (paticipantType) {
-      case ORGANIZER:
-        return organizers;
-      case REGISTERED:
-        return registeredUsers;
-      case WAIT_LISTED:
-        return waitListedUsers;
-      default:
-        throw new IllegalStateException("unknown participant type: " + paticipantType);
+  public List<KeyWrapper<User>> getParticipants(ParticipantType participantType) {
+    List<KeyWrapper<User>> participantSubset = Lists.newArrayList();
+    for (EventParticipant participant : participants) {
+      if (participant.type == participantType) {
+        participantSubset.add(participant.user);
+      }
     }
+    return participantSubset;
   }
 
   private void validateEvent() {
@@ -570,7 +583,9 @@ public final class Event extends IdBaseDao<Event> {
       ParticipantImage cachedImage = cachedImageIter.next();
       Key<User> userKey = KeyWrapper.toKey(cachedImage.getParticipant());
       EventParticipant participant = tryFindParticipant(userKey);
-      if ((participant == null) || (participant.getType() == ParticipantType.WAIT_LISTED)) {
+      if ((participant == null) ||
+          ((participant.getType() != ParticipantType.ORGANIZER) &&
+           (participant.getType() != ParticipantType.REGISTERED))) {
         cachedImageIter.remove();
       }
     }
@@ -646,6 +661,8 @@ public final class Event extends IdBaseDao<Event> {
         registrationInfo = RegistrationInfo.ORGANIZER;
       } else if (participant.type == ParticipantType.REGISTERED) {
         registrationInfo = RegistrationInfo.REGISTERED;
+      } else if (participant.type == ParticipantType.REGISTERED_NO_SHOW) {
+        registrationInfo = RegistrationInfo.REGISTERED_NO_SHOW;
       } else {
         checkState(participant.type == ParticipantType.WAIT_LISTED,
             "unknown participant type: " + participant.type);
@@ -697,6 +714,11 @@ public final class Event extends IdBaseDao<Event> {
             "insufficent priveleges to make the current user an organizer of the event",
             ErrorInfo.Type.BAD_REQUEST);
         }
+        if (participantType == ParticipantType.REGISTERED_NO_SHOW) {
+          throw ErrorResponseMsg.createException(
+            "insufficent priveleges to change the state of the current user to REGISTERED_NO_SHOW",
+            ErrorInfo.Type.BAD_REQUEST);
+        }
         if ((participantToUpsert != null) && (participantToUpsert.getType() == participantType)) {
           // Nothing to do.
           return;
@@ -726,6 +748,12 @@ public final class Event extends IdBaseDao<Event> {
         if (participantType == ParticipantType.WAIT_LISTED) {
           throw ErrorResponseMsg.createException(
             "wait listed users can not be added after event completion",
+            ErrorInfo.Type.BAD_REQUEST);
+        }
+      } else {
+        if (participantType == ParticipantType.REGISTERED_NO_SHOW) {
+          throw ErrorResponseMsg.createException(
+            "users can not be marked no show until the event is marked complete",
             ErrorInfo.Type.BAD_REQUEST);
         }
       }
@@ -1173,13 +1201,14 @@ public final class Event extends IdBaseDao<Event> {
     List<CompletionTaskWrapper> tasksProcessed = Lists.newArrayList();
 
     public CompletionTaskTracker(Event event) {
-      List<KeyWrapper<User>> participantsToProcess = Lists.newArrayList();
-      participantsToProcess.addAll(event.organizers);
-      participantsToProcess.addAll(event.registeredUsers);
-      for (KeyWrapper<User> participant : participantsToProcess) {
-        tasksPending.add(
-          new CompletionTaskWrapper(
-            new ParticipantCompletionTask(KeyWrapper.toKey(participant), 0)));
+      for (EventParticipant participant : event.participants) {
+        if ((participant.type == ParticipantType.ORGANIZER) ||
+            (participant.type == ParticipantType.REGISTERED) ||
+            (participant.type == ParticipantType.REGISTERED_NO_SHOW)) {
+          tasksPending.add(
+            new CompletionTaskWrapper(
+              new ParticipantCompletionTask(KeyWrapper.toKey(participant.user))));
+        }
       }
       // Parent orgs also accrue Karma points.
       List<Key<Organization>> allOrgs =
@@ -1205,11 +1234,10 @@ public final class Event extends IdBaseDao<Event> {
         // Since participant mutation post-event completion is rare, we'll always take the hit
         // of updating the event.
         tasksPending.add(new CompletionTaskWrapper(
-          new ParticipantCompletionTask(participantKey, 0)));
+          new ParticipantCompletionTask(participantKey)));
       } else {
         tasksProcessed.remove(completionTask);
-        tasksPending.add(new CompletionTaskWrapper(
-          new ParticipantCompletionTask(completionTask.getParticipantTask())));
+        tasksPending.add(completionTask);
       }
     }
 
@@ -1260,7 +1288,8 @@ public final class Event extends IdBaseDao<Event> {
     @Data
     @Embed
     @NoArgsConstructor
-    private static class CompletionTaskWrapper implements CompletionTask {
+    @VisibleForTesting
+    static class CompletionTaskWrapper implements CompletionTask {
       // Instantiate each object to workaround objectify serialization bug (issue #127).
       private ParticipantCompletionTask participantTask = new ParticipantCompletionTask();
       private OrganizationCompletionTask organizationTask = new OrganizationCompletionTask();
@@ -1294,14 +1323,14 @@ public final class Event extends IdBaseDao<Event> {
     @Data
     @Embed
     @NoArgsConstructor
-    private static class ParticipantCompletionTask implements CompletionTask {
+    @VisibleForTesting
+    static class ParticipantCompletionTask implements CompletionTask {
 
       private NullableKeyWrapper<User> participant = NullableKeyWrapper.create();
       private int karmaPointsAssigned;
 
-      public ParticipantCompletionTask(ParticipantCompletionTask completedTask) {
-        participant = completedTask.participant;
-        karmaPointsAssigned = completedTask.karmaPointsAssigned;
+      public ParticipantCompletionTask(Key<User> participantKey) {
+        this(participantKey, 0);
       }
 
       public ParticipantCompletionTask(Key<User> participantKey, int karmaPointsAssigned) {
@@ -1322,17 +1351,27 @@ public final class Event extends IdBaseDao<Event> {
           // Nothing to do. User no longer exists.
           return null;
         }
-        // Delete the previously assigned karma points.
+
+        // Delete the previously assigned karma points and attendance history.
         participant.setKarmaPoints(participant.getKarmaPoints() - karmaPointsAssigned);
-        // Assign the new karma points if the participant is still part of the event.
+        participant.removeFromEventAttendanceHistory(Key.create(event));
+
+        // Assign the new karma points and attendance history if the participant is still part
+        // of the event.
         CompletionTaskWrapper completedTask = null;
         EventParticipant eventParticipant = event.tryFindParticipant(participantKey);
-        if ((eventParticipant != null) &&
-            ((eventParticipant.getType() == ParticipantType.ORGANIZER) ||
-             (eventParticipant.getType() == ParticipantType.REGISTERED))) {
-          participant.setKarmaPoints(participant.getKarmaPoints() + event.karmaPoints);
-          completedTask = new CompletionTaskWrapper(
-            new ParticipantCompletionTask(participantKey, event.karmaPoints));
+        if (eventParticipant != null) {
+          if ((eventParticipant.type == ParticipantType.ORGANIZER) ||
+              (eventParticipant.type == ParticipantType.REGISTERED)) {
+            participant.setKarmaPoints(participant.getKarmaPoints() + event.karmaPoints);
+            participant.addToAttendanceHistory(new AttendanceRecord(event, true));
+            completedTask = new CompletionTaskWrapper(
+              new ParticipantCompletionTask(participantKey, event.karmaPoints));
+          } else if (eventParticipant.type == ParticipantType.REGISTERED_NO_SHOW) {
+            participant.addToAttendanceHistory(new AttendanceRecord(event, false));
+            completedTask = new CompletionTaskWrapper(
+              new ParticipantCompletionTask(participantKey));
+          }
         }
         BaseDao.partialUpdate(participant);
         return completedTask;
@@ -1343,7 +1382,8 @@ public final class Event extends IdBaseDao<Event> {
     @Data
     @Embed
     @NoArgsConstructor
-    private static class OrganizationCompletionTask implements CompletionTask {
+    @VisibleForTesting
+    static class OrganizationCompletionTask implements CompletionTask {
 
       private NullableKeyWrapper<Organization> organization = NullableKeyWrapper.create();
       private int karmaPointsAssigned;
