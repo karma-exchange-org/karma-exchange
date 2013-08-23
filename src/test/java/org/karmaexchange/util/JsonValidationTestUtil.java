@@ -1,7 +1,7 @@
 package org.karmaexchange.util;
 
 import static org.junit.Assert.assertEquals;
-import static org.karmaexchange.util.TestUtil.debug;
+import static org.karmaexchange.util.TestUtil.DEBUG;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -26,7 +26,7 @@ public final class JsonValidationTestUtil {
     jsonMarshaller.marshallToJSON(entity, jsonEntityStringWriter);
     String jsonEntityStr = jsonEntityStringWriter.toString();
 
-    if (debug) {
+    if (DEBUG) {
       System.out.println("Json:\n" + jsonEntityStr);
     }
 
@@ -35,7 +35,7 @@ public final class JsonValidationTestUtil {
       new StringReader(jsonEntityStr),
       entityClass);
 
-    if (debug) {
+    if (DEBUG) {
       System.out.println(entity);
     }
 

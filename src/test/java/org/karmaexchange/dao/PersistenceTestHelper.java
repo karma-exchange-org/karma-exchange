@@ -2,7 +2,7 @@ package org.karmaexchange.dao;
 
 import static org.junit.Assert.assertEquals;
 import static org.karmaexchange.util.OfyService.ofy;
-import static org.karmaexchange.util.TestUtil.debug;
+import static org.karmaexchange.util.TestUtil.DEBUG;
 
 import org.junit.After;
 import org.junit.Before;
@@ -32,7 +32,7 @@ public class PersistenceTestHelper {
   }
 
   protected <T> T validatePersistence(T entity) throws Exception {
-    if (debug) {
+    if (DEBUG) {
       System.out.println("Before: " + entity);
       System.out.println("Before datastore entity: ");
       DatastoreTestUtil.dumpEntity(entity);
@@ -47,7 +47,7 @@ public class PersistenceTestHelper {
       }
     });
 
-    if (debug) {
+    if (DEBUG) {
       System.out.println("After: " + persistedEntity);
       System.out.println("After datastore  entity: ");
       DatastoreTestUtil.dumpEntity(entity);
