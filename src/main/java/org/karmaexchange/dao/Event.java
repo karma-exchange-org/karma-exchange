@@ -1222,6 +1222,16 @@ public final class Event extends IdBaseDao<Event> {
 
     public void processParticipantMutation(Event event, EventParticipant participant,
                                            MutationType mutationType) {
+      // Update org karma points. We only have to update orgs that have been processed.
+      List<CompletionTaskWrapper> orgCompletionTasks = findOrgCompletionTasks(tasksProcessed);
+      for (CompletionTaskWrapper completionTask : orgCompletionTasks) {
+        if (completionTask.getOrganizationTask().updateRequired(event)) {
+          tasksProcessed.remove(completionTask);
+          tasksPending.add(completionTask);
+        }
+      }
+
+      // Process participant.
       Key<User> participantKey = KeyWrapper.toKey(participant.getUser());
       CompletionTaskWrapper completionTask =
           tryFindParticipantCompletionTask(tasksPending, participantKey);
@@ -1274,6 +1284,17 @@ public final class Event extends IdBaseDao<Event> {
           }
         }
       };
+    }
+
+    private List<CompletionTaskWrapper> findOrgCompletionTasks(
+        List<CompletionTaskWrapper> list) {
+      Predicate<CompletionTaskWrapper> orgPredicate = new Predicate<CompletionTaskWrapper>() {
+        @Override
+        public boolean apply(@Nullable CompletionTaskWrapper input) {
+          return input.getOrganizationTask() != null;
+        }
+      };
+      return Lists.newArrayList(Iterables.filter(list, orgPredicate));
     }
 
     private interface CompletionTask {
@@ -1410,9 +1431,19 @@ public final class Event extends IdBaseDao<Event> {
           // Nothing to do. Org no longer exists.
           return null;
         }
-        org.setKarmaPoints(org.getKarmaPoints() + event.karmaPoints);
+        org.setKarmaPoints(
+          org.getKarmaPoints() + computeImpactKarmaPoints(event) - karmaPointsAssigned);
         BaseDao.partialUpdate(org);
-        return new CompletionTaskWrapper(new OrganizationCompletionTask(orgKey, event.karmaPoints));
+        return new CompletionTaskWrapper(
+          new OrganizationCompletionTask(orgKey, computeImpactKarmaPoints(event)));
+      }
+
+      public boolean updateRequired(Event event) {
+        return computeImpactKarmaPoints(event) != karmaPointsAssigned;
+      }
+
+      private int computeImpactKarmaPoints(Event event) {
+        return event.karmaPoints * event.getNumAttending();
       }
     }
   }
