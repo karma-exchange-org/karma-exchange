@@ -13,6 +13,7 @@ import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.EventComment;
 import org.karmaexchange.dao.Image;
+import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.Skill;
@@ -51,6 +52,8 @@ public class PurgeAllResourcesServlet extends HttpServlet {
         ofy().load().type(EventComment.class).keys().iterable();
     Iterable<Key<Image>> imageKeys = ofy().load().type(Image.class).keys().iterable();
     Iterable<Key<Review>> reviewKeys = ofy().load().type(Review.class).keys().iterable();
+    Iterable<Key<Leaderboard>> leaderboardKeys =
+        ofy().load().type(Leaderboard.class).keys().iterable();
 
     ofy().delete().keys(eventKeys);
     ofy().delete().keys(userKeys);
@@ -60,6 +63,7 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     ofy().delete().keys(eventCommentKeys);
     ofy().delete().keys(imageKeys);
     ofy().delete().keys(reviewKeys);
+    ofy().delete().keys(leaderboardKeys);
 
     statusWriter.println("Deleted all resources.");
   }

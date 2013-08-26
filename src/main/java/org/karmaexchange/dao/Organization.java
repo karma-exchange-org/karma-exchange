@@ -117,6 +117,10 @@ public class Organization extends NameBaseDao<Organization> {
     return pageName.toLowerCase();
   }
 
+  public static String getUniqueOrgId(Key<Organization> orgKey) {
+    return orgKey.getName();
+  }
+
   public static String getSearchTokenSuffix(Key<Organization> orgKey) {
     return orgKey.getName();
   }

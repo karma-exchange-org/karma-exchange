@@ -5,6 +5,7 @@ import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.EventComment;
 import org.karmaexchange.dao.Image;
+import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.Skill;
@@ -28,6 +29,8 @@ public class OfyService {
     ObjectifyService.register(EventComment.class);
     ObjectifyService.register(Image.class);
     ObjectifyService.register(Review.class);
+    ObjectifyService.register(Leaderboard.class);
+    // Make sure to update PurgeAllResourcesServlet if a new class is added.
   }
 
   public static Objectify ofy() {

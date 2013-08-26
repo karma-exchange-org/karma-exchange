@@ -6,6 +6,7 @@ import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlTransient;
@@ -119,6 +120,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     return results;
   }
 
+  public static <T extends BaseDao<T>> Map<Key<T>, T> loadAsMap(Collection<Key<T>> keys) {
+    Map<Key<T>, T> result = ofy().load().keys(keys);
+    processLoadResults(result.values());
+    return result;
+  }
+
   public static <T extends BaseDao<T>> List<T> loadAll(Class<T> resourceClass) {
     List<T> resources = ofy().load().type(resourceClass).list();
     processLoadResults(resources);
@@ -220,7 +227,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   protected void processDelete() {
   }
 
-  protected void processLoad() {
+  public void processLoad() {
     updateKey();
     updatePermission();
   }

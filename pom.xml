@@ -137,6 +137,17 @@
         </dependency>
 
         <dependency>
+            <groupId>com.google.appengine.tools</groupId>
+            <artifactId>appengine-pipeline</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.appengine.tools</groupId>
+            <artifactId>appengine-mapreduce</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.sun.jersey.jersey-test-framework</groupId>
             <artifactId>jersey-test-framework-grizzly</artifactId>
             <version>1.17</version>

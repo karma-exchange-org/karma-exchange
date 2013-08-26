@@ -188,7 +188,15 @@ public final class Event extends IdBaseDao<Event> {
     ORGANIZER,
     REGISTERED,
     REGISTERED_NO_SHOW,
-    WAIT_LISTED
+    WAIT_LISTED;
+
+    public boolean countAsAttended() {
+      return (this == ORGANIZER) || (this == REGISTERED);
+    }
+
+    public boolean countAsNoShow() {
+      return (this == REGISTERED_NO_SHOW);
+    }
   }
 
   private enum MutationType {
@@ -356,7 +364,7 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   @Override
-  protected void processLoad() {
+  public void processLoad() {
     // initParticipantLists() must be called prior to processLoad so that updatePermissions can
     // use the participant lists to calculate the permissions.
     initParticipantLists();
@@ -1202,9 +1210,7 @@ public final class Event extends IdBaseDao<Event> {
 
     public CompletionTaskTracker(Event event) {
       for (EventParticipant participant : event.participants) {
-        if ((participant.type == ParticipantType.ORGANIZER) ||
-            (participant.type == ParticipantType.REGISTERED) ||
-            (participant.type == ParticipantType.REGISTERED_NO_SHOW)) {
+        if (participant.type.countAsAttended() || participant.type.countAsNoShow()) {
           tasksPending.add(
             new CompletionTaskWrapper(
               new ParticipantCompletionTask(KeyWrapper.toKey(participant.user))));
@@ -1382,13 +1388,12 @@ public final class Event extends IdBaseDao<Event> {
         CompletionTaskWrapper completedTask = null;
         EventParticipant eventParticipant = event.tryFindParticipant(participantKey);
         if (eventParticipant != null) {
-          if ((eventParticipant.type == ParticipantType.ORGANIZER) ||
-              (eventParticipant.type == ParticipantType.REGISTERED)) {
+          if (eventParticipant.type.countAsAttended()) {
             participant.setKarmaPoints(participant.getKarmaPoints() + event.karmaPoints);
             participant.addToAttendanceHistory(new AttendanceRecord(event, true));
             completedTask = new CompletionTaskWrapper(
               new ParticipantCompletionTask(participantKey, event.karmaPoints));
-          } else if (eventParticipant.type == ParticipantType.REGISTERED_NO_SHOW) {
+          } else if (eventParticipant.type.countAsNoShow()) {
             participant.addToAttendanceHistory(new AttendanceRecord(event, false));
             completedTask = new CompletionTaskWrapper(
               new ParticipantCompletionTask(participantKey));
