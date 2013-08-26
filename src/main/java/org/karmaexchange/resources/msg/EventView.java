@@ -1,5 +1,7 @@
 package org.karmaexchange.resources.msg;
 
+import static org.karmaexchange.util.OfyService.ofy;
+
 import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.AccessLevel;
@@ -31,7 +33,7 @@ public class EventView implements BaseDaoView<Event> {
 
   public EventView(Event event) {
     this.event = event;
-    Organization org = BaseDao.load(KeyWrapper.toKey(event.getOrganization()));
+    Organization org = ofy().load().key(KeyWrapper.toKey(event.getOrganization())).now();
     if (org != null) {
       organizationDetails = new OrgDetails(org);
     }

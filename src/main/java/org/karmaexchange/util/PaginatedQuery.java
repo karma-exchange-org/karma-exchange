@@ -39,7 +39,6 @@ public class PaginatedQuery<T extends BaseDao<T>> {
     QueryResultIterator<T> queryIter = getOfyQuery().iterator();
     List<T> searchResults = Lists.newArrayList(Iterators.limit(queryIter, limit));
     Cursor afterCursor = queryIter.getCursor();
-    BaseDao.processLoadResults(searchResults);
     PagingInfo pagingInfo = PagingInfo.create(afterCursor, limit, queryIter.hasNext(), uriInfo);
     return new Result<T>(searchResults, pagingInfo);
   }

@@ -26,7 +26,7 @@ public class OrganizationNamedKeyWrapper extends NamedKeyWrapper<Organization> {
   }
 
   public void updateName() {
-    Organization org = BaseDao.load(key, ofy().transactionless());
+    Organization org = ofy().transactionless().load().key(key).now();
     if (org == null) {
       throw new IllegalArgumentException("org does not exist: " + key.getString());
     }

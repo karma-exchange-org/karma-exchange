@@ -1,11 +1,12 @@
 package org.karmaexchange.resources.msg;
 
+import static org.karmaexchange.util.OfyService.ofy;
+
 import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.KeyWrapper;
@@ -39,9 +40,9 @@ public class ExpandedEventSearchView extends EventSearchView {
     // Only fetch the review if the current user is registered for the event.
     Review review = null;
     if (event.getRegistrationInfo() == RegistrationInfo.REGISTERED) {
-      review = BaseDao.load(Review.getKeyForCurrentUser(event));
+      review = ofy().load().key(Review.getKeyForCurrentUser(event)).now();
     }
-    Organization org = BaseDao.load(KeyWrapper.toKey(event.getOrganization()));
+    Organization org = ofy().load().key(KeyWrapper.toKey(event.getOrganization())).now();
     return new ExpandedEventSearchView(event, org, review);
   }
 
@@ -50,7 +51,7 @@ public class ExpandedEventSearchView extends EventSearchView {
     super(event, fetchedOrg, currentUserReview);
     description = event.getDescription();
 
-    User user = BaseDao.load(KeyWrapper.toKey(event.getOrganizers().get(0)));
+    User user = ofy().load().key(KeyWrapper.toKey(event.getOrganizers().get(0))).now();
     if (user != null) {
       firstOrganizer = EventParticipantView.create(user);
     }

@@ -1,5 +1,7 @@
 package org.karmaexchange.resources.msg;
 
+import static org.karmaexchange.util.OfyService.ofy;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -8,7 +10,6 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.AggregateRating;
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
@@ -48,7 +49,12 @@ public class OrganizationMembershipView {
     for (OrganizationMembership membership : user.getOrganizationMemberships()) {
       membershipMap.put(KeyWrapper.toKey(membership.getOrganization()), membership);
     }
-    List<Organization> organizations = BaseDao.load(membershipMap.keySet());
+    List<Organization> organizations = Lists.newArrayList();
+    for (Organization org : ofy().load().keys(membershipMap.keySet()).values()) {
+      if (org != null) {
+        organizations.add(org);
+      }
+    }
     Collections.sort(organizations, Organization.OrgNameComparator.INSTANCE);
     List<OrganizationMembershipView> membershipViewList = Lists.newArrayList();
     for (Organization org : organizations) {

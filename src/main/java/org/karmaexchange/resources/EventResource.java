@@ -21,7 +21,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.UpsertParticipantTxn;
 import org.karmaexchange.dao.Event.DeleteParticipantTxn;
@@ -158,7 +157,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Review getReview(
       @PathParam("event_key") String eventKeyStr) {
-    return BaseDao.load(Review.getKeyForCurrentUser(Key.<Event>create(eventKeyStr)));
+    return ofy().load().key(Review.getKeyForCurrentUser(Key.<Event>create(eventKeyStr))).now();
   }
 
   @Path("{event_key}/review")

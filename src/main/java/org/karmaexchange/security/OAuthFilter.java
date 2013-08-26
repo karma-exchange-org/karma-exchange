@@ -140,7 +140,7 @@ public class OAuthFilter implements Filter {
     }
 
     public void vrun() {
-      User user = BaseDao.load(User.getKey(credential));
+      User user = ofy().load().key(User.getKey(credential)).now();
       if (user == null) {
         // throw ErrorResponseMsg.createException("User registration is required",
         //   ErrorInfo.Type.UNREGISTERED_USER);

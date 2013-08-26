@@ -23,6 +23,7 @@ import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.resources.msg.BaseDaoView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.OfyUtil;
 
 import com.googlecode.objectify.Key;
 
@@ -64,8 +65,9 @@ public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoV
     return Response.ok(createBaseDaoView(getResourceObj(key))).build();
   }
 
-  protected T getResourceObj(String key) {
-    T resource = BaseDao.<T>load(key);
+  protected T getResourceObj(String keyStr) {
+    Key<T> key = OfyUtil.<T>createKey(keyStr);
+    T resource = ofy().load().key(key).now();
     if (resource == null) {
       throw ErrorResponseMsg.createException("resource does not exist", ErrorInfo.Type.BAD_REQUEST);
     }

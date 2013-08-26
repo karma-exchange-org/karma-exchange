@@ -247,7 +247,7 @@ public final class User extends NameBaseDao<User> {
     private final User user;
 
     public void vrun() {
-      User existingUser = BaseDao.load(Key.create(user));
+      User existingUser = ofy().load().key(Key.create(user)).now();
       // Don't wipe out an existing user object. State like karma points, etc. should be
       // retained.
       if (existingUser == null) {
@@ -288,7 +288,7 @@ public final class User extends NameBaseDao<User> {
     private final BlobKey blobKey;
 
     public void vrun() {
-      User user = BaseDao.load(userKey);
+      User user = ofy().load().key(userKey).now();
       if (user == null) {
         throw ErrorResponseMsg.createException("user not found", ErrorInfo.Type.BAD_REQUEST);
       }
@@ -414,7 +414,7 @@ public final class User extends NameBaseDao<User> {
 
   public static void updateMembership(Key<User> userToUpdateKey, Key<Organization> organizationKey,
       @Nullable Organization.Role role) {
-    Organization org = BaseDao.load(organizationKey);
+    Organization org = ofy().load().key(organizationKey).now();
     if (org == null) {
       throw ErrorResponseMsg.createException("org not found", ErrorInfo.Type.BAD_REQUEST);
     }
@@ -432,7 +432,7 @@ public final class User extends NameBaseDao<User> {
     private final Organization.Role reqRole;
 
     public void vrun() {
-      User user = BaseDao.load(userToUpdateKey);
+      User user = ofy().load().key(userToUpdateKey).now();
       if (user == null) {
         throw ErrorResponseMsg.createException("user not found", ErrorInfo.Type.BAD_REQUEST);
       }
