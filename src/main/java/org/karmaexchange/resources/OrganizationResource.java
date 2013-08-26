@@ -20,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Leaderboard.LeaderboardType;
 import org.karmaexchange.dao.Organization;
@@ -80,8 +79,8 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   public ListResponseMsg<Organization> getChildren(
       @PathParam("org") String orgKeyStr) {
     Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
-    List<Organization> childOrgs = BaseDao.load(
-      ofy().load().type(Organization.class).filter("parentOrg.key", orgKey));
+    List<Organization> childOrgs =
+        ofy().load().type(Organization.class).filter("parentOrg.key", orgKey).list();
     Collections.sort(childOrgs, Organization.OrgNameComparator.INSTANCE);
     return ListResponseMsg.create(childOrgs);
   }
@@ -162,6 +161,6 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
       type = LeaderboardType.ALL_TIME;
     }
     Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
-    return BaseDao.load(Leaderboard.createKey(orgKey, type));
+    return ofy().load().key(Leaderboard.createKey(orgKey, type)).now();
   }
 }

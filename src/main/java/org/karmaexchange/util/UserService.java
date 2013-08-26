@@ -1,8 +1,8 @@
 package org.karmaexchange.util;
 
 import static org.karmaexchange.util.AdminUtil.isAdminKey;
+import static org.karmaexchange.util.OfyService.ofy;
 
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 
@@ -20,7 +20,7 @@ public final class UserService {
 
   // Objectify caches this in the session cache.
   public static User getCurrentUser() {
-    return BaseDao.load(getCurrentUserKey());
+    return ofy().load().key(getCurrentUserKey()).now();
   }
 
   public static OAuthCredential getCurrentUserCredential() {

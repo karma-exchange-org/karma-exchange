@@ -1,5 +1,7 @@
 package org.karmaexchange.task;
 
+import static org.karmaexchange.util.OfyService.ofy;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -62,7 +64,7 @@ public class LeaderboardReducer extends Reducer<Key<Organization>, UserKarmaReco
     List<LeaderboardScore> sortedThirtyDayLeaderboardScores =
         sortAndTrimLeaderboard(thirtyDayLeaderboardMap);
 
-    // Once BaseDao is fixed to handle loads properly these loads will be asynchronous.
+    // Load the user objects asynchronously.
     Map<Key<User>, User> allTimeLeaderboardUsers =
         fetchLeaderboardUsers(sortedAllTimeLeaderboardScores);
     Map<Key<User>, User> thirtyDayLeaderboardUsers =
@@ -99,7 +101,7 @@ public class LeaderboardReducer extends Reducer<Key<Organization>, UserKarmaReco
     for (LeaderboardScore score : scores) {
       userKeys.add(score.getUserKey());
     }
-    return BaseDao.loadAsMap(userKeys);
+    return ofy().load().keys(userKeys);
   }
 
   private void persistLeaderboard(Key<Organization> orgKey, List<LeaderboardScore> sortedScores,

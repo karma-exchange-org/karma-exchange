@@ -11,7 +11,6 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.AlbumRef;
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.RegistrationInfo;
 import org.karmaexchange.dao.Event.Status;
@@ -67,8 +66,7 @@ public class EventSearchView {
 
   public static List<EventSearchView> create(List<Event> events, EventSearchType searchType,
       boolean loadReviews) {
-    // Do this first since the load of reviews is currently blocking.
-    Map<Key<Organization>, Organization> orgs = unprocessedLoadOrgs(events);
+    Map<Key<Organization>, Organization> orgs = loadOrgs(events);
 
     Map<Key<Review>, Review> reviews;
     if (loadReviews && (searchType == EventSearchType.PAST)) {
@@ -76,10 +74,6 @@ public class EventSearchView {
     } else {
       reviews = Maps.newHashMap();
     }
-
-    // Finish the processing. This is a bit hacky... ideally BaseDao would provide an
-    // asynchronous wrapper that would process the object on first access.
-    BaseDao.processLoadResults(orgs.values());
 
     List<EventSearchView> searchResults = Lists.newArrayList();
     for (Event event : events) {
@@ -90,7 +84,7 @@ public class EventSearchView {
     return searchResults;
   }
 
-  private static Map<Key<Organization>, Organization> unprocessedLoadOrgs(List<Event> events) {
+  private static Map<Key<Organization>, Organization> loadOrgs(List<Event> events) {
     Set<Key<Organization>> orgs = Sets.newHashSet();
     for (Event event : events) {
       orgs.add(KeyWrapper.toKey(event.getOrganization()));
@@ -106,7 +100,7 @@ public class EventSearchView {
         reviewKeys.add(Review.getKeyForCurrentUser(event));
       }
     }
-    return BaseDao.loadAsMap(reviewKeys);
+    return ofy().load().keys(reviewKeys);
   }
 
   protected EventSearchView(Event event, @Nullable Organization fetchedOrg,

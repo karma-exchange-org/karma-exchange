@@ -4,10 +4,6 @@ import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlTransient;
 
@@ -20,15 +16,12 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
-import org.karmaexchange.util.OfyUtil;
 
-import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Ignore;
+import com.googlecode.objectify.annotation.OnLoad;
 import com.googlecode.objectify.annotation.Parent;
-import com.googlecode.objectify.cmd.Query;
 
 @Data
 public abstract class BaseDao<T extends BaseDao<T>> {
@@ -65,7 +58,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
       T prevResource = null;
       if (resource.isKeyComplete()) {
-        prevResource = load(Key.create(resource));
+        prevResource = ofy().load().key(Key.create(resource)).now();
       }
       if (prevResource == null) {
         resource.insert();
@@ -84,60 +77,6 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     resource.partialUpdate();
   }
 
-  @Nullable
-  public static <T extends BaseDao<T>> T load(String keyStr) {
-    return load(OfyUtil.<T>createKey(keyStr));
-  }
-
-  @Nullable
-  public static <T extends BaseDao<T>> T load(Key<T> key) {
-    return load(key, ofy());
-  }
-
-  @Nullable
-  public static <T extends BaseDao<T>> T load(Key<T> key, Objectify ofyService) {
-    T resource = ofyService.load().key(key).now();
-    if (resource != null) {
-      resource.processLoad();
-    }
-    return resource;
-  }
-
-  public static <T extends BaseDao<T>> List<T> load(Collection<Key<T>> keys) {
-    return load(keys, ofy());
-  }
-
-  public static <T extends BaseDao<T>> List<T> load(Collection<Key<T>> keys,
-      Objectify ofyService) {
-    List<T> resources = Lists.newArrayList(ofyService.load().keys(keys).values());
-    processLoadResults(resources);
-    return resources;
-  }
-
-  public static <T extends BaseDao<T>> List<T> load(Query<T> query) {
-    List<T> results = query.list();
-    processLoadResults(results);
-    return results;
-  }
-
-  public static <T extends BaseDao<T>> Map<Key<T>, T> loadAsMap(Collection<Key<T>> keys) {
-    Map<Key<T>, T> result = ofy().load().keys(keys);
-    processLoadResults(result.values());
-    return result;
-  }
-
-  public static <T extends BaseDao<T>> List<T> loadAll(Class<T> resourceClass) {
-    List<T> resources = ofy().load().type(resourceClass).list();
-    processLoadResults(resources);
-    return resources;
-  }
-
-  public static <T extends BaseDao<T>> void processLoadResults(Collection<T> resources) {
-    for (T resource : resources) {
-      resource.processLoad();
-    }
-  }
-
   public static <T extends BaseDao<T>> void delete(Key<T> key) {
     ofy().transact(new DeleteTxn<T>(key));
   }
@@ -148,7 +87,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     private final Key<T> resourceKey;
 
     public void vrun() {
-      T resource = BaseDao.load(resourceKey);
+      T resource = ofy().load().key(resourceKey).now();
       if (resource != null) {
         resource.delete();
       }
@@ -227,6 +166,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   protected void processDelete() {
   }
 
+  @OnLoad
   public void processLoad() {
     updateKey();
     updatePermission();

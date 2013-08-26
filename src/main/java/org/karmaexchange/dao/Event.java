@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -525,13 +526,18 @@ public final class Event extends IdBaseDao<Event> {
       if (organizers.isEmpty()) {
         validationErrors.add(new ResourceValidationError(
           this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "organizers"));
-        List<User> organizerEntities =
-            BaseDao.load(KeyWrapper.toKeys(organizers), ofy().transactionless());
-        for (User organizer : organizerEntities) {
-          if (!organizer.hasOrgMembership(KeyWrapper.toKey(organization), Role.ORGANIZER)) {
+        Map<Key<User>, User> organizerEntities =
+            ofy().transactionless().load().keys(KeyWrapper.toKeys(organizers));
+        for (Map.Entry<Key<User>, User> organizerEntry : organizerEntities.entrySet()) {
+          if (organizerEntry.getValue() == null) {
+            validationErrors.add(new ListValueValidationError(
+              this, ValidationErrorType.RESOURCE_FIELD_LIST_VALUE_INVALID_VALUE, "organizers",
+              organizerEntry.getKey().getString()));
+          } else if (!organizerEntry.getValue().hasOrgMembership(
+                        KeyWrapper.toKey(organization), Role.ORGANIZER)) {
             validationErrors.add(new ListValueValidationError(
               this, ValidationErrorType.RESOURCE_FIELD_LIST_VALUE_INVALID_PERMISSIONS, "organizers",
-              organizer.getKey()));
+              organizerEntry.getKey().getString()));
           }
         }
       }
@@ -615,9 +621,12 @@ public final class Event extends IdBaseDao<Event> {
           }
         }
       }
-      List<User> participantsToCache = BaseDao.load(usersToFetch, ofy().transactionless());
+      Collection<User> participantsToCache =
+          ofy().transactionless().load().keys(usersToFetch).values();
       for (User participantToCache : participantsToCache) {
-        cachedParticipantImages.add(ParticipantImage.create(participantToCache));
+        if (participantToCache != null) {
+          cachedParticipantImages.add(ParticipantImage.create(participantToCache));
+        }
       }
     }
   }
@@ -685,7 +694,7 @@ public final class Event extends IdBaseDao<Event> {
   //     terrible. But this should be eliminated if possible.
   @Override
   protected Permission evalPermission() {
-    User currentUser = BaseDao.load(getCurrentUserKey(), ofy().transactionless());
+    User currentUser = ofy().transactionless().load().key(getCurrentUserKey()).now();
     if (currentUser.hasOrgMembership(KeyWrapper.toKey(organization),
           Organization.Role.ORGANIZER)) {
       return Permission.ALL;
@@ -701,7 +710,7 @@ public final class Event extends IdBaseDao<Event> {
     private final ParticipantType participantType;
 
     public void vrun() {
-      Event event = BaseDao.load(eventKey);
+      Event event = ofy().load().key(eventKey).now();
       if (event == null) {
         throw ErrorResponseMsg.createException("event not found",
           ErrorInfo.Type.BAD_REQUEST);
@@ -801,7 +810,7 @@ public final class Event extends IdBaseDao<Event> {
     private final Key<User> userToRemoveKey;
 
     public void vrun() {
-      Event event = BaseDao.load(eventKey);
+      Event event = ofy().load().key(eventKey).now();
       if (event == null) {
         throw ErrorResponseMsg.createException("event not found",
           ErrorInfo.Type.BAD_REQUEST);
@@ -820,8 +829,9 @@ public final class Event extends IdBaseDao<Event> {
               ErrorInfo.Type.BAD_REQUEST);
           }
           if (canWriteReview(participant)) {
-            Review participantReview = BaseDao.load(
-              Review.getKeyForUser(Key.create(event), KeyWrapper.toKey(participant.getUser())));
+            Key<Review> participantReviewKey =
+                Review.getKeyForUser(Key.create(event), KeyWrapper.toKey(participant.getUser()));
+            Review participantReview = ofy().load().key(participantReviewKey).now();
             if (participantReview != null) {
               throw ErrorResponseMsg.createException(
                 "users that have written a review can not be removed after event completion",
@@ -877,7 +887,7 @@ public final class Event extends IdBaseDao<Event> {
     private final Review review;
 
     public void vrun() {
-      Event event = BaseDao.load(eventKey);
+      Event event = ofy().load().key(eventKey).now();
       if (event == null) {
         throw ErrorResponseMsg.createException("event not found", ErrorInfo.Type.BAD_REQUEST);
       }
@@ -909,7 +919,7 @@ public final class Event extends IdBaseDao<Event> {
           ErrorInfo.Type.BAD_REQUEST);
       }
     }
-    Review existingReview = BaseDao.load(expReviewKey);
+    Review existingReview = ofy().load().key(expReviewKey).now();
     if (existingReview != null) {
       event.rating.deleteRating(existingReview.getRating());
       ratingMutated = true;
@@ -1110,7 +1120,7 @@ public final class Event extends IdBaseDao<Event> {
       @Override
       public DerivedRatingWrapper processPendingRating(Event event) {
         Key<User> userKey = KeyWrapper.toKey(organizer);
-        User user = BaseDao.load(userKey);
+        User user = ofy().load().key(userKey).now();
         if (user == null) {
           // Nothing to do. User no longer exists.
           return null;
@@ -1156,7 +1166,7 @@ public final class Event extends IdBaseDao<Event> {
       @Override
       public DerivedRatingWrapper processPendingRating(Event event) {
         Key<Organization> orgKey = KeyWrapper.toKey(organization);
-        Organization org = BaseDao.load(orgKey);
+        Organization org = ofy().load().key(orgKey).now();
         if (org == null) {
           // Nothing to do. Org no longer exists.
           return null;
@@ -1187,7 +1197,7 @@ public final class Event extends IdBaseDao<Event> {
     private boolean workPending;
 
     public void vrun() {
-      Event event = BaseDao.load(eventKey);
+      Event event = ofy().load().key(eventKey).now();
       if ((event == null) || !event.hasPendingRatings()) {
         // The event may no longer exist or there may be no work pending.
         return;
@@ -1373,7 +1383,7 @@ public final class Event extends IdBaseDao<Event> {
       @Override
       public CompletionTaskWrapper processPendingTask(Event event) {
         Key<User> participantKey = KeyWrapper.toKey(participant);
-        User participant = BaseDao.load(participantKey);
+        User participant = ofy().load().key(participantKey).now();
         if (participant == null) {
           // Nothing to do. User no longer exists.
           return null;
@@ -1431,7 +1441,7 @@ public final class Event extends IdBaseDao<Event> {
       @Override
       public CompletionTaskWrapper processPendingTask(Event event) {
         Key<Organization> orgKey = KeyWrapper.toKey(organization);
-        Organization org = BaseDao.load(orgKey);
+        Organization org = ofy().load().key(orgKey).now();
         if (org == null) {
           // Nothing to do. Org no longer exists.
           return null;
@@ -1468,7 +1478,7 @@ public final class Event extends IdBaseDao<Event> {
     private boolean workPending;
 
     public void vrun() {
-      Event event = BaseDao.load(eventKey);
+      Event event = ofy().load().key(eventKey).now();
       if ((event == null) || event.completionProcessed) {
         return;
       }
