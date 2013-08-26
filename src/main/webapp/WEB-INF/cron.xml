@@ -5,4 +5,10 @@
         <description>Process completed events</description>
         <schedule>every 10 minutes</schedule>
     </cron>
+
+    <cron>
+        <url>/task/compute_leaderboard</url>
+        <description>Compute organization leaderboards</description>
+        <schedule>every 24 hours</schedule>
+    </cron>
 </cronentries>

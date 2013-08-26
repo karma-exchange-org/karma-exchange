@@ -176,7 +176,7 @@ public final class User extends NameBaseDao<User> {
   }
 
   @Override
-  protected void processLoad() {
+  public void processLoad() {
     super.processLoad();
     updateEventAttendanceHistoryPct();
   }

@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.karmaexchange.util.ServletUtil;
+
 @SuppressWarnings("serial")
 public class PersistTestResourcesServlet extends HttpServlet {
 
@@ -15,7 +17,8 @@ public class PersistTestResourcesServlet extends HttpServlet {
     resp.setContentType("text/plain");
     PrintWriter statusWriter = resp.getWriter();
     new CauseTypesBootstrapTask(statusWriter, req.getCookies()).execute();
-    new TestResourcesBootstrapTask(statusWriter, req.getCookies()).execute();
+    new TestResourcesBootstrapTask(statusWriter, req.getCookies(), ServletUtil.getBaseUrl(req))
+        .execute();
   }
 
   @Override

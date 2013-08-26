@@ -1,29 +1,35 @@
-package org.karmaexchange.resources.msg;
+package org.karmaexchange.dao;
 
-import org.karmaexchange.dao.ImageUrlView;
-import org.karmaexchange.dao.User;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Embed;
+
+@Embed
 @Data
 @NoArgsConstructor
-public class UserSummaryInfoView {
+@EqualsAndHashCode(callSuper=true)
+@ToString(callSuper=true)
+public class UserInfoKeyWrapper extends KeyWrapper<User> {
   private String firstName;
   private String lastName;
   private String nickName;
-  private String key;
   private ImageUrlView profileImage;
   private long karmaPoints;
 
-  public UserSummaryInfoView(User user) {
+  public UserInfoKeyWrapper(User user) {
+    super(Key.create(user));
     firstName = user.getFirstName();
     lastName = user.getLastName();
     nickName = user.getNickName();
-    key = user.getKey();
     if (user.getProfileImage() != null) {
       profileImage = ImageUrlView.create(user.getProfileImage());
     }
     karmaPoints = user.getKarmaPoints();
   }
+
 }
