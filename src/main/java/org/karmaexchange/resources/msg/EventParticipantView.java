@@ -1,12 +1,13 @@
 package org.karmaexchange.resources.msg;
 
+import static org.karmaexchange.util.OfyService.ofy;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.AggregateRating;
 import org.karmaexchange.dao.User;
@@ -32,8 +33,10 @@ public class EventParticipantView extends UserSummaryInfoView {
     List<EventParticipantView> registeredUsers = Lists.newArrayListWithCapacity(usersBatch.size());
     if (!usersBatch.isEmpty()) {
       List<Key<User>> registeredUserKeys = KeyWrapper.toKeys(usersBatch);
-      for (User user : BaseDao.load(registeredUserKeys)) {
-        registeredUsers.add(EventParticipantView.create(user));
+      for (User user : ofy().load().keys(registeredUserKeys).values()) {
+        if (user != null) {
+          registeredUsers.add(EventParticipantView.create(user));
+        }
       }
     }
     return registeredUsers;
@@ -42,8 +45,10 @@ public class EventParticipantView extends UserSummaryInfoView {
   public static Map<Key<User>, EventParticipantView> getMap(Collection<Key<User>> usersBatch) {
     Map<Key<User>, EventParticipantView> result = Maps.newHashMap();
     if (!usersBatch.isEmpty()) {
-      for (User user : BaseDao.load(usersBatch)) {
-        result.put(Key.create(user), EventParticipantView.create(user));
+      for (User user : ofy().load().keys(usersBatch).values()) {
+        if (user != null) {
+          result.put(Key.create(user), EventParticipantView.create(user));
+        }
       }
     }
     return result;

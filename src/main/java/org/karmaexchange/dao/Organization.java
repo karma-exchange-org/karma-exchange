@@ -297,7 +297,7 @@ public class Organization extends NameBaseDao<Organization> {
     if (isCurrentUserAdmin()) {
       return true;
     }
-    User currentUser = BaseDao.load(getCurrentUserKey(), ofy().transactionless());
+    User currentUser = ofy().transactionless().load().key(getCurrentUserKey()).now();
     if (currentUser == null) {
       throw ErrorResponseMsg.createException("current user not found", ErrorInfo.Type.BAD_REQUEST);
     }
@@ -366,7 +366,7 @@ public class Organization extends NameBaseDao<Organization> {
   public static List<Organization> getOrgAndAncestorOrgs(Key<Organization> orgKey) {
     List<Organization> allOrgs = Lists.newArrayList();
     while (orgKey != null) {
-      Organization org = BaseDao.load(orgKey, ofy().transactionless());
+      Organization org = ofy().transactionless().load().key(orgKey).now();
       orgKey = null;  // For next iteration.
       if (org != null) {
         allOrgs.add(org);
@@ -395,7 +395,7 @@ public class Organization extends NameBaseDao<Organization> {
     private final OrganizationNamedKeyWrapper parentOrgNamedKey;
 
     public void vrun() {
-      Organization childOrg = BaseDao.load(childOrgKey);
+      Organization childOrg = ofy().load().key(childOrgKey).now();
       if ((childOrg != null) && (childOrg.parentOrg != null) &&
           childOrg.parentOrg.getKey().equals(parentOrgNamedKey.getKey()) &&
           !childOrg.parentOrg.getName().equals(parentOrgNamedKey.getName())) {

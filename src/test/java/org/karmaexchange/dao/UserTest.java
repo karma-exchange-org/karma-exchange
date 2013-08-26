@@ -96,10 +96,6 @@ public class UserTest extends PersistenceTestHelper {
   public void testPersistence() throws Exception {
     validatePersistence(user1);
     validatePersistence(user2);
-    User userFromDb = BaseDao.load(Key.create(user1));
-    // Invoke process load to set the key and permission.
-    user1.processLoad();
-    assertEquals(user1, userFromDb);
 
     Skill skill = Skill.create("programming");
     Set<Key<User>> userKeys = Sets.newHashSet(

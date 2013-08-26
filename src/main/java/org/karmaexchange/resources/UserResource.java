@@ -1,5 +1,6 @@
 package org.karmaexchange.resources;
 
+import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.List;
@@ -11,7 +12,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
 
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.EventSearchView;
@@ -41,7 +41,7 @@ public class UserResource extends BaseDaoResource<User> {
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public List<User> getResources() {
-    return BaseDao.loadAll(getResourceClass());
+    return ofy().load().type(getResourceClass()).list();
   }
 
   @Path("{user_key}/event")
@@ -69,7 +69,7 @@ public class UserResource extends BaseDaoResource<User> {
   }
 
   public static ListResponseMsg<OrganizationMembershipView> getOrgs(Key<User> userKey) {
-    User user = BaseDao.load(userKey);
+    User user = ofy().load().key(userKey).now();
     // For now we always fetch all the organizations. Implementing offsetted results requires
     // fetching all the organizations and sorting them by name. So it doesn't save us anything
     // to return a smaller batch at a time.

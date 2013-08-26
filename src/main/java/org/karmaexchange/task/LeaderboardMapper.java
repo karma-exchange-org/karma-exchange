@@ -39,6 +39,8 @@ public class LeaderboardMapper extends Mapper<Entity, Key<Organization>, UserKar
 
   private void mapAsAdmin(Entity dsEvent) {
     Event event = ofy().toPojo(dsEvent);
+    // It appears that Objectify does not invoke the @OnLoad callbacks when toPojo is
+    // invoked (bug?). Therefore invoke the callbacks explicitly.
     event.processLoad();
     if (event.getStatus() != Status.COMPLETED) {
       return;

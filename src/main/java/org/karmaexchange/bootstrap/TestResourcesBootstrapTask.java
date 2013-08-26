@@ -248,7 +248,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   protected void performTask() {
     statusWriter.println("About to persist test users...");
     for (TestUser testUser : TestUser.values()) {
-      User user = BaseDao.load(testUser.getKey());
+      User user = ofy().load().key(testUser.getKey()).now();
       if (user == null) {
         BaseDao.upsert(testUser.createUser());
         User.updateProfileImage(testUser.getKey(), testUser.getSocialNetworkProviderType());

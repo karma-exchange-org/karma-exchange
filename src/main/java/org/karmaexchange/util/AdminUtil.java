@@ -17,6 +17,7 @@ public class AdminUtil {
   private static final String ADMIN_KEY_PREFIX = "ADMIN:";
 
   public enum AdminTaskType {
+    TEST,
     BOOTSTRAP,
     OAUTH_FILTER,
     TASK_QUEUE,
