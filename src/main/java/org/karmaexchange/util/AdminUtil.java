@@ -20,6 +20,7 @@ public class AdminUtil {
     BOOTSTRAP,
     OAUTH_FILTER,
     TASK_QUEUE,
+    MAP_REDUCE,
     REGISTRATION;
 
     public Key<User> getKey() {

@@ -46,6 +46,7 @@ import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
+import org.karmaexchange.task.ComputeLeaderboardServlet;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
 
@@ -56,6 +57,8 @@ import com.googlecode.objectify.Key;
 public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private static int eventNum = 0;
+
+  private final String baseUrl;
 
   public enum TestUser {
     USER1("100006074376957", "Susan", "Liangberg"),
@@ -236,8 +239,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final Organization.Role requestedRole;
   }
 
-  public TestResourcesBootstrapTask(PrintWriter statusWriter, Cookie[] cookies) {
+  public TestResourcesBootstrapTask(PrintWriter statusWriter, Cookie[] cookies, String baseUrl) {
     super(statusWriter, cookies);
+    this.baseUrl = baseUrl;
   }
 
   @Override
@@ -270,6 +274,12 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     for (PendingReview pendingReview : createEventsResult.getPendingReviews()) {
       pendingReview.persistReview();
     }
+
+    statusWriter.println("About to update organization leaderboards...");
+    String leaderboardJobId = ComputeLeaderboardServlet.startComputeLeaderboardMapReduce();
+    statusWriter.println("Leaderboard update initiated. View status at: " +
+        ComputeLeaderboardServlet.getMapReduceStatusUrl(baseUrl, leaderboardJobId));
+
     statusWriter.println("Test resources persisted.");
   }
 
@@ -369,7 +379,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER5.getKey(), AMIR.getKey());
     waitListedUsers = asList();
     event = createEvent("San Francisco Street Cleanup", BENEVOLENT,
-      DateUtils.addDays(now, -30), 1, organizers, registeredUsers, waitListedUsers, 100,
+      DateUtils.addDays(now, -31), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906933122738");
     events.add(event);
     eventNoShowInfo.add(new EventNoShowInfo(event,

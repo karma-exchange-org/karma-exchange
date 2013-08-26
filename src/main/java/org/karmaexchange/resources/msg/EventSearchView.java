@@ -106,9 +106,7 @@ public class EventSearchView {
         reviewKeys.add(Review.getKeyForCurrentUser(event));
       }
     }
-    Map<Key<Review>, Review> reviews = ofy().load().keys(reviewKeys);
-    BaseDao.processLoadResults(reviews.values());
-    return reviews;
+    return BaseDao.loadAsMap(reviewKeys);
   }
 
   protected EventSearchView(Event event, @Nullable Organization fetchedOrg,

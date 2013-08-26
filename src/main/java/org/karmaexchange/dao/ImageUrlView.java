@@ -1,10 +1,11 @@
-package org.karmaexchange.resources.msg;
+package org.karmaexchange.dao;
 
 import lombok.Data;
 
-import org.karmaexchange.dao.ImageProviderType;
-import org.karmaexchange.dao.ImageRef;
 
+import com.googlecode.objectify.annotation.Embed;
+
+@Embed
 @Data
 public class ImageUrlView {
   private String url;

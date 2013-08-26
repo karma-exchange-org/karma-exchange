@@ -21,6 +21,8 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
 import org.karmaexchange.dao.BaseDao;
+import org.karmaexchange.dao.Leaderboard;
+import org.karmaexchange.dao.Leaderboard.LeaderboardType;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.RequestStatus;
 import org.karmaexchange.dao.User;
@@ -28,6 +30,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.OrganizationMemberView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.OfyUtil;
 import org.karmaexchange.util.PaginatedQuery;
 import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
 import org.karmaexchange.util.PaginatedQuery.StartsWithFilter;
@@ -40,6 +43,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   public static final String NAME_PREFIX_PARAM = "name_prefix";
   public static final String ROLE_PARAM = "role";
   public static final String MEMBERSHIP_STATUS_PARAM = "membership_status";
+  public static final String LEADERBOARD_TYPE_PARAM = "type";
 
   @Override
   protected Class<Organization> getResourceClass() {
@@ -75,7 +79,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<Organization> getChildren(
       @PathParam("org") String orgKeyStr) {
-    Key<Organization> orgKey = Key.<Organization>create(orgKeyStr);
+    Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
     List<Organization> childOrgs = BaseDao.load(
       ofy().load().type(Organization.class).filter("parentOrg.key", orgKey));
     Collections.sort(childOrgs, Organization.OrgNameComparator.INSTANCE);
@@ -89,7 +93,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
       @PathParam("org") String orgKeyStr,
       @QueryParam(ROLE_PARAM) Organization.Role role,
       @QueryParam(MEMBERSHIP_STATUS_PARAM) RequestStatus membershipStatus) {
-    Key<Organization> orgKey = Key.<Organization>create(orgKeyStr);
+    Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
     String membershipCondition;
     if (membershipStatus == RequestStatus.PENDING) {
       if (role != null) {
@@ -128,8 +132,9 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
       @PathParam("org") String orgKeyStr,
       @QueryParam("user") String userKeyStr,
       @QueryParam(ROLE_PARAM) Organization.Role role) {
-    Key<Organization> orgKey = Key.<Organization>create(orgKeyStr);
-    Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
+    Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
+    Key<User> userKey =
+        (userKeyStr == null) ? getCurrentUserKey() : OfyUtil.<User>createKey(userKeyStr);
     if (role == null) {
       role = Organization.Role.MEMBER;
     }
@@ -141,8 +146,22 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   public void deleteMember(
       @PathParam("org") String orgKeyStr,
       @QueryParam("user") String userKeyStr) {
-    Key<Organization> orgKey = Key.<Organization>create(orgKeyStr);
-    Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
+    Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
+    Key<User> userKey =
+        (userKeyStr == null) ? getCurrentUserKey() : OfyUtil.<User>createKey(userKeyStr);
     User.updateMembership(userKey, orgKey, null);
+  }
+
+  @Path("{org}/leaderboard")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public Leaderboard getLeaderboard(
+      @PathParam("org") String orgKeyStr,
+      @QueryParam(LEADERBOARD_TYPE_PARAM) LeaderboardType type) {
+    if (type == null) {
+      type = LeaderboardType.ALL_TIME;
+    }
+    Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
+    return BaseDao.load(Leaderboard.createKey(orgKey, type));
   }
 }
