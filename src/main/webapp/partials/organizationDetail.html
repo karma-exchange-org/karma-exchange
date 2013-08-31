@@ -72,16 +72,16 @@
 <tab-heading><i class="icon-bolt"></i> Impact</tab-heading>
 <p>
 </p>
-<ul class="unstyled">
+<ul class="unstyled container-fluid">
 
         <li ng-repeat="event in pastEvents.data">
-                <div class="well well-small row-fluid">
+                <div class="well well-small span6">
                 	<div class="span1">
                 		<a href="#/event/{{event.key}}"><img ng-src="{{event.fbAlbum.data[0].picture}}"></a>
 				<a href="#/event/{{event.key}}"><button type="button" class="btn btn-mini" disabled="disabled">{{event.numAttending }} attended</button></a>
                                 
                 	</div>
-                	<div class="span11 pagination-center">
+                	<div class="span5 pagination-center">
                 		<div  fbgallery  data-album-id="{{event.album.id}}"  data-type="facebook"></div>
 				<div class="row-fluid pagination-center">
 					<strong>{{event.startTime | date:'mediumDate'}}</strong> 
@@ -121,10 +121,10 @@
                 <div class="well well-small row-fluid">
                 	<div class="span1">
                 		<button ng-show="{ORGANIZER:true}[event.registrationInfo]" type="button" class="btn btn-danger btn-mini" disabled="disabled"><i class="icon-ok"></i> Organizer</button>
-				<button ng-show="{WAIT_LISTED:true}[event.registrationInfo]" type="button" class="btn btn-warning btn-mini" disabled="disabled"><i class="icon-exclamation"></i> Waitlisted</button>
+				<button ng-show="{REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-success btn-mini" disabled="disabled"><i class="icon-ok"></i> Registered</button>
                         	<button ng-show="{WAIT_LISTED:true}[event.registrationInfo]" type="button" class="btn btn-warning btn-mini" disabled="disabled"><i class="icon-exclamation"></i> Waitlisted</button>
 				<button ng-hide="{WAIT_LISTED:true,REGISTERED:true,ORGANIZER:true}[event.registrationInfo]" type="button" class="btn btn-mini" disabled="disabled">{{event.maxRegistrations-event.numRegistered | limit10 }}</button>
-                                
+                                <button type="button" class="btn btn-mini" disabled="disabled">{{event.numAttending }} attending</button>
                 	</div>
                 	<div class="span11">
 				<div class="row-fluid">
@@ -146,6 +146,29 @@
 	<div class="span12 container-fluid">
 		<!-- <div full-calendar events="events"></div> -->
 		<div class="calendar" ng-model="eventSources" calendar="myCalendar" config="uiConfig.calendar" ui-calendar="uiConfig.calendar"></div>
+	</div>
+</tab>
+<tab>
+	<tab-heading><i class="icon-thumbs-up"></i> Top volunteers</tab-heading>
+	<div class="span6">
+		<h3>All time</h3>
+		<ol >
+			<li class="well well-small" ng-repeat="leader in allTimeLeaders.scores">
+				<a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25"><strong>{{leader.user.firstName}} -{{leader.leaderboardKarmaPoints}}<i class="icon-bolt"></i></strong>/<small class="muted">{{leader.user.karmaPoints}}</small></a>
+			
+			</li>
+			
+		</ol>
+	</div>
+	<div class="span6">
+		<h3>Last month</h3>
+		<ol >
+			<li class="well well-small" ng-repeat="leader in lastMonthLeaders.scores">
+				<a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25"><strong>{{leader.user.firstName}} -{{leader.leaderboardKarmaPoints}}<i class="icon-bolt"></i></strong>/<small class="muted">{{leader.user.karmaPoints}}</small></a>
+			
+			</li>
+			
+		</ol>
 	</div>
 </tab>
 <tab>
@@ -263,5 +286,6 @@
 
 </div> 
 </tab> 
+
 </tabset> 
 
