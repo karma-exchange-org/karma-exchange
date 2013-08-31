@@ -3,6 +3,7 @@ angular.module( "SharedServices", [ ] ).config( function( $httpProvider ) {
 		var spinnerFunction = function( data, headersGetter ) { 
 			// todo start the spinner here
 			//$('#loading').show();
+
 			//TODO - Add FB access token parameter to the FB requests
 			return data; 
 		}; 
@@ -15,7 +16,7 @@ angular.module( "SharedServices", [ ] ).config( function( $httpProvider ) {
 					// do something on success
 					// todo hide the spinner
 					//$('#loading').hide();
-					
+
 					return response;
 			}, function( response ) { 
 				// do something on error
@@ -30,6 +31,22 @@ angular.module( "SharedServices", [ ] ).config( function( $httpProvider ) {
 			} ); 
 		}; 
 } );
+
+angular
+    .module('loadingOnAJAX', [])
+    .config(function($httpProvider) {
+        var numLoadings = 0;
+        var loadingScreen = $('<div style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;background-color:gray;background-color:rgba(70,70,70,0.2);"><img style="position:absolute;top:50%;left:50%;" alt="" src="/img/fbLoading.gif" /></div>')
+            .appendTo($('body')).hide();
+        $httpProvider.responseInterceptors.push(function() {
+            return function(promise) {
+                numLoadings++;
+                loadingScreen.show();
+                var hide = function(r) { if (!(--numLoadings)) loadingScreen.hide(); return r; };
+                return promise.then(hide, hide);
+            };
+        });
+    });
 angular.module( 'globalErrors', [ ] ).config( function( $provide, $httpProvider, $compileProvider ) { 
 		var elementsList = $( );
 		var showMessage = function( content, cl, time ) { 
@@ -133,7 +150,7 @@ angular.module( 'FacebookProvider', [ ] ).factory( 'Facebook', function( $rootSc
                         } 
                 }; 
 } );
-kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "FacebookProvider", "globalErrors" ,"ui.calendar"] ).config( function( $routeProvider, $httpProvider ) { 
+kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "loadingOnAJAX", "FacebookProvider", "globalErrors" ,"ui.calendar"] ).config( function( $routeProvider, $httpProvider ) { 
 		$routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } ).when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } ).when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } ).when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html' } ).when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html' } ).when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html' } ).when( '/events2', { controller : eventsCtrl, templateUrl : 'partials/eventsAccord.html' } ).when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } ).when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } ).when( '/event/:eventId', { controller : addEditEventsCtrl, templateUrl : 'partials/viewEvent.html' } ).when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html' } ).when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html' } ).otherwise( { redirectTo : '/' } );
 		delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ]; 
 		//$httpProvider.defaults.headers.common['X-'] = 'X';
@@ -352,47 +369,73 @@ kexApp.directive( 'unfocus', function( ) { return {
 } } );
 
 
-kexApp.directive('fullCalendar', function() {
 
-    return {
+
+kexApp.directive( "timelineblock", function( ) { 
+		
+		return {
                 restrict : "A",
-                replace : true,
-                transclude : true,
-                scope: {
-                  events: '='
-                },   
-
-    template : 
-
-                "<div  style=\"height:800px;width:100%\"></div>",
-
-                link : function( scope,$element, $attrs ) {
-                	
-                	console.log(scope.events);
-
-                      //Call the fullCalendar Method. 
-                      scope.calendar = $( $element ).fullCalendar({
-                            
-                      		header: {
-				left: 'prev,next today',
-				center: 'title',
-				right: 'month,agendaWeek,agendaDay'
-			},      
-			editable:false,
-                            events: scope.events,
-                            year : 2013,
-                            month : 7
-                        });
-                      
-                      $( $element ).fullCalendar('today');
-                      
-                      
-                      
-
-              
-                }
-              }
- });
+     
+          
+		
+		
+		link : function( scope, element, attrs ) { 
+			
+			
+			$(element).BlocksIt({
+				numOfCol: 2,
+				offsetX: 0,
+				offsetY: 5,
+				blockElement: 'div'
+			   });
+			 $('#timelineblock').BlocksIt({
+				numOfCol: 2,
+				offsetX: 0,
+				offsetY: 5,
+				blockElement: 'div'
+			   });
+			var all_blocks = $(element).find('.block');
+			console.log(all_blocks);
+			$.each(all_blocks, function(i, obj){
+				var posLeft = $(obj).css("left");
+	
+				if ( posLeft == "0px" ) {
+					$(obj).css("margin", "0px 0px 20px 65px").css("width", "340px").css("float", "left");
+					$(obj).children("span#edge").addClass("redge");			
+				} else 	{
+					$(obj).css("margin", "0px 0px 20px 18px").css("float","right").css("width", "340px").css("clear","both");
+					$(obj).children("span#edge").addClass("ledge");			
+				} 		
+					
+			});
+			$(".block").hover(function() {
+			var posLeft = $(this).css("left");
+			
+			if ( posLeft == "0px" ) {
+						$(this).children("span#edge").addClass("redge_h");			
+					} else 	{
+						$(this).children("span#edge").addClass("ledge_h");			
+					} 	
+			}, function () {
+			var posLeft = $(this).css("left");
+		
+				if ( posLeft == "0px" ) {
+							$(this).children("span#edge").removeClass("redge_h");			
+						} else 	{
+							$(this).children("span#edge").removeClass("ledge_h");			
+						} 
+			});
+			
+		} 
+		}
+} );
+kexApp.directive( "timelineblock", function( ) { 
+		return function( scope, element, attrs ) { 
+			
+			
+			
+		} 
+} );
 /*
 All app controllers  go here
 */
@@ -635,8 +678,10 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
 			});
 			} ); 
 			
+			$scope.allTimeLeaders = Org.get( { type : "ALL_TIME" }, { id : $routeParams.orgId, resource : "leaderboard" } ); 
 			
-			
+			$scope.lastMonthLeaders = Org.get( { type : "THIRTY_DAY" }, { id : $routeParams.orgId, resource : "leaderboard" } ); 
+
 			if( $scope.org.permission === "ALL" ) 
 			{ 
 				$scope.pendingMembers = Org.get( { membership_status : "PENDING" }, { id : $routeParams.orgId, resource : "member" } ); 
@@ -1054,6 +1099,25 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
         						return Array.prototype.push.apply( this, arguments ); 
         					}
         			} );
+        			
+        			$scope.eventNoShow = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' }, function( ) { 
+        					$scope.eventNoShow.data.push = function( ) { 
+        						Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' } ); 
+        						return Array.prototype.push.apply( this, arguments ); 
+        					}
+        			} );
+        			
+        			
+        			$scope.noShow = function(){
+        				$scope.eventNoShow.data.push($scope.eventRegistered.data[this.$index]);
+        				$scope.eventRegistered.data.splice(this.$index,1);
+        			};
+        			
+        			$scope.attended = function(){
+        				$scope.eventRegistered.data.push($scope.eventRegistered.data[this.$index]);
+        				$scope.eventNoShow.data.splice(this.$index,1);
+        			};
+        			
         			$scope.openImageUpload = function( ) { 
         				$scope.isImageModelOpen = true; 
         			};
