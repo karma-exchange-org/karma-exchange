@@ -113,12 +113,14 @@
                         </div> 
 
                 </div> 
+                
                 <div class="container-fluid">
                         <div class="messagesList" app-messages>
                         </div> 
                         <div class="row-fluid">
                                 <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">{{alert.msg}}</alert> 
                         </div> 
+                       
                         <div ng-view>
                         </div> 
 
@@ -183,36 +185,13 @@
                 <script src="js/plugins.js">
                 </script> 
                 <script src="js/vendor/fullcalendar.min.js"></script>
+                <script src="js/vendor/jquery.masonry.min.js"></script>
+
                 
                 <script src="js/vendor/calendar.js"></script>
                 <script src="js/app.js">
                 </script> 
-                <script type="text/javascript">
-                        
-                        
-                        
-                        $('.form_datetime').datetimepicker({
-                        
-                        
-                        
-                        format: "dd MM yyyy - HH:ii P",
-                        
-                        
-                        
-                        showMeridian: true,
-                        
-                        
-                        
-                        autoclose: true,
-                        
-                        
-                        
-                        todayBtn: true
-                        
-                        
-                        
-                        });
-                </script> 
+              
                 <script>
                         
                         
