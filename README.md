@@ -2,7 +2,7 @@
 
 Copyright (C) 2013 Karma Exchange
 
-### Maven Details
+### Building and Running
 
 Requires [Apache Maven](http://maven.apache.org) 3.1 and JDK 7 in order to run.
 
@@ -29,7 +29,7 @@ To see all the available goals for the App Engine plugin, run
 
 For more information on maven features read the [App Engine Maven Integeration Wiki](https://developers.google.com/appengine/docs/java/tools/maven)
 
-### Eclipse Details
+### Eclipse IDE Support
 
 Make sure you're using eclipse juno (3.8 / 4.2) or a more recent version.
 
