@@ -17,6 +17,7 @@ import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
+import org.karmaexchange.resources.msg.AuthorizationErrorInfo;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
@@ -161,7 +162,6 @@ public final class User extends NameBaseDao<User> {
   protected void processUpdate(User oldUser) {
     super.processUpdate(oldUser);
     // Some fields can not be manipulated by updating the user.
-    oauthCredentials = oldUser.getOauthCredentials();
     initSearchableFullName();
 
     // Some fields are explicitly updated.
@@ -450,8 +450,7 @@ public final class User extends NameBaseDao<User> {
         if (reqRole == null) {
           // Delete membership.
           if (!getCurrentUserKey().equals(userToUpdateKey)) {
-            throw ErrorResponseMsg.createException(
-              "not authorized to modify membership of target user", ErrorInfo.Type.NOT_AUTHORIZED);
+            throw AuthorizationErrorInfo.createException(userToUpdateKey);
           }
         } else {
           // Add / modify role.

@@ -8,13 +8,12 @@ import javax.annotation.Nullable;
 
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.util.UserService.ReservedKeyType;
 
 import com.google.common.collect.Sets;
 import com.googlecode.objectify.Key;
 
 public class AdminUtil {
-
-  private static final String ADMIN_KEY_PREFIX = "ADMIN:";
 
   public enum AdminTaskType {
     TEST,
@@ -25,7 +24,7 @@ public class AdminUtil {
     REGISTRATION;
 
     public Key<User> getKey() {
-      return Key.create(User.class, ADMIN_KEY_PREFIX + name());
+      return ReservedKeyType.createReservedKey(UserService.ReservedKeyType.ADMIN, name());
     }
   }
 
@@ -37,7 +36,7 @@ public class AdminUtil {
   }
 
   public static boolean isAdminKey(Key<User> key) {
-    return adminKeys.contains(key);
+    return ReservedKeyType.isReservedKey(key, UserService.ReservedKeyType.ADMIN);
   }
 
   public static void setCurrentUser(AdminTaskType type) {

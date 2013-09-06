@@ -17,8 +17,8 @@ public class PersistTestResourcesServlet extends HttpServlet {
     resp.setContentType("text/plain");
     PrintWriter statusWriter = resp.getWriter();
     new CauseTypesBootstrapTask(statusWriter, req.getCookies()).execute();
-    new TestResourcesBootstrapTask(statusWriter, req.getCookies(), ServletUtil.getBaseUrl(req))
-        .execute();
+    new TestResourcesBootstrapTask(statusWriter, req.getCookies(), getServletContext(),
+      ServletUtil.getBaseUri(req)).execute();
   }
 
   @Override

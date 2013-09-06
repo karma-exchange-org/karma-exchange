@@ -7,6 +7,7 @@ import static org.karmaexchange.bootstrap.TestResourcesBootstrapTask.TestOrganiz
 import static org.karmaexchange.util.OfyService.ofy;
 
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Calendar;
 import java.util.Collection;
@@ -15,6 +16,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 
 import lombok.Data;
@@ -45,7 +47,6 @@ import org.karmaexchange.dao.SuitableForType;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
-import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.task.ComputeLeaderboardServlet;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
@@ -59,6 +60,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   private static int eventNum = 0;
 
   private final String baseUrl;
+  private final ServletContext servletCtx;
 
   public enum TestUser {
     USER1("100006074376957", "Susan", "Liangberg"),
@@ -117,7 +119,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     }
 
     private OAuthCredential createOAuthCredential() {
-      return OAuthCredential.create(getSocialNetworkProviderType().toString(), fbId,
+      return OAuthCredential.create(getSocialNetworkProviderType().getOAuthProviderName(), fbId,
         "invalid_token");
     }
 
@@ -204,19 +206,6 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       this.autoMembershipRules = autoMembershipRules;
     }
 
-    public Organization createOrganization() {
-      Organization org = new Organization();
-      org.setPage(getPageRef());
-      if (parentOrg != null) {
-        org.setParentOrg(new OrganizationNamedKeyWrapper(parentOrg.getKey()));
-      }
-      if (autoMembershipRules != null) {
-        org.getAutoMembershipRules().addAll(autoMembershipRules);
-      }
-      org.initFromPage();
-      return org;
-    }
-
     public PageRef getPageRef() {
       return PageRef.create(pageUrl, SocialNetworkProviderType.FACEBOOK);
     }
@@ -239,8 +228,10 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final Organization.Role requestedRole;
   }
 
-  public TestResourcesBootstrapTask(PrintWriter statusWriter, Cookie[] cookies, String baseUrl) {
+  public TestResourcesBootstrapTask(PrintWriter statusWriter, Cookie[] cookies,
+      ServletContext servletCtx, String baseUrl) {
     super(statusWriter, cookies);
+    this.servletCtx = servletCtx;
     this.baseUrl = baseUrl;
   }
 
@@ -514,19 +505,12 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private void persistOrganizations() {
     for (final TestOrganization testOrg : TestOrganization.values()) {
-      AdminUtil.executeSubtaskAsUser(testOrg.initialAdmin.getKey(),
-        SocialNetworkProviderFactory.getLoginProviderCredential(cookies),
-        new AdminSubtask() {
-          @Override
-          public void execute() {
-            BaseDao.upsert(testOrg.createOrganization());
-          }
-        });
+      BaseDao.upsert(createOrganization(testOrg));
     }
-    // The org is created right away but a task queue task is created to add the admins.
-    // Instead of waiting for the task to complete, we'll use the admin task privileges to
-    // forcibly add membership.
+    // The org is created without any memberships to start with.
     for (TestOrganization testOrg : TestOrganization.values()) {
+      User.updateMembership(testOrg.initialAdmin.getKey(), testOrg.getKey(),
+        Organization.Role.ADMIN);
       for (TestOrgMembership membership : testOrg.memberships) {
         if (membership.grantedRole != null) {
           User.updateMembership(membership.user.getKey(), testOrg.getKey(), membership.grantedRole);
@@ -549,5 +533,22 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
           });
       }
     }
+  }
+
+  public Organization createOrganization(TestOrganization testOrg) {
+    Organization org = new Organization();
+    org.setPage(testOrg.getPageRef());
+    if (testOrg.parentOrg != null) {
+      org.setParentOrg(new OrganizationNamedKeyWrapper(testOrg.parentOrg.getKey()));
+    }
+    if (testOrg.autoMembershipRules != null) {
+      org.getAutoMembershipRules().addAll(testOrg.autoMembershipRules);
+    }
+    try {
+      org.initFromPage(servletCtx, new URI(baseUrl));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+    return org;
   }
 }

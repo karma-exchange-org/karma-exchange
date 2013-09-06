@@ -94,8 +94,8 @@ public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoV
 
   @Path("{resource}")
   @DELETE
-  public void deleteResource(@PathParam("resource") String key) {
-    ofy().delete().key(Key.<T>create(key)).now();
+  public void deleteResource(@PathParam("resource") String keyStr) {
+    BaseDao.delete(OfyUtil.<T>createKey(keyStr));
   }
 
   protected abstract Class<T> getResourceClass();

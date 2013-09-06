@@ -24,7 +24,7 @@ public final class SocialNetworkProviderFactory {
 
   public static SocialNetworkProviderType getProviderType(OAuthCredential credential) {
     try {
-      return SocialNetworkProviderType.valueOf(credential.getProvider().toUpperCase());
+      return SocialNetworkProviderType.valueOf(credential.getProvider());
     } catch (IllegalArgumentException e) {
       throw ErrorResponseMsg.createException(
         "unknown social network provider type: " + credential.getProvider(),

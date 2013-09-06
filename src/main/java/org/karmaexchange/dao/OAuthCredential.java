@@ -6,6 +6,7 @@ import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderTyp
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import com.google.common.base.Predicate;
 import com.googlecode.objectify.annotation.Embed;
@@ -13,44 +14,53 @@ import com.googlecode.objectify.annotation.Index;
 
 @Embed
 @EqualsAndHashCode
+@NoArgsConstructor
 public class OAuthCredential {
   @Getter
-  private String uid;
+  protected String provider;
+  @Nullable
   @Getter
-  private String provider;
+  protected String uid;
   @Getter
-  private String token;
+  protected String token;
 
   @Getter
-  private String globalUid;
+  protected String globalUid;
   @Index
   @Getter
-  private String globalUidAndToken;
+  protected String globalUidAndToken;
 
   public static OAuthCredential create(String provider, String uid, String token) {
-    OAuthCredential credential = new OAuthCredential();
-    credential.setProvider(provider);
-    credential.setUid(uid);
-    credential.setToken(token);
-    return credential;
+    return new OAuthCredential(provider, uid, token);
+  }
+
+  protected OAuthCredential(String provider, @Nullable String uid, String token) {
+    this.provider = translateProvider(provider);
+    this.uid = uid;
+    this.token = token;
+    updateGlobalUidFields();
   }
 
   public void setUid(String uid) {
     this.uid = uid;
-    updateIndexedFields();
+    updateGlobalUidFields();
   }
 
   public void setProvider(String provider) {
-    this.provider = provider.toLowerCase();
-    updateIndexedFields();
+    this.provider = translateProvider(provider);
+    updateGlobalUidFields();
+  }
+
+  private String translateProvider(String provider) {
+    return provider.toUpperCase();
   }
 
   public void setToken(String token) {
     this.token = token;
-    updateIndexedFields();
+    updateGlobalUidFields();
   }
 
-  private void updateIndexedFields() {
+  protected void updateGlobalUidFields() {
     globalUid = createGlobalUid(provider, uid);
     globalUidAndToken = createGlobalUidAndToken(globalUid, token);
   }

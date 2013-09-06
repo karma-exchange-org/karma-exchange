@@ -2,7 +2,6 @@ package org.karmaexchange.dao;
 
 import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
-import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlTransient;
@@ -12,10 +11,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import org.karmaexchange.resources.msg.AuthorizationErrorInfo;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
+import org.karmaexchange.util.OfyUtil;
+import org.karmaexchange.util.UserService;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
@@ -107,19 +109,6 @@ public abstract class BaseDao<T extends BaseDao<T>> {
     ofy().save().entity(this).now();
   }
 
-  private void validateMutationPermission() {
-    // TODO(avaliani): handle incomplete key. "Key.create(this)" does not work for incomplete
-    //    keys.
-//    updatePermission();
-//    if (!permission.canEdit()) {
-//      // Too important for testing to throw an error right now.
-//      logger.warning(format("invalid permissions for user[%s] to mutate resource[%s]",
-//        getCurrentUserKey().getString(), Key.create(this).toString()));
-//      //      throw ValidationErrorInfo.createException(asList(new ResourceValidationError(this,
-//      //          ValidationErrorType.RESOURCE_MUTATION_PERMISSION_REQUIRED, null)));
-//    }
-  }
-
   final void partialUpdate() {
     processPartialUpdate(null);
     // Partial updates don't require validating mutation permissions since they manipulate
@@ -129,7 +118,19 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   final void delete() {
     processDelete();
+    validateMutationPermission();
     ofy().delete().key(Key.create(this)).now();
+  }
+
+  private void validateMutationPermission() {
+    updatePermission();
+    if (!permission.canEdit()) {
+      if (UserService.isLoggedIn()) {
+        throw AuthorizationErrorInfo.createException(this);
+      } else {
+        throw ErrorResponseMsg.createException("Login required", ErrorInfo.Type.LOGIN_REQUIRED);
+      }
+    }
   }
 
   protected void preProcessInsert() {
@@ -177,10 +178,12 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   protected final void updatePermission() {
-    if (isCurrentUserAdmin()) {
+    if (UserService.isCurrentUserAdmin()) {
       permission = Permission.ALL;
-    } else {
+    } else if (UserService.isLoggedIn()) {
       permission = evalPermission();
+    } else {
+      permission = Permission.READ;
     }
   }
 
@@ -196,6 +199,9 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   @ToString(callSuper=true)
   public static class ResourceValidationError extends ValidationError {
 
+    @Nullable
+    private String resourceKind;
+    @Nullable
     private String resourceKey;
     @Nullable
     private String field;
@@ -206,6 +212,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
       if (resource.isKeyComplete()) {
         resourceKey = Key.create(resource).getString();
       }
+      resourceKind = OfyUtil.getKind(resource.getClass());
       this.field = fieldName;
     }
   }

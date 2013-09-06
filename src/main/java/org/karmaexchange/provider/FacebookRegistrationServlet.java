@@ -2,6 +2,7 @@ package org.karmaexchange.provider;
 
 import static java.lang.String.format;
 import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_SECRET;
+import static org.karmaexchange.util.ServletUtil.getRequestUri;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -54,7 +55,8 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
         throw ErrorResponseMsg.createException("signed request missing",
           ErrorInfo.Type.BAD_REQUEST);
       }
-      String appSecret = Properties.get(getServletContext(), FACEBOOK_APP_SECRET);
+      String appSecret = Properties.get(getServletContext(), getRequestUri(req),
+        FACEBOOK_APP_SECRET);
 
       SignedRegistrationRequest registrationReq;
       try {
