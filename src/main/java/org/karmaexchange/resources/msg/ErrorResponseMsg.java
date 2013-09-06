@@ -68,6 +68,7 @@ public class ErrorResponseMsg {
 
     public enum Type {
       AUTHENTICATION,
+      LOGIN_REQUIRED,
       UNREGISTERED_USER,
       BACKEND_SERVICE_FAILURE,
       BAD_REQUEST,

@@ -1,4 +1,4 @@
-src/main/webapp/WEB-INF/server_properties.txt
+src/main/webapp/WEB-INF/app-private.properties
 src/main/webapp/local_test
 hotspot.log
 *.iml

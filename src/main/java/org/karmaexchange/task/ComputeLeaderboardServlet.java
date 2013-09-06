@@ -1,12 +1,11 @@
 package org.karmaexchange.task;
 
-import static org.karmaexchange.util.OfyService.ofy;
-
 import java.io.IOException;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.task.LeaderboardMapper.UserKarmaRecord;
+import org.karmaexchange.util.OfyUtil;
 import org.karmaexchange.util.ServletUtil;
 
 import com.google.appengine.tools.mapreduce.MapReduceJob;
@@ -32,7 +31,7 @@ public class ComputeLeaderboardServlet extends TaskQueueAdminTaskServlet {
   }
 
   public static String startComputeLeaderboardMapReduce() {
-    String eventKind = ofy().getFactory().getMetadata(Event.class).getKeyMetadata().getKind();
+    String eventKind = OfyUtil.getKind(Event.class);
     return MapReduceJob.start(
         MapReduceSpecification.of(
             "ComputeLeaderboardMapReduce",
@@ -53,7 +52,7 @@ public class ComputeLeaderboardServlet extends TaskQueueAdminTaskServlet {
   }
 
   private void redirectToMapReduceStatusUrl(String mapReduceJobId) throws IOException {
-    String destinationUrl = getMapReduceStatusUrl(ServletUtil.getBaseUrl(req), mapReduceJobId);
+    String destinationUrl = getMapReduceStatusUrl(ServletUtil.getBaseUri(req), mapReduceJobId);
     resp.sendRedirect(destinationUrl);
   }
 

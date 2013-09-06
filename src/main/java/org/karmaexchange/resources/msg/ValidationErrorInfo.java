@@ -25,7 +25,6 @@ public class ValidationErrorInfo extends ErrorResponseMsg.ErrorInfo {
     RESOURCE_FIELD_VALUE_UNMODIFIABLE,
     RESOURCE_FIELD_LIST_VALUE_INVALID_PERMISSIONS,
     RESOURCE_FIELD_LIST_VALUE_INVALID_VALUE
-//    RESOURCE_MUTATION_PERMISSION_REQUIRED
   }
 
   private List<? extends ValidationError> validationErrors;

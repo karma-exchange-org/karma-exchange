@@ -3,27 +3,26 @@ package org.karmaexchange.dao;
 import static com.google.common.base.CharMatcher.WHITESPACE;
 import static java.util.Arrays.asList;
 import static org.karmaexchange.util.OfyService.ofy;
-import static org.karmaexchange.util.UserService.getCurrentUserCredential;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.servlet.ServletContext;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.karmaexchange.provider.SocialNetworkProvider;
-import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
-import org.karmaexchange.task.AddOrgAdminServlet;
 import org.karmaexchange.task.UpdateNamedKeysAdminTaskServlet;
 
 import lombok.AllArgsConstructor;
@@ -129,20 +128,15 @@ public class Organization extends NameBaseDao<Organization> {
     return name;
   }
 
-  public void initFromPage() {
+  public void initFromPage(ServletContext servletCtx, URI requestUri) {
     owner = null;
     if (!pageIsInitialized()) {
       throw ValidationErrorInfo.createException(ImmutableList.of(
         new ResourceValidationError(this,
           ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "page")));
     }
-    SocialNetworkProvider provider =
-        SocialNetworkProviderFactory.getProvider(getCurrentUserCredential());
-    if (provider.getProviderType() != page.getUrlProvider()) {
-      throw ValidationErrorInfo.createException(ImmutableList.of(
-        new ResourceValidationError(this,
-          ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "page.urlProvider")));
-    }
+    OAuthCredential appCredential = page.getUrlProvider().getAppCredential(servletCtx, requestUri);
+    SocialNetworkProvider provider = page.getUrlProvider().getProvider(appCredential);
     Organization providerGeneratedOrg;
     try {
       providerGeneratedOrg = provider.createOrganization(page.getUrl());
@@ -183,10 +177,6 @@ public class Organization extends NameBaseDao<Organization> {
     karmaPoints = 0;
 
     validateOrganization();
-
-    // Transactionally add the current user as the admin. This will be replaced later by
-    // an email verification process.
-    AddOrgAdminServlet.enqueueTask(Key.create(this), getCurrentUserKey());
   }
 
   @Override

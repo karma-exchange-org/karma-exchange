@@ -2,18 +2,23 @@ package org.karmaexchange.provider;
 
 import static java.lang.String.format;
 import static org.karmaexchange.security.OAuthFilter.OAUTH_LOG_LEVEL;
+import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_ID;
+import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_SECRET;
 
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
+import javax.servlet.ServletContext;
 
 import lombok.Data;
 import lombok.Getter;
 
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AgeRange;
+import org.karmaexchange.dao.AppOAuthCredential;
 import org.karmaexchange.dao.Gender;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.OAuthCredential;
@@ -23,11 +28,13 @@ import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.Properties;
 
 import com.google.appengine.api.datastore.GeoPt;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.Facebook;
 import com.restfb.FacebookClient;
+import com.restfb.FacebookClient.AccessToken;
 import com.restfb.Parameter;
 import com.restfb.exception.FacebookException;
 import com.restfb.exception.FacebookOAuthException;
@@ -170,6 +177,14 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
         throw ErrorResponseMsg.createException(e, ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
       }
     }
+  }
+
+  public static OAuthCredential getAppCredential(ServletContext servletCtx, URI requestUri) {
+    String appId = Properties.get(servletCtx, requestUri, FACEBOOK_APP_ID);
+    String appSecret = Properties.get(servletCtx, requestUri, FACEBOOK_APP_SECRET);
+    AccessToken accessToken =
+        new DefaultFacebookClient().obtainAppAccessToken(appId, appSecret);
+    return new AppOAuthCredential(SocialNetworkProviderType.FACEBOOK, accessToken.getAccessToken());
   }
 
   public static class ExtFbUser extends com.restfb.types.User {
