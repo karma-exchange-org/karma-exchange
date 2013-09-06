@@ -268,7 +268,6 @@ public final class Event extends IdBaseDao<Event> {
     if (title != null) {
       title = WHITESPACE.trimFrom(title);
     }
-    initKarmaPoints();
     // Rating is independently and transactionally updated.
     rating = prevObj.rating;
     derivedRatings = prevObj.derivedRatings;
@@ -286,6 +285,8 @@ public final class Event extends IdBaseDao<Event> {
 
     // Do event validation that is specific to event updates.
     validateEventUpdate(prevObj);
+
+    initKarmaPoints();
   }
 
   private void processParticipantMutation(EventParticipant updatedParticipant,

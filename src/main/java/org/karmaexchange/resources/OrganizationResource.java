@@ -52,7 +52,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   @Override
   protected void preProcessUpsert(Organization org) {
     if (!org.isKeyComplete()) {
-      org.initFromPage();
+      org.initFromPage(servletContext, uriInfo.getRequestUri());
     }
   }
 

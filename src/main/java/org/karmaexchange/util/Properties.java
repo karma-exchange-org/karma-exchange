@@ -1,10 +1,11 @@
 package org.karmaexchange.util;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static java.lang.String.format;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.net.URI;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
@@ -17,18 +18,18 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
-import com.google.appengine.api.utils.SystemProperty;
-
 @ThreadSafe
 public class Properties {
 
-  private static final String CONFIG_FILE_PATH = "/WEB-INF/server_properties.txt";
-  private static final String TEST_PROPERTY_PREFIX = "test-";
+  private static final String CONFIG_FILE_PATH = "/WEB-INF/app-private.properties";
+
+  private static final String DOMAIN_PREFIX_SEPERATOR = "-";
 
   @GuardedBy("Properties.class")
   private static PropertiesConfiguration config;
 
   public enum Property {
+    FACEBOOK_APP_ID("facebook-app-id"),
     FACEBOOK_APP_SECRET("facebook-app-secret");
 
     @Getter
@@ -38,7 +39,7 @@ public class Properties {
       this.propertyName = propertyName;
     }
 
-    public boolean testAndProductionDistinct() {
+    public boolean isDomainDependent() {
       return true;
     }
   }
@@ -58,30 +59,25 @@ public class Properties {
     return config;
   }
 
-  public static String get(ServletContext context, Property property) {
+  public static String get(ServletContext context, URI requestUri, Property property) {
     PropertiesConfiguration propConfig = getConfig(context);
     String value;
-    if (!isProductionDeployment()) {
-      value = propConfig.getString(getTestPropertyName(property));
-      if (value != null) {
-        return value;
-      }
-      if (property.testAndProductionDistinct()) {
-        throw new NullPointerException(
-          format("property '%s' not specified in '%s'", getTestPropertyName(property),
+    if (property.isDomainDependent()) {
+      value = propConfig.getString(getDomainPropertyName(property, requestUri));
+      checkState(value != null,
+        format("unable to find property '%s' in '%s'", getDomainPropertyName(property, requestUri),
+          CONFIG_FILE_PATH));
+      return value;
+    } else {
+      value = propConfig.getString(property.getPropertyName());
+      checkState(value != null,
+          format("unable to find property '%s' in '%s'", property.getPropertyName(),
             CONFIG_FILE_PATH));
-      }
+      return value;
     }
-    value = propConfig.getString(property.getPropertyName());
-    return checkNotNull(value,
-      format("property '%s' not specified in '%s'", property.getPropertyName(), CONFIG_FILE_PATH));
   }
 
-  private static String getTestPropertyName(Property property) {
-    return TEST_PROPERTY_PREFIX + property.getPropertyName();
-  }
-
-  private static boolean isProductionDeployment() {
-    return SystemProperty.environment.value() == SystemProperty.Environment.Value.Production;
+  private static String getDomainPropertyName(Property property, URI requestUri) {
+    return requestUri.getHost() + DOMAIN_PREFIX_SEPERATOR + property.getPropertyName();
   }
 }

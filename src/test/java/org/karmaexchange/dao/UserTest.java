@@ -76,7 +76,7 @@ public class UserTest extends PersistenceTestHelper {
     user1.setEventOrganizerRating(rating);
 
     List<OAuthCredential> credentials = asList(
-      OAuthCredential.create("facebook.com", "uid", "token"));
+      OAuthCredential.create("FACEBOOK", "uid", "token"));
     user1.setOauthCredentials(credentials);
 
     // Setup user2.
@@ -130,7 +130,7 @@ public class UserTest extends PersistenceTestHelper {
     userKeys = Sets.newHashSet(
       ofy().load()
            .type(User.class)
-           .filter("oauthCredentials.globalUidAndToken", "tokenuidfacebook.com")
+           .filter("oauthCredentials.globalUidAndToken", "tokenuidFACEBOOK")
            .keys());
     assertEquals(1, userKeys.size());
     assertTrue(userKeys.contains(Key.create(user1)));

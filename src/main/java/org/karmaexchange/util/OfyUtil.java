@@ -1,5 +1,7 @@
 package org.karmaexchange.util;
 
+import static org.karmaexchange.util.OfyService.ofy;
+
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
@@ -13,5 +15,9 @@ public class OfyUtil {
     } catch (IllegalArgumentException e) {
       throw ErrorResponseMsg.createException(e, ErrorInfo.Type.BAD_REQUEST);
     }
+  }
+
+  public static String getKind(Class<?> cls) {
+    return ofy().getFactory().getMetadata(cls).getKeyMetadata().getKind();
   }
 }

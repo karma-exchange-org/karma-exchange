@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -55,15 +55,18 @@ public class ServletUtil {
     }
   }
 
-  public static String getBaseUrl(HttpServletRequest req) {
-    URL requestUrl;
+  public static URI getRequestUri(HttpServletRequest req) {
     try {
-      requestUrl = new URL(req.getRequestURL().toString());
-    } catch (MalformedURLException e) {
+      return new URI(req.getRequestURL().toString());
+    } catch (URISyntaxException e) {
       // Impossible.
       throw new RuntimeException(e);
     }
-    String portString = requestUrl.getPort() == -1 ? "" : ":" + requestUrl.getPort();
-    return requestUrl.getProtocol() + "://" + requestUrl.getHost() + portString;
+  }
+
+  public static String getBaseUri(HttpServletRequest req) {
+    URI requestUri = getRequestUri(req);
+    String portString = requestUri.getPort() == -1 ? "" : ":" + requestUri.getPort();
+    return requestUri.getScheme() + "://" + requestUri.getHost() + portString;
   }
 }

@@ -61,20 +61,41 @@ public class OAuthFilter implements Filter {
     HttpServletResponse resp = (HttpServletResponse) response;
 
     OAuthCredential credential;
-    Key<User> userKey;
+    try {
+      credential = getCredential(req);
+    } catch (WebApplicationException e) {
+      Response errMsg = e.getResponse();
+      log.log(OAUTH_LOG_LEVEL, "Failed to get credentials:\n  " + errMsg.getEntity());
+      ServletUtil.setResponse(resp, e);
+      return;
+    }
+
+    // Authorization complete. Continue to the API entry point.
+    if (credential != null) {
+      UserService.setCurrentUser(credential, User.getKey(credential));
+    }
+    try {
+      filters.doFilter(req, resp);
+    } finally {
+      if (credential != null) {
+        UserService.clearCurrentUser();
+      }
+    }
+  }
+
+  private OAuthCredential getCredential(HttpServletRequest req) {
+    OAuthCredential credential;
     AdminUtil.setCurrentUser(AdminTaskType.OAUTH_FILTER);
     try {
       credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
       if (credential == null) {
-        throw ErrorResponseMsg.createException("authentication credentials missing",
-          ErrorInfo.Type.AUTHENTICATION);
+        return null;
       }
 
       log.log(OAUTH_LOG_LEVEL, "[" + credential + "] checking if oAuth token is cached");
 
-      // 1. If the oauth token is cached, then its valid. Just use it.
-      userKey = credentialIsCached(credential);
-      if (userKey == null) {
+      // 1. If the oauth token is cached, then it's valid. Just use it.
+      if (!credentialIsCached(credential)) {
 
         log.log(OAUTH_LOG_LEVEL, "[" + credential + "] verifying oauth token");
 
@@ -85,31 +106,18 @@ public class OAuthFilter implements Filter {
 
           // The token is valid, so we need to update the token.
           updateCachedCredential(credential);
-          userKey = User.getKey(credential);
         } else {
           throw ErrorResponseMsg.createException("authentication credentials are not valid",
             ErrorInfo.Type.AUTHENTICATION);
         }
       }
-    } catch (WebApplicationException e) {
-      Response errMsg = e.getResponse();
-      log.log(OAUTH_LOG_LEVEL, "Failed to authenticate:\n  " + errMsg.getEntity());
-      ServletUtil.setResponse(resp, e);
-      return;
     } finally {
       UserService.clearCurrentUser();
     }
-
-    // Authorization complete. Continue to the resource.
-    UserService.setCurrentUser(credential, userKey);
-    try {
-      filters.doFilter(req, resp);
-    } finally {
-      UserService.clearCurrentUser();
-    }
+    return credential;
   }
 
-  public static Key<User> credentialIsCached(OAuthCredential credential) {
+  public static boolean credentialIsCached(OAuthCredential credential) {
     // The assumption here is that it is impossible to persist a fake provider + uid + token.
     // When we create the user object we will always construct the globalUidAndToken from scratch.
     // TODO(avaliani): Validate that Objectify @Cached is actually being hit.
@@ -117,7 +125,7 @@ public class OAuthFilter implements Filter {
         .filter("oauthCredentials.globalUidAndToken", credential.getGlobalUidAndToken())
         .keys();
     Iterator<Key<User>> keysIter = keys.iterator();
-    return keysIter.hasNext() ? keysIter.next() : null;
+    return keysIter.hasNext();
   }
 
   private static boolean verifyCredential(OAuthCredential credential) {

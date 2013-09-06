@@ -27,6 +27,7 @@ import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.OrganizationMembershipView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.ImageUploadUtil;
+import org.karmaexchange.util.UserService;
 
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.appengine.api.blobstore.BlobstoreServiceFactory;
@@ -38,6 +39,12 @@ public class MeResource {
   private UriInfo uriInfo;
   @Context
   private Request request;
+
+  public MeResource() {
+    if (!UserService.isLoggedIn()) {
+      throw ErrorResponseMsg.createException("Login required", ErrorInfo.Type.LOGIN_REQUIRED);
+    }
+  }
 
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
