@@ -4,9 +4,7 @@
    Author's custom styles
    ========================================================================== */
    
-.ng-cloak {
-    display: none;
-}   
+
 
 .angular-google-map {
 	height: 100%;
@@ -90,11 +88,14 @@ text-align:center;
 
 .add-window {
   min-width: 350px;
+  width : 50%;
+  height : 50%;
   position: fixed;
   bottom: 0px;
   right: 10px;
   border: 1px solid black;
   background-color: white;
+  z-index: 1;
 }
 
 .add-window .header {
@@ -104,6 +105,12 @@ text-align:center;
 
 .add-window div {
   padding: 5px 20px;
+  
+}
+
+.add-window div div {
+  width : 100%;
+  
 }
 
 /* 

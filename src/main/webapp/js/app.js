@@ -357,7 +357,7 @@ kexApp.directive( "gallery", function( ) {
 			// scope.$watch(attrs.testTwo, doStuff(element,attrs));
 			
 		} 
-} )
+} );
 kexApp.directive( 'unfocus', function( ) { return {
 		restrict : 'A', 
 		link : function( scope, element, attribs ) {
@@ -367,6 +367,15 @@ kexApp.directive( 'unfocus', function( ) { return {
 			} );
 		}
 } } );
+
+kexApp.directive( "eventrepeat", function( ) { 
+		return function( scope, element, attrs ) { 
+			
+				$( element ).recurrenceinput(); 
+			
+			
+		} 
+} );
 
 
 
@@ -429,13 +438,7 @@ kexApp.directive( "timelineblock", function( ) {
 		} 
 		}
 } );
-kexApp.directive( "timelineblock", function( ) { 
-		return function( scope, element, attrs ) { 
-			
-			
-			
-		} 
-} );
+
 /*
 All app controllers  go here
 */
@@ -597,13 +600,16 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) {
 		{ 
 			$scope.who = 'My'; 
 			$scope.me = Me.get( function( ) { 
+					$scope.origAboutMe = $scope.me.about; 
 					if( ! $scope.me.about ) 
 					{ 
 						$scope.me.about = 'Click to add about yourself!'; 
 					} 
+					
 					$scope.getOtherData( $scope.me.key ); 
 					$rootScope.me = $scope.me;
 			} );
+			
 		} 
 		else
 		{ 
@@ -632,9 +638,15 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) {
 			$scope.edit = true;   
 		}
 	}; 
+	$scope.saveEdit = function( ) { 
+		$scope.edit = false; 
+		$scope.origAboutMe  = $scope.me.about;
+		User.save( { id : $scope.me.key }, $scope.me ); 
+	};
 	$scope.disableEdit = function( ) { 
 		$scope.edit = false; 
-		User.save( { id : $scope.me.key }, $scope.me ); 
+		$scope.me.about = $scope.origAboutMe;
+		
 	};
 	$scope.addEmail = function( ) { 
 		//TO-DO check if the new one is marked primary and unmark the current primary one
