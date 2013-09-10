@@ -65,10 +65,6 @@ public class UserTest extends PersistenceTestHelper {
     ec2.setPhoneNumber("408-123-4568");
     user1.setEmergencyContacts(asList(ec1, ec2));
 
-    user1.setSkills(asList(
-      KeyWrapper.create(Skill.create("programming")),
-      KeyWrapper.create(Skill.create("swimming"))));
-
     user1.setKarmaPoints(100);
 
     IndexedAggregateRating  rating = new IndexedAggregateRating ();
@@ -82,9 +78,6 @@ public class UserTest extends PersistenceTestHelper {
     // Setup user2.
     user2 = new User();
     user2.setName("fake name 2");
-    user2.setSkills(asList(
-      KeyWrapper.create(Skill.create("programming")),
-      KeyWrapper.create(Skill.create("marketing"))));
   }
 
   @Test
@@ -97,21 +90,8 @@ public class UserTest extends PersistenceTestHelper {
     validatePersistence(user1);
     validatePersistence(user2);
 
-    Skill skill = Skill.create("programming");
-    Set<Key<User>> userKeys = Sets.newHashSet(
-      ofy().load().type(User.class).filter("skills.key", Key.create(skill)).keys());
-    assertEquals(2, userKeys.size());
-    assertTrue(userKeys.contains(Key.create(user1)));
-    assertTrue(userKeys.contains(Key.create(user2)));
-
-    skill = Skill.create("marketing");
-    userKeys = Sets.newHashSet(
-      ofy().load().type(User.class).filter("skills.key", Key.create(skill)).keys());
-    assertEquals(1, userKeys.size());
-    assertTrue(userKeys.contains(Key.create(user2)));
-
     // Make sure the unindexed fields are not queryable.
-    userKeys = Sets.newHashSet(
+    Set<Key<User>> userKeys = Sets.newHashSet(
       ofy().load().type(User.class)
           .filter("contactInfo.address.zip", Integer.valueOf(94105)).keys());
     assertEquals(0, userKeys.size());
