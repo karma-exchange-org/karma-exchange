@@ -98,11 +98,6 @@ public final class Event extends IdBaseDao<Event> {
   // TODO(avaliani): fix this embedded list.
   // private List<Image> allImages = Lists.newArrayList();
 
-  @Index
-  private List<KeyWrapper<Skill>> skillsPreferred = Lists.newArrayList();
-  @Index
-  private List<KeyWrapper<Skill>> skillsRequired = Lists.newArrayList();
-
   // TODO(avaliani): Organizations can co-host events.
   @Index
   private KeyWrapper<Organization> organization;

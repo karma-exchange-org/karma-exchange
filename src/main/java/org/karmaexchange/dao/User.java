@@ -84,9 +84,6 @@ public final class User extends NameBaseDao<User> {
   @Index
   private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
 
-  @Index
-  private List<KeyWrapper<Skill>> skills = Lists.newArrayList();
-
   // Skipping interests for now.
   // Facebook has a detailed + categorized breakdown of interests.
 
