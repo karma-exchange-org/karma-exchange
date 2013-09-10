@@ -20,7 +20,8 @@
 
                                 <div class="pull-left">
                                         <p>
-                                        	<button ng-show="{REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-success btn-mini" disabled="disabled"><i class="icon-ok"></i> Registered</button>
+                                        	<button ng-show="{ORGANIZER:true}[event.registrationInfo]" type="button" class="btn btn-success btn-mini" disabled="disabled"><i class="icon-ok"></i> Organizer</button>
+                                        	<button ng-show="{REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-primary btn-mini" disabled="disabled"><i class="icon-ok"></i> Registered</button>
                                                 <button ng-show="{WAIT_LISTED:true}[event.registrationInfo]" type="button" class="btn btn-warning btn-mini" disabled="disabled"><i class="icon-exclamation"></i> Waitlisted</button>
                                                 <button ng-hide="{WAIT_LISTED:true,REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-mini" disabled="disabled">{{event.maxRegistrations-event.numRegistered | limit10 }}</button>
                                         	<strong>{{event.startTime | date:'shortTime'}}</strong> - <small class="muted">{{event.endTime | date:'shortTime'}} </small> 

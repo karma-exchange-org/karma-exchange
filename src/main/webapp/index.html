@@ -39,14 +39,22 @@
                 <link href="css/jquery.timepicker.css" rel="stylesheet">
                 <link href="css/plusgallery.css" rel="stylesheet">
                 <link href="css/fullcalendar.css" rel="stylesheet">
+                <link href="css/jquery.recurrenceinput.css" rel="stylesheet">
+                <link href="css/overlays.css" rel="stylesheet">
                 <!-- <link href="css/bootstrap-carousel.css" rel="stylesheet"> -->
                 <link rel="stylesheet" href="css/main.css">
+                
                 <!--[if lt IE 9]>
             <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
             <script>window.html5 || document.write('<script src="js/vendor/html5shiv.js"><\/script>')</script>
         <![endif]-->
         </head> 
         <body>
+        <style>
+        .ng-cloak {
+	    display: none;
+	}   
+        </style>
                 <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
@@ -134,7 +142,7 @@
                                 </fb:login-button> 
                         </div> 
                 </div> 
-                <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js">
+                <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js">
                 </script> 
                 <script>
                         
@@ -148,7 +156,7 @@
                         
                         
                         
-                        .write('<script src="js/vendor/jquery-1.9.1.min.js"><\/script>')
+                        .write('<script src="js/vendor/jquery-1.8.3.min.js"><\/script>')
                 </script> 
                 <script src="js/vendor/angular.min.js">
                 </script> 
@@ -186,16 +194,19 @@
                 </script> 
                 <script src="js/vendor/fullcalendar.min.js"></script>
                 <script src="js/vendor/jquery.masonry.min.js"></script>
-
+                
+                <!-- <script src="//cdn.jquerytools.org/1.2.7/all/jquery.tools.min.js"></script> -->
+                <script type="text/javascript" src="js/vendor/jquery.tools.min.js"></script>
+                <script type="text/javascript" src="js/vendor/jquery.tmpl-beta1.js"></script>
+                <script type="text/javascript" src="js/vendor/jquery.recurrenceinput.js"></script>
                 
                 <script src="js/vendor/calendar.js"></script>
                 <script src="js/app.js">
                 </script> 
               
                 <script>
-                        
-                        
-                        
+                  
+		    			
                         var _gaq = [ [ '_setAccount', 'UA-XXXXX-X' ], [ '_trackPageview' ] ];
                         
                         

@@ -8,12 +8,13 @@
   	</div>
   	<div class="span10">
   		
-  		<legend>About me</legend>
+  		<legend>About me<small> <i ng-show="{ALL:true}[me.permission]" class="icon-edit" ng-click="enableEdit()"></i></small></legend>
   		
   		<ng-switch on="edit">
         
 	        <div ng-switch-when="true">
-	            <textarea rows="5" class="span12" ng-model="$parent.me.about" unfocus="disableEdit()"></textarea>         
+	            <textarea rows="5" class="span12" ng-model="$parent.me.about" ></textarea>  
+	            <button class="btn btn-primary btn-small" ng-click="saveEdit()">Save</button><button class="btn btn-small" ng-click="disableEdit()">Cancel</button>
 	        </div>
 	        
 	        <div ng-switch-default ng-click="enableEdit()">
