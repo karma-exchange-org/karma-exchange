@@ -108,6 +108,9 @@ public final class User extends NameBaseDao<User> {
   //       encountering the objectify serialization bug (issue #127).
   private List<OrganizationMembership> organizationMemberships = Lists.newArrayList();
 
+  // TODO(avaliani): cleanup post demo.
+  private List<BadgeSummary> badges = Lists.newArrayList();
+
   public static User create(OAuthCredential credential) {
     return new User(credential);
   }

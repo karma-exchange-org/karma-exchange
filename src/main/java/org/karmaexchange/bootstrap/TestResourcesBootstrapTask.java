@@ -25,9 +25,11 @@ import lombok.Getter;
 import org.apache.commons.lang3.time.DateUtils;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AlbumRef;
+import org.karmaexchange.dao.BadgeSummary;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.BadgeSummary.Icon;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.UpsertParticipantTxn;
@@ -64,23 +66,56 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   private final String baseUrl;
   private final ServletContext servletCtx;
 
+  private static final Badge BGCSF_GOLD_BADGE = new Badge("BGCSF", "mentor for a year",
+      "/img/badges/badge_gold.png");
+  private static final Badge BGCSF_BRONZE_BADGE = new Badge("BGCSF", "event volunteer",
+      "/img/badges/badge_bronze.png");
+
+  @Data
+  private static class Badge {
+    private final String orgName;
+    private final String description;
+    private final Icon icon;
+
+    public Badge(String orgName, String description, String iconUrl) {
+      this.orgName = orgName;
+      this.description = description;
+      Icon icon = new Icon();
+      icon.setUrl(iconUrl);
+      this.icon = icon;
+    }
+  }
+
   public enum TestUser {
     USER1("100006074376957", "Susan", "Liangberg"),
-    USER2("100006058506752", "John", "Occhinostein", "john.ocho@KidsClub.org"),
-    USER3("100006051787601", "Rick", "Narayananson", "rick.narayananson@kidsclub.org"),
+    USER2("100006058506752", "John", "Occhinostein", "john.ocho@KidsClub.org",
+      ImmutableList.<BadgeSummary>of(createBadgeSummary(7, BGCSF_BRONZE_BADGE))),
+    USER3("100006051787601", "Rick", "Narayananson", "rick.narayananson@kidsclub.org",
+      ImmutableList.<BadgeSummary>of(createBadgeSummary(8, BGCSF_BRONZE_BADGE))),
     USER4("100006076592978", "Joe", "Warmanescu"),
     USER5("100006052237443", "Joe", "Narayananwitz"),
     USER6("100006093303024", "Ruth", "Carrierostein"),
     USER7("100006045731576", "Mary", "Greenestein"),
     USER8("100006080162988", "Richard", "Dinglewitz"),
-    USER9("100006054577389", "Dick", "McDonaldberg", "dick@fakekidsclub.org"),
+    USER9("100006054577389", "Dick", "McDonaldberg", "dick@fakekidsclub.org",
+      ImmutableList.<BadgeSummary>of(createBadgeSummary(9, BGCSF_BRONZE_BADGE))),
     USER10("100006053377578", "Linda", "Laverdetberg"),
-    USER11("100006084302920", "Carol", "Wisemanwitz", "carol@kidsclub.org"),
+    USER11("100006084302920", "Carol", "Wisemanwitz", "carol@kidsclub.org",
+      ImmutableList.<BadgeSummary>of(createBadgeSummary(10, BGCSF_BRONZE_BADGE))),
     USER12("100006069696646", "Donna", "Zuckerson"),
     USER13("100006083973038", "Harry", "Occhinoman"),
-    AMIR("1111368160", "Amir", "Valiani"),
-    HARISH("537854733", "Harish", "Balijepalli"),
-    POONUM("3205292", "Poonum", "Kaberwal");
+    AMIR("1111368160", "Amir", "Valiani", null,
+      ImmutableList.<BadgeSummary>of(
+        createBadgeSummary(1, BGCSF_GOLD_BADGE),
+        createBadgeSummary(3, BGCSF_BRONZE_BADGE))),
+    HARISH("537854733", "Harish", "Balijepalli", null,
+      ImmutableList.<BadgeSummary>of(
+        createBadgeSummary(1, BGCSF_GOLD_BADGE),
+        createBadgeSummary(3, BGCSF_BRONZE_BADGE))),
+    POONUM("3205292", "Poonum", "Kaberwal", null,
+      ImmutableList.<BadgeSummary>of(
+        createBadgeSummary(1, BGCSF_GOLD_BADGE),
+        createBadgeSummary(3, BGCSF_BRONZE_BADGE)));
 
     private final String fbId;
     @Getter
@@ -90,16 +125,20 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     @Getter
     @Nullable
     private final String email;
+    @Getter
+    private final List<BadgeSummary> badges;
 
     private TestUser(String fbId, String firstName, String lastName) {
-      this(fbId, firstName, lastName, null);
+      this(fbId, firstName, lastName, null, ImmutableList.<BadgeSummary>of());
     }
 
-    private TestUser(String fbId, String firstName, String lastName, @Nullable String email) {
+    private TestUser(String fbId, String firstName, String lastName, @Nullable String email,
+        List<BadgeSummary> badges) {
       this.fbId = fbId;
       this.firstName = firstName;
       this.lastName = lastName;
       this.email = email;
+      this.badges = badges;
     }
 
     public Key<User> getKey() {
@@ -117,6 +156,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       if (email != null) {
         user.getRegisteredEmails().add(new RegisteredEmail(email, true));
       }
+      user.setBadges(badges);
       return user;
     }
 
@@ -127,6 +167,15 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     public SocialNetworkProviderType getSocialNetworkProviderType() {
       return SocialNetworkProviderType.FACEBOOK;
+    }
+
+    private static BadgeSummary createBadgeSummary(int count, Badge badge) {
+      BadgeSummary badgeSummary = new BadgeSummary();
+      badgeSummary.setCount(count);
+      badgeSummary.setOrgName(badge.orgName);
+      badgeSummary.setDescription(badge.description);
+      badgeSummary.setIcon(badge.icon);
+      return badgeSummary;
     }
   }
 
