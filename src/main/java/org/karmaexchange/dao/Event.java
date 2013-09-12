@@ -164,6 +164,8 @@ public final class Event extends IdBaseDao<Event> {
 
   private List<SuitableForType> suitableForTypes = Lists.newArrayList();
 
+  private KeyWrapper<Waiver> waiver;
+
   public enum RegistrationInfo {
     ORGANIZER,
     REGISTERED,

@@ -16,6 +16,7 @@ import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.Waiver;
 
 import com.googlecode.objectify.Key;
 
@@ -49,6 +50,7 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     Iterable<Key<Review>> reviewKeys = ofy().load().type(Review.class).keys().iterable();
     Iterable<Key<Leaderboard>> leaderboardKeys =
         ofy().load().type(Leaderboard.class).keys().iterable();
+    Iterable<Key<Waiver>> waiverKeys = ofy().load().type(Waiver.class).keys().iterable();
 
     ofy().delete().keys(eventKeys);
     ofy().delete().keys(userKeys);
@@ -57,6 +59,7 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     ofy().delete().keys(imageKeys);
     ofy().delete().keys(reviewKeys);
     ofy().delete().keys(leaderboardKeys);
+    ofy().delete().keys(waiverKeys);
 
     statusWriter.println("Deleted all resources.");
   }
