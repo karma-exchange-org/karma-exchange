@@ -154,7 +154,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
         TestOrgMembership.of(HARISH, Organization.Role.ORGANIZER, null),
         TestOrgMembership.of(POONUM, Organization.Role.ORGANIZER, null)),
-      BGCSF),
+      BGCSF,
+      ImmutableList.<AutoMembershipRule>of(),
+      asList(createWaiver("Soccer clinic waiver",
+        "If you are injured while volunteering Columbia Park BGCSF is not liable.\n\n" +
+        "If your property is stolen while volunteering that is your responsibility."))),
     BGCSF_TENDERLOIN("https://www.facebook.com/Tenderloin.clubhouse", HARISH,
       asList(
         TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null),
@@ -203,7 +207,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     private TestOrganization(String pageUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg) {
-      this(pageUrl, initialAdmin, memberships, parentOrg, null, ImmutableList.<Waiver>of());
+      this(pageUrl, initialAdmin, memberships, parentOrg, ImmutableList.<AutoMembershipRule>of(),
+        ImmutableList.<Waiver>of());
     }
 
     private TestOrganization(String pageUrl, TestUser initialAdmin,
@@ -299,6 +304,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     Key<Waiver> bgcsfSoccerWaiverKey = Key.create(BGCSF.waivers.get(0));
     Key<Waiver> bgcsfTutoringWaiverKey = Key.create(BGCSF.waivers.get(1));
+    Key<Waiver> columbiaParkSoccerWaiverKey = Key.create(BGCSF_COLUMBIA_PARK.waivers.get(0));
 
     List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
       POONUM.getKey());
@@ -308,7 +314,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     List<Key<User>> waitListedUsers = asList();
     Event event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
-      "502904489789649", bgcsfSoccerWaiverKey);
+      "502904489789649", columbiaParkSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
 
@@ -368,7 +374,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, -13), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904726456292",
-      bgcsfSoccerWaiverKey);
+      columbiaParkSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
@@ -579,9 +585,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     if (testOrg.parentOrg != null) {
       org.setParentOrg(new OrganizationNamedKeyWrapper(testOrg.parentOrg.getKey()));
     }
-    if (testOrg.autoMembershipRules != null) {
-      org.getAutoMembershipRules().addAll(testOrg.autoMembershipRules);
-    }
+    org.getAutoMembershipRules().addAll(testOrg.autoMembershipRules);
     try {
       org.initFromPage(servletCtx, new URI(baseUrl));
     } catch (URISyntaxException e) {
