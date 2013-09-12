@@ -45,6 +45,7 @@ import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.SuitableForType;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.Waiver;
 import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.task.ComputeLeaderboardServlet;
@@ -52,6 +53,7 @@ import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
 
 import com.google.appengine.api.datastore.GeoPt;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 
@@ -141,7 +143,12 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER11, null, Organization.Role.ORGANIZER),  // auto-grant
         TestOrgMembership.of(USER3, null, Organization.Role.ADMIN)), // not-auto-granted
       null,
-      asList(new AutoMembershipRule("kidsclub.org", Organization.Role.ORGANIZER))),
+      asList(new AutoMembershipRule("kidsclub.org", Organization.Role.ORGANIZER)),
+      asList(createWaiver("Soccer clinic waiver",
+                "If you are injured while volunteering BGCSF is not liable.\n\n" +
+                "If your property is stolen while volunteering that is your responsibility."),
+             createWaiver("After school tutoring waiver",
+                "You are responsible for any property you bring."))),
     BGCSF_COLUMBIA_PARK("https://www.facebook.com/columbia.park", AMIR,
       asList(
         TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
@@ -185,6 +192,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final TestOrganization parentOrg;
     @Getter
     private final List<AutoMembershipRule> autoMembershipRules;
+    @Getter
+    private final List<Waiver> waivers;
+
 
     private TestOrganization(String pageUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships) {
@@ -193,17 +203,19 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     private TestOrganization(String pageUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg) {
-      this(pageUrl, initialAdmin, memberships, parentOrg, null);
+      this(pageUrl, initialAdmin, memberships, parentOrg, null, ImmutableList.<Waiver>of());
     }
 
     private TestOrganization(String pageUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg,
-        @Nullable List<AutoMembershipRule> autoMembershipRules) {
+        @Nullable List<AutoMembershipRule> autoMembershipRules,
+        @Nullable List<Waiver> waivers) {
       this.pageUrl = pageUrl;
       this.initialAdmin = initialAdmin;
       this.memberships = memberships;
       this.parentOrg = parentOrg;
       this.autoMembershipRules = autoMembershipRules;
+      this.waivers = waivers;
     }
 
     public PageRef getPageRef() {
@@ -218,6 +230,13 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         throw new RuntimeException(e);
       }
       return Key.create(Organization.class, Organization.getNameFromPageName(pageName));
+    }
+
+    private static Waiver createWaiver(String description, String content) {
+      Waiver waiver = new Waiver();
+      waiver.setDescription(description);
+      waiver.setEmbeddedContent(content);
+      return waiver;
     }
   }
 
@@ -278,6 +297,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     List<Event> events = Lists.newArrayList();
     Date now = DateUtils.round(new Date(), Calendar.HOUR_OF_DAY);
 
+    Key<Waiver> bgcsfSoccerWaiverKey = Key.create(BGCSF.waivers.get(0));
+    Key<Waiver> bgcsfTutoringWaiverKey = Key.create(BGCSF.waivers.get(1));
+
     List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
       POONUM.getKey());
     List<Key<User>> registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
@@ -286,7 +308,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     List<Key<User>> waitListedUsers = asList();
     Event event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
-      "502904489789649");
+      "502904489789649", bgcsfSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
 
@@ -295,7 +317,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
     event = createEvent("After School Tutoring", BGCSF_TENDERLOIN,
       DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 2,
-      "502905379789560");
+      "502905379789560", bgcsfTutoringWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
     events.add(event);
 
@@ -327,7 +349,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Youth Soccer Clinic", BGCSF_TENDERLOIN,
       DateUtils.addDays(now, -6), 1,
-      organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904833122948");
+      organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904833122948",
+      bgcsfSoccerWaiverKey);
     events.add(event);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     pendingReviews.add(PendingReview.create(event, USER4.getKey(),
@@ -344,7 +367,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
       DateUtils.addDays(now, -13), 1,
-      organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904726456292");
+      organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904726456292",
+      bgcsfSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
@@ -392,6 +416,14 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   private static Event createEvent(String title, TestOrganization testOrg, Date startTime,
       int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
       List<Key<User>> waitListedUsers, int maxRegistrations, @Nullable String albumId) {
+    return createEvent(title, testOrg, startTime, numHours, organizers, registeredUsers,
+      waitListedUsers, maxRegistrations, albumId, null);
+  }
+
+  private static Event createEvent(String title, TestOrganization testOrg, Date startTime,
+      int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
+      List<Key<User>> waitListedUsers, int maxRegistrations, @Nullable String albumId,
+      Key<Waiver> waiverKey) {
     eventNum++;
     Event event = new Event();
     event.setTitle(title);
@@ -414,6 +446,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event.setMaxRegistrations(maxRegistrations);
     if (albumId != null) {
       event.setAlbum(new AlbumRef(albumId, ImageProviderType.FACEBOOK));
+    }
+    if (waiverKey != null) {
+      event.setWaiver(KeyWrapper.create(waiverKey));
     }
     return event;
   }
@@ -515,6 +550,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         if (membership.grantedRole != null) {
           User.updateMembership(membership.user.getKey(), testOrg.getKey(), membership.grantedRole);
         }
+      }
+      for (Waiver waiver : testOrg.waivers) {
+        Waiver.insert(testOrg.getKey(), waiver);
       }
     }
 
