@@ -89,6 +89,8 @@ public class MeResource {
 
   @Path("profile_image")
   @POST
+  @Consumes({MediaType.MULTIPART_FORM_DATA})
+  @Produces({MediaType.APPLICATION_JSON})
   public Response updateProfileImage(
       @QueryParam("provider") SocialNetworkProviderType providerType,
       @Context HttpServletRequest servletRequest) {

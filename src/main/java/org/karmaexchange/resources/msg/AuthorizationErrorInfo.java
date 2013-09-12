@@ -33,7 +33,7 @@ public class AuthorizationErrorInfo extends ErrorResponseMsg.ErrorInfo {
   }
 
   private AuthorizationErrorInfo(BaseDao<?> resource) {
-    super("Authorization error", Type.NOT_AUTHORIZED);
+    super("Authorization error", Type.NOT_AUTHORIZED, new IllegalAccessException());
     if (resource.isKeyComplete()) {
       resourceKey = Key.create(resource).getString();
     }

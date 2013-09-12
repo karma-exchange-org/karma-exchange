@@ -8,6 +8,7 @@ import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.Waiver;
 
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyFactory;
@@ -26,6 +27,7 @@ public class OfyService {
     ObjectifyService.register(Image.class);
     ObjectifyService.register(Review.class);
     ObjectifyService.register(Leaderboard.class);
+    ObjectifyService.register(Waiver.class);
     // Make sure to update PurgeAllResourcesServlet if a new class is added.
   }
 
