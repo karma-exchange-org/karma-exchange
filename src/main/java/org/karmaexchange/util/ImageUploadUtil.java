@@ -42,6 +42,7 @@ public class ImageUploadUtil {
     return persistImages(req, limit, DEFAULT_MAX_IMAGE_PX, DEFAULT_MAX_IMAGE_PX, null);
   }
 
+  // TODO(avaliani): enforce limit.
   public static List<BlobKey> persistImages(HttpServletRequest req, int limit, int maxWidthPx,
       int maxHeightPx, @Nullable MultivaluedMap<String, String> formFields) {
     List<BlobKey> blobKeys = Lists.newArrayList();

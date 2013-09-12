@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkState;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,10 +26,12 @@ import org.karmaexchange.dao.Leaderboard.LeaderboardType;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.RequestStatus;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.Waiver;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.OrganizationMemberView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.resources.msg.WaiverSummaryView;
 import org.karmaexchange.util.OfyUtil;
 import org.karmaexchange.util.PaginatedQuery;
 import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
@@ -162,5 +165,36 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
     }
     Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
     return ofy().load().key(Leaderboard.createKey(orgKey, type)).now();
+  }
+
+  @Path("{org_key}/waiver")
+  @GET
+  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public ListResponseMsg<WaiverSummaryView> getWaivers(
+      @PathParam("org_key") String orgKeyStr) {
+    Key<Organization> orgKey =
+        OfyUtil.<Organization>createKey(orgKeyStr);
+    Iterable<Waiver> waivers =
+        ofy().load().type(Waiver.class).ancestor(orgKey).iterable();
+    List<WaiverSummaryView> waiverSummaries =
+        WaiverSummaryView.create(waivers);
+    Collections.sort(waiverSummaries, WaiverSummaryView.DescriptionComparator.INSTANCE);
+    return ListResponseMsg.create(waiverSummaries);
+  }
+
+  @Path("{org_key}/waiver")
+  @POST
+  @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  public Response upsertWaiver(
+      @PathParam("org_key") String orgKeyStr,
+      Waiver waiver) {
+    Key<Organization> orgKey = OfyUtil.<Organization>createKey(orgKeyStr);
+    if (waiver == null) {
+      throw ErrorResponseMsg.createException("waiver argument not specified",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    Waiver.insert(orgKey, waiver);
+    URI uri = uriInfo.getBaseUriBuilder().path(WaiverResource.PATH).path(waiver.getKey()).build();
+    return Response.created(uri).build();
   }
 }

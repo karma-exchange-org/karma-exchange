@@ -61,11 +61,6 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
   }
 
   @Override
-  protected Class<Event> getResourceClass() {
-    return Event.class;
-  }
-
-  @Override
   protected EventView createBaseDaoView(Event event) {
     return new EventView(event);
   }

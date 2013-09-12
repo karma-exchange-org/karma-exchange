@@ -82,7 +82,11 @@ public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoV
   public Response updateResource(@PathParam("resource") String key, U resourceView) {
     T resource = resourceView.getDao();
     preProcessUpsert(resource);
-    if (resource.isKeyComplete() && !key.equals(Key.create(resource).getString())) {
+    if (!resource.isKeyComplete()) {
+      throw ErrorResponseMsg.createException("the resource key is incomplete",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    if (!key.equals(Key.create(resource).getString())) {
       throw ErrorResponseMsg.createException(
         format("the resource key [%s] does not match the url path key [%s]",
           Key.create(resource).getString(), key),
@@ -98,7 +102,7 @@ public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoV
     BaseDao.delete(OfyUtil.<T>createKey(keyStr));
   }
 
-  protected abstract Class<T> getResourceClass();
+  // protected abstract Class<T> getResourceClass();
 
   protected void preProcessUpsert(T resource) {
     // No-op.
