@@ -10,6 +10,7 @@ import java.util.List;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -21,6 +22,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Leaderboard.LeaderboardType;
 import org.karmaexchange.dao.Organization;
@@ -37,6 +40,7 @@ import org.karmaexchange.util.PaginatedQuery;
 import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
 import org.karmaexchange.util.PaginatedQuery.StartsWithFilter;
 
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 
 @Path("/org")
@@ -46,6 +50,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   public static final String ROLE_PARAM = "role";
   public static final String MEMBERSHIP_STATUS_PARAM = "membership_status";
   public static final String LEADERBOARD_TYPE_PARAM = "type";
+  public static final String INCLUDE_PARENT_ORGS_PARAM = "include_parent_orgs";
 
   @Override
   protected Class<Organization> getResourceClass() {
@@ -171,14 +176,31 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<WaiverSummaryView> getWaivers(
-      @PathParam("org_key") String orgKeyStr) {
-    Key<Organization> orgKey =
+      @PathParam("org_key") String orgKeyStr,
+      @DefaultValue("false") @QueryParam(INCLUDE_PARENT_ORGS_PARAM) boolean includeParentOrgs) {
+    Key<Organization> rootOrgKey =
         OfyUtil.<Organization>createKey(orgKeyStr);
-    Iterable<Waiver> waivers =
-        ofy().load().type(Waiver.class).ancestor(orgKey).iterable();
-    List<WaiverSummaryView> waiverSummaries =
-        WaiverSummaryView.create(waivers);
-    Collections.sort(waiverSummaries, WaiverSummaryView.DescriptionComparator.INSTANCE);
+    List<Organization> orgs;
+    if (includeParentOrgs) {
+      orgs = Organization.getOrgAndAncestorOrgs(rootOrgKey);
+    } else {
+      orgs = Lists.newArrayList(ofy().load().key(rootOrgKey).now());
+    }
+
+    // Asynchronously launch the queries to fetch the waivers.
+    List<Pair<Organization, ? extends Iterable<Waiver>>> orgsAndWaivers = Lists.newArrayList();
+    for (Organization org : orgs) {
+      orgsAndWaivers.add(ImmutablePair.of(org,
+        ofy().load().type(Waiver.class).ancestor(Key.create(org)).iterable()));
+    }
+
+    // Create the waiver summaries.
+    List<WaiverSummaryView> waiverSummaries = Lists.newArrayList();
+    for (Pair<Organization, ? extends Iterable<Waiver>> orgAndWaiver : orgsAndWaivers) {
+      waiverSummaries.addAll(
+        WaiverSummaryView.create(orgAndWaiver.getLeft(), orgAndWaiver.getRight()));
+    }
+    Collections.sort(waiverSummaries, WaiverSummaryView.OrgAndDescriptionComparator.INSTANCE);
     return ListResponseMsg.create(waiverSummaries);
   }
 
