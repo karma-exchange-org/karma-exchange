@@ -80,7 +80,7 @@ public final class Event extends IdBaseDao<Event> {
   private String description;
   private String specialInstructions; // See flash volunteer.
   @Index
-  private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
+  private List<CauseType> causes = Lists.newArrayList();
 
   private Location location;
   @Index
@@ -412,13 +412,11 @@ public final class Event extends IdBaseDao<Event> {
     Key<Organization> primaryOrgKey = KeyWrapper.toKey(organization);
     // Throw an exception if we can't add the primary org token to the searchableTokensSet.
     searchableTokensSet.add(
-      SearchUtil.ReservedToken.PRIMARY_ORG.create(
-        Organization.getSearchTokenSuffix(primaryOrgKey)));
+      Organization.getPrimaryOrgSearchToken(primaryOrgKey));
     for (OrganizationNamedKeyWrapper orgKeyWrapper : associatedOrganizations) {
       // Throw an exception if we can't add the org token to the searchableTokensSet.
       searchableTokensSet.add(
-        SearchUtil.ReservedToken.ORG.create(
-          Organization.getSearchTokenSuffix(KeyWrapper.toKey(orgKeyWrapper))));
+        Organization.getAssociatedOrgsSearchToken(KeyWrapper.toKey(orgKeyWrapper)));
     }
 
     for (SuitableForType suitableForType : suitableForTypes) {
@@ -429,13 +427,12 @@ public final class Event extends IdBaseDao<Event> {
     StringBuilder searchableContent = new StringBuilder();
     searchableContent.append(title);
     searchableContent.append(' ');
-    for (KeyWrapper<CauseType> causeKeyWrapper : causes) {
-      Key<CauseType> causeKey = KeyWrapper.toKey(causeKeyWrapper);
+    for (CauseType causeType : causes) {
       // We add causes both as tags and text strings to be parsed since keywords like
       // homeless and animals are good for non-tag based keyword search.
-      searchableContent.append(CauseType.getCauseTypeAsString(causeKey));
+      searchableContent.append(causeType.getDescription());
       searchableContent.append(' ');
-      searchableTokensSet.addIfSpace(CauseType.getTag(causeKey));
+      searchableTokensSet.addIfSpace(causeType.getSearchToken());
     }
     if ((location != null) && (location.getTitle() != null)) {
       searchableContent.append(location.getTitle());
