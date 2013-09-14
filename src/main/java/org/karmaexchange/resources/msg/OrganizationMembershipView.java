@@ -34,7 +34,7 @@ public class OrganizationMembershipView {
   private PageRef orgPage;
   private long orgKarmaPoints;
   private AggregateRating orgEventRating;
-  private List<KeyWrapper<CauseType>> orgCauses;
+  private List<CauseType> orgCauses;
   private String searchTokenSuffix;
 
   @Nullable

@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
@@ -45,7 +44,6 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     Iterable<Key<Event>> eventKeys = ofy().load().type(Event.class).keys().iterable();
     Iterable<Key<User>> userKeys = ofy().load().type(User.class).keys().iterable();
     Iterable<Key<Organization>> orgKeys = ofy().load().type(Organization.class).keys().iterable();
-    Iterable<Key<CauseType>> causeTypeKeys = ofy().load().type(CauseType.class).keys().iterable();
     Iterable<Key<Image>> imageKeys = ofy().load().type(Image.class).keys().iterable();
     Iterable<Key<Review>> reviewKeys = ofy().load().type(Review.class).keys().iterable();
     Iterable<Key<Leaderboard>> leaderboardKeys =
@@ -55,7 +53,6 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     ofy().delete().keys(eventKeys);
     ofy().delete().keys(userKeys);
     ofy().delete().keys(orgKeys);
-    ofy().delete().keys(causeTypeKeys);
     ofy().delete().keys(imageKeys);
     ofy().delete().keys(reviewKeys);
     ofy().delete().keys(leaderboardKeys);

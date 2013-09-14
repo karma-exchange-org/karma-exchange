@@ -6,6 +6,7 @@ import java.io.StringReader;
 import java.util.EnumSet;
 import java.util.Set;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.core.LowerCaseFilter;
@@ -26,6 +27,7 @@ public class SearchUtil {
   private static final Analyzer ANALYZER = new KStemEnglishAnalyzer();
 
   public enum ReservedToken {
+    CAUSE_TYPE("cause-type"),
     ORG("org"),
     PRIMARY_ORG("org-primary");
 
@@ -38,12 +40,21 @@ public class SearchUtil {
     }
 
     public String create(String tokenSuffix) {
-      return prefix + tokenSuffix;
+      return prefix + parseTokenSuffix(tokenSuffix);
     }
 
-    public static boolean conflictsWithAnyReservedToken(String lowercasedToken) {
+    public static String parseTokenSuffix(String tokenSuffix) {
+      String parsedTokenSuffix = tokenSuffix.replaceAll("[^a-zA-Z0-9]", "").toLowerCase();
+      if (parsedTokenSuffix.isEmpty()) {
+        throw new IllegalArgumentException(
+          "token suffix has no searchable characters: '" + tokenSuffix + "'");
+      }
+      return parsedTokenSuffix;
+    }
+
+    public static boolean conflictsWithAnyReservedToken(String token) {
       for (ReservedToken reservedToken : ReservedToken.values()) {
-        if (lowercasedToken.startsWith(reservedToken.prefix)) {
+        if (StringUtils.startsWithIgnoreCase(token, reservedToken.prefix)) {
           return true;
         }
       }

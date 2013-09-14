@@ -82,7 +82,7 @@ public final class User extends NameBaseDao<User> {
   private String about;
 
   @Index
-  private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
+  private List<CauseType> causes = Lists.newArrayList();
 
   // Skipping interests for now.
   // Facebook has a detailed + categorized breakdown of interests.

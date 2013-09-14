@@ -16,7 +16,6 @@ public class PersistTestResourcesServlet extends HttpServlet {
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     resp.setContentType("text/plain");
     PrintWriter statusWriter = resp.getWriter();
-    new CauseTypesBootstrapTask(statusWriter, req.getCookies()).execute();
     new TestResourcesBootstrapTask(statusWriter, req.getCookies(), getServletContext(),
       ServletUtil.getBaseUri(req)).execute();
   }

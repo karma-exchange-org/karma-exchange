@@ -24,6 +24,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.task.UpdateNamedKeysAdminTaskServlet;
+import org.karmaexchange.util.SearchUtil.ReservedToken;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -70,7 +71,7 @@ public class Organization extends NameBaseDao<Organization> {
 
   private Address address;
 
-  private List<KeyWrapper<CauseType>> causes = Lists.newArrayList();
+  private List<CauseType> causes = Lists.newArrayList();
 
   @Index
   private long karmaPoints;
@@ -120,12 +121,19 @@ public class Organization extends NameBaseDao<Organization> {
     return orgKey.getName();
   }
 
-  public static String getSearchTokenSuffix(Key<Organization> orgKey) {
-    return orgKey.getName();
+  public static String getPrimaryOrgSearchToken(Key<Organization> orgKey) {
+    return ReservedToken.PRIMARY_ORG.create(orgKey.getName());
+  }
+
+  public static String getAssociatedOrgsSearchToken(Key<Organization> orgKey) {
+    return ReservedToken.ORG.create(orgKey.getName());
   }
 
   public String getSearchTokenSuffix() {
-    return name;
+    // TODO(avaliani): Potential bug. If two orgs have different page names unparsed but the
+    // same page name parsed we have a collision. We should eventually fix parseTokenSuffix to
+    // handle this.
+    return ReservedToken.parseTokenSuffix(name);
   }
 
   public void initFromPage(ServletContext servletCtx, URI requestUri) {
