@@ -1,7 +1,6 @@
 package org.karmaexchange.util;
 
 
-import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
@@ -23,7 +22,6 @@ public class OfyService {
     ObjectifyService.register(Event.class);
     ObjectifyService.register(User.class);
     ObjectifyService.register(Organization.class);
-    ObjectifyService.register(CauseType.class);
     ObjectifyService.register(Image.class);
     ObjectifyService.register(Review.class);
     ObjectifyService.register(Leaderboard.class);

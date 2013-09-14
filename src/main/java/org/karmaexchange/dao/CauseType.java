@@ -1,55 +1,44 @@
 package org.karmaexchange.dao;
 
-import javax.annotation.Nullable;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.karmaexchange.util.SearchUtil.ReservedToken;
 
-import org.karmaexchange.util.TagUtil;
+import lombok.Getter;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+public enum CauseType {
+  ANIMALS("Animals"),
+  ARTS_AND_CULTURE("Arts & Culture"),
+  CHILDREN_AND_YOUTH("Children & Youth"),
+  DISASTER_RELIEF("Disaster Relief"),
+  EDUCATION("Education"),
+  ENVIRONMENT("Environment"),
+  FAITH_BASED("Faith-Based"),
+  HEALTH_AND_MEDICINE("Health & Medicine"),
+  HOMELESSNESS("Homelessness"),
+  HUMAN_RIGHTS("Human Rights"),
+  HUNGER("Hunger"),
+  IMMIGRATION_AND_REFUGEES("Immigration & Refugees"),
+  JUSTICE("Justice"),
+  LEGAL("Legal"),
+  LGBT("LGBT"),
+  MENTORSHIP("Mentorship"),
+  POLITICS("Politics"),
+  PUBLIC_RELATIONS("Public Relations"),
+  SENIORS("Seniors"),
+  SPORTS_AND_ATHLETICS("Sports & Athletics"),
+  TECHNOLOGY("Technology"),
+  VETERANS("Veterans"),
+  VOLUNTEERING_ABROAD("Volunteering Abroad"),
+  WOMEN("Women"),
+  WORKFORCE("Workforce");
 
-import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Entity;
+  @Getter
+  private final String description;
 
-@XmlRootElement
-@Entity
-@Data
-@NoArgsConstructor
-@EqualsAndHashCode(callSuper=true)
-@ToString(callSuper=true)
-public class CauseType extends NameBaseDao<CauseType> {
-
-  private PageRef page;
-
-  public static CauseType create(String name) {
-    return new CauseType(name, null);
+  private CauseType(String description) {
+    this.description = description;
   }
 
-  public static CauseType create(String name, PageRef pageRef) {
-    return new CauseType(name, pageRef);
-  }
-
-  public static Key<CauseType> getKey(String name) {
-    return Key.create(CauseType.class, name);
-  }
-
-  public static String getTag(Key<CauseType> causeKey) {
-    return TagUtil.createTag(getCauseTypeAsString(causeKey));
-  }
-
-  public static String getCauseTypeAsString(Key<CauseType> causeKey) {
-    return causeKey.getName();
-  }
-
-  private CauseType(String name, @Nullable PageRef pageRef) {
-    this.name = name;
-    page = pageRef;
-  }
-
-  @Override
-  protected Permission evalPermission() {
-    return Permission.READ;
+  public String getSearchToken() {
+    return ReservedToken.CAUSE_TYPE.create(description);
   }
 }

@@ -32,7 +32,7 @@ public class ExpandedEventSearchView extends EventSearchView {
   private int numOrganizers;
 
   // TODO(avaliani): need to expand causes.
-  private List<KeyWrapper<CauseType>> causes;
+  private List<CauseType> causes;
   // TODO(avaliani): need to expand organizations.
   private KeyWrapper<Organization> organization;
 
