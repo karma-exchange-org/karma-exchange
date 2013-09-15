@@ -1,5 +1,6 @@
 src/main/webapp/WEB-INF/app-private.properties
-src/main/webapp/local_test
+src/main/webapp/local_test/
+src/main/webapp/generated/
 hotspot.log
 *.iml
 *.ipr

@@ -234,6 +234,27 @@
                     <sourcepath>${basedir}/target/generated-sources/delombok</sourcepath>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.2.1</version>
+                <executions>
+                    <execution>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>org.karmaexchange.tools.GenerateDerivedJson</mainClass>
+                    <arguments>
+                        <argument>${basedir}/src/main/webapp/generated</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
