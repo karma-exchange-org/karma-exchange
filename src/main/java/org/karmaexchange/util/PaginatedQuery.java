@@ -31,6 +31,8 @@ import lombok.ToString;
 public class PaginatedQuery<T extends BaseDao<T>> {
 
   private final Class<T> resourceClass;
+  @Nullable
+  private final Cursor afterCursor;
   private final Collection<QueryClause> queryClauses;
   private final UriInfo uriInfo;
   private final int limit;
@@ -38,9 +40,10 @@ public class PaginatedQuery<T extends BaseDao<T>> {
   public Result<T> execute() {
     QueryResultIterator<T> queryIter = getOfyQuery().iterator();
     List<T> searchResults = Lists.newArrayList(Iterators.limit(queryIter, limit));
-    Cursor afterCursor = queryIter.getCursor();
-    PagingInfo pagingInfo = PagingInfo.create(afterCursor, limit, queryIter.hasNext(), uriInfo);
-    return new Result<T>(searchResults, pagingInfo);
+    Cursor nextCursor = queryIter.getCursor();
+    PagingInfo pagingInfo =
+        PagingInfo.create(nextCursor, limit, queryIter.hasNext(), uriInfo);
+    return new Result<T>(searchResults, nextCursor, pagingInfo, this);
   }
 
   private Query<T> getOfyQuery() {
@@ -48,13 +51,36 @@ public class PaginatedQuery<T extends BaseDao<T>> {
     for (QueryClause queryClause : queryClauses) {
       query = queryClause.apply(query);
     }
+    if (afterCursor != null) {
+      query = query.startAt(afterCursor);
+    }
     return query;
   }
 
   @Data
   public static class Result<T extends BaseDao<T>> {
     private final List<T> searchResults;
+    @Nullable
+    private final Cursor nextCursor;
+    @Nullable
     private final PagingInfo pagingInfo;
+    private final PaginatedQuery<T> query;
+
+    public boolean hasMoreResults() {
+      return (pagingInfo != null) && (pagingInfo.getNext() != null);
+    }
+
+    public Result<T> fetchNextBatch() {
+      return new PaginatedQuery<T>(query, nextCursor).execute();
+    }
+  }
+
+  private PaginatedQuery(PaginatedQuery<T> prevQuery, Cursor afterCursor) {
+    resourceClass = prevQuery.resourceClass;
+    this.afterCursor = afterCursor;
+    queryClauses = prevQuery.queryClauses;
+    uriInfo = prevQuery.uriInfo;
+    limit = prevQuery.limit;
   }
 
   @Data
@@ -124,10 +150,7 @@ public class PaginatedQuery<T extends BaseDao<T>> {
       }
       // Request for one more than the limit to determine if there are results after the limit.
       queryClauses.add(new LimitQueryClause(limit + 1));
-      if (afterCursor != null) {
-        queryClauses.add(new StartAtQueryClause(afterCursor));
-      }
-      return new PaginatedQuery<T>(resourceClass, queryClauses, uriInfo, limit);
+      return new PaginatedQuery<T>(resourceClass, afterCursor, queryClauses, uriInfo, limit);
     }
   }
 
@@ -212,19 +235,6 @@ public class PaginatedQuery<T extends BaseDao<T>> {
     @Override
     public <T> Query<T> apply(Query<T> query) {
       return query.limit(limit);
-    }
-  }
-
-  @Data
-  @EqualsAndHashCode(callSuper=true)
-  @ToString(callSuper=true)
-  private static class StartAtQueryClause extends QueryClause {
-
-    private final Cursor afterCursor;
-
-    @Override
-    public <T> Query<T> apply(Query<T> query) {
-      return query.startAt(afterCursor);
     }
   }
 }
