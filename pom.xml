@@ -109,6 +109,21 @@
             <artifactId>commons-validator</artifactId>
             <version>1.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.appengine.tools</groupId>
+            <artifactId>appengine-pipeline</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.appengine.tools</groupId>
+            <artifactId>appengine-mapreduce</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.javadocmd</groupId>
+            <artifactId>simplelatlng</artifactId>
+            <version>RELEASE</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
@@ -135,18 +150,6 @@
             <version>${appengine.target.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <dependency>
-            <groupId>com.google.appengine.tools</groupId>
-            <artifactId>appengine-pipeline</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.appengine.tools</groupId>
-            <artifactId>appengine-mapreduce</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-
         <dependency>
             <groupId>com.sun.jersey.jersey-test-framework</groupId>
             <artifactId>jersey-test-framework-grizzly</artifactId>

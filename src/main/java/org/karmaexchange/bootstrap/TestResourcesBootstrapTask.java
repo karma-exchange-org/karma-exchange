@@ -355,13 +355,65 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     Key<Waiver> bgcsfTutoringWaiverKey = Key.create(BGCSF.waivers.get(1));
     Key<Waiver> columbiaParkSoccerWaiverKey = Key.create(BGCSF_COLUMBIA_PARK.waivers.get(0));
 
+    Location ferryBuilding = new Location(
+      "Ferry building",
+      "The San Francisco Ferry Building is a terminal for ferries that " +
+        "travel across the San Francisco Bay, a marketplace, and also has offices",
+      new Address(
+        "1 Sausalito - San Francisco Ferry Bldg",
+        "San Francisco",
+        "CA",
+        "USA",
+        "94111",
+        GeoPtWrapper.create(new GeoPt(37.7955f, -122.3937f))));
+    Location soccerField = new Location(
+      "Youngblood-Coleman Playground",
+      null,
+      new Address(
+        "1398 Hudson Avenue",
+        "San Francisco",
+        "CA",
+        "USA",
+        "94124",
+        GeoPtWrapper.create(new GeoPt(37.738905f,-122.384654f))));
+    Location bgcsfClubhouse = new Location(
+      "BGCSF Clubhouse",
+      null,
+      new Address(
+        "450 Guerrero St",
+        "San Francisco",
+        "CA",
+        "USA",
+        "94110",
+        GeoPtWrapper.create(new GeoPt(37.763762f,-122.424233f))));
+    Location unitedWayParkmoorOffice = new Location(
+      "United Way Silicon Valley Office",
+      null,
+      new Address(
+        "1400 Parkmoor Avenue #250",
+        "San Jose",
+        "CA",
+        "USA",
+        "95126",
+        GeoPtWrapper.create(new GeoPt(37.316094f,-121.912575f))));
+    Location benevolentParkmoorOffice = new Location(
+      "Benevolent San Jose Office",
+      null,
+      new Address(
+        "1400 Parkmoor Avenue",
+        "San Jose",
+        "CA",
+        "USA",
+        "95126",
+        GeoPtWrapper.create(new GeoPt(37.316094f,-121.912575f))));
+
     List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
       POONUM.getKey());
     List<Key<User>> registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
-    Event event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
+    Event event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
       DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502904489789649", columbiaParkSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
@@ -370,7 +422,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER2.getKey());
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
-    event = createEvent("After School Tutoring", BGCSF_TENDERLOIN,
+    event = createEvent("After School Tutoring", BGCSF_TENDERLOIN, bgcsfClubhouse,
       DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 2,
       "502905379789560", bgcsfTutoringWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
@@ -379,7 +431,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(AMIR.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    event = createEvent("Credit Coaching", UNITED_WAY,
+    event = createEvent("Credit Coaching", UNITED_WAY, unitedWayParkmoorOffice,
       DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5, null);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
@@ -387,7 +439,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList();
     waitListedUsers = asList();
-    event = createEvent("Resume Workshop", BENEVOLENT,
+    event = createEvent("Resume Workshop", BENEVOLENT, benevolentParkmoorOffice,
       DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5,
       "502906079789490");
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
@@ -402,7 +454,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
     waitListedUsers = asList(USER3.getKey());
-    event = createEvent("Youth Soccer Clinic", BGCSF_TENDERLOIN,
+    event = createEvent("Youth Soccer Clinic", BGCSF_TENDERLOIN, soccerField,
       DateUtils.addDays(now, -6), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904833122948",
       bgcsfSoccerWaiverKey);
@@ -420,7 +472,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey(), POONUM.getKey());
     waitListedUsers = asList(USER3.getKey());
-    event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK,
+    event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
       DateUtils.addDays(now, -13), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904726456292",
       columbiaParkSoccerWaiverKey);
@@ -432,7 +484,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
-    event = createEvent("San Francisco Street Cleanup", BENEVOLENT,
+    event = createEvent("San Francisco Street Cleanup", BENEVOLENT, ferryBuilding,
       DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906933122738");
     events.add(event);
@@ -440,7 +492,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
-    event = createEvent("San Jose Street Cleanup", UNITED_WAY,
+    event = createEvent("San Jose Street Cleanup", UNITED_WAY, unitedWayParkmoorOffice,
       DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906759789422");
     events.add(event);
@@ -448,7 +500,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey(), AMIR.getKey());
     waitListedUsers = asList();
-    event = createEvent("San Francisco Street Cleanup", BENEVOLENT,
+    event = createEvent("San Francisco Street Cleanup", BENEVOLENT, ferryBuilding,
       DateUtils.addDays(now, -31), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906933122738");
     events.add(event);
@@ -458,7 +510,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER1.getKey(), AMIR.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey(), HARISH.getKey(), POONUM.getKey());
     waitListedUsers = asList();
-    event = createEvent("San Jose Street Cleanup", UNITED_WAY,
+    event = createEvent("San Jose Street Cleanup", UNITED_WAY, unitedWayParkmoorOffice,
       DateUtils.addDays(now, -37), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906759789422");
     events.add(event);
@@ -468,15 +520,15 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     return new CreateEventsResult(events, eventNoShowInfo, pendingReviews);
   }
 
-  private static Event createEvent(String title, TestOrganization testOrg, Date startTime,
-      int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
+  private static Event createEvent(String title, TestOrganization testOrg, Location location,
+      Date startTime, int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
       List<Key<User>> waitListedUsers, int maxRegistrations, @Nullable String albumId) {
-    return createEvent(title, testOrg, startTime, numHours, organizers, registeredUsers,
+    return createEvent(title, testOrg, location, startTime, numHours, organizers, registeredUsers,
       waitListedUsers, maxRegistrations, albumId, null);
   }
 
-  private static Event createEvent(String title, TestOrganization testOrg, Date startTime,
-      int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
+  private static Event createEvent(String title, TestOrganization testOrg, Location location,
+      Date startTime, int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
       List<Key<User>> waitListedUsers, int maxRegistrations, @Nullable String albumId,
       Key<Waiver> waiverKey) {
     eventNum++;
@@ -492,7 +544,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       event.setDescription("We are seeking volunteers willing to provide in-home respite care for people with terminally ill companion animals. Ancillary services would involve providing some comfort care for the pets themselves as well as pet loss counseling for those who have lost a pet. Risk management and liability issues are still being explored vis-a-vis a possible partnership with our local Humane Society of the North Bay, but we hope to begin training sessions for volunteers in 2014. In the meantime, volunteers will undergo initial screening through The NHFP. Please be patient if you do not hear from us right away. We are generally inundated with requests for emergency pet hospice care as well as involved with training seminars or our biennial symposium. We would appreciate a telephone call from you if you have not heard back from us within four weeks. Please call (XXX) XXX-XXXX and/or leave a message explaining you are a potential volunteer.");
       event.setCauses(asList(CauseType.ANIMALS));
     }
-    event.setLocation(createLocation());
+    event.setLocation(location);
     event.setStartTime(startTime);
     event.setEndTime(DateUtils.addHours(startTime, numHours));
     event.setParticipants(createParticpantsList(organizers, registeredUsers, waitListedUsers));
@@ -504,23 +556,6 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       event.setWaiver(KeyWrapper.create(waiverKey));
     }
     return event;
-  }
-
-  private static Location createLocation() {
-    Location location = new Location();
-    location.setTitle("Ferry building");
-    location.setDescription("The San Francisco Ferry Building is a terminal for ferries that " +
-      "travel across the San Francisco Bay, a marketplace, and also has offices");
-    Address address = new Address();
-    location.setAddress(address);
-    address.setStreet("1 Sausalito - San Francisco Ferry Bldg");
-    address.setCity("San Francisco");
-    address.setState("CA");
-    address.setCountry("USA");
-    address.setZip("94111");
-    GeoPt geoPt = new GeoPt(37.7955f, -122.3937f);
-    address.setGeoPt(GeoPtWrapper.create(geoPt));
-    return location;
   }
 
   private static List<EventParticipant> createParticpantsList(List<Key<User>> organizers,
