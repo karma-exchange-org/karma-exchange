@@ -537,6 +537,11 @@ public final class Event extends IdBaseDao<Event> {
         }
       }
     }
+    if ((location == null) || (location.getAddress() == null) ||
+        (location.getAddress().getGeoPt() == null)) {
+      validationErrors.add(new ResourceValidationError(
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "location"));
+    }
 
     if (!validationErrors.isEmpty()) {
       throw ValidationErrorInfo.createException(validationErrors);
