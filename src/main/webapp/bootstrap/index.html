@@ -1,17 +1,42 @@
+<!DOCTYPE html>
 <html>
 <head>
-<title>Bootstrap Karma Exchange</title>
-<style type="text/css">
-div {
-  padding: 10px;
-}
-</style>
-<link rel="stylesheet" href="/css/bootstrap.min.css">
-<meta charset="UTF-8">
+  <title>Bootstrap Karma Exchange</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+  <meta charset="UTF-8">
+  <style type="text/css">
+    body {
+      padding-top: 10px;
+    }
+
+    .button-row {
+      padding: 4px;
+      text-transform:uppercase;
+/*      font-variant:small-caps;
+      text-transform:capitalize;*/
+    }
+
+    .button-header {
+      text-transform:uppercase;
+    }
+
+    .panel-dark-gray {
+      border-color: #6E6E6E;
+    }
+
+    .panel-dark-gray > .panel-heading {
+      color:#fff;
+      background-color: #6E6E6E;
+      border-color: #6E6E6E;
+    }
+
+  </style>
 </head>
 <body>
   <script src="http://code.jquery.com/jquery.js"></script>
-  <script src="/js/vendor/bootstrap.min.js"></script>
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
   <script src="/js/initappid.js"></script>
   <script type="text/javascript">
     // This is boilerplate code that is used to initialize the Facebook
@@ -52,13 +77,13 @@ div {
       var form = '<form action="/bootstrap/provider/fb/register" method="get">'
           + '  <input type="hidden" name="uid" value="' + uid + '">'
           + '  <input type="hidden" name="token" value="' + token + '">'
-          + '  <button type="submit" class="btn" >Bootstrap current user (registration bypass)</button>'
+          + '  <button type="submit" class="btn btn-block btn-default">BOOTSTRAP CURRENT USER</button>'
           + '</form>';
       document.getElementById('account-info').innerHTML = (form);
     }
 
     function showLoginButton() {
-      document.getElementById('account-info').innerHTML = ('<button class="btn btn-primary" onclick="FB.login()">Login and connect via facebook</button>');
+      document.getElementById('account-info').innerHTML = ('<button class="btn btn-block btn-primary" onclick="FB.login()">LOGIN AND CONNECT VIA FACEBOOK</button>');
     }
 
     /**
@@ -74,42 +99,47 @@ div {
     }
   </script>
 
+  <div class="container">
+    <div class="row">
+      <div class="col-md-5 panel panel-primary">
+        <div class="row text-center panel-heading">
+          <span class="button-header">Admin Operations</span>
+        </div>
+
+        <div class="panel-body">
+          <div class="row button-row">
+            <div id="account-info"></div>
+          </div>
+
+          <div class="row button-row">          
+            <a href="/bootstrap/test_resources" class="btn btn-block btn-primary">Bootstrap test resources</a>
+          </div>
+
+          <div class="row button-row">          
+            <a href="/bootstrap/datastore_indexes" class="btn btn-block btn-default">Update datastore-indexes-auto.xml</a>
+          </div>
+
+          <div class="row button-row">          
+            <a href="/task/process_event_completions" class="btn btn-block btn-default">Process newly completed events</a>
+          </div>
+
+          <div class="row button-row">          
+            <a href="/task/compute_leaderboard" class="btn btn-block btn-default">Compute organization leaderboards</a>
+          </div>
+
+          <div class="row button-row">          
+            <a href="/bootstrap/purge_resources" class="btn btn-block btn-danger">Delete all resources</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--  Using this as a way to refresh the fb access token. Need to verify it works! -->
+    <fb:facepile></fb:facepile>
+
+  </div>
+
   <div id="fb-root"></div>
-
-  <div id="account-info"></div>
-
-  <div>
-    <form action="/bootstrap/test_resources">
-      <button type="submit" class="btn btn-primary">Bootstrap test resources</button>
-    </form>
-  </div>
-
-  <div>
-    <form action="/bootstrap/datastore_indexes">
-      <button type="submit" class="btn">Update datastore-indexes-auto.xml</button>
-    </form>
-  </div>
-
-  <div>
-    <form action="/task/process_event_completions">
-      <button type="submit" class="btn">Process newly completed events</button>
-    </form>
-  </div>
-
-  <div>
-    <form action="/task/compute_leaderboard">
-      <button type="submit" class="btn">Compute organization leaderboards</button>
-    </form>
-  </div>
-
-  <div>
-    <form action="/bootstrap/purge_resources">
-      <button type="submit" class="btn btn-danger">Delete all resources</button>
-    </form>
-  </div>
-
-  <!--  Using this as a way to refresh the fb access token. Need to verify it works! -->
-  <fb:facepile></fb:facepile>
 
 </body>
 </html>
