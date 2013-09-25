@@ -137,7 +137,7 @@
                             <div class="row pagination-center">
                                 <ul class="list-inline">
                                     <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
-                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25"></a>
+                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25" width="25" height="25"></a>
                                     </li>
                                 </ul>
                                 <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]">
@@ -222,7 +222,7 @@
                                 </small>
                                 <ul class="list-inline pull-right">
                                     <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
-                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25"></a>
+                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25" width="25" height="25"></a>
                                     </li>
                                 </ul>
                             </div>
@@ -255,7 +255,7 @@
                 </h3>
                 <ol>
                     <li class="well well-sm" ng-repeat="leader in allTimeLeaders.scores">
-                        <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
+                        <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25" width="25" height="25"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
                     </li>
                 </ol>
             </div>
@@ -265,7 +265,7 @@
                 </h3>
                 <ol>
                     <li class="well well-sm" ng-repeat="leader in lastMonthLeaders.scores">
-                        <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
+                        <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25" width="25" height="25"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
                     </li>
                 </ol>
             </div>
@@ -290,7 +290,7 @@
                     <hr>
                     <ul class="list-inline">
                         <li ng-repeat="user in orgOwners.data">
-                            <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25" width="25" height="25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             <p>
                             </p>
                         </li>
@@ -305,7 +305,7 @@
                     <hr>
                     <ul class="list-inline">
                         <li ng-repeat="user in orgOrgnaizers.data">
-                            <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25" width="25" height="25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             <p>
                             </p>
                         </li>
@@ -329,7 +329,7 @@
                     <ul class="list-inline">
                         <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ADMIN'}">
                             <p>
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25" width="25" height="25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             </p>
                             <p>
                             </p>
@@ -347,7 +347,7 @@
                     <ul class="list-inline">
                         <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ORGANIZER'}">
                             <p>
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25" width="25" height="25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             </p>
                             <p>
                             </p>
@@ -365,7 +365,7 @@
                     <ul class="list-inline">
                         <li ng-repeat="user in pendingMembers.data | filter:{requestedRole: 'MEMBER'}">
                             <p>
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25" width="25" height="25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             </p>
                             <p>
                             </p>
