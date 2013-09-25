@@ -1,37 +1,47 @@
-<div class="container-fluid">
-
-		<div class="row-fluid input-append"><input class="span12" type="text" ng-model="query" placeholder="Search by name.."><span class="add-on"><i class="icon-search"></i></span></div>
-		<!-- <button class="btn-info" ng-click="open()"><i class="icon-plus"></i> Create an Organization</button> -->
-		<div modal="shouldBeOpen" close="close()" options="opts">
-	        <div class="modal-header">
-	            <h3>Enter details of the organization</h3>
-	        </div>
-	        <div class="modal-body">
-	            <div class="control-group">
-
-                    <label class="control-label" for="event">Organization facebook page</label>
-
-                    <div class="controls">
-
-                        <input class="span12"  type="text" ng-model="newOrg.page.url" id="title" placeholder="title">
-
-                    </div>
-
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+		    <div class="input-group">
+	            <input class="form-control" type="text" ng-model="query" placeholder="Search by name..">
+	            <span class="input-group-addon">
+	                <i class="icon-search"></i>
+	            </span> 
+		    </div>
+		</div>
+    </div>
+    <!-- <button class="btn-info" ng-click="open()"><i class="icon-plus"></i> Create an Organization</button> -->
+    <div modal="shouldBeOpen" close="close()" options="opts">
+        <div class="modal-header">
+            <h3>
+                Enter details of the organization
+            </h3>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="control-label" for="event">
+                    Organization facebook page
+                </label>
+                <div class="controls">
+                    <input class="col-md-12 form-control" type="text" ng-model="newOrg.page.url" id="title" placeholder="title">
                 </div>
-                
-	        </div>
-	        <div class="modal-footer">
-	            <button class="btn btn-success" ng-click="save()">Create</button>
-	        </div>
-	    </div>
-		<hr>
-		<ul class="unstyled">
-
-			<li ng-repeat="org in orgs.data">
-				<div class="well well-small">
-					<p><strong><a href="#/org/{{org.key}}" ng-click="refresh({{org.key}})">{{org.orgName}}</a></strong></p>
-				</div>
-			</li>
-		</ul>
-
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-success" ng-click="save()">
+                Create
+            </button>
+        </div>
+    </div>
+    <hr>
+    <ul class="list-unstyled">
+        <li ng-repeat="org in orgs.data">
+            <div class="well well-sm">
+                <p>
+                    <strong>
+                        <a href="#/org/{{org.key}}" ng-click="refresh({{org.key}})">{{org.orgName}}</a>
+                    </strong>
+                </p>
+            </div>
+        </li>
+    </ul>
 </div>

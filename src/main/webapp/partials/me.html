@@ -1,20 +1,19 @@
 
-<div class="container-fluid">
+<div class="container">
 	
-  <div class="row-fluid">
-  	<div class="span2">
-  		<img ng-src="{{me.profileImage.url}}?type=large"/>
-  		<h3><i class="icon-plus"></i>{{me.karmaPoints}} karma</h3>
+  <div class="row">
+  	<div class="col-md-3">
+  		<img ng-src="{{me.profileImage.url}}?type=large" class="img-responsive">
   	</div>
-  	<div class="span10">
+  	<div class="col-md-9">
   		
   		<legend>About me<small> <i ng-show="{ALL:true}[me.permission]" class="icon-edit" ng-click="enableEdit()"></i></small></legend>
   		
   		<ng-switch on="edit">
         
 	        <div ng-switch-when="true">
-	            <textarea rows="5" class="span12" ng-model="$parent.me.about" ></textarea>  
-	            <button class="btn btn-primary btn-small" ng-click="saveEdit()">Save</button><button class="btn btn-small" ng-click="disableEdit()">Cancel</button>
+	            <textarea rows="5" class="col-md-12" ng-model="$parent.me.about" ></textarea>  
+	            <button class="btn btn-primary btn-sm" ng-click="saveEdit()">Save</button><button class="btn btn-sm btn-default" ng-click="disableEdit()">Cancel</button>
 	        </div>
 	        
 	        <div ng-switch-default ng-click="enableEdit()">
@@ -25,70 +24,95 @@
 	    <legend>I am an organizer for</legend>
 	    <div>
 	    	
-	    		<ul class="inline">
+	    		<ul class="list-inline">
 	    			<li ng-repeat="org in orgs.data">
-	    				<div class="well well-small"><a href="#/org/{{org.org.key}}">{{org.orgName}}</a></div>
+	    				<div class="well well-sm"><a href="#/org/{{org.org.key}}">{{org.orgName}}</a></div>
 	    			</li>
 	    		</ul>
 	    		<p><strong>{{who}} organizer rating: </strong><rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{me.eventOrganizerRating.count}})</p>
+                <h4><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>
 	    </div>
 
   	</div>
   </div>
-  <div class="row-fluid">
 
-    <div class="span6">
-		
-		<div class="row-fluid">
-       		<legend>{{who}} past events</legend>
-      		<ul class="unstyled">
+  <div class="row">
+    <div class="col-md-12">
+        <tabset>
+            <tab>
+                <tab-heading>
+                    <i class="icon-bolt">
+                    </i>
+                    Impact
+                </tab-heading>
+                <p></p>
 
-				<li  ng-repeat="event in pastEvents.data">
-					<div class="well well-small row-fluid">
-						
-				    		<div class="row-fluid">
-		    					<strong >{{event.startTime | date:'mediumDate'}}</strong>
-		    					<a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a> 
-		    					<button disabled="disabled" type="button" class="btn btn-info btn-mini pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" ><small>organizer</small></button>		    				</div>
-		    				<div class="row-fluid">
-		    					<small class="muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>					
-		    					<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
-		    				</div>
-	    			
-	    				
-	    					
-	    			
+                <ul class="list-unstyled">
+                    <li ng-repeat="event in pastEvents.data">
+                        <!-- TODO(avaliani): hacked by adding arbitrary col / row classes to avoid tab scrollbar. Need to remove -->
+                        <div class="row well well-sm col-md-12">
+                            <div class="col-md-12">                        
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <strong >{{event.startTime | date:'mediumDate'}}</strong>
+                                        <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a> 
+                                        <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" ><small>organizer</small></button>                          
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <small class="text-muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>                 
+                                        <small class="text-muted">at {{event.location.title}}, {{event.location.address.city}}</small>
 
-	    				
-			    	</div>
-				
-				</li>
-			</ul>
-      </div>
+                                        <h4 class="pull-right">
+                                            <strong>
+                                                <em>
+                                                    +{{event.karmaPoints}} karma
+                                                </em>
+                                            </strong>
+                                        </h4>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
 
-	</div>
-	<div class="span6">
+            </tab>
+            <tab>
+                <tab-heading>
+                    <i class="icon-list">
+                    </i>
+                    Upcoming Events
+                </tab-heading>
+                <p></p>
 
-       <div class="row-fluid">
-       		<legend>{{who}} upcoming events</legend>
-      		<ul class="unstyled">
+                <ul class="list-unstyled">
+                    <li ng-repeat="event in events.data">
+                        <div class="row well well-sm col-md-12">
+                            <div class="col-md-12">
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <strong >{{event.startTime | date:'mediumDate'}}</strong>
+                                        <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a> 
+                                        <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" ><small>organizer</small></button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <small class="text-muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>
+                                        <small class="text-muted">at {{event.location.title}}, {{event.location.address.city}}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
 
-				<li ng-repeat="event in events.data">
-					<div class="well well-small row-fluid">
-			    		<div class="row-fluid">
-	    					<strong >{{event.startTime | date:'mediumDate'}}</strong>
-	    					<a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a> 
-	    					<button disabled="disabled" type="button" class="btn btn-info btn-mini pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" ><small>organizer</small></button>
-	    				</div>
-	    				<div class="row-fluid">
-	    					<small class="muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>					
-	    					<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
-	    				</div>
-			    	</div>
-				</li>
-			</ul>
-      </div>
+            </tab>
+        </tabset>
     </div>
   </div>
+
 </div>
 
