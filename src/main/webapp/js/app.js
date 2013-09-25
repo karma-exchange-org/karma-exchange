@@ -151,7 +151,18 @@ angular.module( 'FacebookProvider', [ ] ).factory( 'Facebook', function( $rootSc
                 }; 
 } );
 kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "loadingOnAJAX", "FacebookProvider", "globalErrors" ,"ui.calendar"] ).config( function( $routeProvider, $httpProvider ) { 
-		$routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } ).when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } ).when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } ).when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html' } ).when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html' } ).when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html' } ).when( '/events2', { controller : eventsCtrl, templateUrl : 'partials/eventsAccord.html' } ).when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } ).when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } ).when( '/event/:eventId', { controller : addEditEventsCtrl, templateUrl : 'partials/viewEvent.html' } ).when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html' } ).when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html' } ).otherwise( { redirectTo : '/' } );
+		$routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
+			.when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
+			.when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } )
+			.when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html' } )
+			.when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html' } )
+			.when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html' } )
+			.when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } )
+			.when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } )
+			.when( '/event/:eventId', { controller : addEditEventsCtrl, templateUrl : 'partials/viewEvent.html' } )
+			.when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html' } )
+			.when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html' } )
+			.otherwise( { redirectTo : '/' } );
 		delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ]; 
 		//$httpProvider.defaults.headers.common['X-'] = 'X';
 		
@@ -173,7 +184,7 @@ kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "
 	return function( text ) { 
 		if( text > 10 ) 
 		{ 
-			return 'Need More than 10'; 
+			return 'Need more than 10'; 
 		} 
 		else if( text == "0" ) 
 		{ 
@@ -603,7 +614,7 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) {
 					$scope.origAboutMe = $scope.me.about; 
 					if( ! $scope.me.about ) 
 					{ 
-						$scope.me.about = 'Click to add about yourself!'; 
+						$scope.me.about = 'Click to write a few words about yourself!'; 
 					} 
 					
 					$scope.getOtherData( $scope.me.key ); 

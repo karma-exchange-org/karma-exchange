@@ -1,302 +1,378 @@
-<div class="container-fluid">
-        <div class="row-fluid">
-                <div class="span6">
-                        <!-- pictures and org main info-->
-                        <h3>
-                                <strong>{{fbPage.name}}</strong> <a href ng-click="showMessage();"><small><i class="icon-envelope"></i>Message</small></a>
-                        </h3>
-                        <img ng-src="{{fbPage.cover.source}}"/>
-                </div> 
-                <div class="span6">
-                        <div class="fb-like" data-href="{{org.page.url}}" data-send="true" data-width="450" data-show-faces="true" data-colorscheme="dark" data-action="recommend">
-                        </div> 
-                        <div class="row-fluid">
-                                <div class="span6">
-                                        <strong><em><i class="icon-plus"></i>{{org.karmaPoints}} karma</em></strong> 
-                                </div> 
-                                <div class="span6">
-                                        <strong>Event rating</strong> <rating value="org.eventRating.value" max="5" readonly="true"></rating> ({{org.eventRating.count}})
-                                </div> 
-                        </div> 
-                        <hr>
-                        <div ng-show="org.parentOrg" class="row-fluid box effect7 effect8 ">
-                                <p>
-                                        <strong>Parent: </strong> <a href="#/org/{{org.parentOrg.key}}">{{org.parentOrg.name}}</a>
-                                </p>
-                        </div> 
-
-                        <p>
-                                <strong>Mission</strong> 
-                                <hr>{{fbPage.mission}}
-                        </p>
-                        <p><strong>Address</strong> 
-                        <p>
-                        <hr>
-                        <address>
-                        <a href="//maps.google.com/?q={{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}" target="_blank">{{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}</a>
-                        <br>
-                        <abbr title="Phone">P:</abbr> {{fbPage.phone}} </address> 
-                </div> 
-
-        </div> 
-</div> 
-<form ng-show="isMessageOpen" class="add-window" ng-submit="sendMessage()">
+<div class="container">
+    <div class="row">
+        <div class="col-md-6">
+            <!-- pictures and org main info-->
+            <h3>
+                <strong>
+                    {{fbPage.name}}
+                </strong>
+                <a href ng-click="showMessage();"><small><i class="icon-envelope"></i>Message</small></a>
+            </h3>
+            <img ng-src="{{fbPage.cover.source}}" class="img-responsive">
+        </div>
+        <div class="col-md-6">
+            <div class="fb-like" data-href="{{org.page.url}}" data-send="true" data-width="450" data-show-faces="true"
+            data-colorscheme="dark" data-action="recommend">
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>
+                        <strong>
+                            <em>
+                                +{{org.karmaPoints}} karma
+                            </em>
+                        </strong>
+                    </h4>
+                </div>
+                <div class="col-md-6">
+                    <strong>
+                        Event rating
+                    </strong>
+                    <rating value="org.eventRating.value" max="5" readonly="true">
+                    </rating>
+                    ({{org.eventRating.count}})
+                </div>
+            </div>
+            <hr>
+            <div ng-show="org.parentOrg" class="row box effect7 effect8 ">
+                <p>
+                    <strong>
+                        Parent:
+                    </strong>
+                    <a href="#/org/{{org.parentOrg.key}}">{{org.parentOrg.name}}</a>
+                </p>
+            </div>
+            <div class="row">
+                <strong>
+                    Mission
+                </strong>
+                <hr>
+                {{fbPage.mission}}
+            </div>
+            <div class="row">
+                <strong>
+                    Address
+                </strong>
+                <hr>
+                <address>
+                    <a href="//maps.google.com/?q={{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}"
+                    target="_blank">{{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}</a>
+                    <br>
+                    <abbr title="Phone">
+                        P:
+                    </abbr>
+                    {{fbPage.phone}}
+                </address>
+            </div>
+        </div>
+    </div>
+    <form ng-show="isMessageOpen" class="add-window" ng-submit="sendMessage()">
         <div class="header">
-                Send a message
-                <a ng-click="cancelMessage()"><i class="icon-remove pull-right"></i></a>
-        </div> 
+            Send a message
+            <a ng-click="cancelMessage()"><i class="icon-remove pull-right"></i></a>
+        </div>
         <div class="inner">
-             <div>
-                        
-                        
-                        	<input class="row-fluid" type="text" ng-model="message.subject" required placeholder="Subject">
-                
-                  
-                    
-                        	<textarea class="row-fluid" ng-model="message.body" rows="5" placeholder="Message"></textarea> 
-                
-               </div>
-                <div class="button-bar">
-                        <input type="submit" value="Send" class="btn btn-primary">
-                        <button type="button" class="btn" ng-click="cancelMessage()">Cancel</button> 
-                </div> 
-        </div> 
-</form> 
-<div class="row-fluid" ng-show="childOrgs.data.length>0">
-	<h4>Child organizations</h4>
-        <ul class="inline">
-                <li ng-repeat="childOrg in childOrgs.data">
-                        <a href="#/org/{{childOrg.key}}" class="btn btn-mini btn-{{getColorClass($index)}}">{{childOrg.orgName}}</a> 
-                </li>
+            <div>
+                <input class="row form-control" type="text" ng-model="message.subject" required placeholder="Subject">
+                <textarea class="row" ng-model="message.body" rows="5" placeholder="Message">
+                </textarea>
+            </div>
+            <div class="button-bar">
+                <input type="submit" value="Send" class="btn btn-primary form-control">
+                <button type="button" class="btn btn-default" ng-click="cancelMessage()">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </form>
+    <div class="row" ng-show="childOrgs.data.length>0">
+        <h4>
+            Child organizations
+        </h4>
+        <ul class="list-inline">
+            <li ng-repeat="childOrg in childOrgs.data">
+                <a href="#/org/{{childOrg.key}}" class="btn btn-xs btn-{{getColorClass($index)}}">{{childOrg.orgName}}</a>
+            </li>
         </ul>
-</div> 
-<hr>
-<tabset>
-<tab>
-<tab-heading><i class="icon-bolt"></i> Impact</tab-heading>
-<p>
-</p>
-<ul class="unstyled container-fluid">
-
-        <li ng-repeat="event in pastEvents.data">
-                <div class="well well-small span12">
-                	<div class="span2">
-                		<a href="#/event/{{event.key}}"><img ng-src="{{event.fbAlbum.data[0].picture}}"></a>
-				<a href="#/event/{{event.key}}"><button type="button" class="btn btn-mini" disabled="disabled">{{event.numAttending }} attended</button></a>
-                                
-                	</div>
-                	<div class="span10">
-                		<div  fbgallery  data-album-id="{{event.album.id}}"  data-type="facebook"></div>
-				<div class="row-fluid pagination-center">
-					<strong>{{event.startTime | date:'mediumDate'}}</strong> 
-					<a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a>
-					
-					
-				
-				
-					<small class="muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small> 
-					<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small>
-					
-					<strong class="pull-right"><i class="icon-plus"></i>{{event.karmaPoints}} karma</strong>
-					
-				</div> 
-				<div class="row-fluid pagination-center">
-					<ul class="inline">
-                                                <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
-
-                                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25"></a>
-                                                </li>
-                                        </ul>
-                                        <button disabled="disabled" type="button" class="btn btn-info btn-mini pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]"><small>organizer</small> </button> 
-				        <button disabled="disabled" type="button" class="btn btn-info btn-mini pull-right" ng-show="{REGISTERED:true}[event.registrationInfo]"><small>registered</small> </button> 
-
-                                 </div> 
+    </div>
+    <hr>
+    <tabset>
+        <tab>
+            <tab-heading>
+                <i class="icon-bolt">
+                </i>
+                Impact
+            </tab-heading>
+            <p>
+            </p>
+            <ul class="list-unstyled container">
+                <li ng-repeat="event in pastEvents.data">
+                    <div class="row well well-sm col-md-12">
+                        <div class="col-md-2">
+                            <a href="#/event/{{event.key}}"><img ng-src="{{event.fbAlbum.data[0].picture}}"></a>
+                            <a href="#/event/{{event.key}}"><button type="button" class="btn btn-default btn-xs" disabled="disabled">{{event.numAttending }} attended</button></a>
                         </div>
-                </div> 
-
-        </li>
-</ul>
-</tab> 
-<tab>
-<tab-heading><i class="icon-list"></i> Upcoming Events</tab-heading>
-<p>
-</p>
-<ul class="unstyled">
-
-        <li ng-repeat="event in upcomingEvents.data">
-                <div class="well well-small row-fluid">
-                	<div class="span1">
-                		<button ng-show="{ORGANIZER:true}[event.registrationInfo]" type="button" class="btn btn-danger btn-mini" disabled="disabled"><i class="icon-ok"></i> Organizer</button>
-				<button ng-show="{REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-success btn-mini" disabled="disabled"><i class="icon-ok"></i> Registered</button>
-                        	<button ng-show="{WAIT_LISTED:true}[event.registrationInfo]" type="button" class="btn btn-warning btn-mini" disabled="disabled"><i class="icon-exclamation"></i> Waitlisted</button>
-				<button ng-hide="{WAIT_LISTED:true,REGISTERED:true,ORGANIZER:true}[event.registrationInfo]" type="button" class="btn btn-mini" disabled="disabled">{{event.maxRegistrations-event.numRegistered | limit10 }}</button>
-                                <button type="button" class="btn btn-mini" disabled="disabled">{{event.numAttending }} attending</button>
-                	</div>
-                	<div class="span11">
-				<div class="row-fluid">
-					<strong>{{event.startTime | date:'mediumDate'}}</strong> 
-					<a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a>
-					<button disabled="disabled" type="button" class="btn btn-info btn-mini pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]"><small>organizer</small> </button> 
-					<button disabled="disabled" type="button" class="btn btn-info btn-mini pull-right" ng-show="{REGISTERED:true}[event.registrationInfo]"><small>registered</small> </button> 
-				</div> 
-				<div class="row-fluid">
-					<small class="muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small> 
-					<small class="muted">at {{event.location.title}}, {{event.location.address.city}}</small> 
-					<ul class="inline pull-right">
-                                                <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
-
-                                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25"></a>
-                                                </li>
-                                        </ul>
-				</div> 
+                        <div class="col-md-10">
+                            <div fbgallery data-album-id="{{event.album.id}}" data-type="facebook">
+                            </div>
+                            <div class="row pagination-center">
+                                <strong>
+                                    {{event.startTime | date:'mediumDate'}}
+                                </strong>
+                                <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a>
+                                <small class="text-muted">
+                                    {{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}
+                                </small>
+                                <small class="text-muted">
+                                    at {{event.location.title}}, {{event.location.address.city}}
+                                </small>
+                                <h4>
+                                    <strong class="pull-right">
+                                        <em>
+                                            +{{event.karmaPoints}} karma
+                                        </em>
+                                    </strong>
+                                </h4>
+                            </div>
+                            <div class="row pagination-center">
+                                <ul class="list-inline">
+                                    <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
+                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25"></a>
+                                    </li>
+                                </ul>
+                                <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]">
+                                    <small>
+                                        organizer
+                                    </small>
+                                </button>
+                                <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{REGISTERED:true}[event.registrationInfo]">
+                                    <small>
+                                        registered
+                                    </small>
+                                </button>
+                            </div>
                         </div>
-                </div> 
-        </li>
-</ul>
-</tab> 
-<tab select="myCalendar.fullCalendar('render');" >
-	<tab-heading><i class="icon-calendar"></i> Calendar</tab-heading>
-	<div class="span12 container-fluid">
-		<!-- <div full-calendar events="events"></div> -->
-		<div class="calendar" ng-model="eventSources" calendar="myCalendar" config="uiConfig.calendar" ui-calendar="uiConfig.calendar"></div>
-	</div>
-</tab>
-<tab>
-	<tab-heading><i class="icon-thumbs-up"></i> Top volunteers</tab-heading>
-	<div class="span6">
-		<h3>All time</h3>
-		<ol >
-			<li class="well well-small" ng-repeat="leader in allTimeLeaders.scores">
-				<a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25"><strong>{{leader.user.firstName}} -{{leader.leaderboardKarmaPoints}}<i class="icon-bolt"></i></strong>/<small class="muted">{{leader.user.karmaPoints}}</small></a>
-			
-			</li>
-			
-		</ol>
-	</div>
-	<div class="span6">
-		<h3>Last month</h3>
-		<ol >
-			<li class="well well-small" ng-repeat="leader in lastMonthLeaders.scores">
-				<a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25"><strong>{{leader.user.firstName}} -{{leader.leaderboardKarmaPoints}}<i class="icon-bolt"></i></strong>/<small class="muted">{{leader.user.karmaPoints}}</small></a>
-			
-			</li>
-			
-		</ol>
-	</div>
-</tab>
-<!-- <tab> -->
-<!-- <tab-heading><i class="icon-picture"></i> Albums</tab-heading> -->
-
-<!-- <div id="fbgallery" fbgallery data-userid="{{fbPage.id}}" data-type="facebook"> -->
-<!-- </div>  -->
-
-<!-- </tab>  -->
-<tab>
-<tab-heading><i class="icon-group"></i> Members</tab-heading>
-<button class="btn-primary">Request membership</button> 
-<div class="row-fluid">
-
-        <!-- Members list and past events-->
-        <div class="row-fluid">
-                <!--orgnaizers-->
-                <p ng-hide="orgOwners.data.length==0">
-                <h4>
+                    </div>
+                </li>
+            </ul>
+        </tab>
+        <tab>
+            <tab-heading>
+                <i class="icon-list">
+                </i>
+                Upcoming Events
+            </tab-heading>
+            <p>
+            </p>
+            <ul class="list-unstyled container">
+                <li ng-repeat="event in upcomingEvents.data">
+                    <div class="row well well-sm col-md-12">
+                        <div class="col-md-2">
+                            <div class="row">
+                                <button ng-show="{ORGANIZER:true}[event.registrationInfo]" type="button" class="btn btn-danger btn-xs"
+                                disabled="disabled">
+                                    <i class="icon-ok">
+                                    </i>
+                                    Organizer
+                                </button>
+                                <button ng-show="{REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-success btn-xs"
+                                disabled="disabled">
+                                    <i class="icon-ok">
+                                    </i>
+                                    Registered
+                                </button>
+                                <button ng-show="{WAIT_LISTED:true}[event.registrationInfo]" type="button" class="btn btn-warning btn-xs"
+                                disabled="disabled">
+                                    <i class="icon-exclamation">
+                                    </i>
+                                    Waitlisted
+                                </button>
+                                <button ng-hide="{WAIT_LISTED:true,REGISTERED:true,ORGANIZER:true}[event.registrationInfo]" type="button"
+                                class="btn btn-default btn-xs" disabled="disabled">
+                                    {{event.maxRegistrations-event.numRegistered | limit10 }}
+                                </button>
+                                <button type="button" class="btn btn-default btn-xs" disabled="disabled">
+                                    {{event.numAttending }} attending
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-10">
+                            <div class="row">
+                                <strong>
+                                    {{event.startTime | date:'mediumDate'}}
+                                </strong>
+                                <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a>
+                                <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]">
+                                    <small>
+                                        organizer
+                                    </small>
+                                </button>
+                                <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{REGISTERED:true}[event.registrationInfo]">
+                                    <small>
+                                        registered
+                                    </small>
+                                </button>
+                            </div>
+                            <div class="row">
+                                <small class="text-muted">
+                                    {{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}
+                                </small>
+                                <small class="text-muted">
+                                    at {{event.location.title}}, {{event.location.address.city}}
+                                </small>
+                                <ul class="list-inline pull-right">
+                                    <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
+                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25"></a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </tab>
+        <tab select="myCalendar.fullCalendar('render');">
+            <tab-heading>
+                <i class="icon-calendar">
+                </i>
+                Calendar
+            </tab-heading>
+            <div class="col-md-12 container">
+                <!-- <div full-calendar events="events"></div> -->
+                <div class="calendar" ng-model="eventSources" calendar="myCalendar" config="uiConfig.calendar" ui-calendar="uiConfig.calendar">
+                </div>
+            </div>
+        </tab>
+        <tab>
+            <tab-heading>
+                <i class="icon-thumbs-up">
+                </i>
+                Top volunteers
+            </tab-heading>
+            <div class="col-md-6">
+                <h3>
+                    All time
+                </h3>
+                <ol>
+                    <li class="well well-sm" ng-repeat="leader in allTimeLeaders.scores">
+                        <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
+                    </li>
+                </ol>
+            </div>
+            <div class="col-md-6">
+                <h3>
+                    Last month
+                </h3>
+                <ol>
+                    <li class="well well-sm" ng-repeat="leader in lastMonthLeaders.scores">
+                        <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?width=25&height=25"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
+                    </li>
+                </ol>
+            </div>
+        </tab>
+        <!-- <tab> -->
+        <!-- <tab-heading><i class="icon-picture"></i> Albums</tab-heading> -->
+        <!-- <div id="fbgallery" fbgallery data-userid="{{fbPage.id}}" data-type="facebook"> -->
+        <!-- </div>  -->
+        <!-- </tab>  -->
+        <tab>
+            <tab-heading>
+                <i class="icon-group">
+                </i>
+                Members
+            </tab-heading>
+            <div class="row">
+                <!--admins-->
+                <div class="col-md-12" ng-hide="orgOwners.data.length==0">
+                    <h4>
                         Admins
-                </h4>
-                <hr>
-                <ul class="inline">
-
+                    </h4>
+                    <hr>
+                    <ul class="list-inline">
                         <li ng-repeat="user in orgOwners.data">
-
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                                <p>
-                                </p>
-
+                            <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            <p>
+                            </p>
                         </li>
-                </ul>
-        </div> 
-        <div class="row-fluid">
-                <!--orgnaizers-->
-                <p ng-hide="orgOrgnaizers.data.length==0">
-                <h4>
-                        Organizers 
-                </h4>
-                <hr>
-                <ul class="inline">
-
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" ng-hide="orgOrgnaizers.data.length==0">
+                    <h4>
+                        Organizers
+                    </h4>
+                    <hr>
+                    <ul class="list-inline">
                         <li ng-repeat="user in orgOrgnaizers.data">
-
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                                <p>
-                                </p>
-
+                            <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            <p>
+                            </p>
                         </li>
-                </ul>
-        </div> 
-</div> 
-</tab> 
-<tab disabled="{READ:true}[org.permission]" ng-hide="{READ:true}[org.permission]">
-<tab-heading><i class="icon-cogs"></i> Manage membership {{pendingMembers.data.length | badge}}</tab-heading>
-<div class="row-fluid">
-
-
-        <div class="row-fluid">
-                <!--orgnaizers-->
-                <p ng-hide="pendingMembers.data.length==0">
-                        <h4>
-                                Pending Admins
-                        </h4>
-                </p>
-                <hr>
-                <ul class="">
-
+                    </ul>
+                </div>
+            </div>
+        </tab>
+        <tab disabled="{READ:true}[org.permission]" ng-hide="{READ:true}[org.permission]">
+            <tab-heading>
+                <i class="icon-cogs">
+                </i>
+                Manage membership {{pendingMembers.data.length | badge}}
+            </tab-heading>
+            <div class="row">
+                <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+                    <!--orgnaizers-->
+                    <h4>
+                        Pending Admins
+                    </h4>
+                    <hr>
+                    <ul class="list-inline">
                         <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ADMIN'}">
-
-                                <p><a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a> </p>
-                                <p> </p>
-
+                            <p>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            </p>
+                            <p>
+                            </p>
                         </li>
-                </ul>
-        </div> 
-        <div class="row-fluid">
-                <!--orgnaizers-->
-                <p ng-hide="pendingMembers.data.length==0">
-                        <h4>
-                                Pending Organizers
-                        </h4>
-                </p>
-                <hr>
-                <ul class="">
-
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+                    <!--orgnaizers-->
+                    <h4>
+                        Pending Organizers
+                    </h4>
+                    <hr>
+                    <ul class="list-inline">
                         <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ORGANIZER'}">
-
-                                <p><a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a> </p>
-                                <p> </p>
-
+                            <p>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            </p>
+                            <p>
+                            </p>
                         </li>
-                </ul>
-        </div> 
-        <div class="row-fluid">
-                <!--orgnaizers-->
-                <p ng-hide="pendingMembers.data.length==0">
-                        <h4>
-                                Pending memberships
-                        </h4>
-                </p>
-                <hr>
-                <ul class="">
-
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+                    <!--orgnaizers-->
+                    <h4>
+                        Pending memberships
+                    </h4>
+                    <hr>
+                    <ul class="list-inline">
                         <li ng-repeat="user in pendingMembers.data | filter:{requestedRole: 'MEMBER'}">
-
-                                <p><a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a> </p>
-                                <p> </p>
-
+                            <p>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                            </p>
+                            <p>
+                            </p>
                         </li>
-                </ul>
-        </div> 
-
-</div> 
-</tab> 
-
-</tabset> 
-
+                    </ul>
+                </div>
+            </div>
+        </tab>
+    </tabset>
+</div>
