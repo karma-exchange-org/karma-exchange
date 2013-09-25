@@ -1,3 +1,6 @@
+<div class="row">
+<div class="col-md-4">
+
 <form class="form-horizontal">
 		<fieldset>
 
@@ -5,25 +8,22 @@
 		<legend>My Details</legend>
 
 		<!-- Text input-->
-		<div class="control-group">
+		<div class="form-group">
 		  <label class="control-label" for="firstName">First Name</label>
-		  <div class="controls">
-		    <input ng-model="me.firstName" id="firstName" name="firstName" type="text" placeholder="first name" class="input-xlarge" >
-		    
-		  </div>
+		  <input ng-model="me.firstName" id="firstName" name="firstName" type="text" placeholder="first name" class="input-xlarge form-control" >
 		</div>
 
 		<!-- Text input-->
-		<div class="control-group">
+		<div class="form-group">
 		  <label class="control-label" for="lastName">Last Name</label>
 		  <div class="controls">
-		    <input ng-model="me.lastName" id="lastName" name="lastName" type="text" placeholder="last name" class="input-xlarge">
+		    <input ng-model="me.lastName" id="lastName" name="lastName" type="text" placeholder="last name" class="input-xlarge form-control">
 		    
 		  </div>
 		</div>
 
 		<!-- File Button --> 
-		<div class="control-group">
+		<div class="form-group">
 		  <label class="control-label" for="profileImage">Profile Image</label>
 		  <div class="controls">
 		    <input ng-model="me.profileImage"  id="profileImage" name="profileImage" class="input-file" type="file">
@@ -31,15 +31,15 @@
 		</div>
 
 		<!-- Text input-->
-		<div class="control-group">
+		<div class="form-group">
 		  <label class="control-label" for="email">Email address</label>
 		  <div class="controls">
 		    <ul class="list-unstyled">
 		    	<li ng-repeat="mail in me.registeredEmails">
 		    		<div class="radio">
 				  <label>
-				    <input type="radio" name="optionsRadios" ng-model="mail.primary" ng-value="mail.primary" >
-				    <input ng-model="mail.email"  type="text" placeholder="example@example.com" class="input-xlarge" >
+				    <input type="radio" name="optionsRadios" ng-model="mail.primary" ng-value="mail.primary">
+				    <input ng-model="mail.email"  type="text" placeholder="example@example.com" class="input-xlarge form-control" >
 				    <button ng-show="me.registeredEmails.length>1" ng-click="removeEmail()">Remove</button>
 				  </label>
 				</div>
@@ -49,7 +49,7 @@
 		    <div class="checkbox">
 			  <label>
 			    <input type="checkbox" value="" ng-model="newMail.primary">
-			         <input ng-model="newMail.email"  id="contactInfo.email" name="contactInfo.email" type="text" placeholder="example@example.com" class="input-xlarge" >
+			         <input ng-model="newMail.email"  id="contactInfo.email" name="contactInfo.email" type="text" placeholder="example@example.com" class="input-xlarge form-control" >
 			         <button ng-click="addEmail()">Add</button>
 			  </label>
 		    </div>
@@ -58,44 +58,44 @@
 		</div>
 
 		<!-- Text input-->
-		<div class="control-group">
+		<div class="form-group">
 		  <label class="control-label" for="phoneNumber">Phone#</label>
 		  <div class="controls">
-		    <input ng-model="me.phoneNumber"  id="phoneNumber" name="phoneNumber" type="text" placeholder="xxx-xxx-xxxx" class="input-xlarge">
+		    <input ng-model="me.phoneNumber"  id="phoneNumber" name="phoneNumber" type="text" placeholder="xxx-xxx-xxxx" class="input-xlarge form-control">
 		    
 		  </div>
 		</div>
 
-		<div class="control-group">
+		<div class="form-group">
 			<label for="address" class="control-label">	
 				Street Address
 			</label>
-			<div class="controls"><input ng-model="me.address.street"  name="address" placeholder="W 123 Street" type="text" value="" id="address">
+			<div class="controls"><input ng-model="me.address.street"  name="address" placeholder="W 123 Street" type="text" value="" id="address" class="form-control">
 			</div>
 		</div>
 
-		<div class="control-group">
+		<div class="form-group">
 			<label for="zip" class="control-label">	
 				Zip Code
 			</label>
-			<div class="controls"><input ng-model="me.address.zip"  name="zip" type="text" value="" id="zip">
+			<div class="controls"><input ng-model="me.address.zip"  name="zip" type="text" value="" id="zip" class="form-control">
 			</div>
 		</div>
 
-		<div class="control-group">
+		<div class="form-group">
 			<label for="city" class="control-label">	
 				City
 			</label>
-			<div class="controls"><input ng-model="me.address.city"  name="city" type="text" value="" id="city">
+			<div class="controls"><input ng-model="me.address.city"  name="city" type="text" value="" id="city" class="form-control">
 			</div>
 		</div>
 
-		<div class="control-group">
+		<div class="form-group">
 			<label for="country" class="control-label">	
 				Country
 			</label>
 			<div class="controls">
-				<select ng-model="me.address.country"  name="country" id="country">
+				<select ng-model="me.address.country"  name="country" id="country" class="form-control">
 					<option value=""></option>
 					<option value="AR">Argentina</option>
 					<option value="AU">Australia</option>
@@ -185,7 +185,7 @@
 					<option value="UA">Ukraine</option>
 					<option value="AE">United Arab Emirates</option>
 					<option value="GB">United Kingdom</option>
-					<option selected=true value="US">USA</option>
+					<option selected="true" value="US">USA</option>
 					<option value="UZ">Uzbekistan</option>
 					<option value="VN">Vietnam</option>
 				</select>
@@ -201,7 +201,9 @@
 
 		                    </button>
 
-		                    <a href="#/events" class="btn">Cancel</a>
+		                    <a href="#/events" class="btn btn-default">Cancel</a>
 
 		                </div>
 		</form>
+</div>
+</div>

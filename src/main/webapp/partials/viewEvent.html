@@ -1,11 +1,11 @@
 	
 
-    <div class="row-fluid">
+    <div class="row">
 
-        <div class="span8">
-        	<div class="row-fluid">
-        		<div class="pull-left">
-				 <h2>{{event.title}}<em><small class="muted"> (<i class="icon-plus"></i>{{event.karmaPoints}} karma)</small></em></h2>  
+        <div class="col-md-8">
+        <div class="row">
+        	<div class="pull-left">
+				 <h2><strong>{{event.title}}</strong></h2>  
 				<p>on <strong>{{event.startTime | date:'EEE, MMM d, y'}}</strong> from <strong>{{event.startTime|date:'shortTime'}}</strong> - <strong>{{event.endTime|date:'shortTime'}}</strong> by <a href="#/org/{{event.associatedOrganizations[0].key}}">{{event.associatedOrganizations[0].name}} </a> </p>
 				<p>at <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}" target="_blank">{{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}</a></p>
 				 <p><a href="http://www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:http%3A%2F%2Fwww.karmaexchange.org" target="_blank"><img src="//www.google.com/calendar/images/ext/gc_button3.gif" border=0></a></p>
@@ -14,7 +14,7 @@
 			</div>
 			<div class="pull-right">
 				<a ng-show="{ORGANIZER:true}[event.registrationInfo]"class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
-				<div ng-show="event.status!='COMPLETED'" >
+				<div ng-show="event.status!='COMPLETED'">
 					<p><strong>{{event.maxRegistrations - event.registeredUsers.length | limit10 }}</strong></p>
 					
 					
@@ -22,23 +22,25 @@
 					<button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i>Wait list</button>
 					<p ng-show="{REGISTERED:true}[event.registrationInfo]"><i class="icon-ok"></i>You are registered!</p>
 					<p ng-show="{WAIT_LISTED:true}[event.registrationInfo]"><i class="icon-ok"></i>You are waitlisted!</p>
-					<p ng-hide="event.registrationInfo!='REGISTERED'" <small class="muted"><a href="" ng-click="unregister()">Unregister</a></small></p>
-					<p ng-hide="event.registrationInfo!='WAIT_LISTED'" ><small class="muted"><a href="" ng-click="unregister()">Remove from waitlist</a></small></p>
-					<p><small class="muted">(<strong>{{event.registeredUsers.length }} </strong>registered so far!)</small></p>
+					<p ng-hide="event.registrationInfo!='REGISTERED'"><small class="text-muted"><a href="" ng-click="unregister()">Unregister</a></small></p>
+					<p ng-hide="event.registrationInfo!='WAIT_LISTED'"><small class="text-muted"><a href="" ng-click="unregister()">Remove from waitlist</a></small></p>
+					<p><small class="text-muted">(<strong>{{event.registeredUsers.length }} </strong>registered so far!)</small></p>
 				</div>
-                                <div ng-show="event.status=='COMPLETED'" >
+                <div ng-show="event.status=='COMPLETED'" >
 			
 				    <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> ({{event.rating.count}})</p>
 				    
 				    <p ng-hide="event.registrationInfo=='ORGANIZER'">Your rating<rating value="eventRating.rating.value" max="5" readonly="false"></rating></p>
 				</div>
-                       </div> 
+                <div><h3><em><strong>+{{event.karmaPoints}} karma</strong></em></h3>
                 </div>
-                <hr>
-		<div class="row-fluid" ng-show="event.status=='COMPLETED'" name="past-events-album">
+            </div> 
+        </div>
+        <hr>
+		<div class="row" ng-show="event.status=='COMPLETED'" name="past-events-album">
 			  <carousel interval="myInterval">
 			    <slide ng-repeat="image in fbAlbum" active="slide.active">
-			    	<div class="span12 pagination-centered">
+			    	<div class="col-md-12 pagination-centered">
 			    		<img ng-src="{{image.picture}}" max-height="500">
 			    	</div>
 			      
@@ -52,9 +54,9 @@
 		<div class="fileupload fileupload-new" data-provides="fileupload">
 		  <div ng-show="isImageModelOpen" class="fileupload-preview thumbnail" style="width: 200px; height: 150px;"></div>
 		  <form name="fbPhotoUpload" action="https://graph.facebook.com/{{event.album.id}}/photos?access_token={{fbAccessToken}}" enctype="multipart/form-data" method="POST">
-		    <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()" ><span class="fileupload-new"><i class="icon-plus"></i> Add a photo</span><input id="source" type="file" /></span>
-		    <span ng-show="isImageModelOpen" class="fileupload-exists"><input class="span12" type="text" id="message" placeholder="Description" ></span>
-		    <input type="submit" value="Upload" ng-show="isImageModelOpen" data-dismiss="fileupload" class="btn btn-primary fileupload-exists" onclick="document.fbPhotoUpload.submit()">
+		    <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()" ><span class="fileupload-new"><i class="icon-plus"></i> Add a photo</span><input class="form-control" id="source" type="file" /></span>
+		    <span ng-show="isImageModelOpen" class="fileupload-exists"><input class="col-md-12 form-control" type="text" id="message" placeholder="Description" ></span>
+		    <input type="submit" value="Upload" ng-show="isImageModelOpen" data-dismiss="fileupload" class="btn btn-primary fileupload-exists form-control" onclick="document.fbPhotoUpload.submit()">
 		    <a href="" class="btn fileupload-exists" data-dismiss="fileupload" ng-click="closeImageUpload()" >Cancel</a>
 		  </form>
 		</div>
@@ -66,42 +68,22 @@
 			 
 			 
 		 	<div ng-show="event.description">
-			       <h4>What?</h4>
+			       <h4><strong>What?</strong></h4>
 				
-				<p ng-bind-html-unsafe="event.description | noHTML | newlines"/>
+				<p ng-bind-html-unsafe="event.description | noHTML | newlines"></p>
                         </div>
                         <div ng-show="event.specialInstructions">
-				<h4 >Special instructions</h4>
-				<p ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines"/>
+				<h4 ><strong>Special instructions</strong></h4>
+				<p ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines"></p>
                         </div>
-                        <input style="display:none" type="text"  class="span12" id="location-title" placeholder="Name of the place" >
-                        
-                        
+                        <input style="display:none" type="text"  class="col-md-12 form-control" id="location-title" placeholder="Name of the place" >
 
-
-                    
-                        <p ng-hide="event.skillsRequired==0">Causes 
-                        <ul class="inline">
-                            <li ng-repeat="skill in event.skillsRequired">
-                                {{skill.id}}
-
-                            </li>
-                        </ul>
-                        </p>
-                        <p ng-hide="event.skillsPreferred==0">Causes 
-                        <ul class="inline">
-                            <li ng-repeat="skill in event.skillsPreferred">
-                                {{skill.id}}
-
-                            </li>
-                        </ul>
-                        </p>
-                         <legend>Comments and discussion</legend>
-                         <div id="myCommentsDiv" class="row-fluid"></div>
+                         <legend><strong>Comments and discussion</strong></legend>
+                         <div id="myCommentsDiv" class="row"></div>
          </div>                
   
 
-        <div class="span4">
+        <div class="col-md-4">
                 <div class="google-map" 
                         center="center"
                         zoom="zoom" 
@@ -112,10 +94,10 @@
                         draggable="true"
                         style="height: 300px; width: 100%">
                     </div>
-                <!--orgnaizers-->
-                <p ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
+                <!--organizers-->
+                <div ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
                 <hr>
-                <ul class="inline">
+                <ul class="list-inline">
 
                     <li ng-repeat="user in eventOrganizers.data">
                       
@@ -128,12 +110,12 @@
                     </li>
                 </ul>
                 <button class="btn btn-link" ng-show="event.eventOrganizers.length-eventOrganizers.data.length>0" ng-click="getMore('ORGANIZER');">See more ({{event.eventOrganizers.length-eventOrganizers.data.length}})</button>
-                </p>
+                </div>
                         
            
-                <p ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
+                <div ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
                     <hr>
-                        <ul class="inline">
+                        <ul class="list-inline">
 
                             <li ng-repeat="user in eventRegistered.data">
                                
@@ -148,12 +130,12 @@
 
                         </ul>
                         <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button>
-                </p>
+                </div>
         
             
-                <p ng-hide="eventWaitListed.data.length==0"><h4>Waitlisted ({{event.waitListedUsers.length}})</h4> 
+                <div ng-hide="eventWaitListed.data.length==0"><h4>Waitlisted ({{event.waitListedUsers.length}})</h4> 
                     <hr>
-                        <ul class="inline">
+                        <ul class="list-inline">
 
                             <li ng-repeat="user in eventWaitListed.data">
                               
@@ -165,7 +147,7 @@
                             </li>
                         </ul>
                         <button class="btn btn-link" ng-show="event.waitListedUsers.length-eventWaitListed.data.length>0" ng-click="getMore('WAIT_LISTED');">See more ({{event.waitListedUsers.length-eventWaitListed.data.length}})</button>
-                </p>
+                </div>
            
         </div>
          

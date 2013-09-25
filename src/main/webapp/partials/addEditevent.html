@@ -1,55 +1,60 @@
 <tabset>
     <tab heading="Event Details">
-        <form name="form" class="form-horizontal" ng-submit="save()" >
-        <div class="container-fluid">
-            <div class="row-fluid">
-                <div class="control-group" ng-class="{error: form.event.$invalid}">
+        <div class="container">
+            <form name="form" class="form-horizontal" ng-submit="save()" >
+            <div class="row col-md-12">
+                <div class="form-group" ng-class="{error: form.event.$invalid}">
 
                     <label class="control-label" for="event">Event Title</label>
 
                     <div class="controls">
 
-                        <input class="span12"  type="text" ng-model="event.title" id="title" placeholder="title" required>
+                        <input class="form-control"  type="text" ng-model="event.title" id="title" placeholder="title" required>
 
                     </div>
 
                 </div>
             </div>
-            <div class="row-fluid">
+            <div class="row">
 
-                <div class="span7">
+                <div class="col-md-7">
 
 
                         
                        
                         
                         
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+                        <div class="form-group" ng-class="{error: form.event.$invalid}">
 
                             <label class="control-label" for="event">When? </label>
 
-                            <div class="controls controls-row datepair" data-language="javascript">
-                               
-                                    
-                                    <input id="dtst" type="text" class="span3 date start datestart" placeholder="mm/dd/yyyy" required/>
-                                    <input id="tmst" type="text" class="span2 time start" placeholder="hh:mm" required/> 
-                                    <div class="span1"><i class="icon-arrow-right"></i> </div> 
-                                    <input id="dtend" type="text" class="span3 date end dateend" placeholder="mm/dd/yyyy"  required/>
-                                    <input id="tmend" type="text" class="span2 time end" placeholder="hh:mm" required/>
-                                
-         
+                            <div class="row datepair" data-language="javascript">
+
+                                <div class="col-md-3">
+                                    <input id="dtst" type="text" class="date start datestart form-control" placeholder="mm/dd/yyyy" required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input id="tmst" type="text" class="time start form-control" placeholder="hh:mm" required> 
+                                </div>
+                                <div class="col-md-1">
+                                    <i class="icon-arrow-right"></i>                                    
+                                </div>
+                                <div class="col-md-3">
+                                    <input id="dtend" type="text" class="date end dateend form-control" placeholder="mm/dd/yyyy"  required>
+                                </div>
+                                <div class="col-md-2">
+                                    <input id="tmend" type="text" class="time end form-control" placeholder="hh:mm" required>
+                                </div>
                                 
                             </div>
-                           <div class="controls controls-row " >
-                           	<p><textarea eventrepeat name="repeat"></textarea></p>
-                           </div>
-			    
-			  
+                            <div class="row" >
+                           	    <p><textarea eventrepeat name="repeat"></textarea></p>
+                            </div>			    			  
                             
                         </div>
 
 
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+                        <div class="form-group" ng-class="{error: form.event.$invalid}">
 
                             <label class="control-label" for="event">Number of volunteers needed</label>
 
@@ -57,19 +62,19 @@
 
                                 
 
-                                <input class="span12" type="number" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum" required>
+                                <input class="col-md-12 form-control" type="number" ng-model="event.maxRegistrations" id="maxRegistrations" placeholder="Maximum" required>
 
                             </div>
 
                         </div>
 
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+                        <div class="form-group" ng-class="{error: form.event.$invalid}">
 
                             <label class="control-label" for="event">Where?</label>
 
                             <div class="controls">
 
-                                <input type="text"  class="span12"  placeholder="Name of the place" ng-model="event.location.title" googleplace place-listener="placeChanged" required>
+                                <input type="text"  class="col-md-12 form-control"  placeholder="Name of the place" ng-model="event.location.title" googleplace place-listener="placeChanged" required>
 
                             </div>
 
@@ -81,7 +86,7 @@
 
                             <div class="controls controls-row">
 
-                                <p>{{event.location.address.city}}, {{event.location.address.state}}, <p>
+                                <p>{{event.location.address.city}}, {{event.location.address.state}},</p>
 
                                 <p>{{event.location.address.country}}, {{event.location.address.zip}}</p>
                                
@@ -93,23 +98,23 @@
                             
                         </div>
 
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
+                        <div class="form-group" ng-class="{error: form.event.$invalid}">
 
                             <label class="control-label" for="organizations">Organization</label>
 
                             <div class="controls">
-                            	<select  ng-model="event.organization.key" class="input-xlarge" required>
+                            	<select  ng-model="event.organization.key" class="input-xlarge form-control" required>
                             		<option ng-repeat="org in orgs.data" value="{{org.org.key}}">{{org.orgName}}</option>
                             	</select>
 
-                                <!-- <input class="span12"  type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations"> -->
+                                <!-- <input class="col-md-12"  type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations"> -->
 
                             </div>
 
                         </div>
 
                 </div>
-                <div class="span5">
+                <div class="col-md-5">
 
                     <div class="google-map" 
                         center="center"
@@ -125,95 +130,86 @@
                 </div>
             </div>
             
-            <div class="row-fluid">
-                <div class="span12">
+            <div class="row col-md-12">
+                                                
+                <div class="form-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="description">Description</label>
+
+                    <div class="controls">
+
+                        <textarea rows="6" class="col-md-12 input-xxlarge form-control" ng-model="event.description" id="description" placeholder="description"></textarea>
+
+                    </div>
+
+                </div>
+                <div class="form-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="description">Suitable for</label>
+
+                    <div class="controls">
+
+                        <label class="checkbox-inline" ng-repeat="suitableFor in suitableForList">
+                            <input type="checkbox" ng-model="suitableFor.checked"/>{{suitableFor.name}}
+                        </label>
+
+                    </div>
+
+                </div>
+
+                <div class="form-group" ng-class="{error: form.event.$invalid}">
+                    <label class="control-label" for="event">Special instructions</label>
+                    <div class="controls controls-row">
+                       
+                         <textarea rows="3" class="col-md-12 input-xxlarge form-control" ng-model="event.specialInstructions" id="specialInstructions" placeholder="specialInstructions"></textarea>
+                    </div>
+
+                </div>
+                <div class="form-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Causes</label>
+                    <div class="controls controls-row">
+                        <input class="col-md-12 form-control" type="text" ng-model="event.causes" id="causes" placeholder="causes">
+                     </div>
+
+                </div>
+
+                <div class="form-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Skills required</label>
+                    <div class="controls controls-row">
+                        <input class="col-md-12 form-control"  type="text" ng-model="event.skillsRequired" id="skillsRequired" placeholder="Skills Required">
+                     </div>
+
+                </div>
+
+                <div class="form-group" ng-class="{error: form.event.$invalid}">
+
+                    <label class="control-label" for="event">Skills preferred</label>
+                    <div class="controls controls-row">
+                        <input class="col-md-12 form-control"  type="text" ng-model="event.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
+                     </div>
+
+                </div>
+
+
+
+                <div class="form-actions">
+
+                    <input type="submit" class="btn btn-primary" value="Submit">
+
                         
-                        
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                            <label class="control-label" for="description">Description</label>
-
-                            <div class="controls">
-
-                                <textarea rows="6" class="span12 input-xxlarge" ng-model="event.description" id="description" placeholder="description"></textarea>
-
-                            </div>
-
-                        </div>
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                            <label class="control-label" for="description">Suitable for</label>
-
-                            <div class="controls">
-
-                               <label class="checkbox inline" ng-repeat="suitableFor in suitableForList">
-                                <input  type="checkbox" ng-model="suitableFor.checked"/>{{suitableFor.name}}</label>                                
-                              
-
-                            </div>
-
-                        </div>
-
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
-                            <label class="control-label" for="event">Special instructions</label>
-                            <div class="controls controls-row">
-                               
-                                 <textarea rows="3" class="span12 input-xxlarge" ng-model="event.specialInstructions" id="specialInstructions" placeholder="specialInstructions"></textarea>
-                            </div>
-
-                        </div>
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                            <label class="control-label" for="event">Causes</label>
-                            <div class="controls controls-row">
-                                <input class="span12" type="text" ng-model="event.causes" id="causes" placeholder="causes">
-                             </div>
-
-                        </div>
-
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                            <label class="control-label" for="event">Skills required</label>
-                            <div class="controls controls-row">
-                                <input class="span12"  type="text" ng-model="event.skillsRequired" id="skillsRequired" placeholder="Skills Required">
-                             </div>
-
-                        </div>
-
-                        <div class="control-group" ng-class="{error: form.event.$invalid}">
-
-                            <label class="control-label" for="event">Skills preferred</label>
-                            <div class="controls controls-row">
-                                <input class="span12"  type="text" ng-model="event.skillsPreferred" id="skillsPreferred" placeholder="skillsPreferred">
-                             </div>
-
-                        </div>
-
-
-
-                        <div class="form-actions">
-
-                            <input type="submit" class="btn btn-primary" value="Submit">
-
-                                
-
-                            
-
-                            <a href="#/events" class="btn">Cancel</a>
-
-                        </div>
 
                     
 
+                    <a href="#/events" class="btn btn-default">Cancel</a>
+
                 </div>
-            </div>
-                
 
-            </div>
+            </div>                
+            </form>
 
-        </div>
-        </form>
-        <script type="text/javascript">
+            <script type="text/javascript">
         
 $(function() {
     var DATEPICKER_FORMAT = 'mm/dd/yyyy';
@@ -464,16 +460,17 @@ function parseDate(input, format) {
 Date.prototype.format=function(format){var returnStr='';var replace=Date.replaceChars;for(var i=0;i<format.length;i++){var curChar=format.charAt(i);if(replace[curChar]){returnStr+=replace[curChar].call(this);}else{returnStr+=curChar;}}return returnStr;};Date.replaceChars={shortMonths:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],longMonths:['January','February','March','April','May','June','July','August','September','October','November','December'],shortDays:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],longDays:['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],d:function(){return(this.getDate()<10?'0':'')+this.getDate();},D:function(){return Date.replaceChars.shortDays[this.getDay()];},j:function(){return this.getDate();},l:function(){return Date.replaceChars.longDays[this.getDay()];},N:function(){return this.getDay()+1;},S:function(){return(this.getDate()%10==1&&this.getDate()!=11?'st':(this.getDate()%10==2&&this.getDate()!=12?'nd':(this.getDate()%10==3&&this.getDate()!=13?'rd':'th')));},w:function(){return this.getDay();},z:function(){return"Not Yet Supported";},W:function(){return"Not Yet Supported";},F:function(){return Date.replaceChars.longMonths[this.getMonth()];},m:function(){return(this.getMonth()<9?'0':'')+(this.getMonth()+1);},M:function(){return Date.replaceChars.shortMonths[this.getMonth()];},n:function(){return this.getMonth()+1;},t:function(){return"Not Yet Supported";},L:function(){return(((this.getFullYear()%4==0)&&(this.getFullYear()%100!=0))||(this.getFullYear()%400==0))?'1':'0';},o:function(){return"Not Supported";},Y:function(){return this.getFullYear();},y:function(){return(''+this.getFullYear()).substr(2);},a:function(){return this.getHours()<12?'am':'pm';},A:function(){return this.getHours()<12?'AM':'PM';},B:function(){return"Not Yet Supported";},g:function(){return this.getHours()%12||12;},G:function(){return this.getHours();},h:function(){return((this.getHours()%12||12)<10?'0':'')+(this.getHours()%12||12);},H:function(){return(this.getHours()<10?'0':'')+this.getHours();},i:function(){return(this.getMinutes()<10?'0':'')+this.getMinutes();},s:function(){return(this.getSeconds()<10?'0':'')+this.getSeconds();},e:function(){return"Not Yet Supported";},I:function(){return"Not Supported";},O:function(){return(-this.getTimezoneOffset()<0?'-':'+')+(Math.abs(this.getTimezoneOffset()/60)<10?'0':'')+(Math.abs(this.getTimezoneOffset()/60))+'00';},P:function(){return(-this.getTimezoneOffset()<0?'-':'+')+(Math.abs(this.getTimezoneOffset()/60)<10?'0':'')+(Math.abs(this.getTimezoneOffset()/60))+':'+(Math.abs(this.getTimezoneOffset()%60)<10?'0':'')+(Math.abs(this.getTimezoneOffset()%60));},T:function(){var m=this.getMonth();this.setMonth(0);var result=this.toTimeString().replace(/^.+ \(?([^\)]+)\)?$/,'$1');this.setMonth(m);return result;},Z:function(){return-this.getTimezoneOffset()*60;},c:function(){return this.format("Y-m-d")+"T"+this.format("H:i:sP");},r:function(){return this.toString();},U:function(){return this.getTime()/1000;}};
 
     
-    </script> 
+            </script> 
+        </div>        
     </tab>
     <tab heading="Manage participants">
-        <p class="muted">Drag and drop to change lists</p>
+        <p class="text-muted">Drag and drop to change lists</p>
         <div>
             
                 <!--orgnaizers-->
                 <p ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
                 <hr>
-                <ul ui-drop-listener="dropListener" data-model="eventOrganizers.data" class="inline">
+                <ul ui-drop-listener="dropListener" data-model="eventOrganizers.data" class="list-inline">
 
                     <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventOrganizers.data">
                       
@@ -492,7 +489,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
            
                 <p ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
                     <hr>
-                        <ul ui-drop-listener="dropListener" data-model='eventRegistered.data' class="inline">
+                        <ul ui-drop-listener="dropListener" data-model='eventRegistered.data' class="list-inline">
 
                             <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventRegistered.data">
                                
@@ -513,7 +510,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
             
                 <p ng-hide="eventWaitListed.data.length==0"><h4>Waitlisted ({{event.waitListedUsers.length}})</h4> 
                     <hr>
-                        <ul ui-drop-listener="dropListener" data-model='eventWaitListed.data' class="inline">
+                        <ul ui-drop-listener="dropListener" data-model='eventWaitListed.data' class="list-inline">
 
                             <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventWaitListed.data">
                               
@@ -533,11 +530,11 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
         </div>
     </tab>
     <tab heading="Attendance">
-    	<div class="span9" ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
+    	<div class="col-md-9" ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
 	    <hr>
-		<ul class="inline">
+		<ul class="list-inline">
 
-		    <li class="span4 table-bordered" ng-repeat="user in eventRegistered.data">
+		    <li class="col-md-4 table-bordered" ng-repeat="user in eventRegistered.data">
 		       
 			       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
 		    
@@ -552,11 +549,11 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
 		</ul>
 		<!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
 	</div>
-	<div class="span3" ng-hide="eventNoShow.data.length==0"><h4>No-show ({{eventNoShow.data.length}})</h4> 
+	<div class="col-md-3" ng-hide="eventNoShow.data.length==0"><h4>No-show ({{eventNoShow.data.length}})</h4> 
 	    <hr>
-		<ul class="inline">
+		<ul class="list-inline">
 
-		    <li class="span4 table-bordered" ng-repeat="user in eventNoShow.data">
+		    <li class="col-md-4 table-bordered" ng-repeat="user in eventNoShow.data">
 		       
 			       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?width=25&height=25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
 		    
