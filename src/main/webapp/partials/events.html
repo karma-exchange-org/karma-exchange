@@ -22,28 +22,40 @@
 
                         <div class="well row">
 
-                                <div class="pull-left">
-                                        <p>
-                                        	<button ng-show="{ORGANIZER:true}[event.registrationInfo]" type="button" class="btn btn-success btn-xs" disabled="disabled"><i class="icon-ok"></i> Organizer</button>
-                                        	<button ng-show="{REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-primary btn-xs" disabled="disabled"><i class="icon-ok"></i> Registered</button>
-                                                <button ng-show="{WAIT_LISTED:true}[event.registrationInfo]" type="button" class="btn btn-warning btn-xs" disabled="disabled"><i class="icon-exclamation"></i> Waitlisted</button>
-                                                <button ng-hide="{WAIT_LISTED:true,REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-xs btn-default" disabled="disabled">{{event.maxRegistrations-event.numRegistered | limit10 }}</button>
-                                        	<strong>{{event.startTime | date:'shortTime'}}</strong> - <small class="text-muted">{{event.endTime | date:'shortTime'}} </small> 
-                                                &nbsp <a href ng-click="toggleEvent();"><strong>{{event.title}} </strong></a>
-                                                <small class="text-muted">at {{event.location.title}}, {{event.location.address.city}}</small> 
-                                        </p>
-                                        
 
-                                </div> 
-                                <div class="pull-right">
-                                        <ul class="list-inline">
-                                                <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
+                                <div class="col-md-2 event-search-result-summary">
+                                        <a href ng-click="toggleEvent();">
+                                                <p class="font-size-h4">{{event.startTime | date:'shortTime'}}</p>
+                                        </a>
+                                        <span class="label label-success kex-bs-label" ng-show="{ORGANIZER:true}[event.registrationInfo]">Organizer</span>
+                                        <span class="label label-success kex-bs-label" ng-show="{REGISTERED:true}[event.registrationInfo]">Registered</span>
+                                        <span class="label label-warning kex-bs-label" ng-show="{WAIT_LISTED:true}[event.registrationInfo]">Waitlisted</span>
+                                        <span class="label label-warning kex-bs-label" ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]">Waitlist Open</span>
+                                </div>
+                                <div class="col-md-10 event-search-result-summary">
+                                        <div class="pull-left">
+                                                <a href ng-click="toggleEvent();">
+                                                        <strong class="font-size-h4">{{event.title}}</strong>
+                                                        <br>
+                                                        <small class="text-muted">at {{event.location.title}}, {{event.location.address.city}}</small> 
+                                                </a>
+                                        </div>
+                                        <div class="pull-right">
+                                                <p class="text-right font-size-h4">
+                                                        <a href ng-click="toggleEvent();">
+                                                                <em><strong>+{{event.karmaPoints}} karma</strong></em>
+                                                        </a>
+                                                </p>
+                                                <div class="pull-right">
+                                                        <ul class="list-inline">
+                                                                <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
 
-                                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25" width="25" height="25"></a>
-                                                </li>
-                                        </ul>
-                                </div> 
-
+                                                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?width=25&height=25" width="25" height="25"></a>
+                                                                </li>
+                                                        </ul>
+                                                </div>
+                                        </div>                                         
+                                </div>
                                 <div class="row event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
 
                                         <table class="table">
@@ -99,9 +111,6 @@
                                                                 </p>
                                                         </td> 
                                                         <td>
-                                                                <h4>
-                                                                        <em><strong>+{{event.karmaPoints}} karma</strong></em>
-                                                                </h4>
                                                                 <p>
 
                                                                         <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button> 

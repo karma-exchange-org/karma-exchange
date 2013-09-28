@@ -172,6 +172,20 @@ text-align:center;
   padding-top: 10px;
 }
 
+.font-size-h4 {  
+  font-size: 18px;
+}
+
+.event-search-result-summary a {
+  color: inherit;
+  text-decoration:none;
+}
+
+.kex-bs-label {
+  text-transform:uppercase;
+  font-weight:normal;
+}
+
 /*==================================================
  * Effect 7
  * ===============================================*/
