@@ -176,9 +176,18 @@ text-align:center;
   font-size: 18px;
 }
 
+.event-search-result-date {
+  text-transform:uppercase;
+  /*font-weight:bold;*/
+}
+
 .event-search-result-summary a {
   color: inherit;
   text-decoration:none;
+}
+
+.profile-view-name {
+  padding-bottom: 10px;
 }
 
 .kex-bs-label {

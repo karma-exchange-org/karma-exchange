@@ -1,13 +1,17 @@
 
 <div class="container">
-	
-  <div class="row">
+
+  <div class="row">    
   	<div class="col-md-3">
   		<img ng-src="{{me.profileImage.url}}?type=large" class="img-responsive">
+        <h4 class="text-center"><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>
+         <p><strong>Organizer Rating: </strong><rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{me.eventOrganizerRating.count}})</p>
   	</div>
   	<div class="col-md-9">
+
+        <h3 class="profile-view-name"><strong>{{me.firstName}}</strong></h3>
   		
-  		<legend>About me<small> <i ng-show="{ALL:true}[me.permission]" class="icon-edit" ng-click="enableEdit()"></i></small></legend>
+  		<legend>Introduction<small> <i ng-show="{ALL:true}[me.permission]" class="icon-edit" ng-click="enableEdit()"></i></small></legend>
   		
   		<ng-switch on="edit">
         
@@ -29,8 +33,7 @@
 	    				<div class="well well-sm"><a href="#/org/{{org.org.key}}">{{org.orgName}}</a></div>
 	    			</li>
 	    		</ul>
-	    		<p><strong>{{who}} organizer rating: </strong><rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{me.eventOrganizerRating.count}})</p>
-                <h4><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>
+
 	    </div>
 
   	</div>
