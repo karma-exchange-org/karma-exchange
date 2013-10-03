@@ -614,7 +614,7 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) {
 					$scope.origAboutMe = $scope.me.about; 
 					if( ! $scope.me.about ) 
 					{ 
-						$scope.me.about = 'Click to write a few words about yourself!'; 
+						$scope.me.about = 'Click here to write a few words about yourself!'; 
 					} 
 					
 					$scope.getOtherData( $scope.me.key ); 
@@ -829,12 +829,18 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
 				}
 		} );
 	};
-	$scope.createHeader = function( dateParam, eventobj ) {
+	$scope.now = new Date();
+	$scope.processEvent = function( dateParam, eventobj, first) {
 		dateVal = new Date( dateParam ); 
-		currentDate = new Date( $scope.currentDate ); 
-		showHeader =( '' + dateVal.getDate( )+ dateVal.getMonth( )+ dateVal.getFullYear( )!= '' + currentDate.getDate( )+ currentDate.getMonth( )+ currentDate.getFullYear( ));
-		$scope.currentDate = new Date( dateVal );
-		return showHeader; 
+		showHeader = true;
+		if (!first) {
+			showHeader = (dateVal.getDate() != $scope.currentDate.getDate()) ||
+				(dateVal.getMonth() != $scope.currentDate.getMonth()) ||
+				(dateVal.getFullYear() != $scope.currentDate.getFullYear());
+		}
+		$scope.currentDate = dateVal;
+		$scope.dateFormat = ($scope.now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
+		$scope.showHeader = showHeader;
 	}
 	$scope.reset( );
 	$scope.delete = function( ) { 
@@ -1191,17 +1197,22 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
         }
         $scope.parseDateReg = function( input ) {
         	var dateReg = 
-        	/( \d {1,2} )\/( \d { 1, 2 } ) \/( \d {4} )\s*( \d {1,2} ):( \d {2} )*( am|pm|AM|PM )/; 
+        		/(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s*(\d{1,2})(:\d{2})*\s*(am|pm|AM|PM)/;
         	var year, month, day, hour, minute, second, 
         	result = dateReg.exec( input ); 
         	if( result ) { 
-        		year = + result [ 3 ]; 
-        		month = + result [ 1 ]; 
-        		day = + result [ 2 ]; 
-        		hour = + result [ 4 ]; 
-        		minute = + result [ 5 ]; 
+        		year = + result[3];
+        		if (year < 100) {
+        			year += 2000;
+        		} else if (year < 2000) {
+        			year = undefined;
+        		}
+        		month = + result[1]; 
+        		day = + result[2]; 
+        		hour = + result[4];
+        		minute = result[5] ? (+ result[5].substr(1)) : 0;
         		second = 0; 
-        		if(( result [ 6 ] === 'pm' || result [ 6 ] === 'PM' ) && hour !== 12 ) { 
+        		if(( result[6] == 'pm' || result[6] == 'PM' ) && hour != 12 ) { 
         			hour += 12; 
         		}       
         	}
