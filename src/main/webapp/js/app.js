@@ -55,8 +55,11 @@ angular.module( 'globalErrors', [ ] ).config( function( $provide, $httpProvider,
 		$httpProvider.responseInterceptors.push( function( $rootScope, $timeout, $q ) { 
 				return function( promise ) { 
 					return promise.then( function( successResponse ) { 
-							if( successResponse.config.method.toUpperCase( ) != 'GET' ) 
+							if( successResponse.config.method.toUpperCase( ) != 'GET' &&!isExternal(successResponse.config.url) ) 
+							{
+								
 								$rootScope.showAlert( "Saved successfully!", "success" ); 
+							}
 							return successResponse;
 					}, function( errorResponse ) { 
 						switch( errorResponse.status ) { 
@@ -145,12 +148,22 @@ angular.module( 'FacebookProvider', [ ] ).factory( 'Facebook', function( $rootSc
                         	{ 
                         		mydiv.innerHTML = 
                         		'<div class="fb-comments" href="' + window.location.href + '" data-num-posts="20" data-width="940">'; 
-                        		FB.XFBML.parse( mydiv );   
+                        		if(FB)
+                        		{
+                        			FB.XFBML.parse( mydiv );  
+                        		}
+                        		 
                         	}
-                        } 
+                        },
+                        sendFBMessage : function(){
+                        	FB.ui({
+				  method: 'send',
+				  link: $rootScope.getLocation()
+				});
+                        }
                 }; 
 } );
-kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "loadingOnAJAX", "FacebookProvider", "globalErrors" ,"ui.calendar"] ).config( function( $routeProvider, $httpProvider ) { 
+kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "loadingOnAJAX", "FacebookProvider", "globalErrors" ,"ui.calendar","ngSocial"] ).config( function( $routeProvider, $httpProvider ) { 
 		$routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
 			.when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
 			.when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } )
@@ -230,6 +243,7 @@ kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "
 		fbAppId = '571265879564450'; 
 	} 
 	$rootScope.fbScope = "email,user_location"; 
+	$rootScope.facebook = Facebook;
 	$rootScope.location = $location; 
 	$rootScope.$on( "$routeChangeStart", function( event, next, current ) { 
 			$rootScope.alerts = [ ]; 
@@ -390,7 +404,6 @@ kexApp.directive( "eventrepeat", function( ) {
 
 
 
-
 kexApp.directive( "timelineblock", function( ) { 
 		
 		return {
@@ -450,12 +463,42 @@ kexApp.directive( "timelineblock", function( ) {
 		}
 } );
 
+kexApp.directive('share', function() {
+        return {
+            restrict: 'E',
+            scope: {
+                title: '@',
+                description: '@',
+                image: '@'
+            },
+            replace:true,
+            transclude: true,
+            template:   '<ul class="unstyled" ng-social-buttons' +
+				     'data-url="getLocation()"' +
+				     'data-title="{{title}}"' +
+				     'data-description="{{description}}"'+
+				     'data-image="{{image}}">'+
+				     '<li>Share:</li>'+
+				     '<li class="ng-social-facebook">Facebook</li>'+
+				     '<li class="ng-social-google-plus">Google+</li>'+
+				     '<li class="ng-social-twitter">Twitter</li>'+
+				  
+				 
+				'</ul>'
+
+        }
+    })
+
 /*
 All app controllers  go here
 */
 function fbCntrl( Facebook, $scope, $rootScope, $http, $location, Me ) { 
 	$scope.info = {}; 
-	$rootScope.location = $location; 
+	$rootScope.location = $location;
+	$rootScope.getLocation = function()
+	{
+		return window.location.href;
+	}	
 	$rootScope.fbGraphAPIURL = "https://graph.facebook.com"; 
 	$rootScope.$on( "fb_statusChange", function( event, args ) { 
 			$rootScope.fb_status = args.status;
@@ -1290,4 +1333,11 @@ function getImage( id, size ) {
 	}  
 	return "//graph.facebook.com/" + id + "/picture?access_token=" + $.cookie( "facebook-token" )+ "type=square";
 };
+
+function isExternal(url) {
+    var match = url.match(/^([^:\/?#]+:)?(?:\/\/([^\/?#]*))?([^?#]+)?(\?[^#]*)?(#.*)?/);
+    if (typeof match[1] === "string" && match[1].length > 0 && match[1].toLowerCase() !== location.protocol) return true;
+    if (typeof match[2] === "string" && match[2].length > 0 && match[2].replace(new RegExp(":("+{"http:":80,"https:":443}[location.protocol]+")?$"), "") !== location.host) return true;
+    return false;
+}
 
