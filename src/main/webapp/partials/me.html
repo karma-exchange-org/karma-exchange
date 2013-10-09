@@ -3,9 +3,11 @@
 
   <div class="row">    
   	<div class="col-md-3">
-  		<img ng-src="{{me.profileImage.url}}?type=large" class="img-responsive">
-        <h4 class="text-center"><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>
-         <p><strong>Organizer Rating: </strong><rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{me.eventOrganizerRating.count}})</p>
+        <img ng-src="{{me.profileImage.url}}?type=large" class="img-responsive center">
+        <div class="text-center">
+            <h4><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>
+            <p><strong>Organizer Rating: </strong><rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{me.eventOrganizerRating.count}})</p>
+        </div>
   	</div>
   	<div class="col-md-9">
 
