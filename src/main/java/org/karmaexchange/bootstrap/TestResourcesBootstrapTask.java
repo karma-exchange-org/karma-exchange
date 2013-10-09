@@ -407,6 +407,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         "95126",
         GeoPtWrapper.create(new GeoPt(37.316094f,-121.912575f))));
 
+    final int UPCOMING_DAYS_OFFSET = 60;
+
     List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
       POONUM.getKey());
     List<Key<User>> registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
@@ -414,8 +416,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
     Event event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
-      DateUtils.addDays(now, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
-      "502904489789649", columbiaParkSoccerWaiverKey);
+      DateUtils.addDays(now, 1 + UPCOMING_DAYS_OFFSET), 1, organizers, registeredUsers,
+      waitListedUsers, 100, "502904489789649", columbiaParkSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
 
@@ -423,8 +425,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
     event = createEvent("After School Tutoring", BGCSF_TENDERLOIN, bgcsfClubhouse,
-      DateUtils.addDays(now, 3), 3, organizers, registeredUsers, waitListedUsers, 2,
-      "502905379789560", bgcsfTutoringWaiverKey);
+      DateUtils.addDays(now, 3 + UPCOMING_DAYS_OFFSET), 3, organizers, registeredUsers,
+      waitListedUsers, 2, "502905379789560", bgcsfTutoringWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
     events.add(event);
 
@@ -432,7 +434,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Credit Coaching", UNITED_WAY, unitedWayParkmoorOffice,
-      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5, null);
+      DateUtils.addDays(now, 12 + UPCOMING_DAYS_OFFSET), 1, organizers, registeredUsers,
+      waitListedUsers, 5, null);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
 
@@ -440,8 +443,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Resume Workshop", BENEVOLENT, benevolentParkmoorOffice,
-      DateUtils.addDays(now, 12), 1, organizers, registeredUsers, waitListedUsers, 5,
-      "502906079789490");
+      DateUtils.addDays(now, 12 + UPCOMING_DAYS_OFFSET), 1, organizers, registeredUsers,
+      waitListedUsers, 5, "502906079789490");
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
 
