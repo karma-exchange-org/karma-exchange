@@ -20,7 +20,8 @@ public class OrganizationTest extends PersistenceTestHelper {
     org = new Organization();
     org.setName("org");
     org.setOrgName("My Org");
-    org.setPage(PageRef.create("http://facebook.com/org", SocialNetworkProviderType.FACEBOOK));
+    org.setPage(PageRef.create("org", "http://facebook.com/org",
+      SocialNetworkProviderType.FACEBOOK));
     // org.setType(Organization.Type.NON_PROFIT);
     org.setCauses(asList(CauseType.HOMELESSNESS, CauseType.MENTORSHIP));
 

@@ -6,7 +6,6 @@ import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_ID;
 import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_SECRET;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -47,6 +46,7 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
       Logger.getLogger(FacebookSocialNetworkProvider.class.getName());
 
   private static final String PROFILE_IMAGE_URL_FMT = "https://graph.facebook.com/%s/picture";
+  public static final String PAGE_BASE_URL = "https://www.facebook.com/";
 
   public FacebookSocialNetworkProvider(OAuthCredential credential,
       SocialNetworkProviderType providerType) {
@@ -135,16 +135,15 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
   }
 
   @Override
-  public Organization createOrganization(String pageUrl) throws URISyntaxException {
+  public Organization createOrganization(String fbPageName) {
     DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
     // Getting age_range unfortunately requires explicitly specifiying the fields.
-    String fbPageName = getPageNameFromUrl(pageUrl);
     Page fbPage = fetchObject(fbClient, fbPageName, Page.class);
 
     Organization org = new Organization();
     org.setName(fbPageName);
     org.setOrgName(fbPage.getName());
-    org.setPage(PageRef.create(pageUrl, providerType));
+    org.setPage(PageRef.create(fbPageName, PAGE_BASE_URL + fbPageName, providerType));
     org.setAddress(getAddress(fbPage.getLocation()));
     return org;
   }

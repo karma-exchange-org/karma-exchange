@@ -48,7 +48,7 @@ import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.SuitableForType;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Waiver;
-import org.karmaexchange.provider.SocialNetworkProvider;
+import org.karmaexchange.provider.FacebookSocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.task.ComputeLeaderboardServlet;
 import org.karmaexchange.util.AdminUtil;
@@ -180,7 +180,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   }
 
   public enum TestOrganization {
-    BGCSF("https://www.facebook.com/BGCSF", AMIR,
+    BGCSF("BGCSF", AMIR,
       asList(
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
@@ -198,7 +198,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
                 "If your property is stolen while volunteering that is your responsibility."),
              createWaiver("After school tutoring waiver",
                 "You are responsible for any property you bring."))),
-    BGCSF_COLUMBIA_PARK("https://www.facebook.com/columbia.park", AMIR,
+    BGCSF_COLUMBIA_PARK("columbia.park", AMIR,
       asList(
         TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
         TestOrgMembership.of(HARISH, Organization.Role.ORGANIZER, null),
@@ -208,7 +208,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       asList(createWaiver("Soccer clinic waiver",
         "If you are injured while volunteering Columbia Park BGCSF is not liable.\n\n" +
         "If your property is stolen while volunteering that is your responsibility."))),
-    BGCSF_TENDERLOIN("https://www.facebook.com/Tenderloin.clubhouse", HARISH,
+    BGCSF_TENDERLOIN("Tenderloin.clubhouse", HARISH,
       asList(
         TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null),
         TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
@@ -216,7 +216,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(AMIR, Organization.Role.ORGANIZER, null)),
       BGCSF),
 
-    BENEVOLENT("https://www.facebook.com/benevolent.net", HARISH,
+    BENEVOLENT("benevolent.net", HARISH,
       asList(
         TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null),
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
@@ -226,7 +226,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
         TestOrgMembership.of(USER3, null, Organization.Role.ADMIN))),
 
-    UNITED_WAY("https://www.facebook.com/UnitedWay", AMIR,
+    UNITED_WAY("UnitedWay", AMIR,
       asList(
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
@@ -236,7 +236,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER3, null, Organization.Role.ADMIN)));
 
     @Getter
-    private final String pageUrl;
+    private final String pageName;
     @Getter
     private final TestUser initialAdmin;
     @Getter
@@ -260,11 +260,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         ImmutableList.<Waiver>of());
     }
 
-    private TestOrganization(String pageUrl, TestUser initialAdmin,
+    private TestOrganization(String pageName, TestUser initialAdmin,
         List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg,
         @Nullable List<AutoMembershipRule> autoMembershipRules,
         @Nullable List<Waiver> waivers) {
-      this.pageUrl = pageUrl;
+      this.pageName = pageName;
       this.initialAdmin = initialAdmin;
       this.memberships = memberships;
       this.parentOrg = parentOrg;
@@ -273,16 +273,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     }
 
     public PageRef getPageRef() {
-      return PageRef.create(pageUrl, SocialNetworkProviderType.FACEBOOK);
+      return PageRef.create(pageName, FacebookSocialNetworkProvider.PAGE_BASE_URL + pageName,
+        SocialNetworkProviderType.FACEBOOK);
     }
 
     public Key<Organization> getKey() {
-      String pageName;
-      try {
-        pageName = SocialNetworkProvider.getPageNameFromUrl(pageUrl);
-      } catch (URISyntaxException e) {
-        throw new RuntimeException(e);
-      }
       return Key.create(Organization.class, Organization.getNameFromPageName(pageName));
     }
 

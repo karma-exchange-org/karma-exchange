@@ -36,11 +36,10 @@
     <ul class="list-unstyled">
         <li ng-repeat="org in orgs.data">
             <div class="well well-sm">
-                <p>
-                    <strong>
-                        <a href="#/org/{{org.key}}" ng-click="refresh({{org.key}})">{{org.orgName}}</a>
-                    </strong>
-                </p>
+                <a href="#/org/{{org.key}}" ng-click="refresh({{org.key}})">
+                    <img ng-src="{{getFbImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org"> 
+                    <strong>{{org.orgName}}</strong>
+                </a>
             </div>
         </li>
     </ul>

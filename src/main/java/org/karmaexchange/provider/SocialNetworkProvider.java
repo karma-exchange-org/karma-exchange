@@ -1,7 +1,6 @@
 package org.karmaexchange.provider;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import javax.servlet.ServletContext;
 
@@ -52,17 +51,5 @@ public abstract class SocialNetworkProvider {
 
   public abstract String getProfileImageUrl();
 
-  public abstract Organization createOrganization(String pageUrl) throws URISyntaxException;
-
-  public static String getPageNameFromUrl(String pageUrl) throws URISyntaxException {
-    String pagePath = new URI(pageUrl).getPath();
-    if (!pagePath.startsWith("/")) {
-      throw new URISyntaxException(pagePath, "page path not specified");
-    }
-    String objectName = pagePath.substring(1);
-    if (objectName.contains("/")) {
-      throw new URISyntaxException(objectName, "base url for page required");
-    }
-    return objectName;
-  }
+  public abstract Organization createOrganization(String pageName);
 }

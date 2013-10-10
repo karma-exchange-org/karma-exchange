@@ -16,9 +16,13 @@
 	max-width: inherit !important;
 }
 
-body {
-padding-top: 60px;
+body { 
+  padding-top: 60px; 
+  padding-bottom: 40px; 
+  background: url(../img/bg.gif);
+  /*min-width: 860px;*/
 }
+
 .container-fluid > .content{
 margin-left:280px;
 }
@@ -201,6 +205,26 @@ img.center {
   margin-right: auto;
 }
 
+img.kex-thumbnail-with-label {
+ margin-right: 8px; 
+}
+
+img.kex-thumbnail-org {
+  height: 40px; 
+  width: 40px; 
+}
+
+img.kex-thumbnail-user {
+  height: 40px; 
+  width: 40px; 
+}
+
+img.kex-thumbnail-user-mini {
+  height: 25px; 
+  width: 25px; 
+}
+
+
 /*==================================================
  * Effect 7
  * ===============================================*/
@@ -270,10 +294,6 @@ img.center {
             transform:skew(8deg) rotate(3deg);
 }
 
-body {
-	background: url(../img/bg.gif);
-	min-width: 860px;
-}
 
 p {
 	padding: 0;

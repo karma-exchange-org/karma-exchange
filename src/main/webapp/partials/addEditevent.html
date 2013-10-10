@@ -474,7 +474,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
 
                     <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventOrganizers.data">
                       
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" width="25" height="25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                         
                               <p></p>  
                            
@@ -493,7 +493,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
 
                             <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventRegistered.data">
                                
-                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square"  width="25" height="25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square"  class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             
                                        
                                 
@@ -514,7 +514,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
 
                             <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventWaitListed.data">
                               
-                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" width="25" height="25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                  
                                         
                                 
@@ -536,7 +536,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
 
 		    <li class="col-md-4 table-bordered" ng-repeat="user in eventRegistered.data">
 		       
-			       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" width="25" height="25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+			       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
 		    
 			       
 			
@@ -555,7 +555,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
 
 		    <li class="col-md-4 table-bordered" ng-repeat="user in eventNoShow.data">
 		       
-			       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" width="25" height="25"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+			       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
 		    
 			       
 			
