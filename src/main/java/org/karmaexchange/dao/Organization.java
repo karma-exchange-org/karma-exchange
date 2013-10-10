@@ -7,7 +7,6 @@ import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Comparator;
 import java.util.List;
 
@@ -146,14 +145,8 @@ public class Organization extends NameBaseDao<Organization> {
     OAuthCredential appCredential = page.getUrlProvider().getAppCredential(servletCtx, requestUri);
     SocialNetworkProvider provider = page.getUrlProvider().getProvider(appCredential);
     Organization providerGeneratedOrg;
-    try {
-      providerGeneratedOrg = provider.createOrganization(page.getUrl());
-    } catch (URISyntaxException e) {
-      throw ValidationErrorInfo.createException(ImmutableList.of(
-        new ResourceValidationError(this,
-          ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "page.url")));
-    }
-    name = getNameFromPageName(providerGeneratedOrg.getName());
+    providerGeneratedOrg = provider.createOrganization(page.getName());
+    name = getNameFromPageName(page.getName());
     if (orgName == null) {
       orgName = providerGeneratedOrg.getOrgName();
     }
@@ -231,14 +224,7 @@ public class Organization extends NameBaseDao<Organization> {
     }
 
     if (pageIsInitialized()) {
-      String pageDerivedName = null;
-      try {
-        pageDerivedName = SocialNetworkProvider.getPageNameFromUrl(page.getUrl());
-      } catch (URISyntaxException e) {
-        validationErrors.add(new ResourceValidationError(
-          this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "page.url"));
-      }
-      if ((pageDerivedName != null) && !getNameFromPageName(pageDerivedName).equals(name)) {
+      if (!getNameFromPageName(page.getName()).equals(name)) {
         validationErrors.add(new ResourceValidationError(
           this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "name"));
       }
@@ -274,7 +260,8 @@ public class Organization extends NameBaseDao<Organization> {
   }
 
   private boolean pageIsInitialized() {
-    return (page != null) || (page.getUrlProvider() != null) || (page.getUrl() != null);
+    return (page != null) && (page.getName() != null) && (page.getUrlProvider() != null) &&
+        (page.getUrl() != null);
   }
 
   // TODO(avaliani): remove the load in eval permissions.

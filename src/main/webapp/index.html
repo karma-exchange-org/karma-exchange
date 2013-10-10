@@ -43,7 +43,6 @@
         
         <link rel="stylesheet" href="css/main.css">
         <style>
-            body { padding-top: 70px; padding-bottom: 40px; }
             .ng-cloak { display: none; }
         </style>
         <!--[if lt IE 9]>
@@ -154,9 +153,9 @@
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
-                        <li ng-show="me.firstName">
-                            <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" width="30" height="30"></a>
-                        </li>
+<!--                         <li ng-show="me.firstName">
+                            <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" class="kex-thumbnail-user"></a>
+                        </li> -->
                         <li ng-show="me.firstName" class="dropdown">
                             <a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
                             <ul class="dropdown-menu">
