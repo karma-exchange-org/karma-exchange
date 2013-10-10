@@ -263,6 +263,10 @@ kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "
 	$rootScope.closeAlert = function( index ) { 
 		$rootScope.alerts.splice( index, 1 ); 
 	}; 
+	$rootScope.getFbImageUrl = function(id, type) {
+		return "//graph.facebook.com/" + id + "/picture?type=" + type;
+	};
+
 	window.fbAsyncInit = function( ) { 
 		FB.init( { 
 				appId : fbAppId, 
@@ -1326,13 +1330,6 @@ var checkLogin = function( $location ) {
 	} 
 };
 var colorClass = [ "primary", "success", "info", "warning", "danger", "default" ];
-function getImage( id, size ) { 
-	if( size == 'small' ) 
-	{ 
-		return "//graph.facebook.com/" + id + "/picture?access_token=" + $.cookie( "facebook-token" )+ "&width=25&height=25"; 
-	}  
-	return "//graph.facebook.com/" + id + "/picture?access_token=" + $.cookie( "facebook-token" )+ "type=square";
-};
 
 function isExternal(url) {
     var match = url.match(/^([^:\/?#]+:)?(?:\/\/([^\/?#]*))?([^?#]+)?(\?[^#]*)?(#.*)?/);

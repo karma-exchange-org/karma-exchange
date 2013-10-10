@@ -16,14 +16,16 @@ import com.googlecode.objectify.annotation.Embed;
 @NoArgsConstructor
 @Embed
 public class PageRef {
+  private String name;
   private String url;
   private SocialNetworkProviderType urlProvider;
 
-  public static PageRef create(String url, SocialNetworkProviderType urlProvider) {
-    return new PageRef(url, urlProvider);
+  public static PageRef create(String name, String url, SocialNetworkProviderType urlProvider) {
+    return new PageRef(name, url, urlProvider);
   }
 
-  public PageRef(String url, SocialNetworkProviderType urlProvider) {
+  public PageRef(String name, String url, SocialNetworkProviderType urlProvider) {
+    this.name = name;
     this.url = url;
     this.urlProvider = urlProvider;
   }
