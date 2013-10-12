@@ -224,6 +224,15 @@ img.kex-thumbnail-user-mini {
   width: 25px; 
 }
 
+.list-inline-no-padding {
+  list-style: none;
+  padding-left: 0;
+}
+
+.list-inline-no-padding > li {
+  display: inline-block;
+}
+
 
 /*==================================================
  * Effect 7
