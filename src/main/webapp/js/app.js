@@ -163,7 +163,10 @@ angular.module( 'FacebookProvider', [ ] ).factory( 'Facebook', function( $rootSc
                         }
                 }; 
 } );
-kexApp = angular.module( "kexApp", [ "ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "loadingOnAJAX", "FacebookProvider", "globalErrors" ,"ui.calendar","ngSocial"] ).config( function( $routeProvider, $httpProvider ) { 
+kexApp = angular.module( "kexApp", 
+	["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "loadingOnAJAX", "FacebookProvider", 
+	 "globalErrors" ,"ui.calendar","ngSocial"] )
+.config( function( $routeProvider, $httpProvider ) { 
 		$routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
 			.when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
 			.when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } )
@@ -467,31 +470,52 @@ kexApp.directive( "timelineblock", function( ) {
 		}
 } );
 
-kexApp.directive('share', function() {
+kexApp.directive('shareButtons', function() {
         return {
             restrict: 'E',
             scope: {
-                title: '@',
-                description: '@',
-                image: '@'
+            	url: '=',  // TODO(avaliani): figure out how to avoid explicitly passing the url
+                title: '=',
+                description: '=',
+                image: '='
             },
-            replace:true,
-            transclude: true,
-            template:   '<ul class="unstyled" ng-social-buttons' +
-				     'data-url="getLocation()"' +
-				     'data-title="{{title}}"' +
-				     'data-description="{{description}}"'+
-				     'data-image="{{image}}">'+
-				     '<li>Share:</li>'+
-				     '<li class="ng-social-facebook">Facebook</li>'+
-				     '<li class="ng-social-google-plus">Google+</li>'+
-				     '<li class="ng-social-twitter">Twitter</li>'+
-				  
-				 
-				'</ul>'
-
+            replace: true,
+            transclude: false,
+            template:
+            	'<div>' +
+					'<ul data-ng-social-buttons ' +
+					     // 'data-url="getLocation()" ' +
+					     'data-url="url" ' +					     
+					     'data-title="title" ' +
+					     'data-description="description" ' +
+					     'data-image="image">' +
+					    '<li class="ng-social-facebook">Facebook</li>' +
+					    '<li class="ng-social-google-plus">Google+</li>' +
+					    '<li class="ng-social-twitter">Twitter</li>' +
+					    '<li class="ng-social-facebook-message">Facebook</li>' +
+					'</ul>' +
+				'</div>'
         }
-    })
+    });
+
+kexApp.directive('eventParticipantImgsMini', function() {
+	return {
+	    restrict: 'E',
+	    scope: {
+	    	event: '=',
+	    },
+	    replace: true,
+	    transclude: false,
+	    template:
+            '<ul class="list-inline">' +
+				'<li data-ng-repeat="userImage in event.cachedParticipantImages">' +
+					'<a href="#/user/{{userImage.participant.key}}">' +
+						'<img data-ng-src="{{userImage.imageUrl}}?type=square" class="kex-thumbnail-user-mini">' +
+					'</a>' +
+				'</li>' +
+			'</ul>'
+	}
+});
 
 /*
 All app controllers  go here

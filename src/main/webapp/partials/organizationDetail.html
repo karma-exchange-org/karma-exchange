@@ -135,11 +135,6 @@
                                 </h4>
                             </div>
                             <div class="row pagination-center">
-                                <ul class="list-inline">
-                                    <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
-                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?type=square" class="kex-thumbnail-user-mini"></a>
-                                    </li>
-                                </ul>
                                 <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]">
                                     <small>
                                         organizer
@@ -220,11 +215,9 @@
                                 <small class="text-muted">
                                     at {{event.location.title}}, {{event.location.address.city}}
                                 </small>
-                                <ul class="list-inline pull-right">
-                                    <li class="pagination-centered " ng-repeat="userImage in event.cachedParticipantImages">
-                                        <a href="#/user/{{userImage.participant.key}}"><img ng-src="{{userImage.imageUrl}}?type=square" class="kex-thumbnail-user-mini"></a>
-                                    </li>
-                                </ul>
+                                <div class="pull-right">
+                                    <data-event-participant-imgs-mini event="event"></data-event-participant-imgs-mini>
+                                </div>
                             </div>
                         </div>
                     </div>
