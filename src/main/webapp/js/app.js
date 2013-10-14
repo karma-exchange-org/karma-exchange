@@ -19,16 +19,16 @@ angular.module( 'globalErrors', [ ] ).config( function( $provide, $httpProvider,
             $( '<alert/>' ).addClass( 'message' ).addClass( cl ).hide( ).fadeIn( 'fast' ).delay( time ).fadeOut( 'fast', function( ) { $( this ).remove( ); } ).appendTo( elementsList ).text( content ); 
         };
         $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
-		$httpProvider.defaults.transformRequest.push( function( data, headersGetter ) { 
-				//console.log(angular.toJson(headersGetter()));
-				//check if it is a post request or requires authentication and 
-				if(headersGetter()["Content-Type"]!=null&&checkLogin())
-				{
-					alert("login required");
-				}
-			return data; 
-		} );		
-			$httpProvider.responseInterceptors.push( function( $rootScope, $timeout, $q ) { 
+        $httpProvider.defaults.transformRequest.push( function( data, headersGetter ) { 
+                //console.log(angular.toJson(headersGetter()));
+                //check if it is a post request or requires authentication and 
+                if(headersGetter()["Content-Type"]!=null&&checkLogin())
+                {
+                    alert("login required");
+                }
+            return data; 
+        } );        
+            $httpProvider.responseInterceptors.push( function( $rootScope, $timeout, $q ) { 
                 return function( promise ) { 
                     return promise.then( function( successResponse ) { 
                             if( successResponse.config.method.toUpperCase( ) != 'GET' &&!isExternal(successResponse.config.url) ) 
@@ -246,15 +246,15 @@ kexApp = angular.module( "kexApp",
         return "//graph.facebook.com/" + id + "/picture?type=" + type;
     };
     $rootScope.isMessageOpen = false; 
-	$rootScope.showMessage = function( ) { 
-		$rootScope.isMessageOpen = true; 
-	}; 
-	$rootScope.cancelMessage = function( ) { 
-		$rootScope.isMessageOpen = false; 
-	}; 
-	$rootScope.sendMessage = function( ) { 
-		$rootScope.isMessageOpen = false; 
-	};
+    $rootScope.showMessage = function( ) { 
+        $rootScope.isMessageOpen = true; 
+    }; 
+    $rootScope.cancelMessage = function( ) { 
+        $rootScope.isMessageOpen = false; 
+    }; 
+    $rootScope.sendMessage = function( ) { 
+        $rootScope.isMessageOpen = false; 
+    };
 
     window.fbAsyncInit = function( ) { 
         FB.init( { 
@@ -547,7 +547,7 @@ function fbCntrl( Facebook, $scope, $rootScope, $http, $location, Me ) {
             Facebook.getLoginStatus( );
     } ); 
     $rootScope.$on( "fb_login_failed", function( ) {
-    		removeCookies();
+            removeCookies();
     } ); 
     $rootScope.$on( "fb_logout_succeded", function( ) {
             $rootScope.id = ""; 
@@ -1308,7 +1308,7 @@ var checkLogin = function( $location ) {
     else
     { 
         if( $location) 
-			$location.path( "/" );  
+            $location.path( "/" );  
         removeCookies();
         //Facebook.login();
         
@@ -1317,10 +1317,10 @@ var checkLogin = function( $location ) {
 };
 var removeCookies = function()
 {
-	
-	$.removeCookie( "facebook-uid" ); 
-	$.removeCookie( "facebook-token" ); 
-	$.removeCookie( "login" );
+    
+    $.removeCookie( "facebook-uid" ); 
+    $.removeCookie( "facebook-token" ); 
+    $.removeCookie( "login" );
 }
 var colorClass = [ "primary", "success", "info", "warning", "danger", "default" ];
 

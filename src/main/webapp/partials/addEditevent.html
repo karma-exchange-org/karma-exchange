@@ -48,8 +48,8 @@
                                 
                             </div>
                             <div class="row" >
-                           	    <p><textarea eventrepeat name="repeat"></textarea></p>
-                            </div>			    			  
+                                <p><textarea eventrepeat name="repeat"></textarea></p>
+                            </div>                            
                             
                         </div>
 
@@ -103,9 +103,9 @@
                             <label class="control-label" for="organizations">Organization</label>
 
                             <div class="controls">
-                            	<select  ng-model="event.organization.key" class="input-xlarge form-control" required>
-                            		<option ng-repeat="org in orgs.data" value="{{org.org.key}}">{{org.orgName}}</option>
-                            	</select>
+                                <select  ng-model="event.organization.key" class="input-xlarge form-control" required>
+                                    <option ng-repeat="org in orgs.data" value="{{org.org.key}}">{{org.orgName}}</option>
+                                </select>
 
                                 <!-- <input class="col-md-12"  type="text" ng-model="event.organizations" id="organizations" placeholder="Benefiting Organizations"> -->
 
@@ -231,8 +231,8 @@ $(function() {
     
         $('#dtst').on('change', function(ev){
             if (!/^\d{4}​​​​​​​​​​​​​​​​​​​​​​​$/.test(ev.target.value)) {
-            	    fixYear(this);
-            }	
+                    fixYear(this);
+            }   
             
             checkout.update(ev.target.value);
             checkout.setStartDate(ev.target.value);
@@ -240,8 +240,8 @@ $(function() {
         });
         $('#dtend').on('change', function(ev){
             if (!/^\d{4}​​​​​​​​​​​​​​​​​​​​​​​$/.test(ev.target.value)) {
-            	    fixYear(this);
-            }	
+                    fixYear(this);
+            }   
             
             
         });
@@ -530,44 +530,44 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
         </div>
     </tab>
     <tab heading="Attendance">
-    	<div class="col-md-9" ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
-	    <hr>
-		<ul class="list-inline">
+        <div class="col-md-9" ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
+        <hr>
+        <ul class="list-inline">
 
-		    <li class="col-md-4 table-bordered" ng-repeat="user in eventRegistered.data">
-		       
-			       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
-		    
-			       
-			
-			    
-			       <a  href="" class="btn btn-warning pull-right" ng-click="noShow();">No show</a>
-			<p></p>
-		    </li>
-		    <li></li>
+            <li class="col-md-4 table-bordered" ng-repeat="user in eventRegistered.data">
+               
+                   <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+            
+                   
+            
+                
+                   <a  href="" class="btn btn-warning pull-right" ng-click="noShow();">No show</a>
+            <p></p>
+            </li>
+            <li></li>
 
-		</ul>
-		<!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
-	</div>
-	<div class="col-md-3" ng-hide="eventNoShow.data.length==0"><h4>No-show ({{eventNoShow.data.length}})</h4> 
-	    <hr>
-		<ul class="list-inline">
+        </ul>
+        <!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
+    </div>
+    <div class="col-md-3" ng-hide="eventNoShow.data.length==0"><h4>No-show ({{eventNoShow.data.length}})</h4> 
+        <hr>
+        <ul class="list-inline">
 
-		    <li class="col-md-4 table-bordered" ng-repeat="user in eventNoShow.data">
-		       
-			       <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
-		    
-			       
-			
-			    
-			       <a href="" class="btn btn-success pull-right" ng-click="attended();"><i class="icon-ok"></i>Attended!</a>
-			<p></p>
-		    </li>
-		    <li></li>
+            <li class="col-md-4 table-bordered" ng-repeat="user in eventNoShow.data">
+               
+                   <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
+            
+                   
+            
+                
+                   <a href="" class="btn btn-success pull-right" ng-click="attended();"><i class="icon-ok"></i>Attended!</a>
+            <p></p>
+            </li>
+            <li></li>
 
-		</ul>
-		<!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED_NO_SHOW');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
-	</div>
+        </ul>
+        <!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED_NO_SHOW');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
+    </div>
     </tab>
 </tabset>
 

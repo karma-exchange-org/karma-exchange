@@ -6,14 +6,14 @@
    
 
 .angular-google-map {
-	height: 100%;
-	border: 1px #ccc solid;
-	margin-bottom: 20px;
-	display: block;
+  height: 100%;
+  border: 1px #ccc solid;
+  margin-bottom: 20px;
+  display: block;
 }
 
 .angular-google-map img {
-	max-width: inherit !important;
+  max-width: inherit !important;
 }
 
 body { 
@@ -53,7 +53,7 @@ text-align:center;
 }
 .event-detail
 {
-	display:none;
+  display:none;
 }
 
 
@@ -161,15 +161,15 @@ text-align:center;
 }
 
 .box h3{
-	text-align:center;
-	position:relative;
-	top:80px;
+  text-align:center;
+  position:relative;
+  top:80px;
 }
 .box {
-	width:100%;
-	
-	background:#FFF;
-	
+  width:100%;
+  
+  background:#FFF;
+  
 }
 
 .vertical-panel-padding {
@@ -239,14 +239,14 @@ img.kex-thumbnail-user-mini {
  * ===============================================*/
 .effect7
 {
-  	position:relative;       
+    position:relative;       
     -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
        -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
             box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
 }
 .effect7:before, .effect7:after
 {
-	content:"";
+  content:"";
     position:absolute; 
     z-index:-1;
     -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
@@ -261,7 +261,7 @@ img.kex-thumbnail-user-mini {
 } 
 .effect7:after
 {
-	right:10px; 
+  right:10px; 
     left:auto;
     -webkit-transform:skew(8deg) rotate(3deg); 
        -moz-transform:skew(8deg) rotate(3deg);     
@@ -272,14 +272,14 @@ img.kex-thumbnail-user-mini {
 
 .effect8
 {
-  	position:relative;       
+    position:relative;       
     -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
        -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
             box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
 }
 .effect8:before, .effect8:after
 {
-	content:"";
+  content:"";
     position:absolute; 
     z-index:-1;
     -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
@@ -294,7 +294,7 @@ img.kex-thumbnail-user-mini {
 } 
 .effect8:after
 {
-	right:10px; 
+  right:10px; 
     left:auto;
     -webkit-transform:skew(8deg) rotate(3deg); 
        -moz-transform:skew(8deg) rotate(3deg);     
@@ -305,23 +305,23 @@ img.kex-thumbnail-user-mini {
 
 
 p {
-	padding: 0;
+  padding: 0;
 }
 
 img {
-	position: relative;
-	margin : 0px;
-	padding: 0px;
+  position: relative;
+  margin : 0px;
+  padding: 0px;
 }
 
 /***** MAIN CONTAINER *****/
 
 .maincontainer {
-	padding: 10px;
-	width: 860px;
-	margin-left: auto;
-	margin-right: auto;
-	
+  padding: 10px;
+  width: 860px;
+  margin-left: auto;
+  margin-right: auto;
+  
 }
 
 /***** END MAIN CONTAINER *****/
@@ -332,9 +332,9 @@ img {
 
 
 .topcontainer {
-	width: 100%;
-	height: 150px;
-	
+  width: 100%;
+  height: 150px;
+  
 }
 
 /***** END TOP BANNER CONTAINER *****/
@@ -344,51 +344,51 @@ img {
 /***** TIMELINE CONTAINER *****/
 
 .timelinecontainer {
-	position: relative;
-	width: 100%;	
-	min-height: 600px;
-	margin-top: 10px;
+  position: relative;
+  width: 100%;  
+  min-height: 600px;
+  margin-top: 10px;
 }
 
 .timeline {
-	margin-left: 50%;
-	height: 99%;
-	width: 3px;
-	background: #c3ccdf;	
-	position: absolute;
+  margin-left: 50%;
+  height: 99%;
+  width: 3px;
+  background: #c3ccdf;  
+  position: absolute;
 }
 
 .timeline:hover {
-	cursor: pointer;
+  cursor: pointer;
 }
 
 #timelineblock {
-	position: relative
-	padding: 0px;
-	margin: 0px;
-	margin-top: 30px;
-	list-style-type: none;
-	width:860px;		
-	
+  position: relative
+  padding: 0px;
+  margin: 0px;
+  margin-top: 30px;
+  list-style-type: none;
+  width:860px;    
+  
 }
 
 
 .block {
-	padding: 5px;
-	margin: 0px;
-	width: 340px;
+  padding: 5px;
+  margin: 0px;
+  width: 340px;
 
 
-	background: #fff;
-	border: 1px solid #c4cde0;
+  background: #fff;
+  border: 1px solid #c4cde0;
 
-	-moz-border-radius:3px; 
-	border-radius:3px; 
-	-webkit-border-radius:3px; 
+  -moz-border-radius:3px; 
+  border-radius:3px; 
+  -webkit-border-radius:3px; 
 }
 
 .block:hover {
-	border: 1px solid #9fafd0;
+  border: 1px solid #9fafd0;
 }
 /***** END TIMELINE CONTAINER *****/
 
@@ -398,36 +398,36 @@ img {
 
 
 #edge {
-	position: absolute;
-	padding: 0px;
+  position: absolute;
+  padding: 0px;
 }
 
 .redge {
-	display: block;
-	margin:0px;
-	margin-left: 345px;
+  display: block;
+  margin:0px;
+  margin-left: 345px;
 
-	width:20px;
-	height:15px;
-	background: url(../img/right.gif);
+  width:20px;
+  height:15px;
+  background: url(../img/right.gif);
 }
 
 .ledge {
-	display: block;
-	margin:0px;
-	margin-left: -28px;
+  display: block;
+  margin:0px;
+  margin-left: -28px;
 
-	width:23px;
-	height:15px;
-	background: url(../img/left.gif);
+  width:23px;
+  height:15px;
+  background: url(../img/left.gif);
 }
 
 .redge_h {
-	background: url(../img/right.gif) 21px;
+  background: url(../img/right.gif) 21px;
 }
 
 .ledge_h {
-	background: url(../img/left.gif) 23px;
+  background: url(../img/left.gif) 23px;
 }
 
 
@@ -438,26 +438,26 @@ img {
 
 
 .block p {
-	padding: 7px 0 7px 0;
-	margin: 0px;
-	font-size: 10px;
-	font-family: Arial;
+  padding: 7px 0 7px 0;
+  margin: 0px;
+  font-size: 10px;
+  font-family: Arial;
 
 }
 
 
 .pic {
-	width: 310px;
-	margin: 5px 0 0 10px;
-	height: 210px;
-	padding: 3px;
+  width: 310px;
+  margin: 5px 0 0 10px;
+  height: 210px;
+  padding: 3px;
 }
 
 /***** END  TIMELINE CONTENTS *****/
 
 
 .borders {
-	border: 1px solid #000;
+  border: 1px solid #000;
 }
 
 
