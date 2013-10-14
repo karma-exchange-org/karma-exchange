@@ -1,13 +1,13 @@
-	
+    
 
     <div class="row">
 
         <div class="col-md-8">
         <div class="row">
-        	<div class="pull-left">
-				 <h2><strong>{{event.title}}</strong></h2>  
-				<p>on <strong>{{event.startTime | date:'EEE, MMM d, y'}}</strong> from <strong>{{event.startTime|date:'shortTime'}}</strong> - <strong>{{event.endTime|date:'shortTime'}}</strong> by <a href="#/org/{{event.associatedOrganizations[0].key}}">{{event.associatedOrganizations[0].name}} </a> </p>
-				<p>at <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}" target="_blank">{{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}</a></p>
+            <div class="pull-left">
+                 <h2><strong>{{event.title}}</strong></h2>  
+                <p>on <strong>{{event.startTime | date:'EEE, MMM d, y'}}</strong> from <strong>{{event.startTime|date:'shortTime'}}</strong> - <strong>{{event.endTime|date:'shortTime'}}</strong> by <a href="#/org/{{event.associatedOrganizations[0].key}}">{{event.associatedOrganizations[0].name}} </a> </p>
+                <p>at <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}" target="_blank">{{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}</a></p>
 
                 <ul class="list-inline-no-padding">
                     <li>
@@ -20,70 +20,70 @@
                     </li>
                     <li><a href="http://www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:http%3A%2F%2Fwww.karmaexchange.org" target="_blank"><img src="//www.google.com/calendar/images/ext/gc_button3.gif" border=0></a></li>
                 </ul>
-			</div>
-			<div class="pull-right">
-				<a ng-show="{ORGANIZER:true}[event.registrationInfo]"class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
-				<div ng-show="event.status!='COMPLETED'">
-					<p><strong>{{event.maxRegistrations - event.registeredUsers.length | limit10 }}</strong></p>
-					
-					
-					<button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i>Register</button>
-					<button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i>Wait list</button>
-					<p ng-show="{REGISTERED:true}[event.registrationInfo]"><i class="icon-ok"></i>You are registered!</p>
-					<p ng-show="{WAIT_LISTED:true}[event.registrationInfo]"><i class="icon-ok"></i>You are waitlisted!</p>
-					<p ng-hide="event.registrationInfo!='REGISTERED'"><small class="text-muted"><a href="" ng-click="unregister()">Unregister</a></small></p>
-					<p ng-hide="event.registrationInfo!='WAIT_LISTED'"><small class="text-muted"><a href="" ng-click="unregister()">Remove from waitlist</a></small></p>
-					<p><small class="text-muted">(<strong>{{event.registeredUsers.length }} </strong>registered so far!)</small></p>
-				</div>
+            </div>
+            <div class="pull-right">
+                <a ng-show="{ORGANIZER:true}[event.registrationInfo]"class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
+                <div ng-show="event.status!='COMPLETED'">
+                    <p><strong>{{event.maxRegistrations - event.registeredUsers.length | limit10 }}</strong></p>
+                    
+                    
+                    <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i>Register</button>
+                    <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i>Wait list</button>
+                    <p ng-show="{REGISTERED:true}[event.registrationInfo]"><i class="icon-ok"></i>You are registered!</p>
+                    <p ng-show="{WAIT_LISTED:true}[event.registrationInfo]"><i class="icon-ok"></i>You are waitlisted!</p>
+                    <p ng-hide="event.registrationInfo!='REGISTERED'"><small class="text-muted"><a href="" ng-click="unregister()">Unregister</a></small></p>
+                    <p ng-hide="event.registrationInfo!='WAIT_LISTED'"><small class="text-muted"><a href="" ng-click="unregister()">Remove from waitlist</a></small></p>
+                    <p><small class="text-muted">(<strong>{{event.registeredUsers.length }} </strong>registered so far!)</small></p>
+                </div>
                 <div ng-show="event.status=='COMPLETED'" >
-			
-				    <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> ({{event.rating.count}})</p>
-				    
-				    <p ng-hide="event.registrationInfo=='ORGANIZER'">Your rating<rating value="eventRating.rating.value" max="5" readonly="false"></rating></p>
-				</div>
+            
+                    <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> ({{event.rating.count}})</p>
+                    
+                    <p ng-hide="event.registrationInfo=='ORGANIZER'">Your rating<rating value="eventRating.rating.value" max="5" readonly="false"></rating></p>
+                </div>
                 <div><h3><em><strong>+{{event.karmaPoints}} karma</strong></em></h3>
                 </div>
             </div> 
         </div>
         <hr>
-		<div class="row" ng-show="event.status=='COMPLETED'" name="past-events-album">
-			  <carousel interval="myInterval">
-			    <slide ng-repeat="image in fbAlbum" active="slide.active">
-			    	<div class="col-md-12 pagination-centered">
-			    		<img ng-src="{{image.picture}}" max-height="500">
-			    	</div>
-			      
-			      <div ng-show="image.name" class="carousel-caption">
-				<p></p>
-				<p  >{{image.name}}</p>
-			      </div>
-			    </slide>
-			  </carousel>
-			
-		<div class="fileupload fileupload-new" data-provides="fileupload">
-		  <div ng-show="isImageModelOpen" class="fileupload-preview thumbnail" style="width: 200px; height: 150px;"></div>
-		  <form name="fbPhotoUpload" action="https://graph.facebook.com/{{event.album.id}}/photos?access_token={{fbAccessToken}}" enctype="multipart/form-data" method="POST">
-		    <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()" ><span class="fileupload-new"><i class="icon-plus"></i> Add a photo</span><input class="form-control" id="source" type="file" /></span>
-		    <span ng-show="isImageModelOpen" class="fileupload-exists"><input class="col-md-12 form-control" type="text" id="message" placeholder="Description" ></span>
-		    <input type="submit" value="Upload" ng-show="isImageModelOpen" data-dismiss="fileupload" class="btn btn-primary fileupload-exists form-control" onclick="document.fbPhotoUpload.submit()">
-		    <a href="" class="btn fileupload-exists" data-dismiss="fileupload" ng-click="closeImageUpload()" >Cancel</a>
-		  </form>
-		</div>
-		       
-		
-		<!-- <button ng-show="{REGISTERED:true,ORGANIZER:true}[event.registrationInfo]" class="btn btn-file fileupload-new" ng-click="openImageUpload()">Add pics</button> -->
-		
-		</div>
-			 
-			 
-		 	<div ng-show="event.description">
-			       <h4><strong>What?</strong></h4>
-				
-				<p ng-bind-html-unsafe="event.description | noHTML | newlines"></p>
+        <div class="row" ng-show="event.status=='COMPLETED'" name="past-events-album">
+              <carousel interval="myInterval">
+                <slide ng-repeat="image in fbAlbum" active="slide.active">
+                    <div class="col-md-12 pagination-centered">
+                        <img ng-src="{{image.picture}}" max-height="500">
+                    </div>
+                  
+                  <div ng-show="image.name" class="carousel-caption">
+                <p></p>
+                <p  >{{image.name}}</p>
+                  </div>
+                </slide>
+              </carousel>
+            
+        <div class="fileupload fileupload-new" data-provides="fileupload">
+          <div ng-show="isImageModelOpen" class="fileupload-preview thumbnail" style="width: 200px; height: 150px;"></div>
+          <form name="fbPhotoUpload" action="https://graph.facebook.com/{{event.album.id}}/photos?access_token={{fbAccessToken}}" enctype="multipart/form-data" method="POST">
+            <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()" ><span class="fileupload-new"><i class="icon-plus"></i> Add a photo</span><input class="form-control" id="source" type="file" /></span>
+            <span ng-show="isImageModelOpen" class="fileupload-exists"><input class="col-md-12 form-control" type="text" id="message" placeholder="Description" ></span>
+            <input type="submit" value="Upload" ng-show="isImageModelOpen" data-dismiss="fileupload" class="btn btn-primary fileupload-exists form-control" onclick="document.fbPhotoUpload.submit()">
+            <a href="" class="btn fileupload-exists" data-dismiss="fileupload" ng-click="closeImageUpload()" >Cancel</a>
+          </form>
+        </div>
+               
+        
+        <!-- <button ng-show="{REGISTERED:true,ORGANIZER:true}[event.registrationInfo]" class="btn btn-file fileupload-new" ng-click="openImageUpload()">Add pics</button> -->
+        
+        </div>
+             
+             
+            <div ng-show="event.description">
+                   <h4><strong>What?</strong></h4>
+                
+                <p ng-bind-html-unsafe="event.description | noHTML | newlines"></p>
                         </div>
                         <div ng-show="event.specialInstructions">
-				<h4 ><strong>Special instructions</strong></h4>
-				<p ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines"></p>
+                <h4 ><strong>Special instructions</strong></h4>
+                <p ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines"></p>
                         </div>
                         <input style="display:none" type="text"  class="col-md-12 form-control" id="location-title" placeholder="Name of the place" >
 
