@@ -1,37 +1,3 @@
-angular.module( "SharedServices", [ ] ).config( function( $httpProvider ) {
-        $httpProvider.responseInterceptors.push( 'myHttpInterceptor' ); 
-        var spinnerFunction = function( data, headersGetter ) { 
-            // todo start the spinner here
-            //$('#loading').show();
-
-            //TODO - Add FB access token parameter to the FB requests
-            return data; 
-        }; 
-        $httpProvider.defaults.transformRequest.push( spinnerFunction ); 
-} ) 
-// register the interceptor as a service, intercepts ALL angular ajax http calls
-.factory( 'myHttpInterceptor', function( $q, $window ) { 
-        return function( promise ) { 
-            return promise.then( function( response ) { 
-                    // do something on success
-                    // todo hide the spinner
-                    //$('#loading').hide();
-
-                    return response;
-            }, function( response ) { 
-                // do something on error
-                // todo hide the spinner
-                //$('#loading').hide();
-                //console.log('response  error intercepted - '+response.status);
-                if( response.status == 400 ) 
-                { 
-                    //TODO - reauth with facebook
-                }   
-                return $q.reject( response ); 
-            } ); 
-        }; 
-} );
-
 angular
     .module('loadingOnAJAX', [])
     .config(function($httpProvider) {
@@ -52,7 +18,17 @@ angular.module( 'globalErrors', [ ] ).config( function( $provide, $httpProvider,
         var showMessage = function( content, cl, time ) { 
             $( '<alert/>' ).addClass( 'message' ).addClass( cl ).hide( ).fadeIn( 'fast' ).delay( time ).fadeOut( 'fast', function( ) { $( this ).remove( ); } ).appendTo( elementsList ).text( content ); 
         };
-        $httpProvider.responseInterceptors.push( function( $rootScope, $timeout, $q ) { 
+        $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
+		$httpProvider.defaults.transformRequest.push( function( data, headersGetter ) { 
+				//console.log(angular.toJson(headersGetter()));
+				//check if it is a post request or requires authentication and 
+				if(headersGetter()["Content-Type"]!=null&&checkLogin())
+				{
+					alert("login required");
+				}
+			return data; 
+		} );		
+			$httpProvider.responseInterceptors.push( function( $rootScope, $timeout, $q ) { 
                 return function( promise ) { 
                     return promise.then( function( successResponse ) { 
                             if( successResponse.config.method.toUpperCase( ) != 'GET' &&!isExternal(successResponse.config.url) ) 
@@ -164,7 +140,7 @@ angular.module( 'FacebookProvider', [ ] ).factory( 'Facebook', function( $rootSc
                 }; 
 } );
 kexApp = angular.module( "kexApp", 
-    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "SharedServices", "loadingOnAJAX", "FacebookProvider", 
+    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "loadingOnAJAX", "FacebookProvider", 
      "globalErrors" ,"ui.calendar","ngSocial"] )
 .config( function( $routeProvider, $httpProvider ) { 
         $routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
@@ -269,6 +245,16 @@ kexApp = angular.module( "kexApp",
     $rootScope.getFbImageUrl = function(id, type) {
         return "//graph.facebook.com/" + id + "/picture?type=" + type;
     };
+    $rootScope.isMessageOpen = false; 
+	$rootScope.showMessage = function( ) { 
+		$rootScope.isMessageOpen = true; 
+	}; 
+	$rootScope.cancelMessage = function( ) { 
+		$rootScope.isMessageOpen = false; 
+	}; 
+	$rootScope.sendMessage = function( ) { 
+		$rootScope.isMessageOpen = false; 
+	};
 
     window.fbAsyncInit = function( ) { 
         FB.init( { 
@@ -553,9 +539,7 @@ function fbCntrl( Facebook, $scope, $rootScope, $http, $location, Me ) {
             } 
             else
             { 
-                $.removeCookie( "facebook-uid" ); 
-                $.removeCookie( "facebook-token" ); 
-                $.removeCookie( "login" ); 
+                removeCookies(); 
             }
             $rootScope.$apply( ); 
     } ); 
@@ -563,12 +547,13 @@ function fbCntrl( Facebook, $scope, $rootScope, $http, $location, Me ) {
             Facebook.getLoginStatus( );
     } ); 
     $rootScope.$on( "fb_login_failed", function( ) {
+    		removeCookies();
     } ); 
     $rootScope.$on( "fb_logout_succeded", function( ) {
             $rootScope.id = ""; 
     } ); 
     $rootScope.$on( "fb_logout_failed", function( ) { 
-            c
+            
     } );
     $rootScope.$on( "fb_connected", function( event, args ) { 
             /*
@@ -644,9 +629,7 @@ function fbCntrl( Facebook, $scope, $rootScope, $http, $location, Me ) {
         $rootScope.session = {}; 
         $rootScope.me = {}; 
         $rootScope.location.path( "/" );
-        $.removeCookie( "facebook-uid" ); 
-        $.removeCookie( "facebook-token" ); 
-        $.removeCookie( "login" );
+        removeCookies();
         //make a call to a php page that will erase the session data
         
     };
@@ -672,10 +655,6 @@ var homeCtrl = function( $scope, $location ) {
     }
 };
 var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) { 
-    if( ! checkLogin( $location ) ) 
-    { 
-        return; 
-    } 
     $scope.newMail = { email : null, primary : null }; 
     $scope.load = function( $location, $routeParams ) {
         if( $location.$$url == "/me" || $location.$$url == "/mysettings" ) 
@@ -744,10 +723,6 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) {
 };
 var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events ) 
 { 
-    if( ! checkLogin( $location ) ) 
-    { 
-        return; 
-    };
     $scope.events = [];
     $scope.parser = document.createElement( 'a' ); 
     $scope.org = Org.get( { id : $routeParams.orgId }, function( ) { 
@@ -821,10 +796,6 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
 var orgCtrl = function( $scope, $location, $routeParams, Org ) { 
     $scope.query = ""; 
     $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
-    if( ! checkLogin( $location ) ) 
-    { 
-        return; 
-    };
     $scope.refresh = function( ) {
         $scope.orgs = Org.get( { name_prefix : $scope.query } );
     };
@@ -860,10 +831,6 @@ var orgCtrl = function( $scope, $location, $routeParams, Org ) {
         $scope.refresh( );
 };
 var eventsCtrl = function( $scope, $location, Events, $rootScope ) { 
-    if( ! checkLogin( $location ) ) 
-    { 
-        return; 
-    } 
     $scope.modelOpen = false;
     $scope.reset = function( ) {
         $scope.events = Events.get( { keywords : $scope.query } ); 
@@ -935,10 +902,6 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
     };
 };
 var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, Facebook ) { 
-    if( ! checkLogin( $location ) ) 
-    { 
-        return; 
-    }
     angular.extend( $scope, {
             /** the initial center of the map */
             center : { 
@@ -1344,15 +1307,21 @@ var checkLogin = function( $location ) {
     } 
     else
     { 
-        $location.path( "/" ); 
-        $.removeCookie( "facebook-uid" ); 
-        $.removeCookie( "facebook-token" ); 
-        $.removeCookie( "login" ); 
+        if( $location) 
+			$location.path( "/" );  
+        removeCookies();
         //Facebook.login();
         
         return false; 
     } 
 };
+var removeCookies = function()
+{
+	
+	$.removeCookie( "facebook-uid" ); 
+	$.removeCookie( "facebook-token" ); 
+	$.removeCookie( "login" );
+}
 var colorClass = [ "primary", "success", "info", "warning", "danger", "default" ];
 
 function isExternal(url) {
