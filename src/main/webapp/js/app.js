@@ -67,81 +67,99 @@ angular.module( 'globalErrors', [ ] ).config( function( $provide, $httpProvider,
                 return directiveDefinitionObject; 
         } ); 
 } );
-angular.module( 'FacebookProvider', [ ] ).factory( 'Facebook', function( $rootScope ) { 
-        return { 
-            getLoginStatus : function( ) { 
-                FB.getLoginStatus( function( response ) { 
-                        $rootScope.$broadcast( "fb_statusChange", { 'status' : response.status } );
-                }, true ); 
-            }, 
-            login : function( ) { 
-                FB.getLoginStatus( function( response ) { 
-                        switch( response.status ) { 
-                        case 'connected' : 
-                            $rootScope.$broadcast( 'fb_connected', { facebook_id : response.authResponse.userID } ); 
-                            break; 
-                        case 'not_authorized' || 'unknown' : 
-                            // 'not_authorized' || 'unknown': doesn't seem to work
-                            FB.login( function( response ) { 
-                                    if( response.authResponse ) { 
-                                        $rootScope.$broadcast( 'fb_connected', { 
-                                                facebook_id : response.authResponse.userID, 
-                                        userNotAuthorized : true                                } ); 
-                                    } else { 
-                                        $rootScope.$broadcast( 'fb_login_failed' ); 
-                                    } 
-                        }, { scope : 'email,user_location' } ); 
-                                        break; 
-                                        default : 
-                                        FB.login( function( response ) { 
-                                                if( response.authResponse ) { 
-                                                    $rootScope.$broadcast( 'fb_connected', { facebook_id : response.authResponse.userID } ); 
-                                                    $rootScope.$broadcast( 'fb_get_login_status' ); 
-                                                } else { 
-                                                    $rootScope.$broadcast( 'fb_login_failed' ); 
-                                                } 
-                        }, { scope : 'email,user_location' } ); 
-                                        break; 
-                                    } 
-                            }, true ); 
-                        }, 
-                        logout : function( ) { 
-                            FB.logout( function( response ) { 
-                                    if( response ) { 
-                                        $rootScope.$broadcast( 'fb_logout_succeded' ); 
-                                    } else { 
-                                        $rootScope.$broadcast( 'fb_logout_failed' ); 
-                                    }
-                            } ); 
-                        }, 
-                        unsubscribe : function( ) { 
-                            FB.api( "/me/permissions", "DELETE", function( response ) { 
-                                    $rootScope.$broadcast( 'fb_get_login_status' ); 
-                            } ); 
-                        }, 
-                        getFBComments : function( mydiv ) { 
-                            if( mydiv ) 
-                            { 
-                                mydiv.innerHTML = 
-                                '<div class="fb-comments" href="' + window.location.href + '" data-num-posts="20" data-width="940">'; 
-                                if(FB)
-                                {
-                                    FB.XFBML.parse( mydiv );  
-                                }
-                                 
-                            }
-                        },
-                        sendFBMessage : function(){
-                            FB.ui({
-                  method: 'send',
-                  link: $rootScope.getLocation()
+
+angular.module('kexUtils', []).factory('kexUtil', function($rootScope) {
+    return {
+        getLocation: function() {
+            return window.location.href;
+        }
+    }
+});
+
+angular.module('FacebookProvider', ['kexUtils']).factory('Facebook', function($rootScope, kexUtil) {
+    return {
+        getLoginStatus: function() {
+            FB.getLoginStatus(function(response) {
+                $rootScope.$broadcast("fb_statusChange", {
+                    'status': response.status
                 });
+            }, true);
+        },
+        login: function() {
+            FB.getLoginStatus(function(response) {
+                switch (response.status) {
+                case 'connected':
+                    $rootScope.$broadcast('fb_connected', {
+                        facebook_id: response.authResponse.userID
+                    });
+                    break;
+                case 'not_authorized' || 'unknown':
+                    // 'not_authorized' || 'unknown': doesn't seem to work
+                    FB.login(function(response) {
+                        if (response.authResponse) {
+                            $rootScope.$broadcast('fb_connected', {
+                                facebook_id: response.authResponse.userID,
+                                userNotAuthorized: true
+                            });
+                        } else {
+                            $rootScope.$broadcast('fb_login_failed');
                         }
-                }; 
-} );
+                    }, {
+                        scope: 'email,user_location'
+                    });
+                    break;
+                default:
+                    FB.login(function(response) {
+                        if (response.authResponse) {
+                            $rootScope.$broadcast('fb_connected', {
+                                facebook_id: response.authResponse.userID
+                            });
+                            $rootScope.$broadcast('fb_get_login_status');
+                        } else {
+                            $rootScope.$broadcast('fb_login_failed');
+                        }
+                    }, {
+                        scope: 'email,user_location'
+                    });
+                    break;
+                }
+            }, true);
+        },
+        logout: function() {
+            FB.logout(function(response) {
+                if (response) {
+                    $rootScope.$broadcast('fb_logout_succeded');
+                } else {
+                    $rootScope.$broadcast('fb_logout_failed');
+                }
+            });
+        },
+        unsubscribe: function() {
+            FB.api("/me/permissions", "DELETE", function(response) {
+                $rootScope.$broadcast('fb_get_login_status');
+            });
+        },
+        getFBComments: function(mydiv) {
+            if (mydiv) {
+                mydiv.innerHTML = '<div class="fb-comments" href="' + window.location.href + '" data-num-posts="20" data-width="940">';
+                if ((typeof FB !== 'undefined') && FB) {
+                    FB.XFBML.parse(mydiv);
+                }
+
+            }
+        },
+        sendFBMessage: function() {
+            FB.ui({
+                method: 'send',
+                link: kexUtil.getLocation()
+            });
+        }
+    };
+});
+
 kexApp = angular.module( "kexApp", 
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "loadingOnAJAX", "FacebookProvider", 
-     "globalErrors" ,"ui.calendar","ngSocial"] )
+     "globalErrors" ,"ui.calendar", "ngSocial", "kexUtils"] )
 .config( function( $routeProvider, $httpProvider ) { 
         $routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
             .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
@@ -280,10 +298,10 @@ kexApp = angular.module( "kexApp",
             ref.parentNode.insertBefore( js, ref ); 
     }( document ) );
 } );
-/*
-All webservice factories go here
-*/
 
+/*
+ * Webservice factories
+ */
 
 kexApp.factory( 'Events', function( $resource ) { 
         return $resource( '/api/event/:id/:registerCtlr/:regType', { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' }
@@ -298,10 +316,10 @@ kexApp.factory( 'Me', function( $resource ) {
 kexApp.factory( 'Org', function( $resource ) { 
         return $resource( '/api/org/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } ); 
 } );
-/*
-All app directives  go here
-*/
 
+/*
+ * App directives
+ */
 
 kexApp.directive( 'uiDraggable', function( ) { 
         return { 
@@ -456,31 +474,32 @@ kexApp.directive( "timelineblock", function( ) {
         }
 } );
 
-kexApp.directive('shareButtons', function() {
+kexApp.directive('shareButtons', function(kexUtil) {
         return {
             restrict: 'E',
             scope: {
-                url: '=',  // TODO(avaliani): figure out how to avoid explicitly passing the url
                 title: '=',
                 description: '=',
                 image: '='
             },
             replace: true,
             transclude: false,
+            link: function (scope, element, attrs) {
+                scope.util = kexUtil;
+            },
             template:
                 '<div>' +
                     '<ul data-ng-social-buttons ' +
-                         // 'data-url="getLocation()" ' +
-                         'data-url="url" ' +                         
-                         'data-title="title" ' +
-                         'data-description="description" ' +
-                         'data-image="image">' +
+                            'data-url="util.getLocation()" ' +
+                            'data-title="title" ' +
+                            'data-description="description" ' +
+                            'data-image="image">' +
                         '<li class="ng-social-facebook">Facebook</li>' +
                         '<li class="ng-social-google-plus">Google+</li>' +
                         '<li class="ng-social-twitter">Twitter</li>' +
                         '<li class="ng-social-facebook-message">Facebook</li>' +
                     '</ul>' +
-                '</div>'
+                '</div>'                
         }
     });
 
@@ -504,15 +523,11 @@ kexApp.directive('eventParticipantImgsMini', function() {
 });
 
 /*
-All app controllers  go here
-*/
+ * App controllers
+ */
 function fbCntrl( Facebook, $scope, $rootScope, $http, $location, Me ) { 
     $scope.info = {}; 
     $rootScope.location = $location;
-    $rootScope.getLocation = function()
-    {
-        return window.location.href;
-    }   
     $rootScope.fbGraphAPIURL = "https://graph.facebook.com"; 
     $rootScope.$on( "fb_statusChange", function( event, args ) { 
             $rootScope.fb_status = args.status;
