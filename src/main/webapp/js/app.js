@@ -79,6 +79,8 @@ kexApp = angular.module( "kexApp",
     $routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         .when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } )
+        .when( '/about', { templateUrl : 'partials/about.html' } )
+        .when( '/contact', { templateUrl : 'partials/contact.html' } )
         .when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html' } )
         .when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html' } )
         .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html' } )

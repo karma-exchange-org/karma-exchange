@@ -155,28 +155,39 @@
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
-<!--                         <li ng-show="me">
-                            <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" class="kex-thumbnail-user"></a>
-                        </li> -->
-                        <li ng-show="me" class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a href="#/mysettings"><i class="icon-cog"></i> Profile</a>
-                                </li>
-                                <li>
-                                    <a href="/help/support"><i class="icon-envelope"></i> Contact Support</a>
-                                </li>
-                                <li>
-                                    <a href="/#" ng-click="fbUtil.logout()"><i class="icon-off"></i> Logout</a>
-                                </li>
-                            </ul>
-                        </li>
                         <li ng-hide="me">
                             <fb:login-button scope="{{fbUtil.FB_SCOPE}}" width="200" max-rows="1">
                             </fb:login-button>
                         </li>
+                        <li class="dropdown">
+                            <a ng-show="me" href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
+                            <a ng-hide="me" href="" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-info-sign"></i><b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a ng-show="me" href="#/mysettings"><i class="icon-cog"></i> Profile</a>
+                                </li>
+                                <li>
+                                    <a ng-show="me" href="/#" ng-click="fbUtil.logout()"><i class="icon-off"></i> Logout</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a href="#/about"><i class="icon-info"></i> About us</a>
+                                </li>
+                                <li>
+                                    <a href="#/contact"><i class="icon-envelope"></i> Contact us</a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        
                     </ul>
+                    <!-- 
+                        <ul class="nav navbar-nav navbar-right">
+                            <li ng-show="me">
+                                <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" class="kex-thumbnail-user"></a>
+                            </li>                        
+                        </ul>
+                     -->
                 </div>
             </div>    
         </nav>
