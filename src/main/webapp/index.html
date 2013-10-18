@@ -156,24 +156,38 @@
 <!--                         <li ng-show="me.firstName">
                             <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" class="kex-thumbnail-user"></a>
                         </li> -->
-                        <li ng-show="me.firstName" class="dropdown">
-                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
-                            <ul class="dropdown-menu">
-                                <li>
-                                    <a href="#/mysettings"><i class="icon-cog"></i> Profile</a>
-                                </li>
-                                <li>
-                                    <a href="/help/support"><i class="icon-envelope"></i> Contact Support</a>
-                                </li>
-                                <li>
-                                    <a href="/#" ng-click="logout(); location.reload(true);"><i class="icon-off"></i> Logout</a>
-                                </li>
-                            </ul>
-                        </li>
                         <li ng-hide="me.firstName">
                             <fb:login-button scope="{{fbScope}}" width="200" max-rows="1">
                             </fb:login-button>
                         </li>
+                        <li class="dropdown">
+                            <a ng-show="me.firstName" href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
+                            <a ng-hide="me.firstName" href="" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-info-sign"></i><b class="caret"></b></a>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a ng-show="me.firstName" href="#/mysettings"><i class="icon-cog"></i> Profile</a>
+                                </li>
+                                <li>
+                                    <a ng-show="me.firstName" href="/#" ng-click="logout(); location.reload(true);"><i class="icon-off"></i> Logout</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a href="#/about"><i class="icon-info"></i> About us</a>
+                                </li>
+                                <li>
+                                    <a href="#/contact"><i class="icon-envelope"></i> Contact us</a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        
+                    </ul>
+                     <ul class="nav navbar-nav navbar-right">
+<!--                         <li ng-show="me.firstName">
+                            <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" class="kex-thumbnail-user"></a>
+                        </li> -->
+                        
+                        
                     </ul>
                 </div>
             </div>    
