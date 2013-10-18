@@ -57,7 +57,7 @@
         <![endif]-->
         <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-        <script src="js/vendor/angular.min.js"></script>
+        <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
 
         <script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 
@@ -65,6 +65,8 @@
         <script src="js/vendor/angular-cookies-min.js"></script>
         
         <script src="js/vendor/angular-social.js"></script>
+
+        <script src="js/vendor/ngFacebook.js"></script>
 
         <!-- We can get rid of this once we start using angular cookies. -->
         <script src="js/vendor/jquery-cookie-min.js"></script>
@@ -142,10 +144,10 @@
                         <li>
                             <a href="#/event"><i class="icon-search icon-white"></i> Find Events</a>
                         </li>
-                        <li ng-show="me.firstName&&orgs.data.length>0">
+                        <li ng-show="me && orgs && (orgs.data.length > 0)">
                             <a href="#/event/add"><i class="icon-plus icon-white"></i> Create Events</a>
                         </li>
-                        <li ng-show="me.firstName">
+                        <li ng-show="me">
                             <a href="#/me"><i class="icon-calendar icon-white"></i> My Events</a>
                         </li>
                         <li>
@@ -153,22 +155,19 @@
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
-<!--                         <li ng-show="me.firstName">
-                            <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" class="kex-thumbnail-user"></a>
-                        </li> -->
-                        <li ng-hide="me.firstName">
-                            <fb:login-button scope="{{fbScope}}" width="200" max-rows="1">
+                        <li ng-hide="me">
+                            <fb:login-button scope="{{fbUtil.FB_SCOPE}}" width="200" max-rows="1">
                             </fb:login-button>
                         </li>
                         <li class="dropdown">
-                            <a ng-show="me.firstName" href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
-                            <a ng-hide="me.firstName" href="" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-info-sign"></i><b class="caret"></b></a>
+                            <a ng-show="me" href="#" class="dropdown-toggle" data-toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
+                            <a ng-hide="me" href="" class="dropdown-toggle" data-toggle="dropdown"><i class="icon-info-sign"></i><b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a ng-show="me.firstName" href="#/mysettings"><i class="icon-cog"></i> Profile</a>
+                                    <a ng-show="me" href="#/mysettings"><i class="icon-cog"></i> Profile</a>
                                 </li>
                                 <li>
-                                    <a ng-show="me.firstName" href="/#" ng-click="logout(); location.reload(true);"><i class="icon-off"></i> Logout</a>
+                                    <a ng-show="me" href="/#" ng-click="fbUtil.logout()"><i class="icon-off"></i> Logout</a>
                                 </li>
                                 <li class="divider"></li>
                                 <li>
@@ -182,13 +181,13 @@
                         
                         
                     </ul>
-                     <ul class="nav navbar-nav navbar-right">
-<!--                         <li ng-show="me.firstName">
-                            <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" class="kex-thumbnail-user"></a>
-                        </li> -->
-                        
-                        
-                    </ul>
+                    <!-- 
+                        <ul class="nav navbar-nav navbar-right">
+                            <li ng-show="me">
+                                <a href="#/me"><img ng-src="{{me.profileImage.url}}?type=square" class="kex-thumbnail-user"></a>
+                            </li>                        
+                        </ul>
+                     -->
                 </div>
             </div>    
         </nav>
@@ -225,7 +224,7 @@
             </div>
            
         </div>
-        <div ng-controller="fbCntrl">
+        <div>
             <div id="fb-root">
             </div>
         </div>
