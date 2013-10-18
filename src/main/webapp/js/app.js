@@ -13,168 +13,103 @@ angular
             };
         });
     });
-angular.module( 'globalErrors', [ ] ).config( function( $provide, $httpProvider, $compileProvider ) { 
-        var elementsList = $( );
-        var showMessage = function( content, cl, time ) { 
-            $( '<alert/>' ).addClass( 'message' ).addClass( cl ).hide( ).fadeIn( 'fast' ).delay( time ).fadeOut( 'fast', function( ) { $( this ).remove( ); } ).appendTo( elementsList ).text( content ); 
-        };
-        $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
-        $httpProvider.defaults.transformRequest.push( function( data, headersGetter ) { 
-                //console.log(angular.toJson(headersGetter()));
-                //check if it is a post request or requires authentication and 
-                if(headersGetter()["Content-Type"]!=null&&checkLogin())
-                {
-                    alert("login required");
-                }
-            return data; 
-        } );        
-            $httpProvider.responseInterceptors.push( function( $rootScope, $timeout, $q ) { 
-                return function( promise ) { 
-                    return promise.then( function( successResponse ) { 
-                            if( successResponse.config.method.toUpperCase( ) != 'GET' &&!isExternal(successResponse.config.url) ) 
-                            {
-                                
-                                $rootScope.showAlert( "Saved successfully!", "success" ); 
-                            }
-                            return successResponse;
-                    }, function( errorResponse ) { 
-                        switch( errorResponse.status ) { 
-                        case 400 : $rootScope.showAlert( errorResponse.data.error.message, "error" ); 
-                            break; 
-                        case 401 : 
-                            showMessage( 'Wrong usename or password', 'errorMessage', 20000 ); 
-                            break; 
-                        case 403 : 
-                            showMessage( 'You don\'t have the right to do this', 'errorMessage', 20000 ); 
-                            break; 
-                        case 404 : 
-                            showMessage( 'Server internal error: ' + errorResponse.data, 'errorMessage', 20000 ); 
-                            break; 
-                        case 500 : 
-                            showMessage( 'Server internal error: ' + errorResponse.data, 'errorMessage', 20000 ); 
-                            break; 
-                            default : 
-                            showMessage( 'Error ' + errorResponse.status + ': ' + errorResponse.data, 'errorMessage', 20000 ); 
-                        } 
-                        return $q.reject( errorResponse ); 
-                    } ); 
-                }; 
-        } );
-        $compileProvider.directive( 'appMessages', function( ) { 
-                var directiveDefinitionObject = { 
-                    link : function( scope, element, attrs ) { elementsList.push( $( element ) ); } 
-                }; 
-                return directiveDefinitionObject; 
-        } ); 
-} );
 
-angular.module('kexUtils', []).factory('kexUtil', function($rootScope) {
-    return {
-        getLocation: function() {
-            return window.location.href;
+angular.module('globalErrors', []).config(function($provide, $httpProvider, $compileProvider) {
+    var elementsList = $();
+    var showMessage = function(content, cl, time) {
+        $('<alert/>').addClass('message').addClass(cl).hide().fadeIn('fast').delay(time).fadeOut('fast', function() {
+            $(this).remove();
+        }).appendTo(elementsList).text(content);
+    };
+    $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
+    $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {
+        //console.log(angular.toJson(headersGetter()));
+        //check if it is a post request or requires authentication and 
+        if (headersGetter()["Content-Type"] != null && checkLogin()) {
+            alert("login required");
         }
-    }
-});
+        return data;
+    });
+    $httpProvider.responseInterceptors.push(function($rootScope, $timeout, $q) {
+        return function(promise) {
+            return promise.then(function(successResponse) {
+                if (successResponse.config.method.toUpperCase() != 'GET' && !isExternal(successResponse.config.url)) {
 
-angular.module('FacebookProvider', ['kexUtils']).factory('Facebook', function($rootScope, kexUtil) {
-    return {
-        getLoginStatus: function() {
-            FB.getLoginStatus(function(response) {
-                $rootScope.$broadcast("fb_statusChange", {
-                    'status': response.status
-                });
-            }, true);
-        },
-        login: function() {
-            FB.getLoginStatus(function(response) {
-                switch (response.status) {
-                case 'connected':
-                    $rootScope.$broadcast('fb_connected', {
-                        facebook_id: response.authResponse.userID
-                    });
+                    $rootScope.showAlert("Saved successfully!", "success");
+                }
+                return successResponse;
+            }, function(errorResponse) {
+                switch (errorResponse.status) {
+                case 400:
+                    $rootScope.showAlert(errorResponse.data.error.message, "error");
                     break;
-                case 'not_authorized' || 'unknown':
-                    // 'not_authorized' || 'unknown': doesn't seem to work
-                    FB.login(function(response) {
-                        if (response.authResponse) {
-                            $rootScope.$broadcast('fb_connected', {
-                                facebook_id: response.authResponse.userID,
-                                userNotAuthorized: true
-                            });
-                        } else {
-                            $rootScope.$broadcast('fb_login_failed');
-                        }
-                    }, {
-                        scope: 'email,user_location'
-                    });
+                case 401:
+                    showMessage('Wrong usename or password', 'errorMessage', 20000);
+                    break;
+                case 403:
+                    showMessage('You don\'t have the right to do this', 'errorMessage', 20000);
+                    break;
+                case 404:
+                    showMessage('Server internal error: ' + errorResponse.data, 'errorMessage', 20000);
+                    break;
+                case 500:
+                    showMessage('Server internal error: ' + errorResponse.data, 'errorMessage', 20000);
                     break;
                 default:
-                    FB.login(function(response) {
-                        if (response.authResponse) {
-                            $rootScope.$broadcast('fb_connected', {
-                                facebook_id: response.authResponse.userID
-                            });
-                            $rootScope.$broadcast('fb_get_login_status');
-                        } else {
-                            $rootScope.$broadcast('fb_login_failed');
-                        }
-                    }, {
-                        scope: 'email,user_location'
-                    });
-                    break;
+                    showMessage('Error ' + errorResponse.status + ': ' + errorResponse.data, 'errorMessage', 20000);
                 }
-            }, true);
-        },
-        logout: function() {
-            FB.logout(function(response) {
-                if (response) {
-                    $rootScope.$broadcast('fb_logout_succeded');
-                } else {
-                    $rootScope.$broadcast('fb_logout_failed');
-                }
+                return $q.reject(errorResponse);
             });
-        },
-        unsubscribe: function() {
-            FB.api("/me/permissions", "DELETE", function(response) {
-                $rootScope.$broadcast('fb_get_login_status');
-            });
-        },
-        getFBComments: function(mydiv) {
-            if (mydiv) {
-                mydiv.innerHTML = '<div class="fb-comments" href="' + window.location.href + '" data-num-posts="20" data-width="940">';
-                if ((typeof FB !== 'undefined') && FB) {
-                    FB.XFBML.parse(mydiv);
-                }
-
+        };
+    });
+    $compileProvider.directive('appMessages', function() {
+        var directiveDefinitionObject = {
+            link: function(scope, element, attrs) {
+                elementsList.push($(element));
             }
-        },
-        sendFBMessage: function() {
-            FB.ui({
-                method: 'send',
-                link: kexUtil.getLocation()
-            });
-        }
-    };
+        };
+        return directiveDefinitionObject;
+    });
 });
 
 kexApp = angular.module( "kexApp", 
-    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "loadingOnAJAX", "FacebookProvider", 
-     "globalErrors" ,"ui.calendar", "ngSocial", "kexUtils"] )
-.config( function( $routeProvider, $httpProvider ) { 
-        $routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
-            .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
-            .when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } )
-            .when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html' } )
-            .when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html' } )
-            .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html' } )
-            .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } )
-            .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } )
-            .when( '/event/:eventId', { controller : addEditEventsCtrl, templateUrl : 'partials/viewEvent.html' } )
-            .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html' } )
-            .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html' } )
-            .otherwise( { redirectTo : '/' } );
-        delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ]; 
-        //$httpProvider.defaults.headers.common['X-'] = 'X';
+    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "loadingOnAJAX", "ngFacebook",
+     "globalErrors" ,"ui.calendar", "ngSocial"] )
+.config( function( $routeProvider, $httpProvider, $facebookProvider ) { 
+    $routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
+        .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
+        .when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } )
+        .when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html' } )
+        .when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html' } )
+        .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html' } )
+        .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } )
+        .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } )
+        .when( '/event/:eventId', { controller : addEditEventsCtrl, templateUrl : 'partials/viewEvent.html' } )
+        .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html' } )
+        .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html' } )
+        .otherwise( { redirectTo : '/' } );
+    delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ]; 
+    //$httpProvider.defaults.headers.common['X-'] = 'X';
+
+
+    var fbAppId;
+    if (document.location.hostname === "localhost" ) { 
+        fbAppId = '276423019167993'; 
+    }   
+    else if (document.location.hostname === "karmademo.dyndns.dk" ) { 
+        fbAppId = '1381630838720301'; 
+    } 
+    else if (document.location.hostname === "kex-latest.appspot.com" ) { 
+        fbAppId = '166052360247234'; 
+    } 
+    else { 
+        fbAppId = '571265879564450'; 
+    } 
+    $facebookProvider.setAppId(fbAppId);
+    $facebookProvider.setCustomInit({ 
+        status : true, 
+        cookie : true, 
+        xfbml : true });
         
 } ).filter( 'newlines', function( ) { 
     return function( text ) { 
@@ -222,26 +157,8 @@ kexApp = angular.module( "kexApp",
     }
 }
 )
-.run( function( $rootScope, Me, $location, Facebook ) { 
-    if( document.location.hostname === "localhost" ) 
-    { 
-        fbAppId = '276423019167993'; 
-    }   
-    else if( document.location.hostname === "karmademo.dyndns.dk" ) 
-    { 
-        fbAppId = '1381630838720301'; 
-    } 
-    else if( document.location.hostname === "kex-latest.appspot.com" ) 
-    { 
-        fbAppId = '166052360247234'; 
-    } 
-    else
-    { 
-        fbAppId = '571265879564450'; 
-    } 
-    $rootScope.fbScope = "email,user_location"; 
-    $rootScope.facebook = Facebook;
-    $rootScope.location = $location; 
+.run( function( $rootScope, Me, $location, FbUtil) { 
+    $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) { 
             $rootScope.alerts = [ ]; 
             $rootScope.locationURL = window.location.href;
@@ -260,9 +177,6 @@ kexApp = angular.module( "kexApp",
     $rootScope.closeAlert = function( index ) { 
         $rootScope.alerts.splice( index, 1 ); 
     }; 
-    $rootScope.getFbImageUrl = function(id, type) {
-        return "//graph.facebook.com/" + id + "/picture?type=" + type;
-    };
     $rootScope.isMessageOpen = false; 
     $rootScope.showMessage = function( ) { 
         $rootScope.isMessageOpen = true; 
@@ -274,19 +188,7 @@ kexApp = angular.module( "kexApp",
         $rootScope.isMessageOpen = false; 
     };
 
-    window.fbAsyncInit = function( ) { 
-        FB.init( { 
-                appId : fbAppId, 
-                status : true, 
-                cookie : true, 
-        xfbml : true        } ); 
-        FB.Event.subscribe( 'auth.statusChange', function( response ) { 
-                $rootScope.$broadcast( "fb_statusChange", { 'status' : response.status } ); 
-        } ); 
-        FB.Event.subscribe( 'auth.authResponseChange', function( response ) { 
-                $rootScope.$broadcast( "fb_authResponseChange", { 'response' : response } );
-        } ); 
-    };( function( d ) { 
+    ( function( d ) { 
             var js, id = 'facebook-jssdk', ref = d.getElementsByTagName( 'script' )[ 0 ]; 
             if( d.getElementById( id ) ) { 
                 return; 
@@ -316,6 +218,89 @@ kexApp.factory( 'Me', function( $resource ) {
 kexApp.factory( 'Org', function( $resource ) { 
         return $resource( '/api/org/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } ); 
 } );
+
+/*
+ * Utility API factories
+ */
+
+kexApp.factory('kexUtil', function($rootScope) {
+    return {
+        getLocation: function() {
+            return window.location.href;
+        }
+    }
+});
+
+kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location, $window) {
+    var fbUserId, fbAccessToken;
+
+    $rootScope.$on( "fb.auth.authResponseChange", function( event, response ) {
+        if ( response.status === 'connected' ) {                    
+            setCookies(response.authResponse);
+
+            var updateUser = fbUserId != response.authResponse.userID;
+            fbUserId = response.authResponse.userID;
+            fbAccessToken = response.authResponse.accessToken;
+
+            if ( updateUser ) {
+                $rootScope.me = Me.get(); 
+                $rootScope.orgs = Me.get( { resource : 'org' } ); 
+                $rootScope.$apply();
+            }
+        } else {
+            removeCookies();
+            if ( fbUserId ) {
+                fbUserId = undefined;
+                fbAccessToken = undefined;
+                $rootScope.me = undefined;
+                $rootScope.orgs = undefined;
+                $rootScope.$apply();
+            }
+        }
+    } ); 
+
+    function setCookies(authResponse) {
+        $.cookie( "facebook-uid", authResponse.userID ); 
+        $.cookie( "facebook-token", authResponse.accessToken ); 
+        $.cookie( "login", "facebook" );         
+    }
+
+    function removeCookies() {        
+        $.removeCookie( "facebook-uid" ); 
+        $.removeCookie( "facebook-token" ); 
+        $.removeCookie( "login" );
+    }
+
+    return {
+        FB_GRAPH_API_URL: "https://graph.facebook.com",
+        FB_SCOPE: "email,user_location",
+
+        getFbImageUrl: function(id, type) {
+            return "//graph.facebook.com/" + id + "/picture?type=" + type;
+        },
+
+        getFbAccessToken: function() {
+            return fbAccessToken;
+        },
+
+        logout: function() {
+            $facebook.logout().then( function(response) {
+                // $window.location.href = "/";
+                // $rootScope.$apply();
+                $location.path( "/" );
+                window.location.reload(true);
+                // Make a call to the backend to wipe out any cached user state.
+            });
+        },
+
+        getFbComments: function(mydiv) {
+            if (mydiv) {
+                mydiv.innerHTML = '<div class="fb-comments" href="' + window.location.href + '" data-num-posts="20" data-width="940">';
+                $facebook.promise.then( function(FB) { FB.XFBML.parse(mydiv); } );
+            }
+        },
+    };
+});
 
 /*
  * App directives
@@ -497,7 +482,6 @@ kexApp.directive('shareButtons', function(kexUtil) {
                         '<li class="ng-social-facebook">Facebook</li>' +
                         '<li class="ng-social-google-plus">Google+</li>' +
                         '<li class="ng-social-twitter">Twitter</li>' +
-                        '<li class="ng-social-facebook-message">Facebook</li>' +
                     '</ul>' +
                 '</div>'                
         }
@@ -525,141 +509,7 @@ kexApp.directive('eventParticipantImgsMini', function() {
 /*
  * App controllers
  */
-function fbCntrl( Facebook, $scope, $rootScope, $http, $location, Me ) { 
-    $scope.info = {}; 
-    $rootScope.location = $location;
-    $rootScope.fbGraphAPIURL = "https://graph.facebook.com"; 
-    $rootScope.$on( "fb_statusChange", function( event, args ) { 
-            $rootScope.fb_status = args.status;
-            if( $rootScope.fb_status === 'connected' ) 
-            { 
-                Facebook.getLoginStatus( );  
-                $rootScope.me = Me.get( ); 
-                $rootScope.orgs = Me.get( { resource : 'org' } ); 
-            } 
-            else
-            { 
-                $.removeCookie( "facebook-uid" ); 
-                $.removeCookie( "facebook-token" ); 
-                $.removeCookie( "login" ); 
-            }
-    } ); 
-    $rootScope.$on( "fb_authResponseChange", function( event, args ) {
-            if( args.response.status === 'connected' ) 
-            {
-                $.cookie( "facebook-uid", args.response.authResponse.userID ); 
-                $.cookie( "facebook-token", args.response.authResponse.accessToken ); 
-                $.cookie( "login", "facebook" ); 
-                $rootScope.fbAccessToken = args.response.authResponse.accessToken;
-            } 
-            else
-            { 
-                removeCookies(); 
-            }
-            $rootScope.$apply( ); 
-    } ); 
-    $rootScope.$on( "fb_get_login_status", function( ) { 
-            Facebook.getLoginStatus( );
-    } ); 
-    $rootScope.$on( "fb_login_failed", function( ) {
-            removeCookies();
-    } ); 
-    $rootScope.$on( "fb_logout_succeded", function( ) {
-            $rootScope.id = ""; 
-    } ); 
-    $rootScope.$on( "fb_logout_failed", function( ) { 
-            
-    } );
-    $rootScope.$on( "fb_connected", function( event, args ) { 
-            /*
-            If facebook is connected we can follow two paths:
-            The users has either authorized our app or not.
-            
-            ---------------------------------------------------------------------------------
-            http://developers.facebook.com/docs/reference/javascript/FB.getLoginStatus/
-            
-            the user is logged into Facebook and has authenticated your application (connected)
-            the user is logged into Facebook but has not authenticated your application (not_authorized)
-            the user is not logged into Facebook at this time and so we don't know if they've authenticated
-            your application or not (unknown)
-            ---------------------------------------------------------------------------------
-            
-            If the user is connected to facebook, his facebook_id will be enough to authenticate him in our app,
-            the only thing we will have to do is to post his facebook_id to 'php/auth.php' and get his info
-            from the database.
-            
-            If the user has a status of unknown or not_authorized we will have to do a facebook api call to force him to
-            connect and to get some extra data we might need to unthenticated him.
-            */
-            
-            var params = {};
-            function authenticateViaFacebook( parameters ) { 
-                //posts some user data to a page that will check them against some db
-                
-            }
-            if( args.userNotAuthorized === true ) { 
-                //if the user has not authorized the app, we must write his credentials in our database
-                //console.log("user is connected to facebook but has not authorized our app");
-                FB.api( 
-                    { 
-                        method : 'fql.multiquery', 
-                        queries : { 
-                            'q1' : 'SELECT uid, first_name, last_name FROM user WHERE uid = ' + args.facebook_id, 
-                            'q2' : 'SELECT url FROM profile_pic WHERE width=800 AND height=800 AND id = ' + args.facebook_id
-                        } 
-                    }, 
-                    function( data ) { 
-                        //let's built the data to send to php in order to create our new user
-                        params = { 
-                            facebook_id : data [ 0 ][ 'fql_result_set' ][ 0 ].uid, 
-                            first_name : data [ 0 ][ 'fql_result_set' ][ 0 ].first_name, 
-                            last_name : data [ 0 ][ 'fql_result_set' ][ 0 ].last_name, 
-                            picture : data [ 1 ][ 'fql_result_set' ][ 0 ].url
-                        } 
-                        authenticateViaFacebook( params ); 
-                    } ); 
-            } 
-            else { 
-                //console.log("user is connected to facebook and has authorized our app");
-                //the parameter needed in that case is just the users facebook id
-                params = { 'facebook_id' : args.facebook_id }; 
-                authenticateViaFacebook( params ); 
-                $rootScope.facebook_id = args.facebook_id;
-            }
-    } );
-    $rootScope.updateSession = function( ) { 
-        //reads the session variables if exist from php
-        
-    };
-    $rootScope.updateSession( );
-    // button functions
-    $scope.getLoginStatus = function( ) { 
-        Facebook.getLoginStatus( ); 
-    };
-    $scope.login = function( ) { 
-        Facebook.login( ); 
-    };
-    $rootScope.logout = function( ) { 
-        Facebook.logout( ); 
-        $rootScope.session = {}; 
-        $rootScope.me = {}; 
-        $rootScope.location.path( "/" );
-        removeCookies();
-        //make a call to a php page that will erase the session data
-        
-    };
-    $scope.unsubscribe = function( ) { 
-        Facebook.unsubscribe( ); 
-    }
-    $scope.getInfo = function( ) { 
-        FB.api( '/' + $rootScope.facebook_id, function( response ) { 
-                //console.log('Good to see you, ' + response.name + '.');
-                
-                
-        } ); 
-        $rootScope.info = $rootScope.session;
-    }; 
-}
+
 var homeCtrl = function( $scope, $location ) { 
     if( checkLogin( $location ) ) 
     { 
@@ -736,19 +586,20 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) {
     $scope.mailPrimaryIndex = { index : 0 }; 
     $scope.load( $location, $routeParams );
 };
-var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events ) 
+var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events, FbUtil ) 
 { 
     $scope.events = [];
     $scope.parser = document.createElement( 'a' ); 
     $scope.org = Org.get( { id : $routeParams.orgId }, function( ) { 
+            // TODO(avaliani): Switch to using $facebook.
             $scope.parser.href = $scope.org.page.url; 
-            $http( { method : 'GET', url : $rootScope.fbGraphAPIURL + "" + $scope.parser.pathname } ).success( function( data ) {
+            $http( { method : 'GET', url : FbUtil.FB_GRAPH_API_URL + "" + $scope.parser.pathname } ).success( function( data ) {
                     $scope.fbPage = data;
             } ); 
             $scope.pastEvents = Events.get( { type : "PAST", keywords : "org:" + $scope.org.searchTokenSuffix },function(){
             
                     angular.forEach($scope.pastEvents.data, function(event) {
-                            $http( { method : 'GET', url : $rootScope.fbGraphAPIURL +"/" + event.album.id +"/photos"} ).success( function( data ) {
+                            $http( { method : 'GET', url : FbUtil.FB_GRAPH_API_URL +"/" + event.album.id +"/photos"} ).success( function( data ) {
                                     event.fbAlbum = data;
                             } );
                             $scope.events.push({title:event.title, start:(new Date(event.startTime)), end:(new Date(event.endTime)),allDay:false, url:"/#/event/"+event.key});
@@ -916,7 +767,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
         }
     };
 };
-var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, Facebook ) { 
+var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil ) { 
     angular.extend( $scope, {
             /** the initial center of the map */
             center : { 
@@ -1207,12 +1058,13 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                         backdropFade : true, 
                     dialogFade : true         }; 
                     var mydiv = document.getElementById( 'myCommentsDiv' );
-                    Facebook.getFBComments( mydiv ); 
+                    FbUtil.getFbComments( mydiv ); 
                     if( $scope.event.status == 'COMPLETED' ) 
                     {
                         if( $scope.event.album ) 
                         { 
-                            $http( { method : 'GET', url : $rootScope.fbGraphAPIURL + "/" + $scope.event.album.id + "/photos" } ).success( function( data ) {
+                            // TODO(avaliani): switch to using $facebook.
+                            $http( { method : 'GET', url : FbUtil.FB_GRAPH_API_URL + "/" + $scope.event.album.id + "/photos" } ).success( function( data ) {
                                     $scope.fbAlbum = data.data; 
                                     $scope.myInterval = 5000;
                             } );
@@ -1315,28 +1167,17 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
             $scope.refreshEvent( ); 
         }
 };
+
+// TODO(avaliani): refactor this dependency
 var checkLogin = function( $location ) { 
-    if( $.cookie( "facebook-token" ) ) 
-    { 
+    if( $.cookie( "facebook-token" ) ) { 
         return true; 
-    } 
-    else
-    { 
+    } else { 
         if( $location) 
-            $location.path( "/" );  
-        removeCookies();
-        //Facebook.login();
-        
+            $location.path( "/" );        
         return false; 
     } 
 };
-var removeCookies = function()
-{
-    
-    $.removeCookie( "facebook-uid" ); 
-    $.removeCookie( "facebook-token" ); 
-    $.removeCookie( "login" );
-}
 var colorClass = [ "primary", "success", "info", "warning", "danger", "default" ];
 
 function isExternal(url) {
