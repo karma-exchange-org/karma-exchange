@@ -234,14 +234,14 @@ kexApp.factory('kexUtil', function($rootScope) {
 });
 
 kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location, $window) {
-    var fbUserId, fbAccessToken;
+    var fbAccessToken;
 
     $rootScope.$on( "fb.auth.authResponseChange", function( event, response ) {
         if ( response.status === 'connected' ) {                    
             setCookies(response.authResponse);
 
-            var updateUser = fbUserId != response.authResponse.userID;
-            fbUserId = response.authResponse.userID;
+            var updateUser = $rootScope.fbUserId != response.authResponse.userID;
+            $rootScope.fbUserId = response.authResponse.userID;
             fbAccessToken = response.authResponse.accessToken;
 
             if ( updateUser ) {
@@ -251,8 +251,8 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
             }
         } else {
             removeCookies();
-            if ( fbUserId ) {
-                fbUserId = undefined;
+            if ( $rootScope.fbUserId ) {
+                $rootScope.fbUserId = undefined;
                 fbAccessToken = undefined;
                 $rootScope.me = undefined;
                 $rootScope.orgs = undefined;
@@ -274,14 +274,14 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
     }
 
     return {
-        FB_GRAPH_API_URL: "https://graph.facebook.com",
-        FB_SCOPE: "email,user_location",
+        GRAPH_API_URL: "https://graph.facebook.com",
+        LOGIN_SCOPE: "email,user_location",
 
-        getFbImageUrl: function(id, type) {
+        getImageUrl: function(id, type) {
             return "//graph.facebook.com/" + id + "/picture?type=" + type;
         },
 
-        getFbAccessToken: function() {
+        getAccessToken: function() {
             return fbAccessToken;
         },
 
@@ -289,18 +289,22 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
             $facebook.logout().then( function(response) {
                 // $window.location.href = "/";
                 // $rootScope.$apply();
-                $location.path( "/" );
+                $location.path("/");
                 window.location.reload(true);
                 // Make a call to the backend to wipe out any cached user state.
             });
         },
 
-        getFbComments: function(mydiv) {
+        getComments: function(mydiv) {
             if (mydiv) {
                 mydiv.innerHTML = '<div class="fb-comments" href="' + window.location.href + '" data-num-posts="20" data-width="940">';
                 $facebook.promise.then( function(FB) { FB.XFBML.parse(mydiv); } );
             }
         },
+
+        getAlbumCoverUrl: function(albumId) {
+
+        }
     };
 });
 
@@ -595,13 +599,13 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
     $scope.org = Org.get( { id : $routeParams.orgId }, function( ) { 
             // TODO(avaliani): Switch to using $facebook.
             $scope.parser.href = $scope.org.page.url; 
-            $http( { method : 'GET', url : FbUtil.FB_GRAPH_API_URL + "" + $scope.parser.pathname } ).success( function( data ) {
+            $http( { method : 'GET', url : FbUtil.GRAPH_API_URL + "" + $scope.parser.pathname } ).success( function( data ) {
                     $scope.fbPage = data;
             } ); 
             $scope.pastEvents = Events.get( { type : "PAST", keywords : "org:" + $scope.org.searchTokenSuffix },function(){
             
                     angular.forEach($scope.pastEvents.data, function(event) {
-                            $http( { method : 'GET', url : FbUtil.FB_GRAPH_API_URL +"/" + event.album.id +"/photos"} ).success( function( data ) {
+                            $http( { method : 'GET', url : FbUtil.GRAPH_API_URL +"/" + event.album.id +"/photos"} ).success( function( data ) {
                                     event.fbAlbum = data;
                             } );
                             $scope.events.push({title:event.title, start:(new Date(event.startTime)), end:(new Date(event.endTime)),allDay:false, url:"/#/event/"+event.key});
@@ -698,16 +702,25 @@ var orgCtrl = function( $scope, $location, $routeParams, Org ) {
         } );
         $scope.refresh( );
 };
-var eventsCtrl = function( $scope, $location, Events, $rootScope ) { 
+var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
     $scope.modelOpen = false;
-    $scope.reset = function( ) {
-        $scope.events = Events.get( { keywords : $scope.query } ); 
-        $scope.currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
-    }; 
-    $scope.query = ""; 
-    $scope.$watch( 'query', function( ) { 
-            $scope.reset( ); 
-    } ); 
+
+    var fbUserId, query;
+    $scope.reset = function( force ) {
+        if ((fbUserId != $scope.fbUserId) || (query != $scope.query) || force) {
+            fbUserId = $scope.fbUserId;
+            query = $scope.query;
+            $scope.events = Events.get( { keywords : ($scope.query ? $scope.query : "") } ); 
+            $scope.currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
+        }
+    };
+    $scope.$watch('query', function( ) { 
+        $scope.reset( ); 
+    } );    
+    $scope.$watch('fbUserId', function( ) { 
+        $scope.reset( );
+    } );
+
     $scope.register = function( type ) { 
         var eventId = this.modelEvent.key;
         $scope.modelIndex = this.$index;
@@ -748,7 +761,6 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
         $scope.dateFormat = ($scope.now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
         $scope.showHeader = showHeader;
     }
-    $scope.reset( );
     $scope.delete = function( ) { 
         var eventId = this.event.key;
         Events.delete( { id : eventId }, function( ) { 
@@ -768,6 +780,8 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
             $( '#' + this.event.key + '_detail' ).show( ); 
         }
     };
+
+    $scope.reset(true);
 };
 var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil ) { 
     angular.extend( $scope, {
@@ -1060,13 +1074,13 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                         backdropFade : true, 
                     dialogFade : true         }; 
                     var mydiv = document.getElementById( 'myCommentsDiv' );
-                    FbUtil.getFbComments( mydiv ); 
+                    FbUtil.getComments( mydiv ); 
                     if( $scope.event.status == 'COMPLETED' ) 
                     {
                         if( $scope.event.album ) 
                         { 
                             // TODO(avaliani): switch to using $facebook.
-                            $http( { method : 'GET', url : FbUtil.FB_GRAPH_API_URL + "/" + $scope.event.album.id + "/photos" } ).success( function( data ) {
+                            $http( { method : 'GET', url : FbUtil.GRAPH_API_URL + "/" + $scope.event.album.id + "/photos" } ).success( function( data ) {
                                     $scope.fbAlbum = data.data; 
                                     $scope.myInterval = 5000;
                             } );
