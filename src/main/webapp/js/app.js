@@ -76,8 +76,9 @@ kexApp = angular.module( "kexApp",
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "loadingOnAJAX", "ngFacebook",
      "globalErrors" ,"ui.calendar", "ngSocial"] )
 .config( function( $routeProvider, $httpProvider, $facebookProvider ) { 
-    $routeProvider.when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
-        .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
+    $routeProvider
+        // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
+        // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         .when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } )
         .when( '/about', { templateUrl : 'partials/about.html' } )
         .when( '/contact', { templateUrl : 'partials/contact.html' } )
@@ -89,7 +90,7 @@ kexApp = angular.module( "kexApp",
         .when( '/event/:eventId', { controller : addEditEventsCtrl, templateUrl : 'partials/viewEvent.html' } )
         .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html' } )
         .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html' } )
-        .otherwise( { redirectTo : '/' } );
+        .otherwise( { redirectTo : '/event' } );
     delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ]; 
     //$httpProvider.defaults.headers.common['X-'] = 'X';
 
@@ -285,12 +286,16 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
             return fbAccessToken;
         },
 
+        login: function() {
+            $facebook.login();
+        },
+
         logout: function() {
             $facebook.logout().then( function(response) {
                 // $window.location.href = "/";
                 // $rootScope.$apply();
                 $location.path("/");
-                window.location.reload(true);
+                // window.location.reload(true);
                 // Make a call to the backend to wipe out any cached user state.
             });
         },
