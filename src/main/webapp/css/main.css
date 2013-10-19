@@ -233,6 +233,16 @@ img.kex-thumbnail-user-mini {
   display: inline-block;
 }
 
+/* Unused class. Couldn't figure out how to use custom icons. */
+.icon-custom-fb {
+  background-image: url("/img/facebook.png");
+  background-position: center center;
+}
+
+.kex-icon {  
+  height: 15px; 
+  width: 15px; 
+}
 
 /*==================================================
  * Effect 7
