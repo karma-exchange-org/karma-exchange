@@ -278,19 +278,19 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
         GRAPH_API_URL: "https://graph.facebook.com",
         LOGIN_SCOPE: "email,user_location",
 
-        getImageUrl: function(id, type) {
+        getImageUrl: function (id, type) {
             return "//graph.facebook.com/" + id + "/picture?type=" + type;
         },
 
-        getAccessToken: function() {
+        getAccessToken: function () {
             return fbAccessToken;
         },
 
-        login: function() {
+        login: function () {
             $facebook.login();
         },
 
-        logout: function() {
+        logout: function () {
             $facebook.logout().then( function(response) {
                 // $window.location.href = "/";
                 // $rootScope.$apply();
@@ -300,15 +300,19 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
             });
         },
 
-        getComments: function(mydiv) {
+        getComments: function (mydiv) {
             if (mydiv) {
                 mydiv.innerHTML = '<div class="fb-comments" href="' + window.location.href + '" data-num-posts="20" data-width="940">';
                 $facebook.promise.then( function(FB) { FB.XFBML.parse(mydiv); } );
             }
         },
 
-        getAlbumCoverUrl: function(albumId) {
-
+        getAlbumCoverUrl: function (albumId) {
+            return $facebook.api("/" + albumId).then(function (response) {
+                return $facebook.api("/" + response.cover_photo);
+            }).then(function (response) {
+                return response.source;
+            });
         }
     };
 });
@@ -530,7 +534,7 @@ var homeCtrl = function( $scope, $location ) {
         }
     }
 };
-var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) { 
+var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, FbUtil ) { 
     $scope.newMail = { email : null, primary : null }; 
     $scope.load = function( $location, $routeParams ) {
         if( $location.$$url == "/me" || $location.$$url == "/mysettings" ) 
@@ -562,10 +566,19 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams ) {
     };
     $scope.getOtherData = function( key ) { 
         $scope.events = User.get( { id : key, resource : 'event' } ); 
-        $scope.pastEvents = User.get( { type : 'PAST' }, { id : key, resource : 'event' } ); 
+        $scope.pastEvents = User.get( { id : key, resource : 'event', type : 'PAST'},
+            processImpactTimeline); 
         $scope.orgs = User.get( { id : key, resource : 'org' } ); 
         
-    }; 
+    };
+    function processImpactTimeline() {
+        for (var idx = 0; idx < $scope.pastEvents.data.length; idx++) {
+            var event = $scope.pastEvents.data[idx];
+            if (event.album) {
+                event.album.coverPhotoUrl = FbUtil.getAlbumCoverUrl(event.album.id);
+            }
+        }
+    }
     $scope.save = function( ) { 
         Me.save( $scope.me ); 
     }; 
@@ -715,10 +728,25 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
         if ((fbUserId != $scope.fbUserId) || (query != $scope.query) || force) {
             fbUserId = $scope.fbUserId;
             query = $scope.query;
-            $scope.events = Events.get( { keywords : ($scope.query ? $scope.query : "") } ); 
-            $scope.currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
+            $scope.events = Events.get( { keywords : ($scope.query ? $scope.query : "") }, 
+                processEvents);
         }
     };
+    function processEvents() {
+        var now = new Date();
+        var currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
+        for (var idx = 0; idx < $scope.events.data.length; idx++) {
+            var event = $scope.events.data[idx];
+            var dateVal = new Date(event.startTime); 
+            var showHeader = (dateVal.getDate() != currentDate.getDate()) ||
+                (dateVal.getMonth() != currentDate.getMonth()) ||
+                (dateVal.getFullYear() != currentDate.getFullYear());
+            currentDate = dateVal;
+            event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
+            event.showHeader = showHeader;
+        }
+    }
+
     $scope.$watch('query', function( ) { 
         $scope.reset( ); 
     } );    
@@ -753,19 +781,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
                 }
         } );
     };
-    $scope.now = new Date();
-    $scope.processEvent = function( dateParam, eventobj, first) {
-        dateVal = new Date( dateParam ); 
-        showHeader = true;
-        if (!first) {
-            showHeader = (dateVal.getDate() != $scope.currentDate.getDate()) ||
-                (dateVal.getMonth() != $scope.currentDate.getMonth()) ||
-                (dateVal.getFullYear() != $scope.currentDate.getFullYear());
-        }
-        $scope.currentDate = dateVal;
-        $scope.dateFormat = ($scope.now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
-        $scope.showHeader = showHeader;
-    }
+
     $scope.delete = function( ) { 
         var eventId = this.event.key;
         Events.delete( { id : eventId }, function( ) { 

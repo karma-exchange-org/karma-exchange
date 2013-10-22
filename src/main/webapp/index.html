@@ -144,14 +144,14 @@
                         <li>
                             <a href="#/event"><i class="icon-search icon-white"></i> Find Events</a>
                         </li>
-                        <li ng-show="me && orgs && (orgs.data.length > 0)">
-                            <a href="#/event/add"><i class="icon-plus icon-white"></i> Create Events</a>
-                        </li>
                         <li ng-show="me">
                             <a href="#/me"><i class="icon-calendar icon-white"></i> My Events</a>
                         </li>
                         <li>
                             <a href="#/org"><i class="icon-group icon-white"></i> Organizations</a>
+                        </li>
+                        <li ng-show="me && orgs && (orgs.data.length > 0)">
+                            <a href="#/event/add"><i class="icon-plus icon-white"></i> Create Events</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
