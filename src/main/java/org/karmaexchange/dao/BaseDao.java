@@ -111,8 +111,9 @@ public abstract class BaseDao<T extends BaseDao<T>> {
 
   final void partialUpdate() {
     processPartialUpdate(null);
-    // Partial updates don't require validating mutation permissions since they manipulate
-    // internally managed fields.
+    // Partial updates have task-specific permission rules vs. per object type permission rules.
+    // But all mutations require either a logged in user or an admin user.
+    validateLoginStatusForMutation();
     ofy().save().entity(this).now();
   }
 
@@ -123,13 +124,16 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   private void validateMutationPermission() {
+    validateLoginStatusForMutation();
     updatePermission();
     if (!permission.canEdit()) {
-      if (UserService.isLoggedIn()) {
-        throw AuthorizationErrorInfo.createException(this);
-      } else {
-        throw ErrorResponseMsg.createException("Login required", ErrorInfo.Type.LOGIN_REQUIRED);
-      }
+      throw AuthorizationErrorInfo.createException(this);
+    }
+  }
+
+  private void validateLoginStatusForMutation() {
+    if (UserService.isNotLoggedInUser()) {
+      throw ErrorResponseMsg.createException("Login required", ErrorInfo.Type.LOGIN_REQUIRED);
     }
   }
 
@@ -180,10 +184,10 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   protected final void updatePermission() {
     if (UserService.isCurrentUserAdmin()) {
       permission = Permission.ALL;
-    } else if (UserService.isLoggedIn()) {
-      permission = evalPermission();
-    } else {
+    } else if (UserService.isNotLoggedInUser()) {
       permission = Permission.READ;
+    } else {
+      permission = evalPermission();
     }
   }
 

@@ -23,9 +23,9 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
     };
     $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
     $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {
-        //console.log(angular.toJson(headersGetter()));
-        //check if it is a post request or requires authentication and 
-        if (headersGetter()["Content-Type"] != null && checkLogin()) {
+        // console.log(angular.toJson(headersGetter()));
+        // Check if it is a post request. Mutations require authentication.
+        if ((headersGetter()["Content-Type"] != null) && !isLoggedIn()) {
             alert("login required");
         }
         return data;
@@ -509,15 +509,6 @@ kexApp.directive('eventParticipantImgsMini', function() {
  * App controllers
  */
 
-var homeCtrl = function( $scope, $location ) { 
-    if( checkLogin( $location ) ) 
-    { 
-        if( $location.$$url == "/" ) 
-        { 
-            $location.path( "/event" );   
-        }
-    }
-};
 var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, FbUtil ) { 
     $scope.newMail = { email : null, primary : null }; 
     $scope.load = function( $location, $routeParams ) {
@@ -1214,15 +1205,13 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
 };
 
 // TODO(avaliani): refactor this dependency
-var checkLogin = function( $location ) { 
+function isLoggedIn() {
     if( $.cookie( "facebook-token" ) ) { 
         return true; 
     } else { 
-        if( $location) 
-            $location.path( "/" );        
         return false; 
-    } 
-};
+    }
+}
 var colorClass = [ "primary", "success", "info", "warning", "danger", "default" ];
 
 function isExternal(url) {

@@ -69,8 +69,8 @@ public final class UserService {
     return isAdminKey(getCurrentUserKey());
   }
 
-  public static boolean isLoggedIn() {
-    return getCurrentUserKey() != NOT_LOGGED_IN_KEY;
+  public static boolean isNotLoggedInUser() {
+    return getCurrentUserKey() == NOT_LOGGED_IN_KEY;
   }
 
   // Static utility methods only.
