@@ -159,8 +159,27 @@ kexApp = angular.module( "kexApp",
         return text; 
     }
 }
-)
-.run( function( $rootScope, Me, $location, FbUtil) { 
+).filter('truncate', function () {
+    return function (text, length, end) {
+        if (text == null || text.length == 0)
+            return null;
+    
+        if (isNaN(length))
+            length = 10;
+
+        if (end === undefined)
+            end = "...";
+
+        if (text.length <= length || text.length - end.length <= length) {
+            return text;
+        }
+        else {
+            return String(text).substring(0, length-end.length) + end;
+        }
+
+    };
+}
+).run( function( $rootScope, Me, $location, FbUtil) { 
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) { 
             $rootScope.alerts = [ ]; 
@@ -189,6 +208,29 @@ kexApp = angular.module( "kexApp",
     }; 
     $rootScope.sendMessage = function( ) { 
         $rootScope.isMessageOpen = false; 
+    };
+    $rootScope.getGeoLocation = function(){
+        return google.loader.ClientLocation;
+    };
+    $rootScope.getGeoCenter = function( ) { 
+        var options = {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        };
+            navigator.geolocation.getCurrentPosition( function( position ) {
+                return { 
+                    latitude : position.coords.latitude, 
+                    longitude : position.coords.longitude
+                };
+                
+        }, function( ) {
+            return { 
+                    latitude : $rootScope.getGeoLocation.latitude, 
+                    longitude : $rootScope.getGeoLocation.longitude
+                };
+        }, options ); 
+               
     };
 
     ( function( d ) { 
@@ -414,66 +456,6 @@ kexApp.directive( "eventrepeat", function( ) {
 } );
 
 
-
-kexApp.directive( "timelineblock", function( ) { 
-        
-        return {
-                restrict : "A",
-     
-          
-        
-        
-        link : function( scope, element, attrs ) { 
-            
-            
-            $(element).BlocksIt({
-                numOfCol: 2,
-                offsetX: 0,
-                offsetY: 5,
-                blockElement: 'div'
-               });
-             $('#timelineblock').BlocksIt({
-                numOfCol: 2,
-                offsetX: 0,
-                offsetY: 5,
-                blockElement: 'div'
-               });
-            var all_blocks = $(element).find('.block');
-            console.log(all_blocks);
-            $.each(all_blocks, function(i, obj){
-                var posLeft = $(obj).css("left");
-    
-                if ( posLeft == "0px" ) {
-                    $(obj).css("margin", "0px 0px 20px 65px").css("width", "340px").css("float", "left");
-                    $(obj).children("span#edge").addClass("redge");         
-                } else  {
-                    $(obj).css("margin", "0px 0px 20px 18px").css("float","right").css("width", "340px").css("clear","both");
-                    $(obj).children("span#edge").addClass("ledge");         
-                }       
-                    
-            });
-            $(".block").hover(function() {
-            var posLeft = $(this).css("left");
-            
-            if ( posLeft == "0px" ) {
-                        $(this).children("span#edge").addClass("redge_h");          
-                    } else  {
-                        $(this).children("span#edge").addClass("ledge_h");          
-                    }   
-            }, function () {
-            var posLeft = $(this).css("left");
-        
-                if ( posLeft == "0px" ) {
-                            $(this).children("span#edge").removeClass("redge_h");           
-                        } else  {
-                            $(this).children("span#edge").removeClass("ledge_h");           
-                        } 
-            });
-            
-        } 
-        }
-} );
-
 kexApp.directive('shareButtons', function(kexUtil) {
         return {
             restrict: 'E',
@@ -649,16 +631,6 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
     $scope.orgOwners = Org.get( { role : "ADMIN" }, { id : $routeParams.orgId, resource : "member" } ); 
     $scope.orgOrgnaizers = Org.get( { role : "ORGANIZER" }, { id : $routeParams.orgId, resource : "member" } );
     $scope.childOrgs = Org.get( { id : $routeParams.orgId, resource : "children" } )
-    $scope.isMessageOpen = false; 
-    $scope.showMessage = function( ) { 
-        $scope.isMessageOpen = true; 
-    }; 
-    $scope.cancelMessage = function( ) { 
-        $scope.isMessageOpen = false; 
-    }; 
-    $scope.sendMessage = function( ) { 
-        $scope.isMessageOpen = false; 
-    }; 
     $scope.getColorClass = function( index ) 
     {
         return colorClass [ index ]; 
@@ -722,14 +694,41 @@ var orgCtrl = function( $scope, $location, $routeParams, Org ) {
 };
 var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
     $scope.modelOpen = false;
+    angular.extend( $scope, {
+            /** the initial center of the map */
+            center : { 
+                latitude : $rootScope.getGeoLocation().latitude, 
+                longitude : $rootScope.getGeoLocation().longitude 
+            },
+            /** the initial zoom level of the map */
+            zoom : 4,
+            /** list of markers to put in the map */
+            markers : [{}],
 
+    } ); 
+    
+    $scope.isMap=false;
+    $scope.showMap = function()
+    {
+        $scope.isMap=true;
+        angular.forEach($scope.events.data, function(event){
+                $scope.addMarker(event.location.address.geoPt.latitude,event.location.address.geoPt.longitude);
+        });
+        $scope.zoom = 10;
+    }
+    $scope.showList = function(){
+        $scope.isMap=false;
+    };
     var fbUserId, query;
     $scope.reset = function( force ) {
         if ((fbUserId != $scope.fbUserId) || (query != $scope.query) || force) {
             fbUserId = $scope.fbUserId;
             query = $scope.query;
-            $scope.events = Events.get( { keywords : ($scope.query ? $scope.query : "") }, 
-                processEvents);
+            $scope.events = Events.get( { keywords : ($scope.query ? $scope.query : ""),lat:$scope.center.latitude,long:$scope.center.longitude } , function(){
+                   
+                    
+            }); 
+            $scope.currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
         }
     };
     function processEvents() {
@@ -753,7 +752,12 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
     $scope.$watch('fbUserId', function( ) { 
         $scope.reset( );
     } );
-
+    $scope.addMarker = function( markerLat, markerLng ) { 
+        $scope.markers.push( { 
+            latitude : parseFloat( markerLat ), 
+            longitude : parseFloat( markerLng ) 
+        } );
+    };
     $scope.register = function( type ) { 
         var eventId = this.modelEvent.key;
         $scope.modelIndex = this.$index;
@@ -1011,7 +1015,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
             else
             {    
                 Events.save( { id : $scope.event.key }, $scope.event, function( data, status, headers, config ) { 
-                        c
+                        
                 } ); 
             } 
         };
