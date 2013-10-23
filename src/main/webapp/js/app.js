@@ -4,12 +4,20 @@ angular
         var numLoadings = 0;
         var loadingScreen = $('<div style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;background-color:gray;background-color:rgba(70,70,70,0.2);"><img style="position:absolute;top:50%;left:50%;" alt="" src="/img/fbLoading.gif" /></div>')
             .appendTo($('body')).hide();
-        $httpProvider.responseInterceptors.push(function() {
+        $httpProvider.responseInterceptors.push(function($q) {
             return function(promise) {
                 numLoadings++;
                 loadingScreen.show();
-                var hide = function(r) { if (!(--numLoadings)) loadingScreen.hide(); return r; };
-                return promise.then(hide, hide);
+                function hideLoadingScreen() {
+                    if (!(--numLoadings)) loadingScreen.hide();
+                }
+                return promise.then(function(response) {
+                    hideLoadingScreen();
+                    return response;
+                }, function(response) {
+                    hideLoadingScreen();
+                    return $q.reject(response);
+                });
             };
         });
     });
@@ -34,7 +42,6 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
         return function(promise) {
             return promise.then(function(successResponse) {
                 if (successResponse.config.method.toUpperCase() != 'GET' && !isExternal(successResponse.config.url)) {
-
                     $rootScope.showAlert("Saved successfully!", "success");
                 }
                 return successResponse;
@@ -753,32 +760,34 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
             longitude : parseFloat( markerLng ) 
         } );
     };
-    $scope.register = function( type ) { 
+    $scope.register = function(type) {
         var eventId = this.modelEvent.key;
         $scope.modelIndex = this.$index;
-        Events.save( { id : eventId, registerCtlr : 'participants', regType : type }, function( index ) { 
+        Events.save(
+            {
+                id: eventId,
+                registerCtlr: 'participants',
+                regType: type
+            }, 
+            null,
+            function() {
                 //alert and close
-                
-                $scope.modelEvent.registrationInfo = type;                
-                $scope.modelEvent.numRegistered ++;
-                if( type === 'REGISTERED' ) 
-                { 
-                    //$rootScope.showAlert("Your registration is successful!","success");   
-                    $scope.events.data [ $scope.modelIndex ].cachedParticipantImages.push( 
-                        { 
-                            "participant" : { 
-                                "key" : $rootScope.me.key
-                            }, 
-                            "imageUrl" : $rootScope.me.profileImage.url, 
-                        "imageUrlProvider" : "FACEBOOK"                            }
-                        ); 
-                } 
-                else if( type === 'WAIT_LISTED' ) 
-                { 
+                $scope.modelEvent.registrationInfo = type;
+                $scope.events.data[$scope.modelIndex].registrationInfo = type;
+                if (type === 'REGISTERED') {
+                    //$rootScope.showAlert("Your registration is successful!","success");
+                    $scope.modelEvent.numRegistered++;
+                    $scope.events.data[$scope.modelIndex].cachedParticipantImages.push({
+                        "participant": {
+                            "key": $rootScope.me.key
+                        },
+                        "imageUrl": $rootScope.me.profileImage.url,
+                        "imageUrlProvider": "FACEBOOK"
+                    });
+                } else if (type === 'WAIT_LISTED') {
                     //$rootScope.addAlert("You are added to waitlist!","success");
-                    
                 }
-        } );
+            });
     };
 
     $scope.delete = function( ) { 
@@ -796,7 +805,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
         else
         { 
             $( '.event-detail' ).hide( ); 
-            $scope.modelEvent = Events.get( { id : this.event.key, registerCtlr : 'expanded_search_view' } ); 
+            $scope.modelEvent = Events.get( { id : this.event.key, registerCtlr : 'expanded_search_view' } );
             $( '#' + this.event.key + '_detail' ).show( ); 
         }
     };
