@@ -41,7 +41,7 @@ public class MeResource {
   private Request request;
 
   public MeResource() {
-    if (!UserService.isLoggedIn()) {
+    if (UserService.isNotLoggedInUser()) {
       throw ErrorResponseMsg.createException("Login required", ErrorInfo.Type.LOGIN_REQUIRED);
     }
   }
