@@ -114,7 +114,7 @@
                                                                                 Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered | limit10 }}</strong> 
                                                                         </p>
                                                                         <p>
-                                                                                Registered: <strong>{{modelEvent.numRegistered}}</strong> 
+                                                                                Volunteers registered: <strong>{{modelEvent.numRegistered}}</strong> 
                                                                         </p>
                                                                         <p>
                                                                                 Organized by  
@@ -127,14 +127,16 @@
                                                                         <p>
         
                                                                                 <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button> 
-                                                                                <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button> 
-                                                                                <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
-                                                                                        <i class="icon-ok"></i> You are registered! 
-                                                                                </span>
-                                                                                <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
-                                                                                        <i class="icon-ok"></i> You are waitlisted! 
-                                                                                </span>
-        
+                                                                                <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button><!-- 
+                                                                                Not really needed anymore since we have a label containing the registration info.
+
+                                                                                        <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
+                                                                                                <i class="icon-ok"></i> You are registered! 
+                                                                                        </span>
+                                                                                        <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
+                                                                                                <i class="icon-ok"></i> You are waitlisted! 
+                                                                                        </span>
+                                                                                -->
                                                                         </p>
                                                                         <p>
                                                                                 <a href="#/event/{{modelEvent.key}}" class="btn btn-info"><i class=" icon-info-sign icon-white"></i> More info</a>
