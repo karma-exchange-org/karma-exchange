@@ -66,25 +66,6 @@
             </div>
         </div>
     </div>
-    <form ng-show="isMessageOpen" class="add-window" ng-submit="sendMessage()">
-        <div class="header">
-            Send a message
-            <a ng-click="cancelMessage()"><i class="icon-remove pull-right"></i></a>
-        </div>
-        <div class="inner">
-            <div>
-                <input class="row form-control" type="text" ng-model="message.subject" required placeholder="Subject">
-                <textarea class="row" ng-model="message.body" rows="5" placeholder="Message">
-                </textarea>
-            </div>
-            <div class="button-bar">
-                <input type="submit" value="Send" class="btn btn-primary form-control">
-                <button type="button" class="btn btn-default" ng-click="cancelMessage()">
-                    Cancel
-                </button>
-            </div>
-        </div>
-    </form>
     <div class="row" ng-show="childOrgs.data.length>0">
         <h4>
             Child organizations
