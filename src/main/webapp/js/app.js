@@ -210,7 +210,9 @@ kexApp = angular.module( "kexApp",
         $rootScope.isMessageOpen = false; 
     };
     $rootScope.getGeoLocation = function(){
-        return google.loader.ClientLocation;
+        return { latitude: 0, longitude: 0};
+        // TODO(avlaiani): commented out because this is not working.
+        // return google.loader.ClientLocation;
     };
     $rootScope.getGeoCenter = function( ) { 
         var options = {
@@ -724,11 +726,13 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
         if ((fbUserId != $scope.fbUserId) || (query != $scope.query) || force) {
             fbUserId = $scope.fbUserId;
             query = $scope.query;
-            $scope.events = Events.get( { keywords : ($scope.query ? $scope.query : ""),lat:$scope.center.latitude,long:$scope.center.longitude } , function(){
-                   
-                    
-            }); 
-            $scope.currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
+            $scope.events = Events.get(
+                { 
+                    keywords: ($scope.query ? $scope.query : ""),
+                    lat: $scope.center.latitude,
+                    long:$scope.center.longitude
+                },
+                processEvents);
         }
     };
     function processEvents() {
