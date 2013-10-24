@@ -48,7 +48,7 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
             }, function(errorResponse) {
                 switch (errorResponse.status) {
                 case 400:
-                    $rootScope.showAlert(errorResponse.data.error.message, "error");
+                    $rootScope.showAlert(errorResponse.data.error.message, "danger");
                     break;
                 case 401:
                     showMessage('Wrong usename or password', 'errorMessage', 20000);
