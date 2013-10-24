@@ -655,21 +655,11 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
     
     
 }
-var orgCtrl = function( $scope, $location, $routeParams, Org ) { 
+var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) { 
     $scope.query = ""; 
     $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
     $scope.refresh = function( ) {
         $scope.orgs = Org.get( { name_prefix : $scope.query } );
-    };
-    $scope.save = function( ) { 
-        if( $scope.newOrg.page.url ) 
-        { 
-            Org.save( $scope.newOrg, function( ) { 
-                    $scope.refresh( ); 
-                    $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }}; 
-            } ); 
-        } 
-        $scope.close( ); 
     };
     $scope.join = function( ) { 
         Org.save( $scope.newOrg, function( ) { 
@@ -677,21 +667,43 @@ var orgCtrl = function( $scope, $location, $routeParams, Org ) {
                 $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }}; 
         } ); 
     };
-    $scope.close = function( ) { 
-        $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }}; 
-        $scope.shouldBeOpen = false; 
-    };
+
     $scope.open = function( ) { 
-        $scope.shouldBeOpen = true; 
+        // TODO(avaliani): not working. Figure out why later.
+        var modalInstance = $modal.open({
+            // templateUrl: '/template/kex/createOrgModal.html',
+            templateUrl: 'createOrgModal.html',
+            scope: $scope,
+            controller: createOrgCtrl
+            // backdrop: false,
+            // windowClass: "fade"
+        });
     };
+    // TODO(avaliani): figure out how to incorporate these
     $scope.opts = { 
         backdropFade : true, 
-        dialogFade : true      };
-        $scope.$watch( 'query', function( ) { 
-                $scope.refresh( ); 
-        } );
-        $scope.refresh( );
+        dialogFade : true
+    };
+    $scope.$watch( 'query', function( ) { 
+        $scope.refresh( ); 
+    });
+    $scope.refresh( );
 };
+var createOrgCtrl = function ($scope, $modalInstance) {
+    $scope.save = function( ) { 
+        if( $scope.newOrg.page.url ) { 
+            Org.save( $scope.newOrg, function( ) { 
+                    $scope.refresh( ); 
+                    $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }}; 
+            } ); 
+        } 
+        $scope.close( );
+    };    
+    $scope.close = function( ) { 
+        $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }}; 
+        $modalInstance.close();
+    };
+}
 var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
     $scope.modelOpen = false;
     angular.extend( $scope, {

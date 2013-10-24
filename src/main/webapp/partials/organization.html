@@ -9,38 +9,43 @@
             </div>
         </div>
     </div>
-    <!-- <button class="btn-info" ng-click="open()"><i class="icon-plus"></i> Create an Organization</button> -->
-    <div modal="shouldBeOpen" close="close()" options="opts">
-        <div class="modal-header">
-            <h3>
-                Enter details of the organization
-            </h3>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label class="control-label" for="event">
-                    Organization facebook page
-                </label>
-                <div class="controls">
-                    <input class="col-md-12 form-control" type="text" ng-model="newOrg.page.url" id="title" placeholder="title">
+    <div>
+        <!-- 
+            <button class="btn btn-info" ng-click="open()"><i class="icon-plus"></i> Create an Organization</button>
+            <script type="text/ng-template" id="createOrgModal.html">
+                <div class="modal-header">
+                    <h3>
+                        Enter details of the organization
+                    </h3>
                 </div>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-success" ng-click="save()">
-                Create
-            </button>
-        </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="control-label" for="event">
+                            Organization facebook page
+                        </label>
+                        <div class="controls">
+                            <input class="col-md-12 form-control" type="text" ng-model="newOrg.page.url" id="title" placeholder="title">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" ng-click="save()">
+                        Create
+                    </button>
+                </div>
+            </script>
+         -->
     </div>
-    <hr>
-    <ul class="list-unstyled">
-        <li ng-repeat="org in orgs.data">
-            <div class="well well-sm">
-                <a href="#/org/{{org.key}}" ng-click="refresh({{org.key}})">
-                    <img ng-src="{{fbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org"> 
-                    <strong>{{org.orgName}}</strong>
-                </a>
-            </div>
-        </li>
-    </ul>
+    <div class="vertical-panel-padding">
+        <ul class="list-unstyled">
+            <li ng-repeat="org in orgs.data">
+                <div class="well well-sm">
+                    <a href="#/org/{{org.key}}" ng-click="refresh({{org.key}})">
+                        <img ng-src="{{fbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org"> 
+                        <strong>{{org.orgName}}</strong>
+                    </a>
+                </div>
+            </li>
+        </ul>
+    </div>
 </div>
