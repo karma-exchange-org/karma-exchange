@@ -669,20 +669,11 @@ var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) {
     };
 
     $scope.open = function( ) { 
-        // TODO(avaliani): not working. Figure out why later.
         var modalInstance = $modal.open({
-            // templateUrl: '/template/kex/createOrgModal.html',
             templateUrl: 'createOrgModal.html',
             scope: $scope,
             controller: createOrgCtrl
-            // backdrop: false,
-            // windowClass: "fade"
         });
-    };
-    // TODO(avaliani): figure out how to incorporate these
-    $scope.opts = { 
-        backdropFade : true, 
-        dialogFade : true
     };
     $scope.$watch( 'query', function( ) { 
         $scope.refresh( ); 
