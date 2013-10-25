@@ -23,13 +23,18 @@ angular
     });
 
 angular.module('globalErrors', []).config(function($provide, $httpProvider, $compileProvider) {
+    var elementsList = $();
+    var showMessage = function(content, cl, time) {
+        $('<alert/>').addClass('message').addClass(cl).hide().fadeIn('fast').delay(time).fadeOut('fast', function() {
+            $(this).remove();
+        }).appendTo(elementsList).text(content);
+    };
     $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
     $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {
         // console.log(angular.toJson(headersGetter()));
         // Check if it is a post request. Mutations require authentication.
         if ((headersGetter()["Content-Type"] != null) && !isLoggedIn()) {
-            // Temporarily disabling until this functionality is completed to allow for login.
-            // alert("login required");
+            alert("login required");
         }
         return data;
     });
@@ -41,30 +46,36 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
                 }
                 return successResponse;
             }, function(errorResponse) {
-                if (!isExternal(errorResponse.config.url)) {
-                    switch (errorResponse.status) {
-                    case 400:
-                        $rootScope.showAlert(errorResponse.data.error.message, "danger");
-                        break;
-                    case 401:
-                        $rootScope.showAlert('Wrong usename or password', "danger");
-                        break;
-                    case 403:
-                        $rootScope.showAlert('Permission denied', "danger");
-                        break;
-                    case 404:
-                        $rootScope.showAlert('Failed to find resource: ' + errorResponse.data, "danger");
-                        break;
-                    case 500:
-                        $rootScope.showAlert('Server internal error: ' + errorResponse.data, "danger");
-                        break;
-                    default:
-                        $rootScope.showAlert('Error ' + errorResponse.status + ': ' + errorResponse.data, "danger");
-                    }
+                switch (errorResponse.status) {
+                case 400:
+                    $rootScope.showAlert(errorResponse.data.error.message, "danger");
+                    break;
+                case 401:
+                    showMessage('Wrong usename or password', 'errorMessage', 20000);
+                    break;
+                case 403:
+                    showMessage('You don\'t have the right to do this', 'errorMessage', 20000);
+                    break;
+                case 404:
+                    showMessage('Server internal error: ' + errorResponse.data, 'errorMessage', 20000);
+                    break;
+                case 500:
+                    showMessage('Server internal error: ' + errorResponse.data, 'errorMessage', 20000);
+                    break;
+                default:
+                    showMessage('Error ' + errorResponse.status + ': ' + errorResponse.data, 'errorMessage', 20000);
                 }
                 return $q.reject(errorResponse);
             });
         };
+    });
+    $compileProvider.directive('appMessages', function() {
+        var directiveDefinitionObject = {
+            link: function(scope, element, attrs) {
+                elementsList.push($(element));
+            }
+        };
+        return directiveDefinitionObject;
     });
 });
 

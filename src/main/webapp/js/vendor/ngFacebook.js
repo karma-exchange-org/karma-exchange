@@ -71,10 +71,6 @@ angular.module('ngFacebook', [])
             $rootScope.$broadcast("fb."+event, response, FB);
           });
         });
-
-        // Make sure 'fb.auth.authResponseChange' fires even if the user is not logged in. A user 
-        // that is not logged in can still make facebook api calls.
-        $facebook.getLoginStatus();
       });
 
       /**
@@ -115,7 +111,11 @@ angular.module('ngFacebook', [])
         }
       }
       function complete_login_deferred(user_id, value) {
-        login_deferred.resolve(value);
+        if (user_id === null) {
+          login_deferred.reject(value);
+        } else {
+          login_deferred.resolve(value);
+        }
         login_deferred_completed = true;
         login_deferred_user_id = user_id;
       }
@@ -132,8 +132,8 @@ angular.module('ngFacebook', [])
           $facebook.setCache("connected", true);
           complete_login_deferred_if_req(response.authResponse.userID, FB);
         } else {
-          $facebook.setCache("connected", false);
-          complete_login_deferred_if_req(null, FB);
+          $facebook.setCache("connected", false);          
+          complete_login_deferred_if_req(null, response.status);
         }
       });
 
