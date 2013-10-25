@@ -285,8 +285,37 @@ kexApp.factory('kexUtil', function($rootScope) {
     }
 });
 
-kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location, $window) {
+kexApp.factory('ApiCache', function($rootScope) {
+    var cache = {};
+
+    $rootScope.$on( "fbUtil.userChanged", function (event) {
+        cache = {};
+    });
+
+    return {
+        lookup: function (key) {
+            if (angular.isUndefined(cache[key])) return undefined;
+            return cache[key];
+        },
+        update: function (key, value) {
+            cache[key] = value;
+        },
+        key: function () {
+            var result = arguments[0] + "(";
+            for (var i = 1; i < arguments.length; i++) {
+                if (i != 1) {
+                    result += ", ";
+                }
+                result += arguments[i].toString();
+            };
+            return result + ")";
+        }
+    };
+});
+
+kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location, $window, ApiCache) {
     var fbAccessToken;
+    var firstAuthResponse = true;
 
     $rootScope.$on( "fb.auth.authResponseChange", function( event, response ) {
         if ( response.status === 'connected' ) {                    
@@ -299,7 +328,7 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
             if ( updateUser ) {
                 $rootScope.me = Me.get(); 
                 $rootScope.orgs = Me.get( { resource : 'org' } ); 
-                $rootScope.$apply();
+                processUserChange();
             }
         } else {
             removeCookies();
@@ -308,10 +337,18 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
                 fbAccessToken = undefined;
                 $rootScope.me = undefined;
                 $rootScope.orgs = undefined;
-                $rootScope.$apply();
+                processUserChange();
             }
         }
+        firstAuthResponse = false;
     } ); 
+    function processUserChange() {
+        if (!firstAuthResponse) {
+            // Fired if the user changes after the first FB.init() invocation.
+            $rootScope.$broadcast("fbUtil.userChanged");
+        }
+        if (!$rootScope.$$phase) $rootScope.$apply();            
+    }
 
     function setCookies(authResponse) {
         $.cookie( "facebook-uid", authResponse.userID ); 
@@ -359,11 +396,20 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
         },
 
         getAlbumCoverUrl: function (albumId) {
-            return $facebook.api("/" + albumId).then(function (response) {
+            var cacheKey = ApiCache.key("getAlbumCoverUrl", albumId);
+            var promise = ApiCache.lookup(cacheKey);
+            if (promise !== undefined) {
+                return promise;
+            }
+
+            promise = $facebook.api("/" + albumId).then(function (response) {
                 return $facebook.api("/" + response.cover_photo);
             }).then(function (response) {
                 return response.source;
             });
+
+            ApiCache.update(cacheKey, promise);
+            return promise;
         }
     };
 });
