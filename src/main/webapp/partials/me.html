@@ -5,39 +5,73 @@
     <div class="col-md-3">
         <img ng-src="{{me.profileImage.url}}?type=large" class="img-responsive center">
         <div class="text-center">
-            <h4><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>
-            <p><strong>Organizer Rating: </strong><rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{me.eventOrganizerRating.count}})</p>
+            <h4><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>            
         </div>
     </div>
     <div class="col-md-9">
 
         <h3 class="profile-view-name"><strong>{{me.firstName}}</strong></h3>
         
-        <legend>Introduction<small> <i ng-show="{ALL:true}[me.permission]" class="icon-edit" ng-click="enableEdit()"></i></small></legend>
-        
-        <ng-switch on="edit">
-        
-            <div ng-switch-when="true">
-                <textarea rows="5" class="col-md-12" ng-model="$parent.me.about" ></textarea>  
-                <button class="btn btn-primary btn-sm" ng-click="saveEdit()">Save</button><button class="btn btn-sm btn-default" ng-click="disableEdit()">Cancel</button>
-            </div>
-            
-            <div ng-switch-default ng-click="enableEdit()">
-            <p ng-bind-html-unsafe="me.about | noHTML | newlines" />
-            </div>
-            
-        </ng-switch>
-        <legend>I am an organizer for</legend>
-        <div>
-            
-                <ul class="list-inline">
-                    <li ng-repeat="org in orgs.data">
-                        <div class="well well-sm"><a href="#/org/{{org.org.key}}">{{org.orgName}}</a></div>
-                    </li>
-                </ul>
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                <h3 class="panel-title">
+                    Introduction <small> <i ng-show="{ALL:true}[me.permission]" class="icon-edit" ng-click="enableEdit()"></i></small>
+                </h3>
 
+            </div>
+            <div class="panel-body">
+                <ng-switch on="edit">
+                
+                    <div ng-switch-when="true">
+                        <div>
+                            <textarea rows="5" class="col-md-12" ng-model="$parent.me.about" ></textarea>
+                        </div>
+                        <div class="vertical-panel-padding">
+                            <button class="btn btn-primary" ng-click="saveEdit()">Save</button>
+                            <button class="btn btn-default" ng-click="disableEdit()">Cancel</button>
+                        </div>
+                    </div>
+                    
+                    <div ng-switch-default ng-click="enableEdit()">
+                        <p ng-bind-html-unsafe="me.about | noHTML | newlines" />
+                    </div>
+                    
+                </ng-switch>
+            </div>
         </div>
+        
 
+        <div class="panel panel-default" ng-show="orgs.data.length">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h3 class="panel-title">
+                            I am an organizer for                    
+                        </h3>
+                    </div>
+                    <div class="col-md-6 text-right">
+                        Organizer rating:
+                        <rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> 
+                        ({{me.eventOrganizerRating.count}})
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+
+                <div class="row">
+                    <div class="col-md-6" ng-repeat="org in orgs.data">
+                        <div class="well well-sm">
+                            <a href="#/org/{{org.org.key}}">
+                                <img ng-src="{{fbUtil.getImageUrl(org.orgPage.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org"> 
+                                {{org.orgName}}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        
     </div>
   </div>
 

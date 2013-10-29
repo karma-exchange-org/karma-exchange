@@ -10,10 +10,13 @@
                         </div>
                 </div>
         </div>
-        <div class="btn-group">
-            <button class="btn btn-default" ng-click="showList()"><i class="icon-list"></i> List</button>
-            <button class="btn btn-default" ng-click="showMap()"><i class="icon-globe"></i> Map</button>
-        </div>
+        <!-- 
+            Commenting this out until it becomes functional
+            <div class="btn-group">
+                <button class="btn btn-default" ng-click="showList()"><i class="icon-list"></i> List</button>
+                <button class="btn btn-default" ng-click="showMap()"><i class="icon-globe"></i> Map</button>
+            </div>
+        -->
         <div ng-show="isMap" class="row col-md-12 vertical-panel-padding">
                 <div  class="google-map" 
                         refresh="!isMapElementHidden"
