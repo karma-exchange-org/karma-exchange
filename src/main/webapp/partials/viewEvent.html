@@ -11,11 +11,11 @@
 
                 <ul class="list-inline-no-padding">
                     <li>
-                        <data-share-buttons 
-                            data-title="event.title" 
-                            data-description="event.description"
-                            data-image="'http://s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
-                        </data-share-buttons>
+                        <share-buttons 
+                            title="event.title" 
+                            description="event.description"
+                            image="'http://s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
+                        </share-buttons>
                     </li>
                     <li><a href="http://www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank"><img src="//www.google.com/calendar/images/ext/gc_button3.gif" border=0></a></li>
                 </ul>
@@ -77,13 +77,13 @@
                 </slide>
               </carousel>
             
-        <div class="fileupload fileupload-new" data-provides="fileupload">
+        <div class="fileupload fileupload-new" provides="fileupload">
           <div ng-show="isImageModelOpen" class="fileupload-preview thumbnail" style="width: 200px; height: 150px;"></div>
           <form name="fbPhotoUpload" action="https://graph.facebook.com/{{event.album.id}}/photos?access_token={{fbUtil.getAccessToken()}}" enctype="multipart/form-data" method="POST">
             <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()" ><span class="fileupload-new"><i class="icon-plus"></i> Add a photo</span><input class="form-control" id="source" type="file" /></span>
             <span ng-show="isImageModelOpen" class="fileupload-exists"><input class="col-md-12 form-control" type="text" id="message" placeholder="Description" ></span>
-            <input type="submit" value="Upload" ng-show="isImageModelOpen" data-dismiss="fileupload" class="btn btn-primary fileupload-exists form-control" onclick="document.fbPhotoUpload.submit()">
-            <a href="" class="btn fileupload-exists" data-dismiss="fileupload" ng-click="closeImageUpload()" >Cancel</a>
+            <input type="submit" value="Upload" ng-show="isImageModelOpen" dismiss="fileupload" class="btn btn-primary fileupload-exists form-control" onclick="document.fbPhotoUpload.submit()">
+            <a href="" class="btn fileupload-exists" dismiss="fileupload" ng-click="closeImageUpload()" >Cancel</a>
           </form>
         </div>
                

@@ -28,7 +28,7 @@
 
                             <label class="control-label" for="event">When? </label>
 
-                            <div class="row datepair" data-language="javascript">
+                            <div class="row datepair" language="javascript">
 
                                 <div class="col-md-3">
                                     <input id="dtst" type="text" class="date start datestart form-control" placeholder="mm/dd/yyyy" required>
@@ -470,9 +470,9 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
                 <!--orgnaizers-->
                 <p ng-hide="eventOrganizers.data.length==0"><h4>Organizers ({{event.organizers.length}})</h4>
                 <hr>
-                <ul ui-drop-listener="dropListener" data-model="eventOrganizers.data" class="list-inline">
+                <ul ui-drop-listener="dropListener" model="eventOrganizers.data" class="list-inline">
 
-                    <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventOrganizers.data">
+                    <li class="table-bordered" ui-draggable  index="{{$index}}" ng-repeat="user in eventOrganizers.data">
                       
                                 <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                         
@@ -489,9 +489,9 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
            
                 <p ng-hide="eventRegistered.data.length==0"><h4>Registered ({{event.registeredUsers.length}})</h4> 
                     <hr>
-                        <ul ui-drop-listener="dropListener" data-model='eventRegistered.data' class="list-inline">
+                        <ul ui-drop-listener="dropListener" model='eventRegistered.data' class="list-inline">
 
-                            <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventRegistered.data">
+                            <li class="table-bordered" ui-draggable  index="{{$index}}" ng-repeat="user in eventRegistered.data">
                                
                                        <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square"  class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                             
@@ -510,9 +510,9 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
             
                 <p ng-hide="eventWaitListed.data.length==0"><h4>Waitlisted ({{event.waitListedUsers.length}})</h4> 
                     <hr>
-                        <ul ui-drop-listener="dropListener" data-model='eventWaitListed.data' class="list-inline">
+                        <ul ui-drop-listener="dropListener" model='eventWaitListed.data' class="list-inline">
 
-                            <li class="table-bordered" ui-draggable  data-index="{{$index}}" ng-repeat="user in eventWaitListed.data">
+                            <li class="table-bordered" ui-draggable  index="{{$index}}" ng-repeat="user in eventWaitListed.data">
                               
                                         <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> <strong>{{user.firstName}} </strong> {{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                  

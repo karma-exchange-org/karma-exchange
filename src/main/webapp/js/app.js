@@ -379,7 +379,7 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
 
         getComments: function (mydiv) {
             if (mydiv) {
-                mydiv.innerHTML = '<div class="fb-comments" href="' + window.location.href + '" data-num-posts="20" data-width="940">';
+                mydiv.innerHTML = '<div class="fb-comments" href="' + window.location.href + '" num-posts="20" width="940">';
                 $facebook.promise.then( function(FB) { FB.XFBML.parse(mydiv); } );
             }
         },
@@ -526,11 +526,11 @@ kexApp.directive('shareButtons', function(kexUtil) {
             },
             template:
                 '<div>' +
-                    '<ul data-ng-social-buttons ' +
-                            'data-url="util.getLocation()" ' +
-                            'data-title="title" ' +
-                            'data-description="description" ' +
-                            'data-image="image">' +
+                    '<ul ng-social-buttons ' +
+                            'url="util.getLocation()" ' +
+                            'title="title" ' +
+                            'description="description" ' +
+                            'image="image">' +
                         '<li class="ng-social-facebook">Facebook</li>' +
                         '<li class="ng-social-google-plus">Google+</li>' +
                         '<li class="ng-social-twitter">Twitter</li>' +
@@ -549,9 +549,9 @@ kexApp.directive('eventParticipantImgsMini', function() {
         transclude: false,
         template:
             '<ul class="list-inline">' +
-                '<li data-ng-repeat="userImage in event.cachedParticipantImages">' +
+                '<li ng-repeat="userImage in event.cachedParticipantImages">' +
                     '<a href="#/user/{{userImage.participant.key}}">' +
-                        '<img data-ng-src="{{userImage.imageUrl}}?type=square" class="kex-thumbnail-user-mini">' +
+                        '<img ng-src="{{userImage.imageUrl}}?type=square" class="kex-thumbnail-user-mini">' +
                     '</a>' +
                 '</li>' +
             '</ul>'
@@ -589,7 +589,7 @@ kexApp.directive('eventRegistrationInfo', function() {
             });
         },
         template:
-            '<span data-ng-class="labelClass" data-ng-show="showLabel">{{labelText}}</span>'
+            '<span ng-class="labelClass" ng-show="showLabel">{{labelText}}</span>'
     }
 });
 

@@ -11,8 +11,8 @@
             <img ng-src="{{fbPage.cover.source}}" class="img-responsive">
         </div>
         <div class="col-md-6">
-            <div class="fb-like" data-href="{{org.page.url}}" data-send="true" data-width="450" data-show-faces="true"
-            data-colorscheme="dark" data-action="recommend">
+            <div class="fb-like" href="{{org.page.url}}" send="true" width="450" show-faces="true"
+            colorscheme="dark" action="recommend">
             </div>
             <div class="row">
                 <div class="col-md-6">
@@ -94,7 +94,7 @@
                             <a href="#/event/{{event.key}}"><button type="button" class="btn btn-default btn-xs" disabled="disabled">{{event.numAttending }} attended</button></a>
                         </div>
                         <div class="col-md-10">
-                            <div fbgallery data-album-id="{{event.album.id}}" data-type="facebook">
+                            <div fbgallery album-id="{{event.album.id}}" type="facebook">
                             </div>
                             <div class="row pagination-center">
                                 <strong>
@@ -197,7 +197,7 @@
                                     at {{event.location.title}}, {{event.location.address.city}}
                                 </small>
                                 <div class="pull-right">
-                                    <data-event-participant-imgs-mini event="event"></data-event-participant-imgs-mini>
+                                    <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
                                 </div>
                             </div>
                         </div>
@@ -246,7 +246,7 @@
         </tab>
         <!-- <tab> -->
         <!-- <tab-heading><i class="icon-picture"></i> Albums</tab-heading> -->
-        <!-- <div id="fbgallery" fbgallery data-userid="{{fbPage.id}}" data-type="facebook"> -->
+        <!-- <div id="fbgallery" fbgallery userid="{{fbPage.id}}" type="facebook"> -->
         <!-- </div>  -->
         <!-- </tab>  -->
         <tab>
