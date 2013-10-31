@@ -85,17 +85,19 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventSearchView> getResources() {
-    return eventSearch(uriInfo, ImmutableList.<FilterQueryClause>of(), true);
+    return eventSearch(uriInfo, ImmutableList.<FilterQueryClause>of(), null);
   }
 
   public static ListResponseMsg<EventSearchView> eventSearch(UriInfo uriInfo,
-      Collection<? extends FilterQueryClause> filters, boolean loadReviews) {
+      Collection<? extends FilterQueryClause> filters, @Nullable Key<User> eventSearchUserKey) {
     MultivaluedMap<String, String> reqParams = uriInfo.getQueryParameters();
     EventSearchType searchType = reqParams.containsKey(SEARCH_TYPE_PARAM) ?
         EventSearchType.valueOf(reqParams.getFirst(SEARCH_TYPE_PARAM)) : null;
     Long startTimeValue = reqParams.containsKey(START_TIME_PARAM) ?
         Long.valueOf(reqParams.getFirst(START_TIME_PARAM)) : null;
     String keywords = reqParams.getFirst(KEYWORDS_PARAM);
+    boolean loadReviews = (eventSearchUserKey != null) &&
+        eventSearchUserKey.equals(getCurrentUserKey());
 
     PaginatedQuery.Builder<Event> queryBuilder =
         PaginatedQuery.Builder.create(Event.class, uriInfo, DEFAULT_NUM_SEARCH_RESULTS)
@@ -116,7 +118,8 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
     PostFilteredEventSearchResults postFilteredResults =
         postFilterByDistance(reqParams, queryResult);
     return ListResponseMsg.create(
-      EventSearchView.create(postFilteredResults.results, searchType, loadReviews),
+      EventSearchView.create(postFilteredResults.results, searchType, eventSearchUserKey,
+        loadReviews),
       postFilteredResults.pagingInfo);
   }
 

@@ -4,7 +4,7 @@
 
         <div class="col-md-8">
         <div class="row">
-            <div class="pull-left">
+            <div class="col-md-8">
                  <h2><strong>{{event.title}}</strong></h2>  
                 <p>on <strong>{{event.startTime | date:'EEE, MMM d, y'}}</strong> from <strong>{{event.startTime|date:'shortTime'}}</strong> - <strong>{{event.endTime|date:'shortTime'}}</strong> by <a href="#/org/{{event.associatedOrganizations[0].key}}">{{event.associatedOrganizations[0].name}} </a> </p>
                 <p>at <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}" target="_blank">{{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}</a></p>
@@ -20,7 +20,7 @@
                     <li><a href="http://www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank"><img src="//www.google.com/calendar/images/ext/gc_button3.gif" border=0></a></li>
                 </ul>
             </div>
-            <div class="pull-right">
+            <div class="col-md-4">
                 <a ng-show="{ORGANIZER:true}[event.registrationInfo]"class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
                 <div ng-show="event.status!='COMPLETED'">
                     <p><strong>{{event.maxRegistrations - event.registeredUsers.length | limit10 }}</strong></p>
@@ -36,9 +36,27 @@
                 </div>
                 <div ng-show="event.status=='COMPLETED'" >
             
-                    <p>Event rating<rating value="event.rating.value" max="5" readonly="true"></rating> ({{event.rating.count}})</p>
+                    <div>
+                        <div class="pull-left responsive-div-pad-right">
+                            Event rating
+                        </div>
+                        <div> 
+                            <aggregate-rating value="event.rating"></aggregate-rating>
+                        </div>
+                    </div>
+
+                    <div ng-show="EventUtil.canWriteReview(event)">
+                        <div class="pull-left responsive-div-pad-right">
+                            Your rating
+                        </div>
+                        <div>
+                            <event-user-rating 
+                                user-rating="currentUserRating"
+                                event-key="event.key">
+                            </event-user-rating>
+                        </div>
+                    </div>
                     
-                    <p ng-hide="event.registrationInfo=='ORGANIZER'">Your rating<rating value="eventRating.rating.value" max="5" readonly="false"></rating></p>
                 </div>
                 <div><h3><em><strong>+{{event.karmaPoints}} karma</strong></em></h3>
                 </div>

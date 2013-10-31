@@ -66,9 +66,10 @@ text-align:center;
 }
 
 
-
+/* controls angular-ui rating directive star color */
 .icon-star {
     color: gold;
+    text-shadow: 1px 1px 0px rgba(0,0,0,0.5);
 }
 
 #dnd-container {
@@ -175,6 +176,14 @@ text-align:center;
   padding-top: 10px;
 }
 
+.responsive-div-pad-right {
+  padding-right: 10px;
+}
+
+.responsive-div-pad-left {
+  padding-left: 10px;
+}
+
 .font-size-h4 {  
   font-size: 18px;
 }
@@ -211,6 +220,11 @@ img.kex-thumbnail-with-label {
 img.kex-thumbnail-org {
   height: 40px; 
   width: 40px; 
+}
+
+img.kex-thumbnail-org-small {
+  height: 32px; 
+  width: 32px; 
 }
 
 img.kex-thumbnail-user {

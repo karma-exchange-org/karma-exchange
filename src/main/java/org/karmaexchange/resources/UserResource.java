@@ -1,7 +1,6 @@
 package org.karmaexchange.resources;
 
 import static org.karmaexchange.util.OfyService.ofy;
-import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.List;
 
@@ -54,10 +53,9 @@ public class UserResource extends BaseDaoResource<User> {
 
   public static ListResponseMsg<EventSearchView> userEventSearch(UriInfo uriInfo,
       Key<User> userKey) {
-    boolean loadReviews = userKey.equals(getCurrentUserKey());
     ConditionFilter participantFilter =
         new ConditionFilter(Event.getParticipantPropertyName(), userKey);
-    return EventResource.eventSearch(uriInfo, Lists.newArrayList(participantFilter), loadReviews);
+    return EventResource.eventSearch(uriInfo, Lists.newArrayList(participantFilter), userKey);
   }
 
   @Path("{user_key}/org")

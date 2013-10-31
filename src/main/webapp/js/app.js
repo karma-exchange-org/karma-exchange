@@ -69,7 +69,7 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
 });
 
 kexApp = angular.module( "kexApp", 
-    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "loadingOnAJAX", "ngFacebook",
+    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "loadingOnAJAX", "ngFacebook",
      "globalErrors" ,"ui.calendar", "ngSocial"] )
 .config( function( $routeProvider, $httpProvider, $facebookProvider ) { 
     $routeProvider
@@ -403,6 +403,17 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
     };
 });
 
+
+kexApp.factory('EventUtil', function() {
+    return {
+        canWriteReview: function (event) {
+            // The registration info is computed with respect to the current user's
+            // key. Also, organizers can not write reviews.
+            return event.registrationInfo == 'REGISTERED';
+        },
+    };
+});
+
 /*
  * App directives
  */
@@ -547,11 +558,98 @@ kexApp.directive('eventParticipantImgsMini', function() {
     }
 });
 
+kexApp.directive('eventRegistrationInfo', function() {
+    return {
+        restrict: 'E',
+        scope: {
+            type: '@',
+            registrationInfo: '=',
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.showLabel = false;
+            var registrationInfoMapping = {
+                ORGANIZER: { text: 'Organizer', labelClass: 'label-success', type: ['UPCOMING', 'PAST']},
+                REGISTERED: { text: 'Registered', labelClass: 'label-success', type: ['UPCOMING']},
+                WAIT_LISTED: { text: 'Waitlisted', labelClass: 'label-warning', type: ['UPCOMING']},
+                CAN_WAIT_LIST: { text: 'Waitlist Open', labelClass: 'label-warning', type: ['UPCOMING']}
+            };
+            scope.$watch('type', function() {
+                if (scope.type) {
+                    var mapping = registrationInfoMapping[scope.registrationInfo];
+                    if (mapping && ($.inArray(scope.type, mapping.type) != -1)) {
+                        scope.showLabel = true;
+                        scope.labelText = mapping.text;
+                        scope.labelClass = 'label kex-bs-label ' + mapping.labelClass;
+                    }
+                } else {
+                    scope.showLabel = false;
+                }
+            });
+        },
+        template:
+            '<span data-ng-class="labelClass" data-ng-show="showLabel">{{labelText}}</span>'
+    }
+});
+
+kexApp.directive('eventUserRating', function(Events) {
+    return {
+        restrict: 'E',
+        scope: {
+            userRating: '=',
+            eventKey: '='
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.updateUserRating = function (newValue) {
+                if (newValue) {
+                    Events.save( 
+                        { id : scope.eventKey, registerCtlr : 'review' }, 
+                        { "rating" : { "value" : newValue }},
+                        null,
+                        function () {
+                            Events.get(
+                                { id : scope.eventKey, registerCtlr : 'review' },
+                                function (value) {
+                                    scope.userRating.value = 
+                                        (value && value.rating) ? value.rating.value : undefined;
+                                });
+                        });                                    
+                }
+            };
+        },
+        template:
+            '<div>' +
+                '<rating-ex value="userRating.value" max="5" readonly="false" on-update="updateUserRating(newValue)"></rating-ex>' +
+            '</div>'
+    }
+});
+
+kexApp.directive('aggregateRating', function() {
+    return {
+        restrict: 'E',
+        scope: {
+            value: '=',
+        },
+        replace: true,
+        transclude: false,
+        template:
+            '<div>' +
+                '<rating value="value.value" max="5" readonly="true"></rating>' +
+                ' ({{value.count}})' +
+            '</div>'
+    }
+});
+
+
 /*
  * App controllers
  */
 
-var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, FbUtil ) { 
+var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, FbUtil, EventUtil ) {
+    $scope.EventUtil = EventUtil;
     $scope.newMail = { email : null, primary : null }; 
     $scope.load = function( $location, $routeParams ) {
         if( $location.$$url == "/me" || $location.$$url == "/mysettings" ) 
@@ -593,6 +691,9 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, Fb
             var event = $scope.pastEvents.data[idx];
             if (event.album) {
                 event.album.coverPhotoUrl = FbUtil.getAlbumCoverUrl(event.album.id);
+            }
+            if (!event.currentUserRating) {
+                event.currentUserRating = { value: undefined };
             }
         }
     }
@@ -850,7 +951,8 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
 
     $scope.reset(true);
 };
-var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil ) { 
+var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil, EventUtil ) {
+    $scope.EventUtil = EventUtil;
     angular.extend( $scope, {
             /** the initial center of the map */
             center : { 
@@ -875,6 +977,8 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
         { name : 'Groups', key : 'GROUPS',     checked : false }, 
         { name : 'Teens', key : 'TEENS',  checked : false } 
     ];
+    $scope.currentUserRating = { value: undefined };
+
     $scope.unregister = function( ) 
     { 
         Events.delete( { id : $scope.event.key, registerCtlr : 'participants' }, function( ) { 
@@ -1117,8 +1221,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' } ); 
                                 return Array.prototype.push.apply( this, arguments ); 
                             }
-                    } );
-                    
+                    } );                    
                     
                     $scope.noShow = function(){
                         $scope.eventNoShow.data.push($scope.eventRegistered.data[this.$index]);
@@ -1152,32 +1255,21 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                                     $scope.myInterval = 5000;
                             } );
                         }
-                        $scope.eventRating = Events.get( { id : $routeParams.eventId, registerCtlr : 'review' }, function( ) {
-                                if( ! $scope.eventRating ||! $scope.eventRating.rating ) 
-                                { 
-                                    $scope.eventRating = { "rating" : { "value" : 0 }}; 
-                                } 
-                                //TODO - Make sure that the event is not called on-load
-                                //if($scope.event.registrationInfo!='ORGANIZER')
-                                if( true ) 
-                                { 
-                                    $scope.$watch( 'eventRating.rating.value', function( val, oldVal ) {
-                                            if( val != 0 && val != oldVal ) 
-                                            {
-                                                Events.save( { id : $scope.event.key, registerCtlr : 'review' }, { "rating" : { "value" : val }}, function( ) { 
-                                                        //alert and close
-                                                        $scope.event = Events.get( { id : $scope.event.key } );
-                                                } ); 
-                                            }
-                                    } ); 
-                                }
-                        } ); 
+
+                        if (EventUtil.canWriteReview($scope.event)) {
+                            Events.get(
+                                { id : $routeParams.eventId, registerCtlr : 'review' },
+                                function (value) {
+                                    $scope.currentUserRating.value = 
+                                        (value && value.rating) ? value.rating.value : undefined;
+                                });
+                        }
                     }
             }, function( response ) { 
                 //404 or bad
                 
                 if( response.status === 404 ) { 
-            }} ); 
+            }} );
         }
         $scope.parseDateReg = function( input ) {
             var dateReg = 

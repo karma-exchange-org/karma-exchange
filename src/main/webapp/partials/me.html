@@ -62,8 +62,7 @@
                     <div class="col-md-6" ng-repeat="org in orgs.data">
                         <div class="well well-sm">
                             <a href="#/org/{{org.org.key}}">
-                                <img ng-src="{{fbUtil.getImageUrl(org.orgPage.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org"> 
-                                {{org.orgName}}
+                                <img ng-src="{{fbUtil.getImageUrl(org.orgPage.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org-small">{{org.orgName}}
                             </a>
                         </div>
                     </div>
@@ -84,44 +83,75 @@
                     </i>
                     Impact
                 </tab-heading>
-                <p></p>
 
-                <ul class="list-unstyled">
-                    <li ng-repeat="event in pastEvents.data">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="well well-sm">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <strong >{{event.startTime | date:'mediumDate'}}</strong>
-                                            <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a> 
-                                            <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" ><small>organizer</small></button>                          
-                                        </div>
+                <div class="row" ng-repeat="event in pastEvents.data">
+                    <div class="col-md-6">
+                        <div class="well well-sm">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="pull-left font-size-h4">
+                                        <strong>
+                                            <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a>
+                                        </strong>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <small class="text-muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>                 
-                                            <small class="text-muted">at {{event.location.title}}, {{event.location.address.city}}</small>
+                                    <div class="pull-right responsive-div-pad-left font-size-h4">
+                                        <strong>
+                                            <em>
+                                                +{{event.karmaPoints}} karma
+                                            </em>
+                                        </strong>
+                                    </div>
+                                </div>                 
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="pull-left">
+                                        <div>
+                                            <div class="pull-left">
+                                                <a href="#/org/{{event.organization.key}}">
+                                                    <img ng-src="{{fbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org-small">                                                
+                                                </a>
+                                            </div>
+                                            <div class="pull-left">
+                                                <div>
+                                                    <a href="#/org/{{event.organization.key}}">
+                                                        {{event.organizationDetails.orgName}}
+                                                    </a>
+                                                </div>
+                                                <div><small>{{event.startTime | date:'mediumDate'}}</small></div>
+                                            </div>
+                                        </div>
 
-                                            <h4 class="pull-right">
-                                                <strong>
-                                                    <em>
-                                                        +{{event.karmaPoints}} karma
-                                                    </em>
-                                                </strong>
-                                            </h4>
+                                    </div>
+                                    <div class="pull-right responsive-div-pad-right">
+                                        <div>
+                                            <event-registration-info 
+                                                registration-info="event.userEventSearchInfo.registrationInfo"
+                                                type="PAST">
+                                            </event-registration-info>
+                                        </div>
+                                        <div ng-show="{ALL:true}[me.permission] && EventUtil.canWriteReview(event)">
+                                            <event-user-rating 
+                                                user-rating="event.currentUserRating"
+                                                event-key="event.key">
+                                            </event-user-rating>
+                                        </div>
+                                        <div ng-hide="{ALL:true}[me.permission] && EventUtil.canWriteReview(event)">
+                                            <aggregate-rating value="event.rating">
+                                            </aggregate-rating>
                                         </div>
                                     </div>
-                                    <div class="row" ng-show="event.album">
-                                        <div class="col-md-12">
-                                            <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive">
-                                        </div>
-                                    </div>
+                                </div>                 
+                            </div>                            
+
+                            <div class="row" ng-show="event.album">
+                                <div class="col-md-12">
+                                    <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive">
                                 </div>
                             </div>
                         </div>
-                    </li>
-                </ul>
+                    </div>
+                </div>
 
             </tab>
             <tab>
@@ -130,7 +160,6 @@
                     </i>
                     Upcoming Events
                 </tab-heading>
-                <p></p>
 
                 <ul class="list-unstyled">
                     <li ng-repeat="event in events.data">
