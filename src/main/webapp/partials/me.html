@@ -85,27 +85,18 @@
                 </tab-heading>
 
                 <div class="row" ng-repeat="event in pastEvents.data">
-                    <div class="col-md-6">
+                    <div class="col-md-6">                        
                         <div class="well well-sm">
                             <div class="row">
                                 <div class="col-md-12">
-                                    <div class="pull-left font-size-h4">
-                                        <strong>
-                                            <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a>
-                                        </strong>
-                                    </div>
-                                    <div class="pull-right responsive-div-pad-left font-size-h4">
-                                        <strong>
-                                            <em>
-                                                +{{event.karmaPoints}} karma
-                                            </em>
-                                        </strong>
-                                    </div>
-                                </div>                 
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
+
                                     <div class="pull-left">
+                                        <div class="font-size-h4">
+                                            <strong>
+                                                <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a>
+                                            </strong>                                            
+                                        </div>
+
                                         <div>
                                             <div class="pull-left">
                                                 <a href="#/org/{{event.organization.key}}">
@@ -123,26 +114,43 @@
                                         </div>
 
                                     </div>
-                                    <div class="pull-right responsive-div-pad-right">
+
+                                    <div class="pull-right responsive-div-pad-left">
                                         <div>
-                                            <event-registration-info 
-                                                registration-info="event.userEventSearchInfo.registrationInfo"
-                                                type="PAST">
-                                            </event-registration-info>
+                                            <div class="pull-right font-size-h4">
+                                                <strong>
+                                                    <em>
+                                                        +{{event.karmaPoints}} karma
+                                                    </em>
+                                                </strong>
+                                            </div>                                            
                                         </div>
-                                        <div ng-show="{ALL:true}[me.permission] && EventUtil.canWriteReview(event)">
-                                            <event-user-rating 
-                                                user-rating="event.currentUserRating"
-                                                event-key="event.key">
-                                            </event-user-rating>
+                                        <div>
+                                            <div class="pull-right">
+                                                <event-registration-info 
+                                                    registration-info="event.userEventSearchInfo.registrationInfo"
+                                                    type="PAST">
+                                                </event-registration-info>
+                                            </div>                                            
                                         </div>
-                                        <div ng-hide="{ALL:true}[me.permission] && EventUtil.canWriteReview(event)">
-                                            <aggregate-rating value="event.rating">
-                                            </aggregate-rating>
+                                        <div>
+                                            <div ng-show="{ALL:true}[me.permission] && EventUtil.canWriteReview(event)" class="pull-right">
+                                                <event-user-rating 
+                                                    user-rating="event.currentUserRating"
+                                                    event-key="event.key">
+                                                </event-user-rating>
+                                            </div>                                            
                                         </div>
-                                    </div>
-                                </div>                 
-                            </div>                            
+                                        <div>
+                                            <div ng-hide="{ALL:true}[me.permission] && EventUtil.canWriteReview(event)" class="pull-right">
+                                                <aggregate-rating value="event.rating">
+                                                </aggregate-rating>
+                                            </div>
+                                        </div>
+                                    </div>                                    
+
+                                </div>
+                            </div>
 
                             <div class="row" ng-show="event.album">
                                 <div class="col-md-12">
@@ -177,7 +185,7 @@
                                         <small class="text-muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>
                                         <small class="text-muted">at {{event.location.title}}, {{event.location.address.city}}</small>
                                         <div class="pull-right">
-                                                <data-event-participant-imgs-mini event="event"></data-event-participant-imgs-mini>
+                                                <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
                                         </div>                                                                                    
                                     </div>
                                 </div>
