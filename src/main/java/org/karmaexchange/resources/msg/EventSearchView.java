@@ -23,14 +23,16 @@ import org.karmaexchange.dao.Permission;
 import org.karmaexchange.dao.AggregateRating;
 import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
+import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.EventResource.EventSearchType;
 import org.karmaexchange.resources.msg.EventView.OrgDetails;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.googlecode.objectify.Key;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -53,6 +55,7 @@ public class EventSearchView {
   private Status status;
   private AlbumRef album;
   private RegistrationInfo registrationInfo;
+  private UserEventSearchInfo userEventSearchInfo;
 
   private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
 
@@ -65,21 +68,19 @@ public class EventSearchView {
   private int karmaPoints;
 
   public static List<EventSearchView> create(List<Event> events, EventSearchType searchType,
-      boolean loadReviews) {
+      @Nullable Key<User> eventSearchUserKey, boolean loadReviews) {
     Map<Key<Organization>, Organization> orgs = loadOrgs(events);
 
-    Map<Key<Review>, Review> reviews;
+    Map<Key<Review>, Review> reviews = ImmutableMap.of();
     if (loadReviews && (searchType == EventSearchType.PAST)) {
       reviews = loadEventReviews(events);
-    } else {
-      reviews = Maps.newHashMap();
     }
 
     List<EventSearchView> searchResults = Lists.newArrayList();
     for (Event event : events) {
       searchResults.add(
         new EventSearchView(event, orgs.get(KeyWrapper.toKey(event.getOrganization())),
-          reviews.get(Review.getKeyForCurrentUser(event))));
+          reviews.get(Review.getKeyForCurrentUser(event)), eventSearchUserKey));
     }
     return searchResults;
   }
@@ -104,7 +105,7 @@ public class EventSearchView {
   }
 
   protected EventSearchView(Event event, @Nullable Organization fetchedOrg,
-      @Nullable Review currentUserReview) {
+      @Nullable Review currentUserReview, @Nullable Key<User> eventSearchUserKey) {
     key = event.getKey();
     permission = event.getPermission();
 
@@ -130,5 +131,17 @@ public class EventSearchView {
     if (currentUserReview != null) {
       currentUserRating = currentUserReview.getRating();
     }
+
+    if (eventSearchUserKey != null) {
+      userEventSearchInfo = new UserEventSearchInfo(
+        event.getRegistrationInfo(eventSearchUserKey));
+    }
+  }
+
+  @Data
+  @NoArgsConstructor
+  @AllArgsConstructor
+  public static class UserEventSearchInfo {
+    private RegistrationInfo registrationInfo;
   }
 }

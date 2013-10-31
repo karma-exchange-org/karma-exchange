@@ -48,10 +48,10 @@
                                                 <a href ng-click="toggleEvent();">
                                                         <p class="font-size-h4">{{event.startTime | date:'shortTime'}}</p>
                                                 </a>
-                                                <span class="label label-success kex-bs-label" ng-show="{ORGANIZER:true}[event.registrationInfo]">Organizer</span>
-                                                <span class="label label-success kex-bs-label" ng-show="{REGISTERED:true}[event.registrationInfo]">Registered</span>
-                                                <span class="label label-warning kex-bs-label" ng-show="{WAIT_LISTED:true}[event.registrationInfo]">Waitlisted</span>
-                                                <span class="label label-warning kex-bs-label" ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]">Waitlist Open</span>
+                                                <event-registration-info 
+                                                    registration-info="event.registrationInfo"
+                                                    type="UPCOMING">
+                                                </event-registration-info>
                                         </div>
                                         <div class="col-md-10 event-search-result-summary">
                                                 <div class="pull-left">

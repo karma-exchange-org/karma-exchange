@@ -48,7 +48,7 @@ public class ExpandedEventSearchView extends EventSearchView {
 
   private ExpandedEventSearchView(Event event, @Nullable Organization fetchedOrg,
       @Nullable Review currentUserReview) {
-    super(event, fetchedOrg, currentUserReview);
+    super(event, fetchedOrg, currentUserReview, null);
     description = event.getDescription();
 
     User user = ofy().load().key(KeyWrapper.toKey(event.getOrganizers().get(0))).now();

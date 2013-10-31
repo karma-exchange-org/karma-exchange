@@ -173,7 +173,8 @@ public final class Event extends IdBaseDao<Event> {
     WAIT_LISTED,
     CAN_REGISTER,
     CAN_WAIT_LIST,
-    FULL
+    FULL,
+    REGISTRATION_CLOSED
   }
 
   public enum Status {
@@ -369,6 +370,7 @@ public final class Event extends IdBaseDao<Event> {
     initParticipantLists();
     super.processLoad();
     initStatus();
+    // Ordering is important. Registration info depends on status.
     updateRegistrationInfo();
   }
 
@@ -661,29 +663,37 @@ public final class Event extends IdBaseDao<Event> {
   }
 
   private void updateRegistrationInfo() {
-    EventParticipant participant = tryFindParticipant(getCurrentUserKey());
+    registrationInfo = getRegistrationInfo(getCurrentUserKey());
+  }
+
+  public RegistrationInfo getRegistrationInfo(Key<User> userKey) {
+    EventParticipant participant = tryFindParticipant(userKey);
     if (participant == null) {
-      if (registeredUsers.size() < maxRegistrations) {
-        registrationInfo = RegistrationInfo.CAN_REGISTER;
+      if (status == Status.COMPLETED) {
+        return RegistrationInfo.REGISTRATION_CLOSED;
       } else {
-        registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
+        if (registeredUsers.size() < maxRegistrations) {
+          return RegistrationInfo.CAN_REGISTER;
+        } else {
+          return RegistrationInfo.CAN_WAIT_LIST;
+        }
       }
       // } else if (waitListedUsers.size() < maxWaitingList) {
-      //  registrationInfo = RegistrationInfo.CAN_WAIT_LIST;
+      //  return RegistrationInfo.CAN_WAIT_LIST;
       // } else {
-      //  registrationInfo = RegistrationInfo.FULL;
+      //  return RegistrationInfo.FULL;
       // }
     } else {
       if (participant.type == ParticipantType.ORGANIZER) {
-        registrationInfo = RegistrationInfo.ORGANIZER;
+        return RegistrationInfo.ORGANIZER;
       } else if (participant.type == ParticipantType.REGISTERED) {
-        registrationInfo = RegistrationInfo.REGISTERED;
+        return RegistrationInfo.REGISTERED;
       } else if (participant.type == ParticipantType.REGISTERED_NO_SHOW) {
-        registrationInfo = RegistrationInfo.REGISTERED_NO_SHOW;
+        return RegistrationInfo.REGISTERED_NO_SHOW;
       } else {
         checkState(participant.type == ParticipantType.WAIT_LISTED,
             "unknown participant type: " + participant.type);
-        registrationInfo = RegistrationInfo.WAIT_LISTED;
+        return RegistrationInfo.WAIT_LISTED;
       }
     }
   }
