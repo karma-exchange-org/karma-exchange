@@ -266,10 +266,16 @@ kexApp.factory( 'Org', function( $resource ) {
  * Utility API factories
  */
 
-kexApp.factory('kexUtil', function($rootScope) {
+kexApp.factory('KexUtil', function($rootScope) {
     return {
         getLocation: function() {
             return window.location.href;
+        },
+        urlStripProtocol: function(url) {
+            return url ? url.replace(/^http:/,'') : url;
+        },
+        strConcat: function(str1, str2) {
+            return (angular.isDefined(str1) && angular.isDefined(str2)) ? (str1 + str2) : undefined;
         }
     }
 });
@@ -302,7 +308,7 @@ kexApp.factory('ApiCache', function($rootScope) {
     };
 });
 
-kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location, $window, ApiCache) {
+kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location, $window, ApiCache) {
     var fbAccessToken;
     var firstAuthResponse = true;
 
@@ -352,11 +358,11 @@ kexApp.factory('FbUtil', function($rootScope, kexUtil, $facebook, Me, $location,
     }
 
     return {
-        GRAPH_API_URL: "https://graph.facebook.com",
+        GRAPH_API_URL: "//graph.facebook.com",
         LOGIN_SCOPE: "email,user_location",
 
         getImageUrl: function (id, type) {
-            return "//graph.facebook.com/" + id + "/picture?type=" + type;
+            return angular.isDefined(id) ? ("//graph.facebook.com/" + id + "/picture?type=" + type) : undefined;
         },
 
         getAccessToken: function () {
@@ -511,7 +517,7 @@ kexApp.directive( "eventrepeat", function( ) {
 } );
 
 
-kexApp.directive('shareButtons', function(kexUtil) {
+kexApp.directive('shareButtons', function(KexUtil) {
         return {
             restrict: 'E',
             scope: {
@@ -522,12 +528,12 @@ kexApp.directive('shareButtons', function(kexUtil) {
             replace: true,
             transclude: false,
             link: function (scope, element, attrs) {
-                scope.util = kexUtil;
+                scope.KexUtil = KexUtil;
             },
             template:
                 '<div>' +
                     '<ul ng-social-buttons ' +
-                            'url="util.getLocation()" ' +
+                            'url="KexUtil.getLocation()" ' +
                             'title="title" ' +
                             'description="description" ' +
                             'image="image">' +
@@ -648,7 +654,8 @@ kexApp.directive('aggregateRating', function() {
  * App controllers
  */
 
-var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, FbUtil, EventUtil ) {
+var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, FbUtil, EventUtil, KexUtil ) {
+    $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.newMail = { email : null, primary : null }; 
     $scope.load = function( $location, $routeParams ) {
@@ -728,8 +735,9 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, Fb
     $scope.mailPrimaryIndex = { index : 0 }; 
     $scope.load( $location, $routeParams );
 };
-var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events, FbUtil ) 
+var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events, FbUtil, KexUtil ) 
 { 
+    $scope.KexUtil = KexUtil;
     $scope.events = [];
     $scope.parser = document.createElement( 'a' ); 
     $scope.org = Org.get( { id : $routeParams.orgId }, function( ) { 
@@ -831,7 +839,8 @@ var createOrgCtrl = function ($scope, $modalInstance) {
         $modalInstance.close();
     };
 }
-var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
+var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
+    $scope.KexUtil = KexUtil;
     $scope.modelOpen = false;
     angular.extend( $scope, {
             /** the initial center of the map */
@@ -863,7 +872,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
         if ((fbUserId != $scope.fbUserId) || (query != $scope.query) || force) {
             fbUserId = $scope.fbUserId;
             query = $scope.query;
-            $scope.events = Events.get(
+            Events.get(
                 { 
                     keywords: ($scope.query ? $scope.query : ""),
                     lat: $scope.center.latitude,
@@ -872,7 +881,8 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
                 processEvents);
         }
     };
-    function processEvents() {
+    function processEvents(value) {
+        $scope.events = value;
         var now = new Date();
         var currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
         for (var idx = 0; idx < $scope.events.data.length; idx++) {
@@ -951,7 +961,8 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope ) {
 
     $scope.reset(true);
 };
-var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil, EventUtil ) {
+var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil, EventUtil, KexUtil ) {
+    $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     angular.extend( $scope, {
             /** the initial center of the map */

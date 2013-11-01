@@ -3,7 +3,7 @@
 
   <div class="row">    
     <div class="col-md-3">
-        <img ng-src="{{me.profileImage.url}}?type=large" class="img-responsive center">
+        <img ng-src="{{KexUtil.strConcat(me.profileImage.url,'?type=large')}}" class="img-responsive center">
         <div class="text-center">
             <h4><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>            
         </div>
