@@ -90,7 +90,7 @@
                 <li ng-repeat="event in pastEvents.data">
                     <div class="row well well-sm col-md-12">
                         <div class="col-md-2">
-                            <a href="#/event/{{event.key}}"><img ng-src="{{event.fbAlbum.data[0].picture}}"></a>
+                            <a href="#/event/{{event.key}}"><img ng-src="{{KexUtil.urlStripProtocol(event.fbAlbum.data[0].picture)}}"></a>
                             <a href="#/event/{{event.key}}"><button type="button" class="btn btn-default btn-xs" disabled="disabled">{{event.numAttending }} attended</button></a>
                         </div>
                         <div class="col-md-10">

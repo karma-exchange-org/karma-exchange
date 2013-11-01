@@ -123,7 +123,7 @@
                                                                                 Organized by  
                                                                         </p>
                                                                         <p>
-                                                                                <a href="#/user/{{modelEvent.firstOrganizer.key}}"><img ng-src="{{modelEvent.firstOrganizer.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{modelEvent.firstOrganizer.firstName}}</strong></a><rating ng-hide="modelEvent.firstOrganizer.eventOrganizerRating.count==0" value="modelEvent.firstOrganizer.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{modelEvent.firstOrganizer.eventOrganizerRating.count}})  
+                                                                                <a href="#/user/{{modelEvent.firstOrganizer.key}}"><img ng-src="{{KexUtil.strConcat(modelEvent.firstOrganizer.profileImage.url, '?type=square')}}" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{modelEvent.firstOrganizer.firstName}}</strong></a><rating ng-hide="modelEvent.firstOrganizer.eventOrganizerRating.count==0" value="modelEvent.firstOrganizer.eventOrganizerRating.value" max="5" readonly="true"></rating> ({{modelEvent.firstOrganizer.eventOrganizerRating.count}})  
                                                                         </p>
                                                                 </td> 
                                                                 <td>

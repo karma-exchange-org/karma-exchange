@@ -14,10 +14,10 @@
                         <share-buttons 
                             title="event.title" 
                             description="event.description"
-                            image="'http://s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
+                            image="'//s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
                         </share-buttons>
                     </li>
-                    <li><a href="http://www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank"><img src="//www.google.com/calendar/images/ext/gc_button3.gif" border=0></a></li>
+                    <li><a href="//www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank"><img src="//www.google.com/calendar/images/ext/gc_button3.gif" border=0></a></li>
                 </ul>
             </div>
             <div class="col-md-4">
@@ -68,6 +68,8 @@
                 <slide ng-repeat="image in fbAlbum" active="slide.active">
                     <div class="col-md-12 pagination-centered">
                         <img ng-src="{{image.picture}}" max-height="500">
+                        <!-- TODO(avaliani): Https is not working for the carousel immages. Revisit. -->
+                        <!-- <img ng-src="{{KexUtil.urlStripProtocol(image.picture)}}" max-height="500"> -->
                     </div>
                   
                   <div ng-show="image.name" class="carousel-caption">

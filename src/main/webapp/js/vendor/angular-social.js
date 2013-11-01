@@ -103,7 +103,7 @@ angular.module("ngSocial", [])
 angular.module("ngSocial").directive('ngSocialFacebook', function() {
     var options = {
         counter: {
-            url: 'http://graph.facebook.com/fql?q=SELECT+total_count+FROM+link_stat+WHERE+url%3D%22{url}%22&callback=JSON_CALLBACK',
+            url: '//graph.facebook.com/fql?q=SELECT+total_count+FROM+link_stat+WHERE+url%3D%22{url}%22&callback=JSON_CALLBACK',
             getNumber: function(data) {
             	    if(data.data[0])
             	    {
@@ -113,7 +113,7 @@ angular.module("ngSocial").directive('ngSocialFacebook', function() {
             }
         },
         popup: {
-            url: 'http://www.facebook.com/sharer/sharer.php?u={url}',
+            url: '//www.facebook.com/sharer/sharer.php?u={url}',
             width: 600,
             height: 500
         }
@@ -193,13 +193,13 @@ angular.module("ngSocial").directive('ngSocialGoogleCalendar', ["Facebook",funct
 angular.module("ngSocial").directive('ngSocialTwitter', function() {
     var options = {
         counter: {
-            url: 'http://urls.api.twitter.com/1/urls/count.json?url={url}&callback=JSON_CALLBACK',
+            url: '//urls.api.twitter.com/1/urls/count.json?url={url}&callback=JSON_CALLBACK',
             getNumber: function(data) {
                 return data.count;
             }
         },
         popup: {
-            url: 'http://twitter.com/intent/tweet?url={url}&text={title}',
+            url: '//twitter.com/intent/tweet?url={url}&text={title}',
             width: 600,
             height: 450
         },
@@ -253,7 +253,7 @@ angular.module("ngSocial").directive('ngSocialGooglePlus', function() {
                         <span class="ng-social-icon"></span> \
                    </li>',
         controller: function($scope, $http) {
-            /*var url = 'https://plusone.google.com/_/+1/fastbutton?url=' + encodeURIComponent('http://news.mistinfo.com/');
+            /*var url = 'https://plusone.google.com/_/+1/fastbutton?url=' + encodeURIComponent('//news.mistinfo.com/');
             $.get(url, function (data) { console.info(data);
                     var aggregate = $('#aggregateCount', data).html(),
                         exactMatch = $('script', data).html().match('\\s*c\\s*:\\s*(\\d+)');
@@ -278,7 +278,7 @@ angular.module("ngSocial").directive('ngSocialGooglePlus', function() {
 angular.module("ngSocial").directive('ngSocialVk', function() {
     var options = {
         counter:{
-            url: 'http://vkontakte.ru/share.php?act=count&url={url}&index={index}',
+            url: '//vkontakte.ru/share.php?act=count&url={url}&index={index}',
             get: function(jsonUrl, deferred, $http) {
                 if (!options._) {
                     options._ = [];
@@ -296,7 +296,7 @@ angular.module("ngSocial").directive('ngSocialVk', function() {
             }
         },
         popup: {
-            url: 'http://vk.com/share.php?url={url}&title={title}&description={description}&image={image}',
+            url: '//vk.com/share.php?url={url}&title={title}&description={description}&image={image}',
             width: 550,
             height: 330
         }
@@ -332,13 +332,13 @@ angular.module("ngSocial").directive('ngSocialVk', function() {
 angular.module("ngSocial").directive('ngSocialOdnoklassniki', function() {
     var options = {
         counter: {
-            url: 'http://www.odnoklassniki.ru/dk?st.cmd=shareData&ref={url}&cb=JSON_CALLBACK',
+            url: '//www.odnoklassniki.ru/dk?st.cmd=shareData&ref={url}&cb=JSON_CALLBACK',
             getNumber: function(data) {
                 return data.count;
             }
         },
         popup: {
-            url: 'http://www.odnoklassniki.ru/dk?st.cmd=addShare&st._surl={url}',
+            url: '//www.odnoklassniki.ru/dk?st.cmd=addShare&st._surl={url}',
             width: 550,
             height: 360
         }
@@ -374,7 +374,7 @@ angular.module("ngSocial").directive('ngSocialOdnoklassniki', function() {
 angular.module("ngSocial").directive('ngSocialMailru', function() {
     var options = {
         counter: {
-            url: 'http://connect.mail.ru/share_count?url_list={url}&callback=1&func=JSON_CALLBACK',
+            url: '//connect.mail.ru/share_count?url_list={url}&callback=1&func=JSON_CALLBACK',
             getNumber: function(data) {
                 for (var url in data) if (data.hasOwnProperty(url)) {
                     return data[url].shares;
@@ -382,7 +382,7 @@ angular.module("ngSocial").directive('ngSocialMailru', function() {
             }
         },
         popup: {
-            url: 'http://connect.mail.ru/share?share_url={url}&title={title}',
+            url: '//connect.mail.ru/share?share_url={url}&title={title}',
             width: 550,
             height: 360
         }
@@ -418,13 +418,13 @@ angular.module("ngSocial").directive('ngSocialMailru', function() {
 angular.module("ngSocial").directive('ngSocialPinterest', function() {
     var options = {
         counter: {
-            url: 'http://api.pinterest.com/v1/urls/count.json?url={url}&callback=JSON_CALLBACK',
+            url: '//api.pinterest.com/v1/urls/count.json?url={url}&callback=JSON_CALLBACK',
             getNumber: function(data) {
                 return data.count;
             }
         },
         popup: {
-            url: 'http://pinterest.com/pin/create/button/?url={url}&description={title}',
+            url: '//pinterest.com/pin/create/button/?url={url}&description={title}',
             width: 630,
             height: 270
         }
