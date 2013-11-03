@@ -152,7 +152,14 @@
                                 </div>
                             </div>
 
-                            <div class="row" ng-show="event.album">
+                            <div class="row">
+                                <div class="col-md-12" ng-show="event.impactSummary">
+                                    <hr>
+                                    <div class="vertical-panel-padding" ng-bind-html-unsafe="event.impactSummary | noHTML | newlines"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="row vertical-panel-padding" ng-show="event.album">
                                 <div class="col-md-12">
                                     <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive">
                                 </div>
