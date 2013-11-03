@@ -257,15 +257,8 @@ img.kex-thumbnail-user-mini {
   width: 15px; 
 }
 
-/*==================================================
- * Bootstrap overrides
- * ===============================================*/
-
-hr {
-  margin-top: 0px;
-  margin-bottom: 0px;
-  border: 0;
-  border-top: 1px solid #999;
+.border-top-1 {
+  border-top: 1px solid #999;  
 }
 
 /*==================================================
