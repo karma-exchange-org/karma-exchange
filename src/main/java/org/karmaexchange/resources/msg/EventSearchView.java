@@ -66,6 +66,7 @@ public class EventSearchView {
   private AggregateRating rating;
   private Rating currentUserRating;
   private int karmaPoints;
+  private String impactSummary;
 
   public static List<EventSearchView> create(List<Event> events, EventSearchType searchType,
       @Nullable Key<User> eventSearchUserKey, boolean loadReviews) {
@@ -122,6 +123,7 @@ public class EventSearchView {
     status = event.getStatus();
     album = event.getAlbum();
     karmaPoints = event.getKarmaPoints();
+    impactSummary = event.getImpactSummary();
     cachedParticipantImages = event.getCachedParticipantImages();
     numAttending = event.getNumAttending();
     numRegistered = event.getRegisteredUsers().size();

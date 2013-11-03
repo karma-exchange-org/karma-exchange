@@ -161,6 +161,7 @@ public final class Event extends IdBaseDao<Event> {
    * the attendance info and write an event thank you note.
    */
   private boolean organizerProcessedCompletion;
+  private String impactSummary;
 
   private List<SuitableForType> suitableForTypes = Lists.newArrayList();
 

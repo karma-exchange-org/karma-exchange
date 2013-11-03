@@ -456,13 +456,17 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       DateUtils.addDays(now, -6), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904833122948",
       bgcsfSoccerWaiverKey);
-    events.add(event);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
+    event.setImpactSummary(
+      "Thanks to all the volunteers that came by to help teach the kids soccer." +
+      " The kids really enjoyed learning from everyone and they're eagerly anticipating the" +
+      " next event!");
+    events.add(event);
     pendingReviews.add(PendingReview.create(event, USER4.getKey(),
-      "I had a great time cleaning up the streets of SF.\n\n" +
+      "I had a great time teaching soccer to the kids.\n\n" +
       "Thanks to Harish and Poonum for organizing such a wonderful event!", 5));
     pendingReviews.add(PendingReview.create(event, USER8.getKey(),
-      "Some of the areas where we did cleanup were a bit shady...", 3));
+      "Parking was a bit difficult to find...", 3));
     pendingReviews.add(PendingReview.create(event, USER12.getKey(), null, 3));
     eventNoShowInfo.add(new EventNoShowInfo(event, asList(USER2.getKey())));
 
@@ -475,6 +479,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904726456292",
       columbiaParkSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
+    event.setImpactSummary(
+      "The soccer clinic was a huge success! Thank you to everyone who stopped by.");
     events.add(event);
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
     eventNoShowInfo.add(new EventNoShowInfo(event, asList(USER2.getKey())));
@@ -485,6 +491,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event = createEvent("San Francisco Street Cleanup", BENEVOLENT, ferryBuilding,
       DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906933122738");
+    event.setImpactSummary(
+        "78 Square folks & neighbors brought in 52 bags, a mattress & a chair for a total of " +
+        "353 pounds of trash.");
     events.add(event);
 
     organizers = asList(USER1.getKey(), AMIR.getKey());
@@ -493,6 +502,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event = createEvent("San Jose Street Cleanup", UNITED_WAY, unitedWayParkmoorOffice,
       DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906759789422");
+    event.setImpactSummary(
+      "107 pounds of trash off the street. 7 syringes. 7 thank yous from local residents.");
     events.add(event);
 
     organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
