@@ -108,7 +108,7 @@ kexApp = angular.module( "kexApp",
     $facebookProvider.setCustomInit({ 
         status : true, 
         cookie : true, 
-        xfbml : true });
+        xfbml : false });
         
 } ).filter( 'newlines', function( ) { 
     return function( text ) { 
@@ -268,6 +268,9 @@ kexApp.factory( 'Org', function( $resource ) {
 
 kexApp.factory('KexUtil', function($rootScope) {
     return {
+        getBaseUrl: function() {
+            return window.location.protocol + '//' + window.location.host;
+        },
         getLocation: function() {
             return window.location.href;
         },
@@ -383,13 +386,6 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
             });
         },
 
-        getComments: function (mydiv) {
-            if (mydiv) {
-                mydiv.innerHTML = '<div class="fb-comments" href="' + window.location.href + '" num-posts="20" width="940">';
-                $facebook.promise.then( function(FB) { FB.XFBML.parse(mydiv); } );
-            }
-        },
-
         getAlbumCoverUrl: function (albumId) {
             var cacheKey = ApiCache.key("getAlbumCoverUrl", albumId);
             var promise = ApiCache.lookup(cacheKey);
@@ -410,13 +406,17 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
 });
 
 
-kexApp.factory('EventUtil', function() {
+kexApp.factory('EventUtil', function(KexUtil) {
     return {
         canWriteReview: function (event) {
             // The registration info is computed with respect to the current user's
             // key. Also, organizers can not write reviews.
             return event.registrationInfo == 'REGISTERED';
         },
+        getImpactViewUrl: function (event) {
+            // TODO(avaliani): the impact url should be different from the event details url.
+            return KexUtil.getBaseUrl() + '/#/event/' + event.key;
+        }
     };
 });
 
@@ -646,6 +646,48 @@ kexApp.directive('aggregateRating', function() {
                 '<rating value="value.value" max="5" readonly="true"></rating>' +
                 ' ({{value.count}})' +
             '</div>'
+    }
+});
+
+kexApp.directive('kexFbComments', function($facebook, $rootScope) {
+    return {
+        restrict: 'E',
+        scope: {
+            href: '@',
+            numPosts: '@'
+        },
+        replace: true,
+        transclude: false,
+        compile: function(element, attrs) {
+            if (!attrs.numPosts) { attrs.numPosts = 3; }
+
+            return function (scope, element, attrs) {
+                execWhenAttrsResolved(['href', 'numPosts'], function() {
+                    $facebook.promise.then( function(FB) {
+                        element.html('<div class="fb-comments" href="' + scope.href + '" ' +
+                            'num-posts="' + scope.numPosts + '"></div>');
+                        FB.XFBML.parse(element[0]);
+                    });
+                });
+
+                function execWhenAttrsResolved(attrNames, execCb) {
+                    var resolvedAttrs = new BitArray(attrNames.length);
+                    for (var idx=0; idx < attrNames.length; idx++) {
+                        attrs.$observe(attrNames[idx], createObserveCb(idx));
+
+                        function createObserveCb(idx) {
+                            return function() {
+                                resolvedAttrs.set(idx, true);
+                                if (resolvedAttrs.count() == attrNames.length) {
+                                    execCb();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        template: '<div></div>'
     }
 });
 
@@ -1254,8 +1296,6 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                     $scope.imageModalOpts = { 
                         backdropFade : true, 
                     dialogFade : true         }; 
-                    var mydiv = document.getElementById( 'myCommentsDiv' );
-                    FbUtil.getComments( mydiv ); 
                     if( $scope.event.status == 'COMPLETED' ) 
                     {
                         if( $scope.event.album ) 
