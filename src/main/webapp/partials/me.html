@@ -84,8 +84,8 @@
                     Impact
                 </tab-heading>
 
-                <div class="row" ng-repeat="event in pastEvents.data">
-                    <div class="col-md-6">                        
+                <div class="row" ng-repeat="pastEventsGroup in pastEventsGrouped">
+                    <div class="col-md-6" ng-repeat="event in pastEventsGroup">
                         <div class="well well-sm">
                             <div class="row">
                                 <div class="col-md-12">
