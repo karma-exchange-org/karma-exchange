@@ -736,6 +736,8 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, Fb
         
     };
     function processImpactTimeline() {
+        $scope.pastEventsGrouped = [];
+        var curGroup = [];
         for (var idx = 0; idx < $scope.pastEvents.data.length; idx++) {
             var event = $scope.pastEvents.data[idx];
             if (event.album) {
@@ -744,6 +746,15 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, Fb
             if (!event.currentUserRating) {
                 event.currentUserRating = { value: undefined };
             }
+
+            curGroup.push(event);
+            if (curGroup.length == 2) {
+                $scope.pastEventsGrouped.push(curGroup);
+                curGroup = [];
+            }
+        }
+        if (curGroup.length) {
+            $scope.pastEventsGrouped.push(curGroup);
         }
     }
     $scope.save = function( ) { 
