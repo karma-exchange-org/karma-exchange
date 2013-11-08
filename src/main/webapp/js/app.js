@@ -406,7 +406,7 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
 });
 
 
-kexApp.factory('EventUtil', function(KexUtil) {
+kexApp.factory('EventUtil', function($q, User, Events, KexUtil, FbUtil) {
     return {
         canWriteReview: function (event) {
             // The registration info is computed with respect to the current user's
@@ -416,6 +416,44 @@ kexApp.factory('EventUtil', function(KexUtil) {
         getImpactViewUrl: function (event) {
             // TODO(avaliani): the impact url should be different from the event details url.
             return KexUtil.getBaseUrl() + '/#/event/' + event.key;
+        },
+        getImpactTimelineEvents: function(eventFilter) {
+            var impactTimelineEventsGrouped = $q.defer();
+
+            if (eventFilter.userKey) {
+                User.get( { id : eventFilter.userKey, resource : 'event', type : 'PAST'},
+                    processImpactTimeline);
+            } else {
+                Events.get( { type : "PAST", keywords : eventFilter.keywords }, 
+                    processImpactTimeline);
+            }
+
+            function processImpactTimeline(pastEvents) {
+                var eventsGrouped = [];
+                var curGroup = [];
+                for (var idx = 0; idx < pastEvents.data.length; idx++) {
+                    var event = pastEvents.data[idx];
+                    if (event.album) {
+                        event.album.coverPhotoUrl = FbUtil.getAlbumCoverUrl(event.album.id);
+                    }
+                    if (!event.currentUserRating) {
+                        event.currentUserRating = { value: undefined };
+                    }
+
+                    curGroup.push(event);
+                    if (curGroup.length == 2) {
+                        eventsGrouped.push(curGroup);
+                        curGroup = [];
+                    }
+                }
+                if (curGroup.length) {
+                    eventsGrouped.push(curGroup);
+                }
+
+                impactTimelineEventsGrouped.resolve(eventsGrouped);
+            }
+
+            return impactTimelineEventsGrouped.promise;
         }
     };
 });
@@ -691,6 +729,23 @@ kexApp.directive('kexFbComments', function($facebook, $rootScope) {
     }
 });
 
+kexApp.directive('impactTimeline', function(FbUtil, EventUtil) {
+    return {
+        restrict: 'E',
+        scope: {
+            timelineEvents: '=',
+            selfProfileView: '='
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.FbUtil = FbUtil;
+            scope.EventUtil = EventUtil;
+        },
+        templateUrl: 'template/kex/impact-timeline.html'
+    }
+});
+
 
 /*
  * App controllers
@@ -728,35 +783,12 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, Fb
             $scope.getOtherData( $routeParams.userId );
         }
     };
-    $scope.getOtherData = function( key ) { 
-        $scope.events = User.get( { id : key, resource : 'event' } ); 
-        $scope.pastEvents = User.get( { id : key, resource : 'event', type : 'PAST'},
-            processImpactTimeline); 
-        $scope.orgs = User.get( { id : key, resource : 'org' } ); 
+    $scope.getOtherData = function( userKey ) { 
+        $scope.events = User.get( { id : userKey, resource : 'event' } ); 
+        $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({userKey: userKey});
+        $scope.orgs = User.get( { id : userKey, resource : 'org' } ); 
         
     };
-    function processImpactTimeline() {
-        $scope.pastEventsGrouped = [];
-        var curGroup = [];
-        for (var idx = 0; idx < $scope.pastEvents.data.length; idx++) {
-            var event = $scope.pastEvents.data[idx];
-            if (event.album) {
-                event.album.coverPhotoUrl = FbUtil.getAlbumCoverUrl(event.album.id);
-            }
-            if (!event.currentUserRating) {
-                event.currentUserRating = { value: undefined };
-            }
-
-            curGroup.push(event);
-            if (curGroup.length == 2) {
-                $scope.pastEventsGrouped.push(curGroup);
-                curGroup = [];
-            }
-        }
-        if (curGroup.length) {
-            $scope.pastEventsGrouped.push(curGroup);
-        }
-    }
     $scope.save = function( ) { 
         Me.save( $scope.me ); 
     }; 
@@ -788,7 +820,7 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, Fb
     $scope.mailPrimaryIndex = { index : 0 }; 
     $scope.load( $location, $routeParams );
 };
-var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events, FbUtil, KexUtil ) 
+var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events, FbUtil, KexUtil, EventUtil ) 
 { 
     $scope.KexUtil = KexUtil;
     $scope.events = [];
@@ -799,15 +831,9 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
             $http( { method : 'GET', url : FbUtil.GRAPH_API_URL + "" + $scope.parser.pathname } ).success( function( data ) {
                     $scope.fbPage = data;
             } ); 
-            $scope.pastEvents = Events.get( { type : "PAST", keywords : "org:" + $scope.org.searchTokenSuffix },function(){
-            
-                    angular.forEach($scope.pastEvents.data, function(event) {
-                            $http( { method : 'GET', url : FbUtil.GRAPH_API_URL +"/" + event.album.id +"/photos"} ).success( function( data ) {
-                                    event.fbAlbum = data;
-                            } );
-                            $scope.events.push({title:event.title, start:(new Date(event.startTime)), end:(new Date(event.endTime)),allDay:false, url:"/#/event/"+event.key});
-            });
-            } ); 
+
+            $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({keywords: "org:" + $scope.org.searchTokenSuffix});
+
             $scope.upcomingEvents = Events.get( { type : "UPCOMING", keywords : "org:" + $scope.org.searchTokenSuffix }, function(){
             
                     angular.forEach($scope.upcomingEvents.data, function(event) {
