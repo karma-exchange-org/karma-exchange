@@ -24,7 +24,7 @@ angular
 
 angular.module('globalErrors', []).config(function($provide, $httpProvider, $compileProvider) {
     $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
-    $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {
+    $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {        
         // console.log(angular.toJson(headersGetter()));
         // Check if it is a post request. Mutations require authentication.
         if ((headersGetter()["Content-Type"] != null) && !isLoggedIn()) {
@@ -746,6 +746,21 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil) {
     }
 });
 
+kexApp.directive('participantsSidebar', function() {
+    return {
+        restrict: 'E',
+        scope: {
+            fetchedParticipants: '=',
+            header: '@',
+            type: '@',
+            participantCount: '=',
+            fetchMore: '&'
+        },
+        replace: true,
+        transclude: false,
+        templateUrl: 'template/kex/participants-sidebar.html'
+    }
+});
 
 /*
  * App controllers
@@ -1075,7 +1090,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                 $scope.refreshEvent( );
         } ); 
     } 
-    $scope.register = function( type ) { 
+    $scope.register = function( type ) {
         var eventId = $scope.event.key; 
         Events.save( { id : eventId, registerCtlr : 'participants', regType : type }, function( req, $rootScope ) { 
                 //alert and close
@@ -1196,10 +1211,6 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
         };
         $scope.getMore = function( type ) 
         { 
-            if( $scope.eventRegistered.paging.next == null ) 
-            { 
-                return; 
-            }    
             if( type === 'REGISTERED' ) 
             {
                 $http( { method : 'GET', url : $scope.eventRegistered.paging.next } ).success( function( data ) {

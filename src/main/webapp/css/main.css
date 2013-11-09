@@ -261,6 +261,10 @@ img.kex-thumbnail-user-mini {
   border-top: 1px solid #999;  
 }
 
+.partcipants-sidebar-users {
+  padding-bottom: 1em;
+}
+
 /*==================================================
  * Angular-ui 
  * ===============================================*/
