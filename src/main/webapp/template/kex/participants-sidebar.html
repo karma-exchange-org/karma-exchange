@@ -1,0 +1,47 @@
+<div ng-hide="fetchedParticipants.data.length == 0">
+    <div class="row">
+        <div class="col-md-12">
+            <h4>
+                <strong>{{header}} 
+                    <span ng-hide="{ORGANIZER: true}[type]">({{participantCount}})</span>
+                </strong>
+            </h4>
+        </div>
+    </div>
+    <div class="border-top-1 vertical-panel-padding">
+        <div ng-repeat="user in fetchedParticipants.data" class="partcipants-sidebar-users">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="pull-left">
+                        <a href="#/user/{{user.key}}">
+                            <img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user">
+                        </a>
+                    </div>
+                    <div class="pull-left">
+                        <div>
+                            <a href="#/user/{{user.key}}"><strong>{{user.firstName}}</strong></a>
+                        </div>
+                        <div ng-show="{ORGANIZER: true}[type]">
+                            <aggregate-rating value="user.eventOrganizerRating">
+                            </aggregate-rating>
+                        </div>
+                        <div>
+                            <strong>
+                                <em>
+                                    +{{user.karmaPoints}} karma
+                                </em>
+                            </strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <button class="btn btn-link" ng-show="participantCount-fetchedParticipants.data.length>0" ng-click="fetchMore({type: type});">
+                    See more ({{participantCount-fetchedParticipants.data.length}})
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
