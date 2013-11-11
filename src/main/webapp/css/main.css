@@ -287,13 +287,13 @@ img.kex-thumbnail-user-mini {
 .event-sidebar-org-img-panel {
   display: inline-block;
   vertical-align: top;
-  max-width: 20%;
+  max-width: 25%;
 }
 
 .event-sidebar-org-info-panel {
   display: inline-block;
   vertical-align: top;
-  max-width: 80%;
+  max-width: 75%;
 }
 
 
