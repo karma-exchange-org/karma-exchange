@@ -1,131 +1,246 @@
 <div class="row">
     <div class="col-md-9">
+
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-12">
                 <h2>
                     <strong>
                         {{event.title}}
                     </strong>
                 </h2>
-                <p>
-                    on
-                    <strong>
-                        {{event.startTime | date:'EEE, MMM d, y'}}
-                    </strong>
-                    from
-                    <strong>
-                        {{event.startTime|date:'shortTime'}}
-                    </strong>
-                    -
-                    <strong>
-                        {{event.endTime|date:'shortTime'}}
-                    </strong>
-                    by
-                    <a href="#/org/{{event.associatedOrganizations[0].key}}">{{event.associatedOrganizations[0].name}} </a>
-                </p>
-                <p>
-                    at
-                    <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}"
-                    target="_blank">{{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}</a>
-                </p>
-                <ul class="list-inline-no-padding">
-                    <li>
-                        <share-buttons title="event.title" description="event.description" image="'//s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
-                        </share-buttons>
-                    </li>
-                    <li>
-                        <a href="//www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}"
-                        target="_blank"><img src="//www.google.com/calendar/images/ext/gc_button3.gif" border=0></a>
-                    </li>
-                </ul>
             </div>
-            <div class="col-md-4">
-                <a ng-show="{ORGANIZER:true}[event.registrationInfo]" class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
-                <div ng-show="event.status!='COMPLETED'">
-                    <p>
-                        <strong>
-                            {{event.maxRegistrations - event.registeredUsers.length | limit10 }}
-                        </strong>
-                    </p>
-                    <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')">
-                        <i class="icon-ok icon-white">
-                        </i>
-                        Register
-                    </button>
-                    <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')">
-                        <i class="icon-ok icon-white">
-                        </i>
-                        Wait list
-                    </button>
-                    <p ng-show="{REGISTERED:true}[event.registrationInfo]">
-                        <i class="icon-ok">
-                        </i>
-                        You are registered!
-                    </p>
-                    <p ng-show="{WAIT_LISTED:true}[event.registrationInfo]">
-                        <i class="icon-ok">
-                        </i>
-                        You are waitlisted!
-                    </p>
-                    <p ng-hide="event.registrationInfo!='REGISTERED'">
-                        <small class="text-muted">
-                            <a href="" ng-click="unregister()">Unregister</a>
-                        </small>
-                    </p>
-                    <p ng-hide="event.registrationInfo!='WAIT_LISTED'">
-                        <small class="text-muted">
-                            <a href="" ng-click="unregister()">Remove from waitlist</a>
-                        </small>
-                    </p>
-                    <p>
-                        <small class="text-muted">
-                            (
+        </div>                
+
+        <div class="row event-view-primary-info-panels">
+            <div class="col-md-6">
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="event-view-icon-panel">
+
+                            <div class="event-view-icon-img-div">
+                                <div class="text-center">
+                                    <div class="event-view-icon-img-only-div">
+                                        <i class="icon-calendar icon-white"></i>
+                                    </div>
+                                    <div>
+                                        <small>
+                                            <a href="//www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank">
+                                                Export
+                                            </a>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="event-view-icon-text-div">
+
+                                <div class="event-view-icon-text-big">
+                                    <strong>
+                                        {{event.startTime | date:'EEEE, MMM d, y'}}
+                                    </strong>
+                                </div>
+                                <div class="event-view-icon-text-big">
+                                    <strong>
+                                        {{event.startTime|date:'shortTime'}} to {{event.endTime|date:'shortTime'}}                            
+                                    </strong>                        
+                                </div>
+                                
+                            </div>
+
+                        </div>
+                    </div>
+                </div>                
+                
+
+                <div class="row vertical-panel-padding">
+                    <div class="col-md-12">
+                        <div class="event-view-icon-panel">
+
+                            <div class="event-view-icon-img-div">
+                                <div class="text-center">
+
+                                    <div class="event-view-icon-img-only-div">
+                                        <i class="icon-map-marker icon-white"></i>
+                                    </div>
+                                    <div>
+                                        <small>
+                                            <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
+                                                Map
+                                            </a>
+                                        </small>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <div class="event-view-icon-text-div">
+
+                                <div class="event-view-icon-text-big">
+                                    <strong>
+                                        Location name
+                                    </strong>
+                                </div>
+                                <div>
+                                    {{event.location.address.street}}
+                                    <br>
+                                    {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}
+                                </div>
+                                
+                            </div>
+
+                        </div>
+                    </div>
+                </div>                
+
+
+
+
+            </div>
+
+            <div class="col-md-6">
+                <div class="event-view-karma-panel">
+
+
+                    <a ng-show="{ORGANIZER:true}[event.registrationInfo]" class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
+                    <div ng-show="event.status!='COMPLETED'">
+                        <p>
                             <strong>
-                                {{event.registeredUsers.length }}
+                                {{event.maxRegistrations - event.registeredUsers.length | limit10 }}
                             </strong>
-                            registered so far!)
-                        </small>
-                    </p>
-                </div>
-                <div ng-show="event.status=='COMPLETED'">
+                        </p>
+                        <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')">
+                            <i class="icon-ok icon-white">
+                            </i>
+                            Register
+                        </button>
+                        <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')">
+                            <i class="icon-ok icon-white">
+                            </i>
+                            Wait list
+                        </button>
+                        <p ng-show="{REGISTERED:true}[event.registrationInfo]">
+                            <i class="icon-ok">
+                            </i>
+                            You are registered!
+                        </p>
+                        <p ng-show="{WAIT_LISTED:true}[event.registrationInfo]">
+                            <i class="icon-ok">
+                            </i>
+                            You are waitlisted!
+                        </p>
+                        <p ng-hide="event.registrationInfo!='REGISTERED'">
+                            <small class="text-muted">
+                                <a href="" ng-click="unregister()">Unregister</a>
+                            </small>
+                        </p>
+                        <p ng-hide="event.registrationInfo!='WAIT_LISTED'">
+                            <small class="text-muted">
+                                <a href="" ng-click="unregister()">Remove from waitlist</a>
+                            </small>
+                        </p>
+
+                    </div>
+
                     <div>
-                        <div class="pull-left responsive-div-pad-right">
-                            Event rating
-                        </div>
-                        <div>
-                            <aggregate-rating value="event.rating">
-                            </aggregate-rating>
-                        </div>
-                    </div>
-                    <div ng-show="EventUtil.canWriteReview(event)">
-                        <div class="pull-left responsive-div-pad-right">
-                            Your rating
-                        </div>
-                        <div>
-                            <event-user-rating user-rating="currentUserRating" event-key="event.key">
-                            </event-user-rating>
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <h3>
                         <em>
-                            <strong>
+                            <strong class="font-size-h3">
                                 +{{event.karmaPoints}} karma
                             </strong>
                         </em>
-                    </h3>
+                    </div>
+                    <div ng-show="event.status=='COMPLETED'">
+                        <aggregate-rating value="event.rating">
+                        </aggregate-rating>
+                    </div>
+
+                    <ul class="list-inline-no-padding">
+                        <li>
+                            <share-buttons title="event.title" description="event.description" image="'//s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
+                            </share-buttons>
+                        </li>
+                    </ul>
+
                 </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="row vertical-panel-padding">
+            <div class="col-md-12">
+                <tabset>
+                    <!-- <tab active="event.status!='COMPLETED'"> -->
+                    <tab>
+                        <tab-heading>
+                            <i class="icon-list"></i> Details
+                        </tab-heading>
+
+
+                        <div ng-show="event.description">
+                            <span ng-bind-html-unsafe="event.description | noHTML | newlines">
+                            </span>
+                        </div>
+                        <div ng-show="event.specialInstructions">
+                            <h4>
+                                <strong>
+                                    Special instructions
+                                </strong>
+                            </h4>
+                            <span ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines">
+                            </span>
+                        </div>
+                        <!-- <input style="display:none" type="text" class="col-md-12 form-control" id="location-title" placeholder="Name of the place"> -->
+                        <div>
+                            <h4>
+                                <strong>                                
+                                    Comments and discussion
+                                </strong>                                
+                            </h4>
+                        </div>
+                        <kex-fb-comments href="{{KexUtil.getLocation()}}" num-posts="20">
+                        </kex-fb-comments>
+                        
+                    </tab>
+
+                    <!-- <tab active="event.status=='COMPLETED'" disabled="event.status!='COMPLETED'"> -->
+                    <tab disabled="event.status!='COMPLETED'">
+                        <tab-heading>
+                            <i class="icon-bolt"></i> Impact
+                        </tab-heading>
+
+                        
+                        <div ng-show="EventUtil.canWriteReview(event)">
+                            <div class="pull-left responsive-div-pad-right">
+                                Your rating
+                            </div>
+                            <div>
+                                <event-user-rating user-rating="currentUserRating" event-key="event.key">
+                                </event-user-rating>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4>
+                                <strong>                                
+                                    Event feedback
+                                </strong>                                
+                            </h4>
+                        </div>
+                        <kex-fb-comments href="{{KexUtil.getLocation()}}" num-posts="20">
+                        </kex-fb-comments>
+                    
+                    </tab>
+                </tabset>
             </div>
         </div>
-        <hr>
+
+<!-- 
         <div class="row" ng-show="event.status=='COMPLETED'" name="past-events-album">
+            <img ng-src="{{KexUtil.urlStripProtocol(image.picture)}}" max-height="500">
             <carousel interval="myInterval">
                 <slide ng-repeat="image in fbAlbum" active="slide.active">
                     <div class="col-md-12 pagination-centered">
                         <img ng-src="{{image.picture}}" max-height="500">
-                        <!-- TODO(avaliani): Https is not working for the carousel immages. Revisit. -->
-                        <!-- <img ng-src="{{KexUtil.urlStripProtocol(image.picture)}}" max-height="500"> -->
                     </div>
                     <div ng-show="image.name" class="carousel-caption">
                         <p>
@@ -157,37 +272,49 @@
                     <a href="" class="btn fileupload-exists" dismiss="fileupload" ng-click="closeImageUpload()">Cancel</a>
                 </form>
             </div>
-            <!-- <button ng-show="{REGISTERED:true,ORGANIZER:true}[event.registrationInfo]" class="btn btn-file
-            fileupload-new" ng-click="openImageUpload()">Add pics</button> -->
         </div>
-        <div ng-show="event.description">
-            <h4>
-                <strong>
-                    What?
-                </strong>
-            </h4>
-            <p ng-bind-html-unsafe="event.description | noHTML | newlines">
-            </p>
-        </div>
-        <div ng-show="event.specialInstructions">
-            <h4>
-                <strong>
-                    Special instructions
-                </strong>
-            </h4>
-            <p ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines">
-            </p>
-        </div>
-        <input style="display:none" type="text" class="col-md-12 form-control" id="location-title" placeholder="Name of the place">
-        <legend>
-            <strong>
-                Comments and discussion
-            </strong>
-        </legend>
-        <kex-fb-comments href="{{KexUtil.getLocation()}}" num-posts="20">
-        </kex-fb-comments>
+ -->
+
     </div>
+
     <div class="col-md-3">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="event-sidebar-panel-header">
+                    Organized by
+                </div>
+                <div>
+                    <div class="event-sidebar-org-img-panel">
+                        <a href="#/org/{{event.organization.key}}">
+                            <img ng-src="{{fbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org">
+                        </a>
+                    </div>
+                    <div class="event-sidebar-org-info-panel">
+                        <div class="event-sidebar-element">
+                            <div>
+                                <strong>
+                                    <a href="#/org/{{event.organization.key}}">
+                                        {{event.organizationDetails.orgName}}
+                                    </a>                                
+                                </strong>
+                            </div>
+                            <div>
+                                <aggregate-rating value="event.organizationDetails.eventRating">
+                                </aggregate-rating>
+                            </div>
+                            <div>
+                                <strong>
+                                    <em>
+                                        +{{event.organizationDetails.karmaPoints}} karma
+                                    </em>
+                                </strong>                            
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <participants-sidebar 
             fetched-participants="eventOrganizers" 
             type="ORGANIZER"

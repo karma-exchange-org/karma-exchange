@@ -1,15 +1,13 @@
 <div ng-hide="fetchedParticipants.data.length == 0">
     <div class="row">
         <div class="col-md-12">
-            <h4>
-                <strong>{{header}} 
-                    <span ng-hide="{ORGANIZER: true}[type]">({{participantCount}})</span>
-                </strong>
-            </h4>
+            <div class="event-sidebar-panel-header">
+                {{header}} <span ng-hide="{ORGANIZER: true}[type]">({{participantCount}})</span>
+            </div>
         </div>
     </div>
-    <div class="border-top-1 vertical-panel-padding">
-        <div ng-repeat="user in fetchedParticipants.data" class="partcipants-sidebar-users">
+    <div>
+        <div ng-repeat="user in fetchedParticipants.data" class="event-sidebar-element">
             <div class="row">
                 <div class="col-md-12">
                     <div class="pull-left">
