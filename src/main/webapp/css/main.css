@@ -331,7 +331,7 @@ img.kex-thumbnail-user-mini {
   width: 50px;
   display: inline-block;
   vertical-align: top;
-  max-width: 20%;
+  max-width: 18%;
 }
 
 .event-view-icon-img-only-div {
@@ -343,10 +343,10 @@ img.kex-thumbnail-user-mini {
 .event-view-icon-text-div {
   border-left: 1px solid #999;
   padding-left: 20px;
-  margin-left: 10px;
+  /*margin-left: 10px;*/
   display: inline-block;
   vertical-align: top;
-  max-width: 80%;
+  max-width: 82%;
 }
 
 .event-view-icon-text-big {
