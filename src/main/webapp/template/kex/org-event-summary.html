@@ -1,0 +1,29 @@
+<div>
+    <div class="org-event-summary-img-panel">
+        <a href="#/org/{{org.key}}">
+            <img ng-src="{{FbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org">
+        </a>
+    </div>
+    <div class="org-event-summary-info-panel">
+        <div>
+            <div>
+                <strong>
+                    <a href="#/org/{{org.key}}">
+                        {{org.orgName}}
+                    </a>                                
+                </strong>
+            </div>
+            <div>
+                <aggregate-rating value="org.eventRating">
+                </aggregate-rating>
+            </div>
+            <div>
+                <strong>
+                    <em>
+                        +{{org.karmaPoints}} karma
+                    </em>
+                </strong>                            
+            </div>
+        </div>
+    </div>    
+</div>

@@ -33,8 +33,6 @@ public class ExpandedEventSearchView extends EventSearchView {
 
   // TODO(avaliani): need to expand causes.
   private List<CauseType> causes;
-  // TODO(avaliani): need to expand organizations.
-  private KeyWrapper<Organization> organization;
 
   public static ExpandedEventSearchView create(Event event) {
     // Only fetch the review if the current user is registered for the event.
@@ -58,6 +56,5 @@ public class ExpandedEventSearchView extends EventSearchView {
     numOrganizers = event.getOrganizers().size();
 
     causes = event.getCauses();
-    organization = event.getOrganization();
   }
 }

@@ -11,13 +11,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import org.karmaexchange.dao.AggregateRating;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
-import org.karmaexchange.dao.PageRef;
 
 @XmlRootElement
 @Data
@@ -29,34 +27,18 @@ public class EventView implements BaseDaoView<Event> {
   @Setter(AccessLevel.NONE)
   private Event event = new Event();
 
-  private OrgDetails organizationDetails;
+  private OrgEventSummary organizationDetails;
 
   public EventView(Event event) {
     this.event = event;
     Organization org = ofy().load().key(KeyWrapper.toKey(event.getOrganization())).now();
     if (org != null) {
-      organizationDetails = new OrgDetails(org);
+      organizationDetails = new OrgEventSummary(org);
     }
   }
 
   @Override
   public Event getDao() {
     return event;
-  }
-
-  @Data
-  @NoArgsConstructor
-  public static class OrgDetails {
-    private String orgName;
-    private PageRef page;
-    private long karmaPoints;
-    private AggregateRating eventRating;
-
-    public OrgDetails(Organization org) {
-      orgName = org.getOrgName();
-      page = org.getPage();
-      karmaPoints = org.getKarmaPoints();
-      eventRating = org.getEventRating();
-    }
   }
 }

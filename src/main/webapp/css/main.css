@@ -284,19 +284,6 @@ img.kex-thumbnail-user-mini {
   margin-bottom: 10px;
 }
 
-.event-sidebar-org-img-panel {
-  display: inline-block;
-  vertical-align: top;
-  max-width: 25%;
-}
-
-.event-sidebar-org-info-panel {
-  display: inline-block;
-  vertical-align: top;
-  max-width: 75%;
-}
-
-
 /*  
  * Event info panels
  */
@@ -363,6 +350,38 @@ img.kex-thumbnail-user-mini {
   font-size: 18px;
   font-weight: bold;
   /*font-style: italic;*/
+}
+
+/*
+ * org-event-summary.html
+ */
+
+.org-event-summary-img-panel {
+  display: inline-block;
+  vertical-align: top;
+  max-width: 27%;
+}
+
+.org-event-summary-info-panel {
+  display: inline-block;
+  vertical-align: top;
+  max-width: 73%;
+}
+
+/*
+ * event-participant-summary.html
+ */
+
+.participant-summary-img-panel {
+  display: inline-block;
+  vertical-align: top;
+  max-width: 27%;
+}
+
+.participant-summary-info-panel {
+  display: inline-block;
+  vertical-align: top;
+  max-width: 73%;
 }
 
 /*==================================================

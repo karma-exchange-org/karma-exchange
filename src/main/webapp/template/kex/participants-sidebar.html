@@ -8,31 +8,7 @@
     </div>
     <div>
         <div ng-repeat="user in fetchedParticipants.data" class="event-sidebar-element">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="pull-left">
-                        <a href="#/user/{{user.key}}">
-                            <img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user">
-                        </a>
-                    </div>
-                    <div class="pull-left">
-                        <div>
-                            <a href="#/user/{{user.key}}"><strong>{{user.firstName}}</strong></a>
-                        </div>
-                        <div ng-show="{ORGANIZER: true}[type]">
-                            <aggregate-rating value="user.eventOrganizerRating">
-                            </aggregate-rating>
-                        </div>
-                        <div>
-                            <strong>
-                                <em>
-                                    +{{user.karmaPoints}} karma
-                                </em>
-                            </strong>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <event-participant-summary user="user" type="type"></event-participant-summary>
         </div>
         <div class="row">
             <div class="col-md-12">
