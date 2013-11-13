@@ -99,14 +99,31 @@
             <div class="col-md-6">
                 <div class="event-view-karma-panel">
 
+                    <div class="event-view-volunteers-needed" ng-show="event.status!='COMPLETED'">
+                        {{event.maxRegistrations - event.registeredUsers.length | limit10Verbose }}
+                    </div>
 
-                    <a ng-show="{ORGANIZER:true}[event.registrationInfo]" class="btn btn-success" href="#/event/{{event.key}}/edit"><i class="icon-ok icon-white"></i>Edit event</a>
+                    <div class="font-size-h4">
+                        <event-registration-info 
+                            registration-info="event.registrationInfo"
+                            type="DETAILS">
+                        </event-registration-info>
+                    </div>
+                    <div class="event-view-action">
+                        <div ng-show="event.registrationInfo=='ORGANIZER'">
+                            <a href="#/event/{{event.key}}/edit">Edit event</a>
+                        </div>
+                        <div ng-show="event.status!='COMPLETED'">
+                            <div ng-show="event.registrationInfo=='REGISTERED'">
+                                <a href="" ng-click="unregister()">Unregister</a>
+                            </div>
+                            <div ng-show="event.registrationInfo=='WAIT_LISTED'">
+                                <a href="" ng-click="unregister()">Remove from waitlist</a>
+                            </div>
+                        </div>
+                    </div>
+
                     <div ng-show="event.status!='COMPLETED'">
-                        <p>
-                            <strong>
-                                {{event.maxRegistrations - event.registeredUsers.length | limit10 }}
-                            </strong>
-                        </p>
                         <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')">
                             <i class="icon-ok icon-white">
                             </i>
@@ -117,27 +134,6 @@
                             </i>
                             Wait list
                         </button>
-                        <p ng-show="{REGISTERED:true}[event.registrationInfo]">
-                            <i class="icon-ok">
-                            </i>
-                            You are registered!
-                        </p>
-                        <p ng-show="{WAIT_LISTED:true}[event.registrationInfo]">
-                            <i class="icon-ok">
-                            </i>
-                            You are waitlisted!
-                        </p>
-                        <p ng-hide="event.registrationInfo!='REGISTERED'">
-                            <small class="text-muted">
-                                <a href="" ng-click="unregister()">Unregister</a>
-                            </small>
-                        </p>
-                        <p ng-hide="event.registrationInfo!='WAIT_LISTED'">
-                            <small class="text-muted">
-                                <a href="" ng-click="unregister()">Remove from waitlist</a>
-                            </small>
-                        </p>
-
                     </div>
 
                     <div>
