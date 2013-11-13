@@ -25,7 +25,6 @@ import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.EventResource.EventSearchType;
-import org.karmaexchange.resources.msg.EventView.OrgDetails;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -45,7 +44,7 @@ public class EventSearchView {
   private Permission permission;
 
   private KeyWrapper<Organization> organization;
-  private OrgDetails organizationDetails;
+  private OrgEventSummary organizationDetails;
   private List<OrganizationNamedKeyWrapper> associatedOrganizations = Lists.newArrayList();
 
   private String title;
@@ -112,7 +111,7 @@ public class EventSearchView {
 
     organization = event.getOrganization();
     if (fetchedOrg != null) {
-      organizationDetails = new OrgDetails(fetchedOrg);
+      organizationDetails = new OrgEventSummary(fetchedOrg);
     }
     associatedOrganizations = event.getAssociatedOrganizations();
 

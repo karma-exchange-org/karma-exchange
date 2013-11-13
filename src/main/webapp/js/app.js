@@ -790,6 +790,34 @@ kexApp.directive('participantsSidebar', function() {
     }
 });
 
+kexApp.directive('orgEventSummary', function(FbUtil) {
+    return {
+        restrict: 'E',
+        scope: {
+            org: '=',
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.FbUtil = FbUtil;
+        },
+        templateUrl: 'template/kex/org-event-summary.html'
+    }
+});
+
+kexApp.directive('eventParticipantSummary', function() {
+    return {
+        restrict: 'E',
+        scope: {
+            user: '=',
+            type: '='
+        },
+        replace: true,
+        transclude: false,
+        templateUrl: 'template/kex/event-participant-summary.html'
+    }
+});
+
 /*
  * App controllers
  */

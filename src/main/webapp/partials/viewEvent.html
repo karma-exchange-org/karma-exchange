@@ -279,34 +279,8 @@
                 <div class="event-sidebar-panel-header">
                     Organized by
                 </div>
-                <div>
-                    <div class="event-sidebar-org-img-panel">
-                        <a href="#/org/{{event.organization.key}}">
-                            <img ng-src="{{fbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org">
-                        </a>
-                    </div>
-                    <div class="event-sidebar-org-info-panel">
-                        <div class="event-sidebar-element">
-                            <div>
-                                <strong>
-                                    <a href="#/org/{{event.organization.key}}">
-                                        {{event.organizationDetails.orgName}}
-                                    </a>                                
-                                </strong>
-                            </div>
-                            <div>
-                                <aggregate-rating value="event.organizationDetails.eventRating">
-                                </aggregate-rating>
-                            </div>
-                            <div>
-                                <strong>
-                                    <em>
-                                        +{{event.organizationDetails.karmaPoints}} karma
-                                    </em>
-                                </strong>                            
-                            </div>
-                        </div>
-                    </div>
+                <div class="event-sidebar-element">
+                    <org-event-summary org="event.organizationDetails"></org-event-summary>
                 </div>
             </div>
         </div>
