@@ -353,6 +353,18 @@ img.kex-thumbnail-user-mini {
   font-size: 18px;
 }
 
+.event-view-action {
+  text-transform: uppercase;
+  font-size: 85%; /* equal to small tag */
+}
+
+.event-view-volunteers-needed {
+  padding-bottom: 20px;
+  font-size: 18px;
+  font-weight: bold;
+  /*font-style: italic;*/
+}
+
 /*==================================================
  * Angular-ui 
  * ===============================================*/

@@ -110,38 +110,58 @@ kexApp = angular.module( "kexApp",
         cookie : true, 
         xfbml : false });
         
-} ).filter( 'newlines', function( ) { 
+})
+.filter( 'newlines', function( ) { 
     return function( text ) { 
         if( text ) 
         { 
             return text.replace( /\n/g, '<br/>' );  
         }
     } 
-} ).filter( 'noHTML', function( ) { 
+})
+.filter( 'noHTML', function( ) { 
     return function( text ) { 
         if( text ) 
         { 
             return text.replace( /&/g, '&amp;' ).replace( />/g, '&gt;' ).replace( /</g, '&lt;' ); 
         }
     } 
-} ).filter( 'limit10', function( ) { 
+} )
+.filter( 'limit10', function( ) { 
     return function( text ) { 
         if( text > 10 ) 
         { 
-            return 'Need more than 10'; 
+            return 'More than 10'; 
         } 
-        else if( text == "0" ) 
+        else if ( text == "0" ) 
         { 
-            return 'Fully registered!'; 
+            return 'Event is full';
         } 
         else
         { 
-            return "Need " + text + " more"; 
-        } 
-        return text; 
+            return text;
+        }
     }
 }
-).filter( 'badge', function( ) { 
+)
+.filter( 'limit10Verbose', function( ) { 
+    return function( text ) { 
+        if( text > 10 ) 
+        { 
+            return 'Volunteers needed: more than 10'; 
+        } 
+        else if ( text == "0" ) 
+        { 
+            return "No additional volunteers are needed at this time";
+        } 
+        else
+        { 
+            return "Volunteers needed: " + text;
+        }
+    }
+}
+)
+.filter( 'badge', function( ) { 
     return function( text ) { 
         if( text > 0 ) 
         { 
@@ -155,7 +175,8 @@ kexApp = angular.module( "kexApp",
         return text; 
     }
 }
-).filter('truncate', function () {
+)
+.filter('truncate', function () {
     return function (text, length, end) {
         if (text == null || text.length == 0)
             return null;
@@ -174,8 +195,8 @@ kexApp = angular.module( "kexApp",
         }
 
     };
-}
-).run( function( $rootScope, Me, $location, FbUtil) { 
+})
+.run( function( $rootScope, Me, $location, FbUtil) { 
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) { 
             $rootScope.alerts = [ ]; 
@@ -613,14 +634,21 @@ kexApp.directive('eventRegistrationInfo', function() {
         transclude: false,
         link: function (scope, element, attrs) {
             scope.showLabel = false;
+            scope.$watch('type', function() {
+                updateLabel();
+            });
+            scope.$watch('registrationInfo', function() {
+                updateLabel();
+            });
+
             var registrationInfoMapping = {
-                ORGANIZER: { text: 'Organizer', labelClass: 'label-success', type: ['UPCOMING', 'PAST']},
-                REGISTERED: { text: 'Registered', labelClass: 'label-success', type: ['UPCOMING']},
-                WAIT_LISTED: { text: 'Waitlisted', labelClass: 'label-warning', type: ['UPCOMING']},
+                ORGANIZER: { text: 'Organizer', labelClass: 'label-success', type: ['UPCOMING', 'PAST', 'DETAILS']},
+                REGISTERED: { text: 'Registered', labelClass: 'label-success', type: ['UPCOMING', 'DETAILS']},
+                WAIT_LISTED: { text: 'Waitlisted', labelClass: 'label-warning', type: ['UPCOMING', 'DETAILS']},
                 CAN_WAIT_LIST: { text: 'Waitlist Open', labelClass: 'label-warning', type: ['UPCOMING']}
             };
-            scope.$watch('type', function() {
-                if (scope.type) {
+            function updateLabel() {
+                if (scope.type && scope.registrationInfo) {
                     var mapping = registrationInfoMapping[scope.registrationInfo];
                     if (mapping && ($.inArray(scope.type, mapping.type) != -1)) {
                         scope.showLabel = true;
@@ -630,7 +658,7 @@ kexApp.directive('eventRegistrationInfo', function() {
                 } else {
                     scope.showLabel = false;
                 }
-            });
+            }
         },
         template:
             '<span ng-class="labelClass" ng-show="showLabel">{{labelText}}</span>'
