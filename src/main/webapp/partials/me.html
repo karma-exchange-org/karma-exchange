@@ -84,7 +84,11 @@
                     Impact
                 </tab-heading>
 
-                <impact-timeline timeline-events="impactTimelineEvents" self-profile-view="{ALL:true}[me.permission]"></impact-timeline>
+                <impact-timeline 
+                    timeline-events="impactTimelineEvents" 
+                    self-profile-view="{ALL:true}[me.permission]"
+                    timeline-type="'USER'">
+                </impact-timeline>
             </tab>
             <tab>
                 <tab-heading>
@@ -93,30 +97,10 @@
                     Upcoming Events
                 </tab-heading>
 
-                <ul class="list-unstyled">
-                    <li ng-repeat="event in events.data">
-                        <div class="row well well-sm col-md-12">
-                            <div class="col-md-12">
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <strong >{{event.startTime | date:'mediumDate'}}</strong>
-                                        <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a> 
-                                        <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]" ><small>organizer</small></button>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <small class="text-muted">{{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}</small>
-                                        <small class="text-muted">at {{event.location.title}}, {{event.location.address.city}}</small>
-                                        <div class="pull-right">
-                                                <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
-                                        </div>                                                                                    
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </li>
-                </ul>
+                <upcoming-events 
+                    events="events"
+                    search-type="'USER'">
+                </upcoming-events>
 
             </tab>
         </tabset>

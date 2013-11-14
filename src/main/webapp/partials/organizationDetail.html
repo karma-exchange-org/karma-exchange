@@ -85,7 +85,7 @@
                 Impact
             </tab-heading>
 
-            <impact-timeline timeline-events="impactTimelineEvents"></impact-timeline>
+            <impact-timeline timeline-events="impactTimelineEvents" timeline-type="'ORG'"></impact-timeline>
 
         </tab>
         <tab>
@@ -94,72 +94,12 @@
                 </i>
                 Upcoming Events
             </tab-heading>
-            <p>
-            </p>
-            <ul class="list-unstyled container">
-                <li ng-repeat="event in upcomingEvents.data">
-                    <div class="row well well-sm col-md-12">
-                        <div class="col-md-2">
-                            <div class="row">
-                                <button ng-show="{ORGANIZER:true}[event.registrationInfo]" type="button" class="btn btn-danger btn-xs"
-                                disabled="disabled">
-                                    <i class="icon-ok">
-                                    </i>
-                                    Organizer
-                                </button>
-                                <button ng-show="{REGISTERED:true}[event.registrationInfo]" type="button" class="btn btn-success btn-xs"
-                                disabled="disabled">
-                                    <i class="icon-ok">
-                                    </i>
-                                    Registered
-                                </button>
-                                <button ng-show="{WAIT_LISTED:true}[event.registrationInfo]" type="button" class="btn btn-warning btn-xs"
-                                disabled="disabled">
-                                    <i class="icon-exclamation">
-                                    </i>
-                                    Waitlisted
-                                </button>
-                                <button ng-hide="{WAIT_LISTED:true,REGISTERED:true,ORGANIZER:true}[event.registrationInfo]" type="button"
-                                class="btn btn-default btn-xs" disabled="disabled">
-                                    {{event.maxRegistrations-event.numRegistered | limit10 }}
-                                </button>
-                                <button type="button" class="btn btn-default btn-xs" disabled="disabled">
-                                    {{event.numAttending }} attending
-                                </button>
-                            </div>
-                        </div>
-                        <div class="col-md-10">
-                            <div class="row">
-                                <strong>
-                                    {{event.startTime | date:'mediumDate'}}
-                                </strong>
-                                <a href="#/event/{{event.key}}"><strong>{{event.title}} </strong></a>
-                                <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{ORGANIZER:true}[event.registrationInfo]">
-                                    <small>
-                                        organizer
-                                    </small>
-                                </button>
-                                <button disabled="disabled" type="button" class="btn btn-info btn-xs pull-right" ng-show="{REGISTERED:true}[event.registrationInfo]">
-                                    <small>
-                                        registered
-                                    </small>
-                                </button>
-                            </div>
-                            <div class="row">
-                                <small class="text-muted">
-                                    {{event.startTime | date:'shortTime'}} - {{event.endTime | date:'shortTime'}}
-                                </small>
-                                <small class="text-muted">
-                                    at {{event.location.title}}, {{event.location.address.city}}
-                                </small>
-                                <div class="pull-right">
-                                    <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
+
+            <upcoming-events 
+                events="upcomingEvents"
+                search-type="'ORG'">
+            </upcoming-events>
+            
         </tab>
         <tab select="myCalendar.fullCalendar('render');">
             <tab-heading>
