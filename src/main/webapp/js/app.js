@@ -627,8 +627,9 @@ kexApp.directive('eventRegistrationInfo', function() {
     return {
         restrict: 'E',
         scope: {
-            type: '@',
+            type: '=',
             registrationInfo: '=',
+            userRegistrationInfo: '=',
         },
         replace: true,
         transclude: false,
@@ -640,16 +641,25 @@ kexApp.directive('eventRegistrationInfo', function() {
             scope.$watch('registrationInfo', function() {
                 updateLabel();
             });
+            scope.$watch('userRegistrationInfo', function() {
+                updateLabel();
+            });
 
             var registrationInfoMapping = {
-                ORGANIZER: { text: 'Organizer', labelClass: 'label-success', type: ['UPCOMING', 'PAST', 'DETAILS']},
-                REGISTERED: { text: 'Registered', labelClass: 'label-success', type: ['UPCOMING', 'DETAILS']},
-                WAIT_LISTED: { text: 'Waitlisted', labelClass: 'label-warning', type: ['UPCOMING', 'DETAILS']},
-                CAN_WAIT_LIST: { text: 'Waitlist Open', labelClass: 'label-warning', type: ['UPCOMING']}
+                ORGANIZER: { text: 'Organizer', labelClass: 'label-success', 
+                    type: ['UPCOMING', 'USER-PAST', 'USER-UPCOMING', 'ORG-PAST', 'ORG-UPCOMING', 'DETAILS']},
+                REGISTERED: { text: 'Registered', labelClass: 'label-success', 
+                    type: ['UPCOMING', 'ORG-PAST', 'ORG-UPCOMING', 'DETAILS']},
+                WAIT_LISTED: { text: 'Waitlisted', labelClass: 'label-warning', 
+                    type: ['UPCOMING', 'USER-UPCOMING', 'ORG-UPCOMING', 'DETAILS']},
+                CAN_WAIT_LIST: { text: 'Waitlist Open', labelClass: 'label-warning', 
+                    type: ['UPCOMING', 'ORG-UPCOMING']}
             };
             function updateLabel() {
                 if (scope.type && scope.registrationInfo) {
-                    var mapping = registrationInfoMapping[scope.registrationInfo];
+                    var registrationInfo = 
+                        scope.userRegistrationInfo ? scope.userRegistrationInfo : scope.registrationInfo;
+                    var mapping = registrationInfoMapping[registrationInfo];
                     if (mapping && ($.inArray(scope.type, mapping.type) != -1)) {
                         scope.showLabel = true;
                         scope.labelText = mapping.text;
@@ -762,7 +772,8 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil) {
         restrict: 'E',
         scope: {
             timelineEvents: '=',
-            selfProfileView: '='
+            selfProfileView: '=',
+            timelineType: '='
         },
         replace: true,
         transclude: false,
@@ -815,6 +826,19 @@ kexApp.directive('eventParticipantSummary', function() {
         replace: true,
         transclude: false,
         templateUrl: 'template/kex/event-participant-summary.html'
+    }
+});
+
+kexApp.directive('upcomingEvents', function() {
+    return {
+        restrict: 'E',
+        scope: {
+            events: '=',
+            searchType: '='
+        },
+        replace: true,
+        transclude: false,
+        templateUrl: 'template/kex/upcoming-events.html'
     }
 });
 

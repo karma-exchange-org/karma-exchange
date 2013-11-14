@@ -269,6 +269,12 @@ img.kex-thumbnail-user-mini {
   border-top: 1px solid #999;
 }
 
+/* This is needed to avoid scrollbars in tabs. */
+.row-no-margin {
+  margin-left: 0;
+  margin-right: 0;
+}
+
 /*  
  * Event sidebar 
  */

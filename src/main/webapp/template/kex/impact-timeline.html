@@ -1,4 +1,4 @@
-<div class="row" ng-repeat="pastEventsGroup in timelineEvents">
+<div class="row row-no-margin" ng-repeat="pastEventsGroup in timelineEvents">
     <div class="col-md-6" ng-repeat="event in pastEventsGroup">
         <div class="well well-sm">
             <div class="row">
@@ -42,8 +42,9 @@
                         <div>
                             <div class="pull-right">
                                 <event-registration-info 
-                                    registration-info="event.userEventSearchInfo.registrationInfo"
-                                    type="PAST">
+                                    registration-info="event.registrationInfo"
+                                    user-registration-info="event.userEventSearchInfo.registrationInfo"
+                                    type="{USER:'USER-PAST', ORG:'ORG-PAST'}[timelineType]">
                                 </event-registration-info>
                             </div>                                            
                         </div>
