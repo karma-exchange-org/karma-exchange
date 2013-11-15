@@ -56,15 +56,22 @@
                     </div>
                 </div>
             </div>
-            <div class="panel-body">
+            <div class="panel-body panel-grid">
 
-                <div class="row">
-                    <div class="col-md-6" ng-repeat="org in orgs.data">
-                        <div class="well well-sm">
+                <div class="panel-grid-el-2-col" ng-repeat="org in orgs.data">
+                    <div class="well well-sm well-no-margin">
+
+                        <div class="img-text-div-img-small">
                             <a href="#/org/{{org.org.key}}">
-                                <img ng-src="{{fbUtil.getImageUrl(org.orgPage.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org-small">{{org.orgName}}
+                                <img ng-src="{{fbUtil.getImageUrl(org.orgPage.name, 'square')}}" class="kex-thumbnail-org-small">
                             </a>
                         </div>
+                        <div class="img-text-div-text">
+                            <a href="#/org/{{org.org.key}}">
+                                {{org.orgName}}
+                            </a>
+                        </div>
+
                     </div>
                 </div>
 

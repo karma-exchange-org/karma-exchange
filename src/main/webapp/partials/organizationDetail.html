@@ -1,248 +1,303 @@
 <div class="container">
     <div class="row">
+
         <div class="col-md-6">
-            <!-- pictures and org main info-->
             <h3>
                 <strong>
                     {{fbPage.name}}
                 </strong>
-                <a href ng-click="showMessage();"><small><i class="icon-envelope"></i>Message</small></a>
             </h3>
             <img ng-src="{{fbPage.cover.source}}" class="img-responsive">
         </div>
+
         <div class="col-md-6">
-            <div class="fb-like" href="{{org.page.url}}" send="true" width="450" show-faces="true"
-            colorscheme="dark" action="recommend">
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <h4>
-                        <strong>
-                            <em>
-                                +{{org.karmaPoints}} karma
-                            </em>
-                        </strong>
-                    </h4>
-                </div>
-                <div class="col-md-6">
-                    <strong>
-                        Event rating
+
+            <div class="org-info-panel">
+                <em>
+                    <strong class="font-size-h4">
+                        +{{org.karmaPoints}} karma
                     </strong>
-                    <rating value="org.eventRating.value" max="5" readonly="true">
-                    </rating>
-                    ({{org.eventRating.count}})
+                </em>
+                <div>
+                    Event rating:
+                    <aggregate-rating value="org.eventRating"></aggregate-rating>
                 </div>
-            </div>
-            <hr>
-            <div ng-show="org.parentOrg" class="row box effect7 effect8 ">
-                <p>
-                    <strong>
-                        Parent:
-                    </strong>
-                    <a href="#/org/{{org.parentOrg.key}}">{{org.parentOrg.name}}</a>
-                </p>
-            </div>
-            <div class="row">
-                <strong>
-                    Mission
-                </strong>
-                <hr>
-                {{fbPage.mission}}
-            </div>
-            <div class="row">
-                <strong>
-                    Address
-                </strong>
-                <hr>
-                <address>
-                    <a href="//maps.google.com/?q={{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}"
+
+                <div class="org-info-panel-details">
+                    <div class="org-info-panel-details-row" ng-show="fbPage.location">
+                        <div class="org-info-panel-details-row-img">
+                            <i class="icon-map-marker"></i>
+                        </div>
+                        <div class="org-info-panel-details-row-text">
+                            <a href="//maps.google.com/?q={{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}"
                     target="_blank">{{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}</a>
-                    <br>
-                    <abbr title="Phone">
-                        P:
-                    </abbr>
-                    {{fbPage.phone}}
-                </address>
+                        </div>
+                    </div>
+
+                    <div class="org-info-panel-details-row">
+                        <div class="org-info-panel-details-row-img">
+                            <i class="icon-envelope"></i>
+                        </div>
+                        <div class="org-info-panel-details-row-text">
+                            <a href ng-click="showMessage();">Message</a>
+                        </div>
+                    </div>
+
+                    <div class="org-info-panel-details-row" ng-show="fbPage.phone">
+                        <div class="org-info-panel-details-row-img">
+                            <i class="icon-phone"></i>
+                        </div>
+                        <div class="org-info-panel-details-row-text">
+                            {{fbPage.phone}}
+                        </div>
+                    </div>
+                </div>
             </div>
+
+
+            <div class="panel panel-default panel-seperated-vertical">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        Mission
+                    </h3>
+
+                </div>
+                <div class="panel-body panel-body-text-only">
+                    {{fbPage.mission}}
+                </div>
+            </div>
+
+            <div class="panel panel-default panel-seperated-vertical" ng-show="parentOrg">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        Chapter of
+                    </h3>
+                </div>
+
+                <div class="panel-body panel-grid">
+
+                    <div class="panel-grid-el-2-col">
+                        <div class="well well-sm well-no-margin">
+                            <div class="img-text-div-img-small">
+                                <a href="#/org/{{parentOrg.key}}">
+                                    <img ng-src="{{FbUtil.getImageUrl(parentOrg.page.name, 'square')}}" class="kex-thumbnail-org-small">
+                                </a>
+                            </div>
+                            <div class="img-text-div-text">
+                                <a href="#/org/{{parentOrg.key}}">
+                                    {{parentOrg.orgName}}
+                                </a>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="panel panel-default panel-seperated-vertical" ng-show="childOrgs.data.length>0">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        Chapters
+                    </h3>
+                </div>
+
+                <div class="panel-body panel-grid">
+
+                    <div class="panel-grid-el-2-col" ng-repeat="org in childOrgs.data">
+                        <div class="well well-sm well-no-margin">
+                            <div class="img-text-div-img-small">
+                                <a href="#/org/{{org.key}}">
+                                    <img ng-src="{{FbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-org-small">
+                                </a>
+                            </div>
+                            <div class="img-text-div-text">
+                                <a href="#/org/{{org.key}}">
+                                    {{org.orgName}}
+                                </a>
+                            </div>
+
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
         </div>
     </div>
-    <div class="row" ng-show="childOrgs.data.length>0">
-        <h4>
-            Child organizations
-        </h4>
-        <ul class="list-inline">
-            <li ng-repeat="childOrg in childOrgs.data">
-                <a href="#/org/{{childOrg.key}}" class="btn btn-xs btn-{{getColorClass($index)}}">{{childOrg.orgName}}</a>
-            </li>
-        </ul>
+
+    <div class="vertical-panel-margin">
+        <tabset>
+            <tab>
+                <tab-heading>
+                    <i class="icon-bolt">
+                    </i>
+                    Impact
+                </tab-heading>
+
+                <impact-timeline timeline-events="impactTimelineEvents" timeline-type="'ORG'"></impact-timeline>
+
+            </tab>
+            <tab>
+                <tab-heading>
+                    <i class="icon-list">
+                    </i>
+                    Upcoming Events
+                </tab-heading>
+
+                <upcoming-events 
+                    events="upcomingEvents"
+                    search-type="'ORG'">
+                </upcoming-events>
+                
+            </tab>
+            <tab select="myCalendar.fullCalendar('render');">
+                <tab-heading>
+                    <i class="icon-calendar">
+                    </i>
+                    Calendar
+                </tab-heading>
+                <div class="col-md-12 container">
+                    <!-- <div full-calendar events="events"></div> -->
+                    <div class="calendar" ng-model="eventSources" calendar="myCalendar" config="uiConfig.calendar" ui-calendar="uiConfig.calendar">
+                    </div>
+                </div>
+            </tab>
+            <tab>
+                <tab-heading>
+                    <i class="icon-thumbs-up">
+                    </i>
+                    Top volunteers
+                </tab-heading>
+                <div class="col-md-6">
+                    <h3>
+                        All time
+                    </h3>
+                    <ol>
+                        <li class="well well-sm" ng-repeat="leader in allTimeLeaders.scores">
+                            <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
+                        </li>
+                    </ol>
+                </div>
+                <div class="col-md-6">
+                    <h3>
+                        Last month
+                    </h3>
+                    <ol>
+                        <li class="well well-sm" ng-repeat="leader in lastMonthLeaders.scores">
+                            <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
+                        </li>
+                    </ol>
+                </div>
+            </tab>
+            <!-- <tab> -->
+            <!-- <tab-heading><i class="icon-picture"></i> Albums</tab-heading> -->
+            <!-- <div id="fbgallery" fbgallery userid="{{fbPage.id}}" type="facebook"> -->
+            <!-- </div>  -->
+            <!-- </tab>  -->
+            <tab>
+                <tab-heading>
+                    <i class="icon-group">
+                    </i>
+                    Members
+                </tab-heading>
+                <div class="row">
+                    <!--admins-->
+                    <div class="col-md-12" ng-hide="orgOwners.data.length==0">
+                        <h4>
+                            Admins
+                        </h4>
+                        <hr>
+                        <ul class="list-inline">
+                            <li ng-repeat="user in orgOwners.data">
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <p>
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" ng-hide="orgOrgnaizers.data.length==0">
+                        <h4>
+                            Organizers
+                        </h4>
+                        <hr>
+                        <ul class="list-inline">
+                            <li ng-repeat="user in orgOrgnaizers.data">
+                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <p>
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </tab>
+            <tab disabled="{READ:true}[org.permission]" ng-hide="{READ:true}[org.permission]">
+                <tab-heading>
+                    <i class="icon-cogs">
+                    </i>
+                    Manage membership {{pendingMembers.data.length | badge}}
+                </tab-heading>
+                <div class="row">
+                    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+                        <!--orgnaizers-->
+                        <h4>
+                            Pending Admins
+                        </h4>
+                        <hr>
+                        <ul class="list-inline">
+                            <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ADMIN'}">
+                                <p>
+                                    <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                </p>
+                                <p>
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+                        <!--orgnaizers-->
+                        <h4>
+                            Pending Organizers
+                        </h4>
+                        <hr>
+                        <ul class="list-inline">
+                            <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ORGANIZER'}">
+                                <p>
+                                    <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                </p>
+                                <p>
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+                        <!--orgnaizers-->
+                        <h4>
+                            Pending memberships
+                        </h4>
+                        <hr>
+                        <ul class="list-inline">
+                            <li ng-repeat="user in pendingMembers.data | filter:{requestedRole: 'MEMBER'}">
+                                <p>
+                                    <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                </p>
+                                <p>
+                                </p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </tab>
+        </tabset>
     </div>
-    <hr>
-    <tabset>
-        <tab>
-            <tab-heading>
-                <i class="icon-bolt">
-                </i>
-                Impact
-            </tab-heading>
-
-            <impact-timeline timeline-events="impactTimelineEvents" timeline-type="'ORG'"></impact-timeline>
-
-        </tab>
-        <tab>
-            <tab-heading>
-                <i class="icon-list">
-                </i>
-                Upcoming Events
-            </tab-heading>
-
-            <upcoming-events 
-                events="upcomingEvents"
-                search-type="'ORG'">
-            </upcoming-events>
-            
-        </tab>
-        <tab select="myCalendar.fullCalendar('render');">
-            <tab-heading>
-                <i class="icon-calendar">
-                </i>
-                Calendar
-            </tab-heading>
-            <div class="col-md-12 container">
-                <!-- <div full-calendar events="events"></div> -->
-                <div class="calendar" ng-model="eventSources" calendar="myCalendar" config="uiConfig.calendar" ui-calendar="uiConfig.calendar">
-                </div>
-            </div>
-        </tab>
-        <tab>
-            <tab-heading>
-                <i class="icon-thumbs-up">
-                </i>
-                Top volunteers
-            </tab-heading>
-            <div class="col-md-6">
-                <h3>
-                    All time
-                </h3>
-                <ol>
-                    <li class="well well-sm" ng-repeat="leader in allTimeLeaders.scores">
-                        <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
-                    </li>
-                </ol>
-            </div>
-            <div class="col-md-6">
-                <h3>
-                    Last month
-                </h3>
-                <ol>
-                    <li class="well well-sm" ng-repeat="leader in lastMonthLeaders.scores">
-                        <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
-                    </li>
-                </ol>
-            </div>
-        </tab>
-        <!-- <tab> -->
-        <!-- <tab-heading><i class="icon-picture"></i> Albums</tab-heading> -->
-        <!-- <div id="fbgallery" fbgallery userid="{{fbPage.id}}" type="facebook"> -->
-        <!-- </div>  -->
-        <!-- </tab>  -->
-        <tab>
-            <tab-heading>
-                <i class="icon-group">
-                </i>
-                Members
-            </tab-heading>
-            <div class="row">
-                <!--admins-->
-                <div class="col-md-12" ng-hide="orgOwners.data.length==0">
-                    <h4>
-                        Admins
-                    </h4>
-                    <hr>
-                    <ul class="list-inline">
-                        <li ng-repeat="user in orgOwners.data">
-                            <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                            <p>
-                            </p>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12" ng-hide="orgOrgnaizers.data.length==0">
-                    <h4>
-                        Organizers
-                    </h4>
-                    <hr>
-                    <ul class="list-inline">
-                        <li ng-repeat="user in orgOrgnaizers.data">
-                            <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                            <p>
-                            </p>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </tab>
-        <tab disabled="{READ:true}[org.permission]" ng-hide="{READ:true}[org.permission]">
-            <tab-heading>
-                <i class="icon-cogs">
-                </i>
-                Manage membership {{pendingMembers.data.length | badge}}
-            </tab-heading>
-            <div class="row">
-                <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
-                    <!--orgnaizers-->
-                    <h4>
-                        Pending Admins
-                    </h4>
-                    <hr>
-                    <ul class="list-inline">
-                        <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ADMIN'}">
-                            <p>
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                            </p>
-                            <p>
-                            </p>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
-                    <!--orgnaizers-->
-                    <h4>
-                        Pending Organizers
-                    </h4>
-                    <hr>
-                    <ul class="list-inline">
-                        <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ORGANIZER'}">
-                            <p>
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                            </p>
-                            <p>
-                            </p>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
-                    <!--orgnaizers-->
-                    <h4>
-                        Pending memberships
-                    </h4>
-                    <hr>
-                    <ul class="list-inline">
-                        <li ng-repeat="user in pendingMembers.data | filter:{requestedRole: 'MEMBER'}">
-                            <p>
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                            </p>
-                            <p>
-                            </p>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </tab>
-    </tabset>
 </div>

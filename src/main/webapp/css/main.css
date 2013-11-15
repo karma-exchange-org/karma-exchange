@@ -176,6 +176,36 @@ text-align:center;
   padding-top: 10px;
 }
 
+.vertical-panel-margin {
+  margin-top: 10px;
+}
+
+.panel-seperated-vertical {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.panel-body-text-only {
+  /*padding: 10px;*/
+  background-color: #F0F0F0;
+}
+
+/* 
+ * The grid panel layout requires top and left padding because margins with
+ * inline block and foat elements do not collapse.
+ */
+.panel-grid {
+  padding: 10px 0 0 10px;
+}
+
+.panel-grid-el-2-col {
+  width: 50%;
+  padding-right: 10px;
+  padding-bottom: 10px;
+  display: inline-block;
+  vertical-align: top;
+}
+
 .responsive-div-pad-right {
   padding-right: 10px;
 }
@@ -273,6 +303,27 @@ img.kex-thumbnail-user-mini {
 .row-no-margin {
   margin-left: 0;
   margin-right: 0;
+}
+
+.well-no-margin {
+  margin-bottom: 0;
+}
+
+/*
+ * Image and text side by side. Text wraps next to the image instead of under it.
+ */
+
+.img-text-div-img-small {
+  width: 42px;  /* 32px image + 10 padding */
+  padding-right: 10px;
+  display: table-cell;
+  vertical-align: middle;
+  text-align: right;
+}
+
+.img-text-div-text {
+  display: table-cell;
+  vertical-align: middle;
 }
 
 /*  
@@ -388,6 +439,43 @@ img.kex-thumbnail-user-mini {
   display: inline-block;
   vertical-align: top;
   max-width: 73%;
+}
+
+/*
+ * Organization details.
+ */
+
+.org-info-panel {
+  margin-top: 20px;
+  padding: 5px 10px;
+  background-color: #F0F0F0;
+  text-align: center;
+}
+
+.org-info-panel-details {
+  text-align: left;
+  margin-left:auto;
+  margin-right:auto;
+  width: 85%;
+  /*font-size: .85em;*/
+}
+
+.org-info-panel-details-row {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.org-info-panel-details-row-img {
+  display: table-cell;
+  vertical-align: top;
+  text-align: right;
+  width: 25px;
+  padding-right: 10px;
+}
+
+.org-info-panel-details-row-text {
+  display: table-cell;
+  vertical-align: top;
 }
 
 /*==================================================

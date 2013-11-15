@@ -718,10 +718,10 @@ kexApp.directive('aggregateRating', function() {
         replace: true,
         transclude: false,
         template:
-            '<div>' +
+            '<span>' +
                 '<rating value="value.value" max="5" readonly="true"></rating>' +
                 ' ({{value.count}})' +
-            '</div>'
+            '</span>'
     }
 });
 
@@ -846,7 +846,7 @@ kexApp.directive('upcomingEvents', function() {
  * App controllers
  */
 
-var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, FbUtil, EventUtil, KexUtil ) {
+var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, EventUtil, KexUtil ) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.newMail = { email : null, primary : null }; 
@@ -917,6 +917,7 @@ var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, Fb
 };
 var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events, FbUtil, KexUtil, EventUtil ) 
 { 
+    $scope.FbUtil = FbUtil;
     $scope.KexUtil = KexUtil;
     $scope.events = [];
     $scope.parser = document.createElement( 'a' ); 
@@ -926,6 +927,10 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
             $http( { method : 'GET', url : FbUtil.GRAPH_API_URL + "" + $scope.parser.pathname } ).success( function( data ) {
                     $scope.fbPage = data;
             } ); 
+
+            if ($scope.org.parentOrg) {
+                $scope.parentOrg = Org.get( { id : $scope.org.parentOrg.key } );
+            }
 
             $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({keywords: "org:" + $scope.org.searchTokenSuffix});
 
