@@ -180,7 +180,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   }
 
   public enum TestOrganization {
-    BGCSF("BGCSF", AMIR,
+    BGCSF("BGCSF",
+      "https://bgcsf.thankyou4caring.org/page.aspx?pid=298",
+      AMIR,
       asList(
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
@@ -198,7 +200,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
                 "If your property is stolen while volunteering that is your responsibility."),
              createWaiver("After school tutoring waiver",
                 "You are responsible for any property you bring."))),
-    BGCSF_COLUMBIA_PARK("columbia.park", AMIR,
+    BGCSF_COLUMBIA_PARK("columbia.park",
+      "https://bgcsf.thankyou4caring.org/page.aspx?pid=298",
+      AMIR,
       asList(
         TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
         TestOrgMembership.of(HARISH, Organization.Role.ORGANIZER, null),
@@ -208,7 +212,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       asList(createWaiver("Soccer clinic waiver",
         "If you are injured while volunteering Columbia Park BGCSF is not liable.\n\n" +
         "If your property is stolen while volunteering that is your responsibility."))),
-    BGCSF_TENDERLOIN("Tenderloin.clubhouse", HARISH,
+    BGCSF_TENDERLOIN("Tenderloin.clubhouse",
+      "https://bgcsf.thankyou4caring.org/page.aspx?pid=298",
+      HARISH,
       asList(
         TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null),
         TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
@@ -216,7 +222,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(AMIR, Organization.Role.ORGANIZER, null)),
       BGCSF),
 
-    BENEVOLENT("benevolent.net", HARISH,
+    BENEVOLENT("benevolent.net",
+      "https://www.benevolent.net/about/donate.html",
+      HARISH,
       asList(
         TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null),
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
@@ -226,7 +234,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
         TestOrgMembership.of(USER3, null, Organization.Role.ADMIN))),
 
-    UNITED_WAY("UnitedWay", AMIR,
+    UNITED_WAY("UnitedWay",
+      "https://give.liveunited.org/page/contribute/support-us",
+      AMIR,
       asList(
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
@@ -237,6 +247,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     @Getter
     private final String pageName;
+    @Getter
+    private final String donationUrl;
     @Getter
     private final TestUser initialAdmin;
     @Getter
@@ -249,22 +261,23 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final List<Waiver> waivers;
 
 
-    private TestOrganization(String pageUrl, TestUser initialAdmin,
+    private TestOrganization(String pageName, String donationUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships) {
-      this(pageUrl, initialAdmin, memberships, null);
+      this(pageName, donationUrl, initialAdmin, memberships, null);
     }
 
-    private TestOrganization(String pageUrl, TestUser initialAdmin,
+    private TestOrganization(String pageName,  String donationUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg) {
-      this(pageUrl, initialAdmin, memberships, parentOrg, ImmutableList.<AutoMembershipRule>of(),
-        ImmutableList.<Waiver>of());
+      this(pageName, donationUrl, initialAdmin, memberships, parentOrg,
+        ImmutableList.<AutoMembershipRule>of(), ImmutableList.<Waiver>of());
     }
 
-    private TestOrganization(String pageName, TestUser initialAdmin,
+    private TestOrganization(String pageName, String donationUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships, @Nullable TestOrganization parentOrg,
         @Nullable List<AutoMembershipRule> autoMembershipRules,
         @Nullable List<Waiver> waivers) {
       this.pageName = pageName;
+      this.donationUrl = donationUrl;
       this.initialAdmin = initialAdmin;
       this.memberships = memberships;
       this.parentOrg = parentOrg;
@@ -673,6 +686,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   public Organization createOrganization(TestOrganization testOrg) {
     Organization org = new Organization();
     org.setPage(testOrg.getPageRef());
+    org.setDonationUrl(testOrg.getDonationUrl());
     if (testOrg.parentOrg != null) {
       org.setParentOrg(new OrganizationNamedKeyWrapper(testOrg.parentOrg.getKey()));
     }
