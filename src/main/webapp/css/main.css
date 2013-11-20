@@ -428,6 +428,11 @@ img.kex-thumbnail-user-mini {
   vertical-align: top;
 }
 
+.org-donation-btn {
+  margin-top: 10px;
+  text-align: center;  
+}
+
 /*==================================================
  * Angular-ui 
  * ===============================================*/

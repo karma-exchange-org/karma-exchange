@@ -51,7 +51,9 @@
                             {{fbPage.phone}}
                         </div>
                     </div>
+
                 </div>
+
             </div>
 
 
@@ -64,6 +66,10 @@
                 </div>
                 <div class="panel-body panel-body-text-only">
                     {{fbPage.mission}}
+
+                    <div class="org-donation-btn" ng-show="org.donationUrl">
+                        <a class="btn btn-success" href="{{org.donationUrl}}">Make a donation</a>
+                    </div>
                 </div>
             </div>
 

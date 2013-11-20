@@ -79,6 +79,8 @@ public class Organization extends NameBaseDao<Organization> {
   @Ignore
   private String searchTokenSuffix;
 
+  private String donationUrl;
+
   public enum Role {
     ADMIN(3),
     ORGANIZER(2),
