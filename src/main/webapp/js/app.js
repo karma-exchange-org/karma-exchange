@@ -196,7 +196,7 @@ kexApp = angular.module( "kexApp",
 
     };
 })
-.run( function( $rootScope, Me, $location, FbUtil) { 
+.run( function( $rootScope, Me, $location, FbUtil, $modal) { 
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) { 
             $rootScope.alerts = [ ]; 
@@ -226,19 +226,21 @@ kexApp = angular.module( "kexApp",
     $rootScope.sendMessage = function( ) { 
         $rootScope.isMessageOpen = false; 
     };
-    $rootScope.openShareEventModal = function (event) {
-
-    var modalInstance = $modal.open({
-      templateUrl: 'template/kex/share-event-modal.html',
-      controller: ModalInstanceCtrl,
-      resolve: {
-        event: function () {
-          return event;
-        }
-      }
-    });
-
-  };
+    $rootScope.openShareEventModal = function (event, header) {
+        var modalInstance = $modal.open({
+            backdrop: false,
+            templateUrl: 'template/kex/share-event-modal.html',
+            controller: ModalInstanceCtrl,
+            resolve: {
+                event: function () {
+                    return event;
+                },
+                header: function () {
+                    return header;
+                }
+            }
+        });
+    };
     $rootScope.getGeoLocation = function(){
         return { latitude: 0, longitude: 0};
         // TODO(avlaiani): commented out because this is not working.
@@ -1112,7 +1114,8 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
             }, 
             null,
             function() {
-                $rootScope.openShareEventModal($scope.modelEvent);
+                $rootScope.openShareEventModal($scope.modelEvent,
+                    "Thank you for volunteering!");
                 //alert and close
                 $scope.modelEvent.registrationInfo = type;
                 $scope.events.data[$scope.modelIndex].registrationInfo = type;
@@ -1560,7 +1563,8 @@ var viewEventsCtrl = function($scope, $rootScope, $route, $routeParams, $filter,
             }, 
             null,
             function() {
-                $rootScope.openShareEventModal($scope.event);
+                $rootScope.openShareEventModal($scope.event, 
+                    "Thank you for volunteering!");
                 refreshEvent();
             });
     };
@@ -1655,11 +1659,12 @@ var viewEventsCtrl = function($scope, $rootScope, $route, $routeParams, $filter,
     refreshEvent();
 };
 
-var ModalInstanceCtrl = function ($scope, $modalInstance, event,$rootScope) {
-  $scope.event = event;
-  $scope.ok = function () {
-    $modalInstance.close();
-  };
+var ModalInstanceCtrl = function ($scope, $modalInstance, event, header, $rootScope) {
+    $scope.event = event;
+    $scope.header = header;
+    $scope.ok = function () {
+        $modalInstance.close();
+    };
 };
 
 // TODO(avaliani): refactor this dependency
