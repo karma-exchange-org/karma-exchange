@@ -75,17 +75,17 @@ kexApp = angular.module( "kexApp",
     $routeProvider
         // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
-        .when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html' } )
-        .when( '/about', { templateUrl : 'partials/about.html' } )
-        .when( '/contact', { templateUrl : 'partials/contact.html' } )
-        .when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html' } )
-        .when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html' } )
-        .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html' } )
-        .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } )
-        .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html' } )
-        .when( '/event/:eventId', { controller : addEditEventsCtrl, templateUrl : 'partials/viewEvent.html' } )
-        .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html' } )
-        .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html' } )
+        .when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
+        .when( '/about', { templateUrl : 'partials/about.html', reloadOnSearch: false } )
+        .when( '/contact', { templateUrl : 'partials/contact.html', reloadOnSearch: false } )
+        .when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
+        .when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html', reloadOnSearch: false } )
+        .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html', reloadOnSearch: false } )
+        .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
+        .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
+        .when( '/event/:eventId', { controller : viewEventsCtrl, templateUrl : 'partials/viewEvent.html', reloadOnSearch: false } )
+        .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html', reloadOnSearch: false } )
+        .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html', reloadOnSearch: false } )
         .otherwise( { redirectTo : '/event' } );
     delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ]; 
     //$httpProvider.defaults.headers.common['X-'] = 'X';
@@ -1140,6 +1140,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
 
     $scope.reset(true);
 };
+
 var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil, EventUtil, KexUtil ) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
@@ -1169,56 +1170,6 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
     ];
     $scope.currentUserRating = { value: undefined };
 
-    $scope.unregister = function( ) 
-    { 
-        Events.delete( { id : $scope.event.key, registerCtlr : 'participants' }, function( ) { 
-                $scope.refreshEvent( );
-        } ); 
-    } 
-    $scope.register = function( type ) {
-        var eventId = $scope.event.key; 
-        Events.save( { id : eventId, registerCtlr : 'participants', regType : type }, function( req, $rootScope ) { 
-                //alert and close
-                $scope.refreshEvent( ); 
-                //$scope.addAlert("Registration successful!");
-                $scope.event.registrationInfo = type;                
-                $scope.event.numAttending ++;
-                if( type === 'REGISTERED' ) 
-                { 
-                    $scope.eventRegistered.data.push( 
-                        { 
-                            "user" : { 
-                                "key" : $rootScope.me.key, 
-                                "profileImage" : { 
-                                    "url" : $rootScope.me.profileImage.url
-                                }, 
-                                "firstName" : $rootScope.me.firstName, 
-                                "lastName" : $rootScope.me.lastName
-                            } 
-                        } 
-                        ); 
-                } 
-                else if( type === 'WAIT_LISTED' ) 
-                { 
-                    $scope.eventWaitListed.data.push( 
-                        { 
-                            "user" : { 
-                                "key" : $rootScope.me.key, 
-                                "profileImage" : { 
-                                    "url" : $rootScope.me.profileImage.url
-                                }, 
-                                "firstName" : $rootScope.me.firstName, 
-                                "lastName" : $rootScope.me.lastName
-                            } 
-                        }
-                        ); 
-                }
-        } );
-    };
-    $scope.fbUpload = function()
-    {
-        //https://graph.facebook.com/{{event.album.id}}/photos?access_token={{fbAccessToken}}
-    }
     $scope.dropListener = function( eDraggable, eDroppable ) {
                 var isDropForbidden = function( aTarget, item ) { 
                     if( aTarget.some( function( i ) { 
@@ -1525,6 +1476,169 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
         {    
             $scope.refreshEvent( ); 
         }
+};
+
+var viewEventsCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location, Events, $http, FbUtil, EventUtil, KexUtil) {
+    $scope.KexUtil = KexUtil;
+    $scope.EventUtil = EventUtil;
+    $scope.currentUserRating = {
+        value: undefined
+    };
+
+    $scope.tabs = {
+        details: { active: false, disabled: false },
+        impact: { active: false, disabled: true, onSelectionCb: loadImpactTab },
+    };
+    var defaultActiveTabName = 'details';
+    var activeTabSpecified = false;
+    markTabActive(defaultActiveTabName);
+    parseRoute();
+
+    function parseRoute() {
+        if ($routeParams.tab && $scope.tabs[$routeParams.tab]) {
+            markTabActive($routeParams.tab);
+            // If the route params are used then always respect them.
+            activeTabSpecified = true;
+        }
+    }
+    function isTabActive(tabName) {
+        return $scope.tabs[tabName].active;
+    }
+    function markTabActive(tabName) {
+        deactivateTabs();
+        $scope.tabs[tabName].active = true;
+    }
+    function deactivateTabs() {
+        angular.forEach($scope.tabs, function(tab) {
+            tab.active = false;
+        });
+    }
+    function markTabEnabled(tabName) {
+        $scope.tabs[tabName].disabled = false;
+    }
+    $scope.tabSelected = function(tabName) {
+        if ($scope.tabs[tabName].onSelectionCb) {
+            $scope.tabs[tabName].onSelectionCb();
+        }
+        if ((tabName != defaultActiveTabName) || activeTabSpecified) {
+            $location.search('tab', tabName);
+            activeTabSpecified = true;
+        }
+    }
+
+    $scope.unregister = function() {
+        Events.delete(
+            {
+                id: $scope.event.key,
+                registerCtlr: 'participants'
+            }, 
+            function() {
+                refreshEvent();
+            });
+    }
+
+    $scope.register = function(type) {
+        var eventId = $scope.event.key;
+        Events.save(
+            {
+                id: eventId,
+                registerCtlr: 'participants',
+                regType: type
+            }, 
+            null,
+            function() {
+                refreshEvent();
+            });
+    };
+
+    $scope.getMore = function(type) {
+        if (type === 'REGISTERED') {
+            $http({
+                method: 'GET',
+                url: $scope.eventRegistered.paging.next
+            }).success(function(data) {
+                for (var i = 0; i < data.data.length; i++) {
+                    $scope.eventRegistered.data.push(data.data[i]);
+                }
+                $scope.eventRegistered.paging.next = data.paging ? data.paging.next : null;
+            });
+        } else if (type === 'ORGANIZER') {
+            $http({
+                method: 'GET',
+                url: $scope.eventOrganizers.paging.next
+            }).success(function(data) {
+                for (var i = 0; i < data.data.length; i++) {
+                    $scope.eventOrganizers.data.push(data.data[i]);
+                }
+                $scope.eventOrganizers.paging.next = data.paging ? data.paging.next : null;
+            });
+        } else if (type === 'WAIT_LISTED') {
+            $http({
+                method: 'GET',
+                url: $scope.eventWaitListed.paging.next
+            }).success(function(data) {
+                for (var i = 0; i < data.data.length; i++) {
+                    $scope.eventWaitListed.data.push(data.data[i]);
+                }
+                $scope.eventWaitListed.paging.next = data.paging ? data.paging.next : null;
+            });
+        }
+    };
+
+    function refreshEvent() {
+        $scope.event = Events.get(
+            {
+                id: $routeParams.eventId
+            },
+            function() {
+                if ($scope.event.status == 'COMPLETED') {
+                    markTabEnabled('impact');
+                    if (isTabActive('impact')) {
+                        loadImpactTab();
+                    } else if (!activeTabSpecified) {
+                        // Change the current tab if none was specified.
+                        markTabActive('impact');
+                    }
+                }
+            });
+        $scope.eventOrganizers = Events.get(
+            {
+                id: $routeParams.eventId,
+                registerCtlr: 'participants',
+                regType: 'ORGANIZER'
+            });
+        $scope.eventRegistered = Events.get(
+            {
+                id: $routeParams.eventId,
+                registerCtlr: 'participants',
+                regType: 'REGISTERED'
+            });
+        $scope.eventWaitListed = Events.get(
+            {
+                id: $routeParams.eventId,
+                registerCtlr: 'participants',
+                regType: 'WAIT_LISTED'
+            });
+    }
+
+    function loadImpactTab() {
+        if (!$scope.impactTabLoaded && $scope.event && ($scope.event.status == 'COMPLETED')) {
+            $scope.impactTabLoaded = true;
+            if (EventUtil.canWriteReview($scope.event)) {
+                Events.get(
+                    {
+                        id: $routeParams.eventId,
+                        registerCtlr: 'review'
+                    }, 
+                    function(value) {
+                        $scope.currentUserRating.value = 
+                            (value && value.rating) ? value.rating.value : undefined;
+                    });
+            }
+        }        
+    }
+
+    refreshEvent();
 };
 
 // TODO(avaliani): refactor this dependency

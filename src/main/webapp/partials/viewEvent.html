@@ -165,8 +165,7 @@
         <div class="row vertical-panel-padding">
             <div class="col-md-12">
                 <tabset>
-                    <!-- <tab active="event.status!='COMPLETED'"> -->
-                    <tab>
+                    <tab active="tabs['details'].active" disabled="tabs['details'].disabled"  select="tabSelected('details')">
                         <tab-heading>
                             <i class="icon-list"></i> Details
                         </tab-heading>
@@ -198,8 +197,7 @@
                         
                     </tab>
 
-                    <!-- <tab active="event.status=='COMPLETED'" disabled="event.status!='COMPLETED'"> -->
-                    <tab disabled="event.status!='COMPLETED'">
+                    <tab active="tabs['impact'].active" disabled="tabs['impact'].disabled" select="tabSelected('impact')">
                         <tab-heading>
                             <i class="icon-bolt"></i> Impact
                         </tab-heading>
