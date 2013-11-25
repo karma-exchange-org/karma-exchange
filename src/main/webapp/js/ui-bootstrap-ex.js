@@ -1,4 +1,4 @@
-angular.module("ui.bootstrap.ex", ["ui.bootstrap.ex.rating"]);
+angular.module("ui.bootstrap.ex", ["ui.bootstrap.ex.rating", "ui.bootstrap.ex.urltabs"]);
 
 /**
  * ui.bootstrap.ex.rating extends ui.bootstrap.rating by providing an onUpdate() callback.
@@ -92,3 +92,79 @@ angular.module('ui.bootstrap.ex.rating', [])
     replace: true
   };
 });
+
+
+/**
+ * ui.bootstrap.ex.urltabs extends ui.bootstrap.tabs by tabs that update the url.
+ */
+
+angular.module('ui.bootstrap.ex.urltabs', [])
+
+.factory('urlTabsetUtil', ["$location", "$routeParams", function($location, $routeParams) {
+    function TabManager() {
+      this.tabs = {};
+      this.tabSelectedByUrl = false;
+      this._defaultActiveTabName = null;
+    }
+
+    function Tab(props) {
+      this.active = angular.isDefined(props.active) ? props.active : false;
+      this.disabled = angular.isDefined(props.disabled) ? props.disabled : false;
+      this.onSelectionCb = props.onSelectionCb;
+    }
+
+    TabManager.prototype.addTab = function(tabName, props) {
+      this.tabs[tabName] = new Tab(props);
+    }
+
+    TabManager.prototype.init = function() {
+      this._determineDefaultActiveTabName();
+      this._checkUrlForTabName();
+    }
+
+    TabManager.prototype._determineDefaultActiveTabName = function() {
+      angular.forEach(this.tabs, angular.bind(this, function(tab, tabName) {
+        if (tab.active) {
+          this._defaultActiveTabName = tabName;
+        }
+      }));
+    }
+
+    TabManager.prototype._checkUrlForTabName = function() {
+      if ($routeParams.tab && this.tabs[$routeParams.tab]) {
+        this.markTabActive($routeParams.tab);
+        this.tabSelectedByUrl = true;
+      }
+    }
+
+    TabManager.prototype.markTabActive = function(tabName) {
+      this._deactivateTabs();
+      this.tabs[tabName].active = true;
+    }
+
+    TabManager.prototype._deactivateTabs = function() {
+      angular.forEach(this.tabs, angular.bind(this, function(tab) {
+        tab.active = false;
+      }));
+    }
+
+    TabManager.prototype.select = function(tabName) {
+      if (this.tabs[tabName].onSelectionCb) {
+        this.tabs[tabName].onSelectionCb();
+      }
+      if ((tabName != this._defaultActiveTabName) || this.tabSelectedByUrl) {
+        $location.search('tab', tabName);
+        this.tabSelectedByUrl = true;
+      }
+    }
+
+    return {
+      // NOTE(avaliani): we could have defined TabManager and Tab in the global context.
+      // but it seemed cleaner not to. See what the best practices are.
+      createTabManager: function() {
+        return new TabManager();
+      }
+    }
+}])
+
+;
