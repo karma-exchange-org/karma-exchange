@@ -83,7 +83,7 @@ kexApp = angular.module( "kexApp",
         .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html', reloadOnSearch: false } )
         .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
         .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
-        .when( '/event/:eventId', { controller : viewEventsCtrl, templateUrl : 'partials/viewEvent.html', reloadOnSearch: false } )
+        .when( '/event/:eventId', { controller : viewEventCtrl, templateUrl : 'partials/viewEvent.html', reloadOnSearch: false } )
         .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html', reloadOnSearch: false } )
         .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html', reloadOnSearch: false } )
         .otherwise( { redirectTo : '/event' } );
@@ -1495,52 +1495,19 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
         }
 };
 
-var viewEventsCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location, Events, $http, FbUtil, EventUtil, KexUtil, $modal) {
+var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location, 
+        Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.currentUserRating = {
         value: undefined
     };
-    $scope.tabs = {
-        details: { active: false, disabled: false },
-        impact: { active: false, disabled: true, onSelectionCb: loadImpactTab },
-    };
-    var defaultActiveTabName = 'details';
-    var activeTabSpecified = false;
-    markTabActive(defaultActiveTabName);
-    parseRoute();
 
-    function parseRoute() {
-        if ($routeParams.tab && $scope.tabs[$routeParams.tab]) {
-            markTabActive($routeParams.tab);
-            // If the route params are used then always respect them.
-            activeTabSpecified = true;
-        }
-    }
-    function isTabActive(tabName) {
-        return $scope.tabs[tabName].active;
-    }
-    function markTabActive(tabName) {
-        deactivateTabs();
-        $scope.tabs[tabName].active = true;
-    }
-    function deactivateTabs() {
-        angular.forEach($scope.tabs, function(tab) {
-            tab.active = false;
-        });
-    }
-    function markTabEnabled(tabName) {
-        $scope.tabs[tabName].disabled = false;
-    }
-    $scope.tabSelected = function(tabName) {
-        if ($scope.tabs[tabName].onSelectionCb) {
-            $scope.tabs[tabName].onSelectionCb();
-        }
-        if ((tabName != defaultActiveTabName) || activeTabSpecified) {
-            $location.search('tab', tabName);
-            activeTabSpecified = true;
-        }
-    }
+    var tabManager = $scope.tabManager = urlTabsetUtil.createTabManager();
+    tabManager.addTab('details', { active: true });
+    tabManager.addTab('impact', { disabled: true, onSelectionCb: loadImpactTab });
+    tabManager.init();
+    var tabs = $scope.tabs = tabManager.tabs;
 
     $scope.unregister = function() {
         Events.delete(
@@ -1610,12 +1577,12 @@ var viewEventsCtrl = function($scope, $rootScope, $route, $routeParams, $filter,
             },
             function() {
                 if ($scope.event.status == 'COMPLETED') {
-                    markTabEnabled('impact');
-                    if (isTabActive('impact')) {
-                        loadImpactTab();
-                    } else if (!activeTabSpecified) {
-                        // Change the current tab if none was specified.
-                        markTabActive('impact');
+                    tabs.impact.disabled = false;
+                    if (tabs.impact.active) {
+                        tabs.impact.onSelectionCb();
+                    } else if (!tabManager.tabSelectedByUrl) {
+                        // Change the current tab if no tab has been explicitly selected.
+                        tabManager.markTabActive('impact');
                     }
                 }
             });
