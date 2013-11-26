@@ -123,11 +123,20 @@ angular.module('ui.bootstrap.ex.urltabs', [])
     }
 
     TabManager.prototype._determineDefaultActiveTabName = function() {
+      var activeTabAndTabName = this._findActiveTab();
+      if (activeTabAndTabName) {
+        this._defaultActiveTabName = activeTabAndTabName.tabName;
+      }
+    }
+
+    TabManager.prototype._findActiveTab = function() {
+      var tabAndTabName = null;
       angular.forEach(this.tabs, angular.bind(this, function(tab, tabName) {
         if (tab.active) {
-          this._defaultActiveTabName = tabName;
+          tabAndTabName = { tab: tab, tabName: tabName };
         }
       }));
+      return tabAndTabName;
     }
 
     TabManager.prototype._checkUrlForTabName = function() {
@@ -155,6 +164,13 @@ angular.module('ui.bootstrap.ex.urltabs', [])
       if ((tabName != this._defaultActiveTabName) || this.tabSelectedByUrl) {
         $location.search('tab', tabName);
         this.tabSelectedByUrl = true;
+      }
+    }
+
+    TabManager.prototype.reloadActiveTab = function() {
+      var activeTabAndTabName = this._findActiveTab();
+      if (activeTabAndTabName && activeTabAndTabName.tab.onSelectionCb) {
+        activeTabAndTabName.tab.onSelectionCb();
       }
     }
 
