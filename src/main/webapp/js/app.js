@@ -857,6 +857,34 @@ kexApp.directive('upcomingEvents', function() {
     }
 });
 
+kexApp.directive('loginClick', function ($facebook,$rootScope) {
+    return {
+        terminal: true,
+        link: function (scope, element, attr) {
+            var clickAction = attr.loginClick ;
+            var msg = "Please login to continue";
+            element.bind('click',function () {
+                if(isLoggedIn())
+                {
+                    scope.$eval(clickAction);
+                    return;
+                }       
+                $facebook.login().then( function() {
+                    if(isLoggedIn())
+                    {
+                        scope.$eval(clickAction)
+                    }
+                    else
+                    {
+                        $rootScope.showAlert('Please login to continue!', "danger");
+                    }
+                });
+                scope.$apply();
+            });
+        }
+    };
+});
+
 /*
  * App controllers
  */

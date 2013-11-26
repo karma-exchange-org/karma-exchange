@@ -115,21 +115,21 @@
                         </div>
                         <div ng-show="event.status!='COMPLETED'">
                             <div ng-show="event.registrationInfo=='REGISTERED'">
-                                <a href="" ng-click="unregister()">Unregister</a>
+                                <a href="" login-click="unregister()">Unregister</a>
                             </div>
                             <div ng-show="event.registrationInfo=='WAIT_LISTED'">
-                                <a href="" ng-click="unregister()">Remove from waitlist</a>
+                                <a href="" login-click="unregister()">Remove from waitlist</a>
                             </div>
                         </div>
                     </div>
 
                     <div ng-show="event.status!='COMPLETED'">
-                        <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')">
+                        <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]" class="btn btn-success"  login-click="register('REGISTERED')">
                             <i class="icon-ok icon-white">
                             </i>
                             Register
                         </button>
-                        <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')">
+                        <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]" class="btn btn-success"  login-click="register('WAIT_LISTED')">
                             <i class="icon-ok icon-white">
                             </i>
                             Wait list
