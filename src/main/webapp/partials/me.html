@@ -12,14 +12,14 @@
 
         <h3 class="profile-view-name"><strong>{{me.firstName}}</strong></h3>
         
-        <div class="panel panel-default">
+        <div class="panel panel-default" ng-show="me.about || {ALL:true}[me.permission]">
             <div class="panel-heading">
                 <h3 class="panel-title">
-                    Introduction <small> <i ng-show="{ALL:true}[me.permission]" class="icon-edit" ng-click="enableEdit()"></i></small>
+                    Introduction <small><a href ng-click="enableIntroEdit()"><i ng-show="{ALL:true}[me.permission]" class="icon-edit"></i></a></small>
                 </h3>
 
             </div>
-            <div class="panel-body">
+            <div class="panel-body panel-body-text-only">
                 <ng-switch on="edit">
                 
                     <div ng-switch-when="true">
@@ -27,13 +27,26 @@
                             <textarea rows="5" class="col-md-12" ng-model="$parent.me.about" ></textarea>
                         </div>
                         <div class="vertical-panel-padding">
-                            <button class="btn btn-primary" ng-click="saveEdit()">Save</button>
-                            <button class="btn btn-default" ng-click="disableEdit()">Cancel</button>
+                            <button class="btn btn-primary" ng-click="saveIntroEdit()">Save</button>
+                            <button class="btn btn-default" ng-click="disableIntroEdit()">Cancel</button>
                         </div>
                     </div>
                     
-                    <div ng-switch-default ng-click="enableEdit()">
-                        <p ng-bind-html-unsafe="me.about | noHTML | newlines" />
+                    <div ng-switch-default ng-click="enableIntroEdit()">
+
+                        <div ng-switch on="me.permission">
+
+                            <div ng-switch-when="ALL">
+                                <p ng-show="me.about" ng-bind-html-unsafe="me.about | noHTML | newlines" />
+                                <p ng-hide="me.about"><em>Click here to write a few words about yourself</em></p>
+                            </div>
+
+                            <div ng-switch-default>
+                                <p ng-bind-html-unsafe="me.about | noHTML | newlines" />
+                            </div>
+
+                        </div>
+
                     </div>
                     
                 </ng-switch>
@@ -84,7 +97,7 @@
   <div class="row vertical-panel-padding">
     <div class="col-md-12">
         <tabset>
-            <tab>
+            <tab active="tabs.impact.active" select="tabManager.select('impact')">
                 <tab-heading>
                     <i class="icon-bolt">
                     </i>
@@ -97,7 +110,7 @@
                     timeline-type="'USER'">
                 </impact-timeline>
             </tab>
-            <tab>
+            <tab active="tabs.upcoming.active" select="tabManager.select('upcoming')">
                 <tab-heading>
                     <i class="icon-list">
                     </i>

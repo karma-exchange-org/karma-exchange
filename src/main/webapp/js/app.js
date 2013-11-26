@@ -75,11 +75,11 @@ kexApp = angular.module( "kexApp",
     $routeProvider
         // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
-        .when( '/me', { controller : meCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
+        .when( '/me', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
         .when( '/about', { templateUrl : 'partials/about.html', reloadOnSearch: false } )
         .when( '/contact', { templateUrl : 'partials/contact.html', reloadOnSearch: false } )
-        .when( '/user/:userId', { controller : meCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
-        .when( '/mysettings', { controller : meCtrl, templateUrl : 'partials/mysettings.html', reloadOnSearch: false } )
+        .when( '/user/:userId', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
+        .when( '/mysettings', { controller : meEditCtrl, templateUrl : 'partials/mysettings.html', reloadOnSearch: false } )
         .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html', reloadOnSearch: false } )
         .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
         .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
@@ -861,75 +861,117 @@ kexApp.directive('upcomingEvents', function() {
  * App controllers
  */
 
-var meCtrl = function( $scope, $location, User, Me, $rootScope, $routeParams, EventUtil, KexUtil ) {
+var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams, 
+        EventUtil, KexUtil, urlTabsetUtil) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
-    $scope.newMail = { email : null, primary : null }; 
-    $scope.load = function( $location, $routeParams ) {
-        if( $location.$$url == "/me" || $location.$$url == "/mysettings" ) 
-        { 
-            $scope.who = 'My'; 
-            $scope.me = Me.get( function( ) { 
-                    $scope.origAboutMe = $scope.me.about; 
-                    if( ! $scope.me.about ) 
-                    { 
-                        $scope.me.about = 'Click here to write a few words about yourself!'; 
-                    } 
-                    
-                    $scope.getOtherData( $scope.me.key ); 
-                    $rootScope.me = $scope.me;
-            } );
-            
-        } 
-        else
-        { 
-            $scope.me = User.get( { id : $routeParams.userId }, function( ) { 
-                    $scope.who = $scope.me.firstName + "'s"; 
-                    if( ! $scope.me.about ) 
-                    { 
-                        $scope.me.about = 'No description added yet!'; 
-                    }
-            } ); 
-            $scope.getOtherData( $routeParams.userId );
+
+    var tabManager = $scope.tabManager = urlTabsetUtil.createTabManager();
+    tabManager.addTab('impact', { active: true, onSelectionCb: loadImpactTab });
+    tabManager.addTab('upcoming', { active: false, onSelectionCb: loadUpcomingTab });
+    tabManager.init();
+    $scope.tabs = tabManager.tabs;
+
+    function load() {
+        if ($location.path() == "/me") {
+            $scope.who = 'My';
+            $scope.me = Me.get(function() {
+                $scope.userKey = $scope.me.key;
+                $rootScope.me = $scope.me;
+                $scope.savedAboutMe = $scope.me.about;
+
+                // Tab information depends on the user being fetched first.
+                tabManager.reloadActiveTab();
+                getOtherData();
+            });
+
+        } else {
+            $scope.userKey = $routeParams.userId;
+            $scope.me = User.get(
+                {
+                    id: $scope.userKey
+                }, 
+                function() {
+                    $scope.who = $scope.me.firstName + "'s";
+                });
+            getOtherData();
         }
     };
-    $scope.getOtherData = function( userKey ) { 
-        $scope.events = User.get( { id : userKey, resource : 'event' } ); 
-        $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({userKey: userKey});
-        $scope.orgs = User.get( { id : userKey, resource : 'org' } ); 
-        
+    function getOtherData() {
+        $scope.orgs = User.get({
+            id: $scope.userKey,
+            resource: 'org'
+        });
     };
-    $scope.save = function( ) { 
-        Me.save( $scope.me ); 
-    }; 
-    $scope.enableEdit = function( ) { 
-        if( $scope.me.permission === "ALL" ) 
-        { 
-            $scope.edit = true;   
+    function loadImpactTab() {
+        if (!$scope.impactTimelineEvents && $scope.userKey) {
+            $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({
+                userKey: $scope.userKey
+            });
         }
-    }; 
-    $scope.saveEdit = function( ) { 
-        $scope.edit = false; 
-        $scope.origAboutMe  = $scope.me.about;
-        User.save( { id : $scope.me.key }, $scope.me ); 
+    }
+    function loadUpcomingTab() {
+        if (!$scope.events && $scope.userKey) {
+            $scope.events = User.get({
+                id: $scope.userKey,
+                resource: 'event'
+            });
+        }
+    }
+    $scope.enableIntroEdit = function() {
+        if ($scope.me.permission === "ALL") {
+            $scope.edit = true;
+        }
     };
-    $scope.disableEdit = function( ) { 
-        $scope.edit = false; 
-        $scope.me.about = $scope.origAboutMe;
-        
+    $scope.saveIntroEdit = function() {
+        $scope.edit = false;
+        $scope.savedAboutMe = $scope.me.about;
+        User.save(
+            {
+                id: $scope.me.key
+            }, 
+            $scope.me);
     };
-    $scope.addEmail = function( ) { 
-        //TO-DO check if the new one is marked primary and unmark the current primary one
-        $scope.me.registeredEmails.push( $scope.newMail ); 
-        $scope.save( ); 
+    $scope.disableIntroEdit = function() {
+        $scope.edit = false;
+        $scope.me.about = $scope.savedAboutMe;
     };
-    $scope.removeEmail = function( ) {
-        $scope.me.registeredEmails.splice( this.$index, 1 ); 
-        $scope.save( ); 
-    }; 
-    $scope.mailPrimaryIndex = { index : 0 }; 
-    $scope.load( $location, $routeParams );
+    load();
 };
+
+var meEditCtrl = function($scope, Me, $rootScope) {
+    $scope.newMail = {
+        email: null,
+        primary: null
+    };
+    $scope.load = function() {
+        $scope.who = 'My';
+        $scope.me = Me.get(function() {
+            $scope.origAboutMe = $scope.me.about;
+            if (!$scope.me.about) {
+                $scope.me.about = 'Click here to write a few words about yourself!';
+            }
+            $rootScope.me = $scope.me;
+        });
+    };
+    $scope.save = function() {
+        Me.save($scope.me);
+    };
+    $scope.addEmail = function() {
+        //TO-DO check if the new one is marked primary and unmark the current primary one
+        $scope.me.registeredEmails.push($scope.newMail);
+        $scope.save();
+    };
+    $scope.removeEmail = function() {
+        $scope.me.registeredEmails.splice(this.$index, 1);
+        $scope.save();
+    };
+    $scope.mailPrimaryIndex = {
+        index: 0
+    };
+    $scope.load();
+};
+
 var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events, FbUtil, KexUtil, EventUtil ) 
 { 
     $scope.FbUtil = FbUtil;
@@ -1579,7 +1621,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                 if ($scope.event.status == 'COMPLETED') {
                     tabs.impact.disabled = false;
                     if (tabs.impact.active) {
-                        tabs.impact.onSelectionCb();
+                        tabManager.reloadActiveTab();
                     } else if (!tabManager.tabSelectedByUrl) {
                         // Change the current tab if no tab has been explicitly selected.
                         tabManager.markTabActive('impact');
