@@ -67,10 +67,13 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
         };
     });
 });
+angular.module('HashBangURLs', []).config(['$locationProvider', function($location) {
+  $location.hashPrefix('!');
+}]);
 
 kexApp = angular.module( "kexApp", 
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "loadingOnAJAX", "ngFacebook",
-     "globalErrors" ,"ui.calendar", "ngSocial"] )
+     "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs"] )
 .config( function( $routeProvider, $httpProvider, $facebookProvider ) { 
     $routeProvider
         // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
@@ -315,6 +318,9 @@ kexApp.factory('KexUtil', function($rootScope) {
         },
         strConcat: function(str1, str2) {
             return (angular.isDefined(str1) && angular.isDefined(str2)) ? (str1 + str2) : undefined;
+        },
+        getSEOUrl: function(){
+            return window.location.protocol + '//' + window.location.host + "?_escaped_fragment_=" + window.location.hash.replace('#!','')
         }
     }
 });
@@ -451,7 +457,7 @@ kexApp.factory('EventUtil', function($q, User, Events, KexUtil, FbUtil) {
         },
         getImpactViewUrl: function (event) {
             // TODO(avaliani): the impact url should be different from the event details url.
-            return KexUtil.getBaseUrl() + '/#/event/' + event.key;
+            return KexUtil.getBaseUrl() + '/#!/event/' + event.key;
         },
         getImpactTimelineEvents: function(eventFilter) {
             var impactTimelineEventsGrouped = $q.defer();
@@ -607,7 +613,7 @@ kexApp.directive('shareButtons', function(KexUtil) {
             template:
                 '<div>' +
                     '<ul ng-social-buttons ' +
-                            'url="KexUtil.getLocation()" ' +
+                            'url="KexUtil.getSEOUrl()" ' +
                             'title="title" ' +
                             'description="description" ' +
                             'image="image">' +
@@ -630,7 +636,7 @@ kexApp.directive('eventParticipantImgsMini', function() {
         template:
             '<ul class="list-inline">' +
                 '<li ng-repeat="userImage in event.cachedParticipantImages">' +
-                    '<a href="#/user/{{userImage.participant.key}}">' +
+                    '<a href="#!/user/{{userImage.participant.key}}">' +
                         '<img ng-src="{{userImage.imageUrl}}?type=square" class="kex-thumbnail-user-mini">' +
                     '</a>' +
                 '</li>' +
@@ -1023,7 +1029,7 @@ var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http
             
                     angular.forEach($scope.upcomingEvents.data, function(event) {
                         
-                            $scope.events.push({title:event.title, start:(new Date(event.startTime)),end:(new Date(event.endTime)),allDay:false, url:"/#/event/"+event.key});
+                            $scope.events.push({title:event.title, start:(new Date(event.startTime)),end:(new Date(event.endTime)),allDay:false, url:"/#!/event/"+event.key});
             });
             } ); 
             

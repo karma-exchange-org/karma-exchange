@@ -39,7 +39,7 @@
         <ul class="list-unstyled">
             <li ng-repeat="org in orgs.data">
                 <div class="well well-sm">
-                    <a href="#/org/{{org.key}}" ng-click="refresh({{org.key}})">
+                    <a href="#!/org/{{org.key}}" ng-click="refresh({{org.key}})">
                         <img ng-src="{{fbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org"> 
                         <strong>{{org.orgName}}</strong>
                     </a>

@@ -111,7 +111,7 @@
                     </div>
                     <div class="event-view-action">
                         <div ng-show="event.registrationInfo=='ORGANIZER'">
-                            <a href="#/event/{{event.key}}/edit">Edit event</a>
+                            <a href="#!/event/{{event.key}}/edit">Edit event</a>
                         </div>
                         <div ng-show="event.status!='COMPLETED'">
                             <div ng-show="event.registrationInfo=='REGISTERED'">
@@ -192,7 +192,7 @@
                                 </strong>                                
                             </h4>
                         </div>
-                        <kex-fb-comments href="{{KexUtil.getLocation()}}" num-posts="20">
+                        <kex-fb-comments href="{{KexUtil.getSEOUrl()}}" num-posts="20">
                         </kex-fb-comments>
                         
                     </tab>
@@ -220,7 +220,7 @@
                                 </strong>                                
                             </h4>
                         </div>
-                        <kex-fb-comments href="{{KexUtil.getLocation()}}" num-posts="20">
+                        <kex-fb-comments href="{{KexUtil.getSEOUrl()}}" num-posts="20">
                         </kex-fb-comments>
                     
                     </tab>

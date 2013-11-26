@@ -11,7 +11,7 @@
         <title>Karma Exchange</title>
         <meta name="description" content>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+        <meta name="fragment" content="!">
         <link rel="stylesheet" href="css/bootstrap.min.css">
         <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"> -->
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
@@ -144,21 +144,21 @@
                         <span class="icon-bar">
                         </span>
                     </button>
-                    <a class="navbar-brand" href="#/event">KarmaExchange </a>
+                    <a class="navbar-brand" href="#!/event">KarmaExchange </a>
                 </div>
                 <div class="navbar-collapse collapse navbar-responsive-collapse">
                     <ul class="nav navbar-nav">
                         <li>
-                            <a href="#/event"><i class="icon-search icon-white"></i> Find Events</a>
+                            <a href="#!/event"><i class="icon-search icon-white"></i> Find Events</a>
                         </li>
                         <li ng-show="me">
-                            <a href="#/me"><i class="icon-calendar icon-white"></i> My Events</a>
+                            <a href="#!/me"><i class="icon-calendar icon-white"></i> My Events</a>
                         </li>
                         <li>
-                            <a href="#/org"><i class="icon-group icon-white"></i> Organizations</a>
+                            <a href="#!/org"><i class="icon-group icon-white"></i> Organizations</a>
                         </li>
                         <li ng-show="me && orgs && (orgs.data.length > 0)">
-                            <a href="#/event/add"><i class="icon-plus icon-white"></i> Create Events</a>
+                            <a href="#!/event/add"><i class="icon-plus icon-white"></i> Create Events</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -173,17 +173,17 @@
                             <a ng-hide="me" href="" class="dropdown-toggle" toggle="dropdown">Info <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li ng-show="me">
-                                    <a href="#/mysettings"><i class="icon-cog"></i> Profile</a>
+                                    <a href="#!/mysettings"><i class="icon-cog"></i> Profile</a>
                                 </li>
                                 <li ng-show="me">
                                     <a href="/#" ng-click="fbUtil.logout()"><i class="icon-off"></i> Logout</a>
                                 </li>
                                 <li ng-show="me" class="divider"></li>
                                 <li>
-                                    <a href="#/about"><i class="icon-info"></i> About us</a>
+                                    <a href="#!/about"><i class="icon-info"></i> About us</a>
                                 </li>
                                 <li>
-                                    <a href="#/contact"><i class="icon-envelope"></i> Contact us</a>
+                                    <a href="#!/contact"><i class="icon-envelope"></i> Contact us</a>
                                 </li>
                             </ul>
                         </li>

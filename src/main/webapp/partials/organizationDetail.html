@@ -85,12 +85,12 @@
                     <div class="panel-grid-el-2-col">
                         <div class="well well-sm well-no-margin">
                             <div class="img-text-div-img-small">
-                                <a href="#/org/{{parentOrg.key}}">
+                                <a href="#!/org/{{parentOrg.key}}">
                                     <img ng-src="{{FbUtil.getImageUrl(parentOrg.page.name, 'square')}}" class="kex-thumbnail-org-small">
                                 </a>
                             </div>
                             <div class="img-text-div-text">
-                                <a href="#/org/{{parentOrg.key}}">
+                                <a href="#!/org/{{parentOrg.key}}">
                                     {{parentOrg.orgName}}
                                 </a>
                             </div>
@@ -115,12 +115,12 @@
                     <div class="panel-grid-el-2-col" ng-repeat="org in childOrgs.data">
                         <div class="well well-sm well-no-margin">
                             <div class="img-text-div-img-small">
-                                <a href="#/org/{{org.key}}">
+                                <a href="#!/org/{{org.key}}">
                                     <img ng-src="{{FbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-org-small">
                                 </a>
                             </div>
                             <div class="img-text-div-text">
-                                <a href="#/org/{{org.key}}">
+                                <a href="#!/org/{{org.key}}">
                                     {{org.orgName}}
                                 </a>
                             </div>
@@ -185,7 +185,7 @@
                     </h3>
                     <ol>
                         <li class="well well-sm" ng-repeat="leader in allTimeLeaders.scores">
-                            <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
+                            <strong><em><a href="#!/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
                         </li>
                     </ol>
                 </div>
@@ -195,7 +195,7 @@
                     </h3>
                     <ol>
                         <li class="well well-sm" ng-repeat="leader in lastMonthLeaders.scores">
-                            <strong><em><a href="#/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
+                            <strong><em><a href="#!/user/{{user.key}}"><img ng-src="{{leader.user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"> {{leader.user.firstName}}</a> +{{leader.leaderboardKarmaPoints}} karma</em></strong>
                         </li>
                     </ol>
                 </div>
@@ -220,7 +220,7 @@
                         <hr>
                         <ul class="list-inline">
                             <li ng-repeat="user in orgOwners.data">
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                 <p>
                                 </p>
                             </li>
@@ -235,7 +235,7 @@
                         <hr>
                         <ul class="list-inline">
                             <li ng-repeat="user in orgOrgnaizers.data">
-                                <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                 <p>
                                 </p>
                             </li>
@@ -259,7 +259,7 @@
                         <ul class="list-inline">
                             <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ADMIN'}">
                                 <p>
-                                    <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                 </p>
                                 <p>
                                 </p>
@@ -277,7 +277,7 @@
                         <ul class="list-inline">
                             <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ORGANIZER'}">
                                 <p>
-                                    <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                 </p>
                                 <p>
                                 </p>
@@ -295,7 +295,7 @@
                         <ul class="list-inline">
                             <li ng-repeat="user in pendingMembers.data | filter:{requestedRole: 'MEMBER'}">
                                 <p>
-                                    <a href="#/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
                                 </p>
                                 <p>
                                 </p>
