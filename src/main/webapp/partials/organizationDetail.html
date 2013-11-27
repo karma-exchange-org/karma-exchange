@@ -138,7 +138,7 @@
 
     <div class="vertical-panel-margin">
         <tabset>
-            <tab>
+            <tab active="tabs.impact.active" select="tabManager.select('impact')">
                 <tab-heading>
                     <i class="icon-bolt">
                     </i>
@@ -148,7 +148,7 @@
                 <impact-timeline timeline-events="impactTimelineEvents" timeline-type="'ORG'"></impact-timeline>
 
             </tab>
-            <tab>
+            <tab active="tabs.upcoming.active" select="tabManager.select('upcoming')">
                 <tab-heading>
                     <i class="icon-list">
                     </i>
@@ -161,7 +161,7 @@
                 </upcoming-events>
                 
             </tab>
-            <tab select="myCalendar.fullCalendar('render');">
+            <tab active="tabs.calendar.active" select="tabManager.select('calendar')">
                 <tab-heading>
                     <i class="icon-calendar">
                     </i>
@@ -169,15 +169,19 @@
                 </tab-heading>
                 <div class="col-md-12 container">
                     <!-- <div full-calendar events="events"></div> -->
-                    <div class="calendar" ng-model="eventSources" calendar="myCalendar" config="uiConfig.calendar" ui-calendar="uiConfig.calendar">
+                    <div class="calendar" 
+                        ng-model="calendarEventSources" 
+                        calendar="eventCalendar" 
+                        config="calendarUiConfig.calendar" 
+                        ui-calendar="calendarUiConfig.calendar">
                     </div>
                 </div>
             </tab>
-            <tab>
+            <tab active="tabs.topVolunteers.active" select="tabManager.select('topVolunteers')">
                 <tab-heading>
                     <i class="icon-thumbs-up">
                     </i>
-                    Top volunteers
+                    Top Volunteers
                 </tab-heading>
                 <div class="col-md-6">
                     <h3>
@@ -205,105 +209,60 @@
             <!-- <div id="fbgallery" fbgallery userid="{{fbPage.id}}" type="facebook"> -->
             <!-- </div>  -->
             <!-- </tab>  -->
-            <tab>
+            <!-- 
+                Commenting out this segment of code since the members tab requires some work in order to be useful.
+
+                <tab>
+                    <tab-heading>
+                        <i class="icon-group">
+                        </i>
+                        Members
+                    </tab-heading>
+                    <div class="row">
+                        <div class="col-md-12" ng-hide="orgOwners.data.length==0">
+                            <h4>
+                                Admins
+                            </h4>
+                            <hr>
+                            <ul class="list-inline">
+                                <li ng-repeat="user in orgOwners.data">
+                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                    <p>
+                                    </p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12" ng-hide="orgOrgnaizers.data.length==0">
+                            <h4>
+                                Organizers
+                            </h4>
+                            <hr>
+                            <ul class="list-inline">
+                                <li ng-repeat="user in orgOrgnaizers.data">
+                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                    <p>
+                                    </p>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </tab>
+            -->
+
+            <!-- Switch to using ng-if once we upgrade to angular 1.2 -->
+            <tab active="tabs[tab.tabName].active" select="tabManager.select(tab.tabName)" ng-repeat="tab in dynamicTabs">
                 <tab-heading>
-                    <i class="icon-group">
-                    </i>
-                    Members
+                    <span ng-bind-html-unsafe="tab.heading">
+                    </span>
                 </tab-heading>
-                <div class="row">
-                    <!--admins-->
-                    <div class="col-md-12" ng-hide="orgOwners.data.length==0">
-                        <h4>
-                            Admins
-                        </h4>
-                        <hr>
-                        <ul class="list-inline">
-                            <li ng-repeat="user in orgOwners.data">
-                                <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                                <p>
-                                </p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12" ng-hide="orgOrgnaizers.data.length==0">
-                        <h4>
-                            Organizers
-                        </h4>
-                        <hr>
-                        <ul class="list-inline">
-                            <li ng-repeat="user in orgOrgnaizers.data">
-                                <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                                <p>
-                                </p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+
+                <ng-include src="tab.contentUrl">
+                </ng-include>
             </tab>
-            <tab disabled="{READ:true}[org.permission]" ng-hide="{READ:true}[org.permission]">
-                <tab-heading>
-                    <i class="icon-cogs">
-                    </i>
-                    Manage membership {{pendingMembers.data.length | badge}}
-                </tab-heading>
-                <div class="row">
-                    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
-                        <!--orgnaizers-->
-                        <h4>
-                            Pending Admins
-                        </h4>
-                        <hr>
-                        <ul class="list-inline">
-                            <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ADMIN'}">
-                                <p>
-                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                                </p>
-                                <p>
-                                </p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
-                        <!--orgnaizers-->
-                        <h4>
-                            Pending Organizers
-                        </h4>
-                        <hr>
-                        <ul class="list-inline">
-                            <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ORGANIZER'}">
-                                <p>
-                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                                </p>
-                                <p>
-                                </p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
-                        <!--orgnaizers-->
-                        <h4>
-                            Pending memberships
-                        </h4>
-                        <hr>
-                        <ul class="list-inline">
-                            <li ng-repeat="user in pendingMembers.data | filter:{requestedRole: 'MEMBER'}">
-                                <p>
-                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
-                                </p>
-                                <p>
-                                </p>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </tab>
+
         </tabset>
     </div>
 </div>
