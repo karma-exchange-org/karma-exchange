@@ -938,14 +938,16 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         });
     };
     function loadImpactTab() {
-        if (!$scope.impactTimelineEvents && $scope.userKey) {
+        if (!$scope.impactTabLoaded && $scope.userKey) {
+            $scope.impactTabLoaded = true;
             $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({
                 userKey: $scope.userKey
             });
         }
     }
     function loadUpcomingTab() {
-        if (!$scope.events && $scope.userKey) {
+        if (!$scope.upcomingTabLoaded && $scope.userKey) {
+            $scope.upcomingTabLoaded = true;
             $scope.events = User.get({
                 id: $scope.userKey,
                 resource: 'event'
@@ -1006,69 +1008,145 @@ var meEditCtrl = function($scope, Me, $rootScope) {
     $scope.load();
 };
 
-var orgDetailCtrl = function( $scope, $location, $routeParams, $rootScope, $http, Org, Events, FbUtil, KexUtil, EventUtil ) 
-{ 
+var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http, Org, 
+        Events, FbUtil, KexUtil, EventUtil, urlTabsetUtil, $facebook) {
     $scope.FbUtil = FbUtil;
     $scope.KexUtil = KexUtil;
-    $scope.events = [];
-    $scope.parser = document.createElement( 'a' ); 
-    $scope.org = Org.get( { id : $routeParams.orgId }, function( ) { 
-            // TODO(avaliani): Switch to using $facebook.
-            $scope.parser.href = $scope.org.page.url; 
-            $http( { method : 'GET', url : FbUtil.GRAPH_API_URL + "" + $scope.parser.pathname } ).success( function( data ) {
-                    $scope.fbPage = data;
-            } ); 
+
+    var tabManager = $scope.tabManager = urlTabsetUtil.createTabManager();
+    tabManager.addTab('impact', { active: true, onSelectionCb: loadImpactTab });
+    tabManager.addTab('upcoming', { active: false, onSelectionCb: loadUpcomingTab });
+    tabManager.addTab('calendar', { active: false, onSelectionCb: loadCalendarTab });
+    tabManager.addTab('topVolunteers', { active: false, onSelectionCb: loadTopVolunteersTab });
+    tabManager.init();
+    $scope.tabs = tabManager.tabs;
+    $scope.dynamicTabs = [];
+
+    var calendarEvents = [];
+    $scope.calendarEventSources = [ calendarEvents ];
+    $scope.calendarUiConfig = {
+        calendar: {
+            height: 450,
+            editable: false,
+            header: {
+                left: 'month agendaWeek agendaDay',
+                center: 'title',
+                right: 'today prev,next'
+            }
+        }
+    };
+
+    $scope.org = Org.get(
+        { id: $routeParams.orgId }, 
+        function() {
+            $scope.orgLoaded = true;
+            $facebook.api("/" + $scope.org.page.name).then(function(response) {
+                $scope.fbPage = response;
+            });
 
             if ($scope.org.parentOrg) {
-                $scope.parentOrg = Org.get( { id : $scope.org.parentOrg.key } );
+                $scope.parentOrg = Org.get(
+                    { id: $scope.org.parentOrg.key });
             }
 
-            $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({keywords: "org:" + $scope.org.searchTokenSuffix});
+            if ($scope.org.permission === "ALL") {
+                tabManager.addTab('manageOrg', { active: false, onSelectionCb: loadManageOrgTab });
+                $scope.dynamicTabs.push({
+                    heading: '<i class="icon-cogs"></i> Manage Organization',
+                    contentUrl: 'partials/manage-org-tab.html',
+                    tabName: 'manageOrg',
+                });
+            }
 
-            $scope.upcomingEvents = Events.get( { type : "UPCOMING", keywords : "org:" + $scope.org.searchTokenSuffix }, function(){
-            
-                    angular.forEach($scope.upcomingEvents.data, function(event) {
-                        
-                            $scope.events.push({title:event.title, start:(new Date(event.startTime)),end:(new Date(event.endTime)),allDay:false, url:"/#!/event/"+event.key});
+            tabManager.reloadActiveTab();
+        });
+    $scope.childOrgs = Org.get(
+        {
+            id: $routeParams.orgId,
+            resource: "children"
+        });
+
+    function loadImpactTab() {
+        if (!$scope.impactTabLoaded && $scope.orgLoaded) {
+            $scope.impactTabLoaded = true;
+            $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({
+                keywords: "org:" + $scope.org.searchTokenSuffix
             });
-            } ); 
-            
-            $scope.allTimeLeaders = Org.get( { type : "ALL_TIME" }, { id : $routeParams.orgId, resource : "leaderboard" } ); 
-            
-            $scope.lastMonthLeaders = Org.get( { type : "THIRTY_DAY" }, { id : $routeParams.orgId, resource : "leaderboard" } ); 
-
-            if( $scope.org.permission === "ALL" ) 
-            { 
-                $scope.pendingMembers = Org.get( { membership_status : "PENDING" }, { id : $routeParams.orgId, resource : "member" } ); 
-            }
-    } ); 
-    $scope.orgOwners = Org.get( { role : "ADMIN" }, { id : $routeParams.orgId, resource : "member" } ); 
-    $scope.orgOrgnaizers = Org.get( { role : "ORGANIZER" }, { id : $routeParams.orgId, resource : "member" } );
-    $scope.childOrgs = Org.get( { id : $routeParams.orgId, resource : "children" } )
-    $scope.getColorClass = function( index ) 
-    {
-        return colorClass [ index ]; 
-    }
-    $scope.calendarRender = function(myCal){
-        myCal.fullCalendar('changeView','month');
-    }
-    /* config object */
-    $scope.uiConfig = {
-      calendar:{
-        height: 450,
-        editable: false,
-        header:{
-          left: 'month agendaWeek agendaDay',
-          center: 'title',
-          right: 'today prev,next'
         }
-      }
-    };
-    //$scope.myCalendar.fullCalendar('render');
-    $scope.eventSources = [$scope.events];
-    
-    
+    }
+
+    function loadUpcomingTab() {
+        loadUpcomingEvents();
+    }
+
+    function loadCalendarTab() {
+        function renderCalendar() {
+            $scope.eventCalendar.fullCalendar('render');
+        }
+        if ($scope.upcomingEventsLoaded) {
+            renderCalendar();
+        } else {
+            // TODO(avaliani): investigate why deep watch doesn't auto render.
+            loadUpcomingEvents(renderCalendar);
+        }
+    }
+
+    function loadUpcomingEvents(action) {
+        if (!$scope.upcomingEventsLoaded && $scope.orgLoaded) {
+            $scope.upcomingEventsLoaded = true;
+            $scope.upcomingEvents = Events.get(
+                {
+                    type: "UPCOMING",
+                    keywords: "org:" + $scope.org.searchTokenSuffix
+                }, 
+                function() {
+                    angular.forEach($scope.upcomingEvents.data, function(event) {
+                        calendarEvents.push({
+                            title: event.title,
+                            start: (new Date(event.startTime)),
+                            end: (new Date(event.endTime)),
+                            allDay: false,
+                            url: "/#!/event/" + event.key
+                        });
+                    });
+                    if (action) {
+                        action();
+                    }
+                });
+        }        
+    }
+
+    function loadTopVolunteersTab() {
+        if (!$scope.topVolunteersTabLoaded) {
+            $scope.topVolunteersTabLoaded = true;
+            $scope.allTimeLeaders = Org.get(
+                { type: "ALL_TIME" }, 
+                {
+                    id: $routeParams.orgId,
+                    resource: "leaderboard"
+                });
+            $scope.lastMonthLeaders = Org.get(
+                { type: "THIRTY_DAY" }, 
+                {
+                    id: $routeParams.orgId,
+                    resource: "leaderboard"
+                });            
+        }
+    }
+
+    function loadManageOrgTab() {
+        if (!$scope.manageOrgTabLoaded) {
+            $scope.manageOrgTabLoaded = true;
+            $scope.pendingMembers = Org.get(
+                { membership_status: "PENDING" }, 
+                {
+                    id: $routeParams.orgId,
+                    resource: "member"
+                });
+        }
+    }
 }
+
 var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) { 
     $scope.query = ""; 
     $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
@@ -1718,7 +1796,6 @@ function isLoggedIn() {
         return false; 
     }
 }
-var colorClass = [ "primary", "success", "info", "warning", "danger", "default" ];
 
 function isExternal(url) {
     var match = url.match(/^([^:\/?#]+:)?(?:\/\/([^\/?#]*))?([^?#]+)?(\?[^#]*)?(#.*)?/);

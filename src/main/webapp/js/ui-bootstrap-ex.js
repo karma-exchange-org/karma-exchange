@@ -105,6 +105,7 @@ angular.module('ui.bootstrap.ex.urltabs', [])
       this.tabs = {};
       this.tabSelectedByUrl = false;
       this._defaultActiveTabName = null;
+      this._init = false;
     }
 
     function Tab(props) {
@@ -113,36 +114,49 @@ angular.module('ui.bootstrap.ex.urltabs', [])
       this.onSelectionCb = props.onSelectionCb;
     }
 
+    // Adds pre-init or post-init (a.k.a. dynamic) tabs.
     TabManager.prototype.addTab = function(tabName, props) {
       this.tabs[tabName] = new Tab(props);
+      if (this._init) {
+        this._checkUrlForDynamicTabName(tabName);
+      }
     }
 
+    // Since init determines the default active tab it should be called after adding
+    // all non-dynamic tabs.
     TabManager.prototype.init = function() {
+      this._init = true;
       this._determineDefaultActiveTabName();
       this._checkUrlForTabName();
     }
 
     TabManager.prototype._determineDefaultActiveTabName = function() {
-      var activeTabAndTabName = this._findActiveTab();
-      if (activeTabAndTabName) {
-        this._defaultActiveTabName = activeTabAndTabName.tabName;
+      var tabAndName = this._findActiveTab();
+      if (tabAndName) {
+        this._defaultActiveTabName = tabAndName.tabName;
       }
     }
 
     TabManager.prototype._findActiveTab = function() {
-      var tabAndTabName = null;
+      var tabAndName = null;
       angular.forEach(this.tabs, angular.bind(this, function(tab, tabName) {
         if (tab.active) {
-          tabAndTabName = { tab: tab, tabName: tabName };
+          tabAndName = { tab: tab, tabName: tabName };
         }
       }));
-      return tabAndTabName;
+      return tabAndName;
     }
 
     TabManager.prototype._checkUrlForTabName = function() {
       if ($routeParams.tab && this.tabs[$routeParams.tab]) {
         this.markTabActive($routeParams.tab);
         this.tabSelectedByUrl = true;
+      }
+    }
+
+    TabManager.prototype._checkUrlForDynamicTabName = function(tabName) {
+      if (!this.tabSelectedByUrl && ($routeParams.tab == tabName)) {
+        this._checkUrlForTabName();
       }
     }
 
@@ -168,9 +182,9 @@ angular.module('ui.bootstrap.ex.urltabs', [])
     }
 
     TabManager.prototype.reloadActiveTab = function() {
-      var activeTabAndTabName = this._findActiveTab();
-      if (activeTabAndTabName && activeTabAndTabName.tab.onSelectionCb) {
-        activeTabAndTabName.tab.onSelectionCb();
+      var tabAndName = this._findActiveTab();
+      if (tabAndName && tabAndName.tab.onSelectionCb) {
+        tabAndName.tab.onSelectionCb();
       }
     }
 

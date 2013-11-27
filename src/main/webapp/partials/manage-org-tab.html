@@ -1,0 +1,54 @@
+<div class="row">
+    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+        <!--orgnaizers-->
+        <h4>
+            Pending Admins
+        </h4>
+        <hr>
+        <ul class="list-inline">
+            <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ADMIN'}">
+                <p>
+                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                </p>
+                <p>
+                </p>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+        <!--orgnaizers-->
+        <h4>
+            Pending Organizers
+        </h4>
+        <hr>
+        <ul class="list-inline">
+            <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ORGANIZER'}">
+                <p>
+                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                </p>
+                <p>
+                </p>
+            </li>
+        </ul>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12" ng-hide="pendingMembers.data.length==0">
+        <!--orgnaizers-->
+        <h4>
+            Pending memberships
+        </h4>
+        <hr>
+        <ul class="list-inline">
+            <li ng-repeat="user in pendingMembers.data | filter:{requestedRole: 'MEMBER'}">
+                <p>
+                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                </p>
+                <p>
+                </p>
+            </li>
+        </ul>
+    </div>
+</div>
