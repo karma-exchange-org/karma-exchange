@@ -321,6 +321,9 @@ kexApp.factory('KexUtil', function($rootScope) {
         },
         getSEOUrl: function(){
             return window.location.protocol + '//' + window.location.host + "?_escaped_fragment_=" + window.location.hash.replace('#!','')
+        },
+        getOGMetaTagUrl: function(ogtype, ogtitle, ogimage){
+            return window.location.protocol + '//' + window.location.host + "?metaonly=true&ogtype="+ogtype+"&ogtitle="+encodeURIComponent(ogtitle)+"&ogimage="+encodeURIComponent(ogimage)+"&ogurl="+encodeURIComponent(window.location.href);
         }
     }
 });
@@ -601,6 +604,7 @@ kexApp.directive('shareButtons', function(KexUtil) {
         return {
             restrict: 'E',
             scope: {
+                type: '=',
                 title: '=',
                 description: '=',
                 image: '='
@@ -613,7 +617,7 @@ kexApp.directive('shareButtons', function(KexUtil) {
             template:
                 '<div>' +
                     '<ul ng-social-buttons ' +
-                            'url="KexUtil.getSEOUrl()" ' +
+                            'url="KexUtil.getOGMetaTagUrl(type,title,image)" ' +
                             'title="title" ' +
                             'description="description" ' +
                             'image="image">' +
