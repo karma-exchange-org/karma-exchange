@@ -1,3 +1,13 @@
+<%
+    if (request.getParameter("metaonly") != null) {
+        //Do server side SEO stuff
+        out.println(org.karmaexchange.util.SEOUtil.fetchFBOGTags(request));
+    }
+    else if (request.getParameter("_escaped_fragment_") != null) {
+        //Do server side SEO stuff
+        out.println(org.karmaexchange.util.SEOUtil.fetchURL(request));
+    } else {
+     %>
 <!DOCTYPE HTML>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
@@ -237,3 +247,4 @@
     </body>
 
 </html>
+<% } %>
