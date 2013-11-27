@@ -433,6 +433,35 @@ img.kex-thumbnail-user-mini {
   text-align: center;  
 }
 
+/*
+ * Leaderboard
+ */
+
+.leaderboard-header {
+  font-size: 18px;
+  /*background-color: #CADFFF;*/
+  background-color: #3E7A99;
+  color: #eee
+}
+
+table>tbody>tr>.leaderboard-num-col {
+  vertical-align: middle;
+  width: 20px;
+}
+
+table>tbody>tr>.leaderboard-leader-col {
+  padding: 5px;
+}
+
+.leaderboard-even-row {
+  background-color: #F0F0F0;
+}
+
+.leaderboard-odd-row {
+  background-color: #F0F0F0;
+  /*background-color: #DFDFDF;*/
+}
+
 /*==================================================
  * Angular-ui 
  * ===============================================*/
