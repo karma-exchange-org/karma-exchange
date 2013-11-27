@@ -1,6 +1,7 @@
 package org.karmaexchange.util;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URLDecoder;
 
@@ -21,7 +22,7 @@ public class SEOUtil {
               String hash = URLDecoder.decode(request.getParameter("_escaped_fragment_"),"utf-8");
               HtmlPage page = webClient.getPage(ServletUtil.getBaseUri(request)+"/#!"+hash);
               
-              webClient.waitForBackgroundJavaScript(10000);
+              webClient.waitForBackgroundJavaScript(1000);
               return page.asXml();
         } catch (FailingHttpStatusCodeException e) {
           // TODO Auto-generated catch block
@@ -40,14 +41,14 @@ public class SEOUtil {
         return "Error occured";
     }
     
-    public static String fetchFBOGTags(HttpServletRequest request)
+    public static String fetchFBOGTags(HttpServletRequest request) throws UnsupportedEncodingException
     {
     	StringBuffer output = new StringBuffer();
     	output.append("<meta property=\"og:type\" content=\""+request.getParameter("ogtype")+"\"/>");
-    	output.append("<meta property=\"og:url\" content=\""+URLDecoder.decode(request.getParameter("ogurl"))+"\"/>");
-    	output.append("<meta property=\"og:title\" content=\""+URLDecoder.decode(request.getParameter("ogtitle"))+"\"/>");
-    	output.append("<meta property=\"og:image\" content=\""+URLDecoder.decode(request.getParameter("ogimage"))+"\"/>");
-    	output.append("<script> window.location=\""+URLDecoder.decode(request.getParameter("ogurl"))+"\"</script>");
+    	output.append("<meta property=\"og:url\" content=\""+URLDecoder.decode(request.getParameter("ogurl"),"utf-8")+"\"/>");
+    	output.append("<meta property=\"og:title\" content=\""+URLDecoder.decode(request.getParameter("ogtitle"),"utf-8")+"\"/>");
+    	output.append("<meta property=\"og:image\" content=\""+URLDecoder.decode(request.getParameter("ogimage"),"utf-8")+"\"/>");
+    	output.append("<script> window.location=\""+URLDecoder.decode(request.getParameter("ogurl"),"utf-8")+"\"</script>");
     	return output.toString();
     	
     }
