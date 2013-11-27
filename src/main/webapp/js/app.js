@@ -1085,6 +1085,12 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
 
     function loadCalendarTab() {
         function renderCalendar() {
+            // This variable is set by the calendar directive which is in
+            // a child scope from this controller! In theory there should be no 
+            // timing issue because a query is required to fetch the event 
+            // calendar which should give time for the linking and compiling
+            // phases to complete and therefore the link function of the
+            // calendar directive to execute.
             $scope.eventCalendar.fullCalendar('render');
         }
         if ($scope.upcomingEventsLoaded) {
