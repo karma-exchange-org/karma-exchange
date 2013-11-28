@@ -141,7 +141,7 @@ text-align:center;
   margin-bottom: 10px;
 }
 
-.panel-body-text-only {
+.panel-light-gray {
   /*padding: 10px;*/
   background-color: #F0F0F0;
 }
@@ -361,6 +361,48 @@ img.kex-thumbnail-user-mini {
   font-size: 18px;
   font-weight: bold;
   /*font-style: italic;*/
+}
+
+/*  
+ * Event view details tabs
+ */
+
+.event-description-panel {
+  padding: 1px 15px 0px 15px;
+  background-color: #F0F0F0;  
+}
+
+.event-impact-panel {
+  padding: 1px 15px 0px 15px;
+  background-color: #F0F0F0;
+}
+
+.event-description-sub-panel {
+  margin-bottom: 20px;
+}
+
+.event-impact-sub-panel {
+  margin-bottom: 20px;
+}
+
+.event-impact-rating-sub-panel {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #ddd;
+}
+
+.event-impact-rating-text {
+  display: table-cell;
+  vertical-align: middle;
+  padding-right: 10px;
+  font-size: 1.2em;
+  font-style: italic;
+}
+
+.event-impact-rating-stars {
+  display: table-cell;
+  vertical-align: middle;  
 }
 
 /*
