@@ -728,9 +728,9 @@ kexApp.directive('eventUserRating', function(Events) {
             };
         },
         template:
-            '<div>' +
+            '<span>' +
                 '<rating-ex value="userRating.value" max="5" readonly="false" on-update="updateUserRating(newValue)"></rating-ex>' +
-            '</div>'
+            '</span>'
     }
 });
 
@@ -886,7 +886,7 @@ kexApp.directive('loginClick', function ($facebook,$rootScope) {
                     }
                     else
                     {
-                        $rootScope.showAlert('Please login to continue!', "danger");
+                        $rootScope.showAlert('Login required', "danger");
                     }
                 });
                 scope.$apply();
