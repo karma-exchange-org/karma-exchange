@@ -232,6 +232,14 @@
                                 </div>
                             </div>
 
+                            <div class="event-impact-sub-panel" ng-show="impactImgs.length">
+                                <carousel interval="-1">
+                                    <slide ng-repeat="img in impactImgs" active="img.active">
+                                        <img ng-src="{{img.src}}" class="event-impact-img">
+                                    </slide>
+                                </carousel>                                
+                            </div>
+
                             <div class="event-impact-sub-panel">
                                 <h4>
                                     <strong>                                
