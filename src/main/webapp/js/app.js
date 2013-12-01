@@ -1660,7 +1660,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
 };
 
 var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location, 
-        Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil) {
+        Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.currentUserRating = {
@@ -1773,6 +1773,18 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     function loadImpactTab() {
         if (!$scope.impactTabLoaded && $scope.event && ($scope.event.status == 'COMPLETED')) {
             $scope.impactTabLoaded = true;
+
+            if ($scope.event.album) {
+                $facebook.cachedApi("/" + $scope.event.album.id + "/photos").then(function (response) {
+                    // TODO(avaliani): Bug. For now only fetch the first few images.
+                    $scope.impactImgs = [];
+                    var fbImgs = response.data;
+                    for (var imgIdx = 0; imgIdx < fbImgs.length; imgIdx++) {
+                        $scope.impactImgs.push({active: imgIdx == 0, src: fbImgs[imgIdx].source});
+                    }
+                });
+            }
+
             if (EventUtil.canWriteReview($scope.event)) {
                 Events.get(
                     {

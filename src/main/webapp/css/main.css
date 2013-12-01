@@ -405,6 +405,23 @@ img.kex-thumbnail-user-mini {
   vertical-align: middle;  
 }
 
+.carousel-inner>.item>.event-impact-img {
+  margin: auto;
+  /*max-height: 400px;*/
+  height: 400px;
+  /* max-width: 80%;*/
+}
+
+/* Get rid of the gradient */
+.carousel-control.left {
+  background-image: none;
+}
+
+/* Get rid of the gradient */
+.carousel-control.right {
+  background-image: none;
+}
+
 /*
  * org-event-summary.html
  */
