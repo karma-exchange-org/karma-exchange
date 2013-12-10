@@ -14,7 +14,7 @@
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!-->
 <html ng-app="kexApp" class="no-js">
-    <!--<![endif]-->    
+    <!--<![endif]-->
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -48,10 +48,10 @@
 
 
         <!-- Good for facebook albums.
-            <link href="css/plusgallery.css" rel="stylesheet"> 
+            <link href="css/plusgallery.css" rel="stylesheet">
         -->
         <link href="css/angular-social.css" rel="stylesheet">
-        
+
         <link rel="stylesheet" href="css/main.css">
         <style>
             .ng-cloak { display: none; }
@@ -61,14 +61,14 @@
             <script>window.html5 || document.write('<script src="js/vendor/html5shiv.js"><\/script>')</script>
         <![endif]-->
     </head>
-    
+
     <body>
         <!--[if lt IE 7]>
             <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
         <![endif]-->
         <!-- This code is taken from http://twitter.github.com/bootstrap/examples/hero.html -->
         <script type="text/javascript" src="//www.google.com/jsapi"></script>
-        
+
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
         <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
 
@@ -76,7 +76,7 @@
 
         <script src="js/vendor/angular-resource.min.js"></script>
         <script src="js/vendor/angular-cookies-min.js"></script>
-        
+
         <script src="js/vendor/angular-social.js"></script>
 
         <script src="js/vendor/ngFacebook.js"></script>
@@ -98,6 +98,7 @@
         <script src="js/vendor/jasny-bootstrap.min.js"></script>
 
         <!-- angular-ui boostrap 3.0 compatabile -->
+        <!-- <script src="js/vendor/ui-bootstrap-0.6.0-SNAPSHOT.js"></script> -->
         <script src="js/vendor/ui-bootstrap-tpls-0.6.0-SNAPSHOT.js"></script>
         <script src="js/ui-bootstrap-ex.js"></script>
 
@@ -114,16 +115,19 @@
 
         <script src="js/vendor/bit-array.js"></script>
 
+        <!-- For date time manipulation -->
+        <script src="js/vendor/moment.min.js"></script>
+
         <!-- Bootstrap related files. -->
         <script src="js/app.js"></script>
         <script src="js/plugins.js"></script>
 
         <!-- Good for displaying facebook galleries.
-            <script src="js/vendor/plusgallery.js">                        
+            <script src="js/vendor/plusgallery.js">
             </script>
          -->
-        <!-- Might be required for recurring events. 
-            <script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script> 
+        <!-- Might be required for recurring events.
+            <script src="//ajax.googleapis.com/ajax/libs/mootools/1.4.5/mootools-yui-compressed.js"></script>
         -->
         <!-- Javascript based grid layout.
             <script src="js/vendor/jquery.masonry.min.js"></script>
@@ -135,10 +139,10 @@
           (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
           m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
           })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
-        
+
           ga('create', 'UA-45011314-1', 'karmaexchange.org');
           ga('send', 'pageview');
-        
+
         </script>
 
 
@@ -172,11 +176,11 @@
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
-                        <!--     
+                        <!--
                             <li ng-hide="me">
                                     <fb:login-button scope="{{fbUtil.LOGIN_SCOPE}}" width="200" max-rows="1">
                                     </fb:login-button>
-                            </li> 
+                            </li>
                         -->
                         <li class="dropdown">
                             <a ng-show="me" href="#" class="dropdown-toggle" toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
@@ -204,7 +208,7 @@
                         </li>
                     </ul>
                 </div>
-            </div>    
+            </div>
         </nav>
         <div class="container">
             <div class="messagesList" app-messages>
@@ -237,7 +241,7 @@
             </div>
             </form>
             </div>
-           
+
         </div>
         <div>
             <div id="fb-root">

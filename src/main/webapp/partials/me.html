@@ -2,99 +2,158 @@
 <div class="container">
 
   <div class="row">    
+
     <div class="col-md-3">
-        <img ng-src="{{KexUtil.strConcat(me.profileImage.url,'?type=large')}}" class="img-responsive center">
-        <div class="text-center">
-            <h4><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>            
-        </div>
-    </div>
-    <div class="col-md-9">
 
-        <h3 class="profile-view-name"><strong>{{me.firstName}}</strong></h3>
-        
-        <div class="panel panel-default" ng-show="me.about || {ALL:true}[me.permission]">
-            <div class="panel-heading">
-                <h3 class="panel-title">
-                    Introduction <small><a href ng-click="enableIntroEdit()"><i ng-show="{ALL:true}[me.permission]" class="icon-edit"></i></a></small>
-                </h3>
-
-            </div>
+        <div class="panel panel-default panel-seperated-vertical">
             <div class="panel-body panel-light-gray">
-                <ng-switch on="edit">
-                
-                    <div ng-switch-when="true">
-                        <div>
-                            <textarea rows="5" class="col-md-12" ng-model="$parent.me.about" ></textarea>
-                        </div>
-                        <div class="vertical-panel-padding">
-                            <button class="btn btn-primary" ng-click="saveIntroEdit()">Save</button>
-                            <button class="btn btn-default" ng-click="disableIntroEdit()">Cancel</button>
-                        </div>
-                    </div>
-                    
-                    <div ng-switch-default ng-click="enableIntroEdit()">
 
-                        <div ng-switch on="me.permission">
+                <div class="panel-body-header-h3">{{me.firstName}}</div>
 
-                            <div ng-switch-when="ALL">
-                                <p ng-show="me.about" ng-bind-html-unsafe="me.about | noHTML | newlines" />
-                                <p ng-hide="me.about"><em>Click here to write a few words about yourself</em></p>
-                            </div>
+                <img ng-src="{{KexUtil.strConcat(me.profileImage.url,'?type=large')}}" class="img-responsive center">
 
-                            <div ng-switch-default>
-                                <p ng-bind-html-unsafe="me.about | noHTML | newlines" />
-                            </div>
+                <div class="text-center">
+                    <h4><strong><em>+{{me.karmaPoints}} karma</em></strong></h4>            
+                </div>
 
-                        </div>
-
-                    </div>
-                    
-                </ng-switch>
             </div>
         </div>
-        
 
-        <div class="panel panel-default" ng-show="orgs.data.length">
-            <div class="panel-heading">
-                <div class="row">
-                    <div class="col-md-6">
+    </div>
+
+    <div class="col-md-9">
+        
+        <div class="row">
+
+            <div class="col-md-6">
+
+                <div class="panel panel-default panel-seperated-vertical">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Karma Goal Tracker
+                        </h3>
+
+                    </div>
+                    <div class="panel-body panel-light-gray panel-body-no-vertical-padding">
+
+                        <table class="table label-value-table panel-seperated-vertical goal-table">
+                            <thead>
+                                <tr>                                
+                                    <th colspan="2">
+                                        <span class="text-uppercase">Month of {{ goalStartDate | date:'MMMM yyyy'}}</span>                               
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Goal</td>
+                                    <td><num-with-type num="monthlyKarma.goalHours" type="'hour'"></num-with-type></td>
+                                </tr>
+                                <tr>
+                                    <td>Actual</td>
+                                    <td><num-with-type num="monthlyKarma.totalHours" type="'hour'"></num-with-type></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="panel-seperated-vertical">
+                            <goal-tracking-bar
+                                pct-completed="monthlyKarma.pctCompleted" 
+                                pct-pending="monthlyKarma.pctUpcoming">
+                            </goal-tracking-bar>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="col-md-6" ng-show="me.about || {ALL:true}[me.permission]">
+                <div class="panel panel-default panel-seperated-vertical">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Introduction <small><a href ng-click="enableIntroEdit()"><i ng-show="{ALL:true}[me.permission]" class="icon-edit"></i></a></small>
+                        </h3>
+
+                    </div>
+                    <div class="panel-body panel-light-gray">
+                        <ng-switch on="edit">
+                        
+                            <div ng-switch-when="true">
+                                <div>
+                                    <textarea rows="5" class="col-md-12" ng-model="$parent.me.about" ></textarea>
+                                </div>
+                                <div class="vertical-panel-padding">
+                                    <button class="btn btn-primary" ng-click="saveIntroEdit()">Save</button>
+                                    <button class="btn btn-default" ng-click="disableIntroEdit()">Cancel</button>
+                                </div>
+                            </div>
+                            
+                            <div ng-switch-default ng-click="enableIntroEdit()">
+
+                                <div ng-switch on="me.permission">
+
+                                    <div ng-switch-when="ALL">
+                                        <p ng-show="me.about" ng-bind-html-unsafe="me.about | noHTML | newlines" />
+                                        <p ng-hide="me.about"><em>Click here to write a few words about yourself</em></p>
+                                    </div>
+
+                                    <div ng-switch-default>
+                                        <p ng-bind-html-unsafe="me.about | noHTML | newlines" />
+                                    </div>
+
+                                </div>
+
+                            </div>
+                            
+                        </ng-switch>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6" ng-show="orgs.data.length">
+                <div class="panel panel-default panel-seperated-vertical">
+                    <div class="panel-heading">
                         <h3 class="panel-title">
                             I am an organizer for                    
                         </h3>
                     </div>
-                    <div class="col-md-6 text-right">
-                        Organizer rating:
-                        <rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> 
-                        ({{me.eventOrganizerRating.count}})
+
+                    <div class="panel-body panel-body-no-vertical-padding">
+                        <div class="well well-sm panel-seperated-vertical" ng-repeat="org in orgs.data">
+
+                            <div class="img-text-div-img-small">
+                                <a href="#!/org/{{org.org.key}}">
+                                    <img ng-src="{{fbUtil.getImageUrl(org.orgPage.name, 'square')}}" class="kex-thumbnail-org-small">
+                                </a>
+                            </div>
+                            <div class="img-text-div-text">
+                                <a href="#!/org/{{org.org.key}}">
+                                    {{org.orgName}}
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="panel-footer panel-filled-light-bg">
+
+                        <div class="text-center">
+                            Organizer rating:
+                            <rating value="me.eventOrganizerRating.value" max="5" readonly="true"></rating> 
+                            ({{me.eventOrganizerRating.count}})
+                        </div>
+
                     </div>
                 </div>
             </div>
-            <div class="panel-body panel-grid">
 
-                <div class="panel-grid-el-2-col" ng-repeat="org in orgs.data">
-                    <div class="well well-sm well-no-margin">
-
-                        <div class="img-text-div-img-small">
-                            <a href="#!/org/{{org.org.key}}">
-                                <img ng-src="{{fbUtil.getImageUrl(org.orgPage.name, 'square')}}" class="kex-thumbnail-org-small">
-                            </a>
-                        </div>
-                        <div class="img-text-div-text">
-                            <a href="#!/org/{{org.org.key}}">
-                                {{org.orgName}}
-                            </a>
-                        </div>
-
-                    </div>
-                </div>
-
-            </div>
         </div>
-        
+                
     </div>
   </div>
 
-  <div class="row vertical-panel-padding">
+  <div class="row panel-seperated-vertical">
     <div class="col-md-12">
         <tabset>
             <tab active="tabs.impact.active" select="tabManager.select('impact')">

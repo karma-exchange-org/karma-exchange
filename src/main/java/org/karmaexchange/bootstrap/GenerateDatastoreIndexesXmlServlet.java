@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.logging.Logger;
 
@@ -49,6 +50,7 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
     ClientConfig config = new DefaultClientConfig();
     Client client = Client.create(config);
     WebResource service = client.resource(getBaseUri());
+    Date now = new Date();
 
     statusWriter.println("Issuing queries to build datastore-indexes.xml file...");
 
@@ -78,6 +80,12 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
     issueGetRequestAndCheckRespone(
       service.path("api/me/event")
       .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.PAST.toString()));
+
+    issueGetRequestAndCheckRespone(
+      service.path("api/me/event")
+      .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.INTERVAL.toString())
+      .queryParam(EventResource.START_TIME_PARAM, Long.valueOf(now.getTime()).toString())
+      .queryParam(EventResource.END_TIME_PARAM, Long.valueOf(now.getTime() + 1).toString()) );
 
     // Not currently used by the UI.
     issueGetRequestAndCheckRespone(
