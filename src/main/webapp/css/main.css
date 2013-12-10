@@ -128,6 +128,26 @@ text-align:center;
   
 }
 
+.text-uppercase {
+  text-transform: uppercase;
+}
+
+.progress {
+  margin-bottom: 0;
+}
+
+.progress .progress-bar-segment-striped {
+  background-image: -webkit-gradient(linear, 0 100%, 100% 0, color-stop(0.25, rgba(255, 255, 255, 0.15)), color-stop(0.25, transparent), color-stop(0.5, transparent), color-stop(0.5, rgba(255, 255, 255, 0.15)), color-stop(0.75, rgba(255, 255, 255, 0.15)), color-stop(0.75, transparent), to(transparent));
+  background-image: -webkit-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: -moz-linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
+  background-size: 40px 40px;
+}
+
+.label-value-table tr td:first-child {
+  text-align: right;
+}
+
 .vertical-panel-padding {
   padding-top: 10px;
 }
@@ -141,9 +161,22 @@ text-align:center;
   margin-bottom: 10px;
 }
 
-.panel-light-gray {
+.panel-filled-light-bg, .panel-light-gray {
   /*padding: 10px;*/
   background-color: #F0F0F0;
+}
+
+.panel-body-header-h3 {
+  font-size: 24px;
+  font-weight:bold;
+
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 10px;
+}
+
+.panel-body-no-vertical-padding {
+  padding: 0px 15px;
 }
 
 /* 
@@ -455,7 +488,6 @@ img.kex-thumbnail-user-mini {
  */
 
 .org-info-panel {
-  margin-top: 20px;
   padding: 5px 10px;
   background-color: #F0F0F0;
   text-align: center;
@@ -519,6 +551,22 @@ table>tbody>tr>.leaderboard-leader-col {
 .leaderboard-odd-row {
   background-color: #F0F0F0;
   /*background-color: #DFDFDF;*/
+}
+
+/*
+ * Goal tracking
+ */
+
+.goal-table tr td:first-child {
+  width: 80px;
+}
+
+.goal-table tr td {
+  font-weight: bold;
+}
+
+.goal-table tr th {
+  font-weight: normal;
 }
 
 /*==================================================

@@ -57,6 +57,7 @@ import com.javadocmd.simplelatlng.util.LengthUnit;
 public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   public static final String START_TIME_PARAM = "start_time";
+  public static final String END_TIME_PARAM = "end_time";
   public static final String SEARCH_TYPE_PARAM = "type";
   public static final String KEYWORDS_PARAM = "keywords";
 
@@ -74,7 +75,8 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   public enum EventSearchType {
     UPCOMING,
-    PAST
+    PAST,
+    INTERVAL
   }
 
   @Override
@@ -95,20 +97,50 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
         EventSearchType.valueOf(reqParams.getFirst(SEARCH_TYPE_PARAM)) : null;
     Long startTimeValue = reqParams.containsKey(START_TIME_PARAM) ?
         Long.valueOf(reqParams.getFirst(START_TIME_PARAM)) : null;
+    Long endTimeValue = reqParams.containsKey(END_TIME_PARAM) ?
+        Long.valueOf(reqParams.getFirst(END_TIME_PARAM)) : null;
     String keywords = reqParams.getFirst(KEYWORDS_PARAM);
     boolean loadReviews = (eventSearchUserKey != null) &&
         eventSearchUserKey.equals(getCurrentUserKey());
 
+    if (searchType == null) {
+      if ((startTimeValue != null) && (endTimeValue != null)) {
+        searchType = EventSearchType.INTERVAL;
+      } else {
+        searchType = EventSearchType.UPCOMING;
+      }
+    }
+    if ((endTimeValue != null) && (searchType != EventSearchType.INTERVAL))  {
+      throw ErrorResponseMsg.createException(
+        "parameter '" + END_TIME_PARAM + "' can only be specified " +
+            "with a query '" + SEARCH_TYPE_PARAM + "' of '" + EventSearchType.INTERVAL + "'",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    if ((searchType == EventSearchType.INTERVAL) &&
+        ( (startTimeValue == null) || (endTimeValue == null)) ) {
+      throw ErrorResponseMsg.createException(
+        "parameters '" + START_TIME_PARAM + "' and '" + END_TIME_PARAM + "' must be " +
+            "specified for a query '" + SEARCH_TYPE_PARAM +
+            "' of '" + EventSearchType.INTERVAL + "'",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+
+    Date startTime = (startTimeValue == null) ? new Date() : new Date(startTimeValue);
+    Date endTime = (endTimeValue == null) ? new Date() : new Date(endTimeValue);
+
     PaginatedQuery.Builder<Event> queryBuilder =
         PaginatedQuery.Builder.create(Event.class, uriInfo, DEFAULT_NUM_SEARCH_RESULTS)
         .addFilters(filters);
-    Date startTime = (startTimeValue == null) ? new Date() : new Date(startTimeValue);
-    if (searchType == null) {
-      searchType = EventSearchType.UPCOMING;
+    queryBuilder.setOrder(
+      ((searchType == EventSearchType.UPCOMING) || (searchType == EventSearchType.INTERVAL)) ?
+          "startTime" : "-startTime");
+    if (searchType == EventSearchType.INTERVAL) {
+      queryBuilder.addFilter(new ConditionFilter("startTime >=", startTime));
+      queryBuilder.addFilter(new ConditionFilter("startTime <", endTime));
+    } else {
+      queryBuilder.addFilter(new ConditionFilter(
+        (searchType == EventSearchType.UPCOMING) ? "startTime >=" : "startTime <", startTime));
     }
-    queryBuilder.setOrder((searchType == EventSearchType.UPCOMING) ? "startTime" : "-startTime");
-    queryBuilder.addFilter(new ConditionFilter(
-      (searchType == EventSearchType.UPCOMING) ? "startTime >=" : "startTime <", startTime));
     if (keywords != null) {
       queryBuilder.addFilter(new ConditionFilter("searchableTokens",
         SearchUtil.getSearchableTokens(keywords, MAX_SEARCH_KEYWORDS).toArray()));

@@ -35,6 +35,7 @@ import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.UpsertParticipantTxn;
 import org.karmaexchange.dao.Organization.AutoMembershipRule;
 import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
+import org.karmaexchange.dao.User.KarmaGoal;
 import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.ImageProviderType;
@@ -87,7 +88,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   }
 
   public enum TestUser {
-    USER1("100006074376957", "Susan", "Liangberg"),
+    USER1("100006074376957", "Susan", "Liangberg", null,
+      ImmutableList.<BadgeSummary>of(),
+      Long.valueOf(6 * 60)),
     USER2("100006058506752", "John", "Occhinostein", "john.ocho@KidsClub.org",
       ImmutableList.<BadgeSummary>of(createBadgeSummary(7, BGCSF_BRONZE_BADGE))),
     USER3("100006051787601", "Rick", "Narayananson", "rick.narayananson@kidsclub.org",
@@ -107,15 +110,18 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     AMIR("1111368160", "Amir", "Valiani", null,
       ImmutableList.<BadgeSummary>of(
         createBadgeSummary(1, BGCSF_GOLD_BADGE),
-        createBadgeSummary(3, BGCSF_BRONZE_BADGE))),
+        createBadgeSummary(3, BGCSF_BRONZE_BADGE)),
+      Long.valueOf(8 * 60)),
     HARISH("537854733", "Harish", "Balijepalli", null,
       ImmutableList.<BadgeSummary>of(
         createBadgeSummary(1, BGCSF_GOLD_BADGE),
-        createBadgeSummary(3, BGCSF_BRONZE_BADGE))),
+        createBadgeSummary(3, BGCSF_BRONZE_BADGE)),
+      Long.valueOf(4 * 60)),
     POONUM("3205292", "Poonum", "Kaberwal", null,
       ImmutableList.<BadgeSummary>of(
         createBadgeSummary(1, BGCSF_GOLD_BADGE),
-        createBadgeSummary(3, BGCSF_BRONZE_BADGE)));
+        createBadgeSummary(3, BGCSF_BRONZE_BADGE)),
+      Long.valueOf(4 * 60));
 
     private final String fbId;
     @Getter
@@ -127,6 +133,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final String email;
     @Getter
     private final List<BadgeSummary> badges;
+    @Getter
+    private final Long monthlyKarmaPtsGoal;
 
     private TestUser(String fbId, String firstName, String lastName) {
       this(fbId, firstName, lastName, null, ImmutableList.<BadgeSummary>of());
@@ -134,11 +142,17 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     private TestUser(String fbId, String firstName, String lastName, @Nullable String email,
         List<BadgeSummary> badges) {
+      this(fbId, firstName, lastName, email, badges, null);
+    }
+
+    private TestUser(String fbId, String firstName, String lastName, @Nullable String email,
+        List<BadgeSummary> badges, Long monthlyKarmaPtsGoal) {
       this.fbId = fbId;
       this.firstName = firstName;
       this.lastName = lastName;
       this.email = email;
       this.badges = badges;
+      this.monthlyKarmaPtsGoal = monthlyKarmaPtsGoal;
     }
 
     public Key<User> getKey() {
@@ -157,6 +171,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         user.getRegisteredEmails().add(new RegisteredEmail(email, true));
       }
       user.setBadges(badges);
+      if (monthlyKarmaPtsGoal != null) {
+        KarmaGoal goal = new KarmaGoal();
+        user.setKarmaGoal(goal);
+        goal.setMonthlyGoal(monthlyKarmaPtsGoal);
+      }
       return user;
     }
 
@@ -321,10 +340,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     statusWriter.println("About to persist test users...");
     for (TestUser testUser : TestUser.values()) {
       User user = ofy().load().key(testUser.getKey()).now();
-      if (user == null) {
-        BaseDao.upsert(testUser.createUser());
-        User.updateProfileImage(testUser.getKey(), testUser.getSocialNetworkProviderType());
+      if (user != null) {
+        throw new RuntimeException("DB has not been purged");
       }
+      BaseDao.upsert(testUser.createUser());
+      User.updateProfileImage(testUser.getKey(), testUser.getSocialNetworkProviderType());
     }
     statusWriter.println("About to persist organizations...");
     persistOrganizations();
@@ -357,7 +377,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private static CreateEventsResult createEvents() {
     List<Event> events = Lists.newArrayList();
-    Date now = DateUtils.round(new Date(), Calendar.HOUR_OF_DAY);
+    Date now = new Date();
 
     Key<Waiver> bgcsfSoccerWaiverKey = Key.create(BGCSF.waivers.get(0));
     Key<Waiver> bgcsfTutoringWaiverKey = Key.create(BGCSF.waivers.get(1));
@@ -415,8 +435,6 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         "95126",
         GeoPtWrapper.create(new GeoPt(37.316094f,-121.912575f))));
 
-    final int UPCOMING_DAYS_OFFSET = 60;
-
     List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
       POONUM.getKey());
     List<Key<User>> registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
@@ -424,7 +442,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER11.getKey(), USER12.getKey(), USER13.getKey());
     List<Key<User>> waitListedUsers = asList();
     Event event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
-      DateUtils.addDays(now, 1 + UPCOMING_DAYS_OFFSET), 1, organizers, registeredUsers,
+      computeEventDate(now, 2, 4), 1, organizers, registeredUsers,
       waitListedUsers, 100, "502904489789649", columbiaParkSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
@@ -433,7 +451,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER1.getKey(), USER4.getKey());
     waitListedUsers = asList(USER3.getKey(), USER5.getKey());
     event = createEvent("After School Tutoring", BGCSF_TENDERLOIN, bgcsfClubhouse,
-      DateUtils.addDays(now, 3 + UPCOMING_DAYS_OFFSET), 3, organizers, registeredUsers,
+      computeEventDate(now, 5, 3), 3, organizers, registeredUsers,
       waitListedUsers, 2, "502905379789560", bgcsfTutoringWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
     events.add(event);
@@ -442,7 +460,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Credit Coaching", UNITED_WAY, unitedWayParkmoorOffice,
-      DateUtils.addDays(now, 12 + UPCOMING_DAYS_OFFSET), 1, organizers, registeredUsers,
+      computeEventDate(now, 12, 7), 1, organizers, registeredUsers,
       waitListedUsers, 5, null);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
@@ -451,10 +469,33 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList();
     waitListedUsers = asList();
     event = createEvent("Resume Workshop", BENEVOLENT, benevolentParkmoorOffice,
-      DateUtils.addDays(now, 12 + UPCOMING_DAYS_OFFSET), 1, organizers, registeredUsers,
-      waitListedUsers, 5, "502906079789490");
+      computeEventDate(now, 12, 7), 1, organizers, registeredUsers,
+      waitListedUsers, 5, null);
     event.setSuitableForTypes(Lists.newArrayList(SuitableForType.GROUPS));
     events.add(event);
+
+    Date extraEventStartDate = computeEventDate(now, 20, 0);
+    final int numDaysToAddPerIteration = 15;
+    for (int extraEventCnt = 0; extraEventCnt < 8; extraEventCnt += 2) {
+
+      organizers = asList(USER5.getKey());
+      registeredUsers = asList(AMIR.getKey());
+      waitListedUsers = asList();
+      event = createEvent("Credit Coaching", UNITED_WAY, unitedWayParkmoorOffice,
+        computeEventDate(extraEventStartDate, 0, 7), 1, organizers, registeredUsers,
+        waitListedUsers, 5, null);
+      events.add(event);
+
+      organizers = asList(USER5.getKey());
+      registeredUsers = asList(HARISH.getKey(), POONUM.getKey());
+      waitListedUsers = asList();
+      event = createEvent("Resume Workshop", BENEVOLENT, benevolentParkmoorOffice,
+        computeEventDate(extraEventStartDate, 5, 7), 1, organizers, registeredUsers,
+        waitListedUsers, 5, null);
+      events.add(event);
+
+      extraEventStartDate = computeEventDate(extraEventStartDate, numDaysToAddPerIteration, 0);
+    }
 
     // Past events.
     List<PendingReview> pendingReviews = Lists.newArrayList();
@@ -466,7 +507,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Youth Soccer Clinic", BGCSF_TENDERLOIN, soccerField,
-      DateUtils.addDays(now, -6), 1,
+      computeEventDate(now, -2, 4), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904833122948",
       bgcsfSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
@@ -488,7 +529,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       USER6.getKey(), USER7.getKey(), USER8.getKey(), HARISH.getKey(), POONUM.getKey());
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
-      DateUtils.addDays(now, -13), 1,
+      computeEventDate(now, -5, 4), 1,
       organizers, registeredUsers, waitListedUsers, registeredUsers.size(), "502904726456292",
       columbiaParkSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
@@ -502,7 +543,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
     event = createEvent("San Francisco Street Cleanup", BENEVOLENT, ferryBuilding,
-      DateUtils.addDays(now, -20), 1, organizers, registeredUsers, waitListedUsers, 100,
+      computeEventDate(now, -20, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906933122738");
     event.setImpactSummary(
         "78 Square folks & neighbors brought in 52 bags, a mattress & a chair for a total of " +
@@ -513,7 +554,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
     event = createEvent("San Jose Street Cleanup", UNITED_WAY, unitedWayParkmoorOffice,
-      DateUtils.addDays(now, -27), 1, organizers, registeredUsers, waitListedUsers, 100,
+      computeEventDate(now, -27, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906759789422");
     event.setImpactSummary(
       "107 pounds of trash off the street. 7 syringes. 7 thank yous from local residents.");
@@ -523,7 +564,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER5.getKey(), AMIR.getKey());
     waitListedUsers = asList();
     event = createEvent("San Francisco Street Cleanup", BENEVOLENT, ferryBuilding,
-      DateUtils.addDays(now, -31), 1, organizers, registeredUsers, waitListedUsers, 100,
+      computeEventDate(now, -31, 1), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906933122738");
     events.add(event);
     eventNoShowInfo.add(new EventNoShowInfo(event,
@@ -533,13 +574,19 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER5.getKey(), HARISH.getKey(), POONUM.getKey());
     waitListedUsers = asList();
     event = createEvent("San Jose Street Cleanup", UNITED_WAY, unitedWayParkmoorOffice,
-      DateUtils.addDays(now, -37), 1, organizers, registeredUsers, waitListedUsers, 100,
+      computeEventDate(now, -37, 0), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906759789422");
     events.add(event);
     eventNoShowInfo.add(new EventNoShowInfo(event,
       asList(HARISH.getKey(), POONUM.getKey(), USER2.getKey())));
 
     return new CreateEventsResult(events, eventNoShowInfo, pendingReviews);
+  }
+
+  private static Date computeEventDate(Date now, int days, int timePm) {
+    Date result = DateUtils.truncate(now, Calendar.DATE);
+    result = DateUtils.addHours(result, timePm + 12);
+    return DateUtils.addDays(result, days);
   }
 
   private static Event createEvent(String title, TestOrganization testOrg, Location location,

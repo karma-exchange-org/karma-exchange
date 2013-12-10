@@ -2,60 +2,68 @@
     <div class="row">
 
         <div class="col-md-6">
-            <h3>
-                <strong>
-                    {{fbPage.name}}
-                </strong>
-            </h3>
-            <img ng-src="{{fbPage.cover.source}}" class="img-responsive">
+            <div class="panel panel-default panel-seperated-vertical">
+                <div class="panel-body panel-light-gray">
+
+    
+                    <div class="panel-body-header-h3">
+                        {{fbPage.name}}
+                    </div>
+                    <img ng-src="{{fbPage.cover.source}}" class="img-responsive">
+
+                </div>                
+            </div>
+
         </div>
 
         <div class="col-md-6">
 
-            <div class="org-info-panel">
-                <em>
-                    <strong class="font-size-h4">
-                        +{{org.karmaPoints}} karma
-                    </strong>
-                </em>
-                <div>
-                    Event rating:
-                    <aggregate-rating value="org.eventRating"></aggregate-rating>
-                </div>
+            <div class="panel panel-default panel-seperated-vertical">
+                <div class="panel-body org-info-panel">
 
-                <div class="org-info-panel-details">
-                    <div class="org-info-panel-details-row" ng-show="fbPage.location">
-                        <div class="org-info-panel-details-row-img">
-                            <i class="icon-map-marker"></i>
-                        </div>
-                        <div class="org-info-panel-details-row-text">
-                            <a href="//maps.google.com/?q={{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}"
-                    target="_blank">{{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}</a>
-                        </div>
+                    <em>
+                        <strong class="font-size-h4">
+                            +{{org.karmaPoints}} karma
+                        </strong>
+                    </em>
+                    <div>
+                        Event rating:
+                        <aggregate-rating value="org.eventRating"></aggregate-rating>
                     </div>
 
-                    <div class="org-info-panel-details-row">
-                        <div class="org-info-panel-details-row-img">
-                            <i class="icon-envelope"></i>
+                    <div class="org-info-panel-details">
+                        <div class="org-info-panel-details-row" ng-show="fbPage.location">
+                            <div class="org-info-panel-details-row-img">
+                                <i class="icon-map-marker"></i>
+                            </div>
+                            <div class="org-info-panel-details-row-text">
+                                <a href="//maps.google.com/?q={{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}"
+                        target="_blank">{{fbPage.location.street}} {{fbPage.location.city}}, {{fbPage.location.state}}, {{fbPage.location.zip}}</a>
+                            </div>
                         </div>
-                        <div class="org-info-panel-details-row-text">
-                            <a href ng-click="showMessage();">Message</a>
+
+                        <div class="org-info-panel-details-row">
+                            <div class="org-info-panel-details-row-img">
+                                <i class="icon-envelope"></i>
+                            </div>
+                            <div class="org-info-panel-details-row-text">
+                                <a href ng-click="showMessage();">Message</a>
+                            </div>
                         </div>
+
+                        <div class="org-info-panel-details-row" ng-show="fbPage.phone">
+                            <div class="org-info-panel-details-row-img">
+                                <i class="icon-phone"></i>
+                            </div>
+                            <div class="org-info-panel-details-row-text">
+                                {{fbPage.phone}}
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div class="org-info-panel-details-row" ng-show="fbPage.phone">
-                        <div class="org-info-panel-details-row-img">
-                            <i class="icon-phone"></i>
-                        </div>
-                        <div class="org-info-panel-details-row-text">
-                            {{fbPage.phone}}
-                        </div>
-                    </div>
-
-                </div>
-
+                </div>                
             </div>
-
 
             <div class="panel panel-default panel-seperated-vertical">
                 <div class="panel-heading">

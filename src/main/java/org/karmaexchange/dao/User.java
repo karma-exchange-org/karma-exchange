@@ -89,6 +89,7 @@ public final class User extends NameBaseDao<User> {
 
   @Index
   private long karmaPoints;
+  private KarmaGoal karmaGoal;
 
   private List<AttendanceRecord> eventAttendanceHistory = Lists.newArrayList();
   @Ignore
@@ -152,6 +153,9 @@ public final class User extends NameBaseDao<User> {
     // profileImage = null;
     eventOrganizerRating = IndexedAggregateRating.create();
     karmaPoints = 0;
+    if (karmaGoal == null) {
+      karmaGoal = new KarmaGoal();
+    }
     eventAttendanceHistory = Lists.newArrayList();
     organizationMemberships = Lists.newArrayList();
 
@@ -531,5 +535,13 @@ public final class User extends NameBaseDao<User> {
       }
     }
     eventAttendanceHistoryPct = ((double) eventsAttended) / eventAttendanceHistory.size() * 100;
+  }
+
+  @Embed
+  @Data
+  public static class KarmaGoal {
+    private static final long DEFAULT_MONTHLY_GOAL = 1 * 60;
+
+    private long monthlyGoal = DEFAULT_MONTHLY_GOAL;
   }
 }

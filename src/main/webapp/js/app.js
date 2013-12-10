@@ -324,6 +324,22 @@ kexApp.factory('KexUtil', function($rootScope) {
         },
         getOGMetaTagUrl: function(ogtype, ogtitle, ogimage){
             return window.location.protocol + '//' + window.location.host + "?metaonly=true&ogtype="+ogtype+"&ogtitle="+encodeURIComponent(ogtitle)+"&ogimage="+encodeURIComponent(ogimage)+"&ogurl="+encodeURIComponent(window.location.href);
+        },
+
+        toHours: function(karmaPoints, dec) {
+            return this.round(karmaPoints / 60, dec);
+        },
+        toKarmaPoints: function(hours) {
+            return hours * 60;
+        },
+
+        /*
+         * Round 'num' to 'dec' decimal places.
+         *
+         * Example: round(4.454, 2) = 4.45
+         */
+        round: function (num, dec) {
+           return Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
         }
     }
 });
@@ -895,6 +911,55 @@ kexApp.directive('loginClick', function ($facebook,$rootScope) {
     };
 });
 
+kexApp.directive('goalTrackingBar', function() {
+    return {
+        restrict: 'E',
+        scope: {
+            pctCompleted: '=',
+            pctPending: '='
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.$watch('pctCompleted', function() {
+                updateBarType();
+            });
+            scope.$watch('pctPending', function() {
+                updateBarType();
+            });
+
+            function updateBarType() {
+                var registeredPct = scope.pctCompleted + scope.pctPending;
+                if (registeredPct < 25) {
+                    scope.barType = 'danger';
+                } else if (registeredPct < 75) {
+                    scope.barType = 'warning';
+                } else {
+                    scope.barType = 'success';
+                }                
+            }
+        },
+        templateUrl: 'template/kex/goal-tracking-bar.html'
+    }
+});
+
+// Currently this adds an 's' if num is not one. When needed we
+// can add a dictionary to the scope in order to properly pluralize
+// different types.
+kexApp.directive('numWithType', function() {
+    return {
+        restrict: 'E',
+        scope: {
+            num: '=',
+            type: '='
+        },
+        replace: true,
+        transclude: false,
+        templateUrl: 'template/kex/num-with-type.html'
+    }
+});
+
+
 /*
  * App controllers
  */
@@ -920,7 +985,8 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
 
                 // Tab information depends on the user being fetched first.
                 tabManager.reloadActiveTab();
-                getOtherData();
+                postUserKeyResolutionCbs();
+                postUserResolutionCbs();
             });
 
         } else {
@@ -930,11 +996,72 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                     id: $scope.userKey
                 }, 
                 function() {
+                    postUserResolutionCbs();
                     $scope.who = $scope.me.firstName + "'s";
                 });
-            getOtherData();
+            postUserKeyResolutionCbs();
         }
     };
+    function postUserKeyResolutionCbs() {
+        setupGoalTracker();
+        getOtherData();
+    }
+    function postUserResolutionCbs() {
+        $scope.userLoaded = true;
+        updateGoalProgressBar();
+    }
+    function setupGoalTracker() {
+        var now = new Date();
+        $scope.goalStartDate = new Date(now.getFullYear(), now.getMonth());
+        $scope.goalEndDate = moment($scope.goalStartDate).add('months', 1).toDate();
+
+        User.get( { id : $scope.userKey, resource : 'event', type: "INTERVAL", 
+            start_time: $scope.goalStartDate.valueOf(), end_time: $scope.goalEndDate.valueOf() },
+            function(result) {
+                var totalKarmaPoints = 0;
+                var completedKarmaPoints = 0;
+                for (var idx = 0; idx < result.data.length; idx++) {
+                    var event = result.data[idx];
+                    // console_log("Goal tracker processing: event=%s, date=%s, status=%s", 
+                    //     event.title, new Date(event.startTime), event.status);
+                    totalKarmaPoints += event.karmaPoints;
+                    if (event.status == 'COMPLETED') {
+                        completedKarmaPoints += event.karmaPoints;
+                    }
+                }
+
+                var monthlyKarma = $scope.monthlyKarma = { };
+                monthlyKarma.totalHours = KexUtil.toHours(totalKarmaPoints, 1);
+                monthlyKarma.upcomingKarmaPoints = totalKarmaPoints - completedKarmaPoints;
+                monthlyKarma.completedKarmaPoints = completedKarmaPoints;
+                updateGoalProgressBar();
+            });
+    }
+    function updateGoalProgressBar() {        
+        if ($scope.monthlyKarma && $scope.userLoaded && $scope.me.karmaGoal) { 
+            var totalPct = 0;
+            var monthlyKarma = $scope.monthlyKarma;
+            var monthlyGoal = $scope.me.karmaGoal.monthlyGoal;
+            var completedPct = capPercentage((monthlyKarma.completedKarmaPoints * 100) / monthlyGoal, totalPct);
+            totalPct += completedPct;
+            var upcomingPct = capPercentage((monthlyKarma.upcomingKarmaPoints * 100) / monthlyGoal, totalPct);
+            totalPct += upcomingPct;
+
+            monthlyKarma.pctCompleted = completedPct;
+            monthlyKarma.pctUpcoming = upcomingPct;
+            
+            monthlyKarma.goalHours = KexUtil.toHours(monthlyGoal, 1);
+
+            function capPercentage(pctValue, totalPct) {
+                pctValue = Math.round(pctValue);
+                if (pctValue + totalPct > 100) {
+                    return 100 - totalPct;
+                } else {
+                    return pctValue;
+                }
+            }
+        }
+    }
     function getOtherData() {
         $scope.orgs = User.get({
             id: $scope.userKey,
