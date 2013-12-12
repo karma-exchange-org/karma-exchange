@@ -1149,9 +1149,9 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             msgs = ["Volunteering is fun! Sign up for an event"];
         } else if (totalPct < 25) {
             msgs = ["Ready to earn some more karma?"];
-        } else if (totalPct < 50) {
-            msgs = ["Nice job so far"];
         } else if (totalPct < 75) {
+            msgs = ["Nice job so far"];
+        } else if (totalPct < 100) {
             msgs = ["Almost there!"];
         } else  {
             msgs = ["High five!", "Karma goal achieved!"];
