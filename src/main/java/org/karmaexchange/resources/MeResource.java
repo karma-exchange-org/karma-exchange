@@ -84,7 +84,7 @@ public class MeResource {
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<OrganizationMembershipView> getOrgs() {
-    return UserResource.getOrgs(getCurrentUserKey());
+    return UserResource.getOrgs(getCurrentUserKey(), uriInfo);
   }
 
   @Path("profile_image")

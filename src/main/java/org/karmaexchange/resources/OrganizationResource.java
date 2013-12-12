@@ -48,6 +48,7 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
 
   public static final String NAME_PREFIX_PARAM = "name_prefix";
   public static final String ROLE_PARAM = "role";
+  public static final String MIN_ROLE_PARAM = "min_role";
   public static final String MEMBERSHIP_STATUS_PARAM = "membership_status";
   public static final String LEADERBOARD_TYPE_PARAM = "type";
   public static final String INCLUDE_PARENT_ORGS_PARAM = "include_parent_orgs";

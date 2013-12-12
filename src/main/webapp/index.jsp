@@ -171,7 +171,7 @@
                         <li>
                             <a href="#!/org"><i class="icon-group icon-white"></i> Organizations</a>
                         </li>
-                        <li ng-show="me && orgs && (orgs.data.length > 0)">
+                        <li ng-show="isOrganizer">
                             <a href="#!/event/add"><i class="icon-plus icon-white"></i> Create Events</a>
                         </li>
                     </ul>

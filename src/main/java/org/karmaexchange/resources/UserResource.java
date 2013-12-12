@@ -1,6 +1,7 @@
 package org.karmaexchange.resources;
 
 import static org.karmaexchange.util.OfyService.ofy;
+import static org.karmaexchange.resources.OrganizationResource.MIN_ROLE_PARAM;
 
 import java.util.List;
 
@@ -9,9 +10,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
@@ -63,14 +66,19 @@ public class UserResource extends BaseDaoResource<User> {
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public ListResponseMsg<OrganizationMembershipView> getOrgs(
       @PathParam("user_key") String userKeyStr) {
-    return getOrgs(OfyUtil.<User>createKey(userKeyStr));
+    return getOrgs(OfyUtil.<User>createKey(userKeyStr), uriInfo);
   }
 
-  public static ListResponseMsg<OrganizationMembershipView> getOrgs(Key<User> userKey) {
+  public static ListResponseMsg<OrganizationMembershipView> getOrgs(Key<User> userKey,
+      UriInfo uriInfo) {
+    MultivaluedMap<String, String> reqParams = uriInfo.getQueryParameters();
+    Role minRole = reqParams.containsKey(MIN_ROLE_PARAM) ?
+        Role.valueOf(reqParams.getFirst(MIN_ROLE_PARAM)) : Role.ORGANIZER;
+
     User user = ofy().load().key(userKey).now();
     // For now we always fetch all the organizations. Implementing offsetted results requires
     // fetching all the organizations and sorting them by name. So it doesn't save us anything
     // to return a smaller batch at a time.
-    return ListResponseMsg.create(OrganizationMembershipView.create(user));
+    return ListResponseMsg.create(OrganizationMembershipView.create(user, minRole));
   }
 }
