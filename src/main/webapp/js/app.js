@@ -305,7 +305,7 @@ kexApp.factory( 'Org', function( $resource ) {
  * Utility API factories
  */
 
-kexApp.factory('KexUtil', function($rootScope) {
+kexApp.factory('KexUtil', function($rootScope, $q, Me) {
     return {
         getBaseUrl: function() {
             return window.location.protocol + '//' + window.location.host;
@@ -324,6 +324,56 @@ kexApp.factory('KexUtil', function($rootScope) {
         },
         getOGMetaTagUrl: function(ogtype, ogtitle, ogimage){
             return window.location.protocol + '//' + window.location.host + "?metaonly=true&ogtype="+ogtype+"&ogtitle="+encodeURIComponent(ogtitle)+"&ogimage="+encodeURIComponent(ogimage)+"&ogurl="+encodeURIComponent(window.location.href);
+        },
+
+        // Get the promise corresponding to me
+        me: function() {
+            this._meSetupPromise();
+            return $rootScope.meDef.promise;
+        },
+
+        updateMe: function() {
+            Me.get(
+                angular.bind(this, function(value) {
+                    this._mePromiseRecycle();
+                    $rootScope.me = value;
+                    $rootScope.meDef.resolve($rootScope.me);
+                    updateIsOrganizer();
+                }),
+                angular.bind(this, function(httpResponse) {
+                    this.clearMe();
+                }));
+
+            function updateIsOrganizer() {
+                for (var idx = 0; idx < $rootScope.me.organizationMemberships.length; idx++) {
+                    var membership = $rootScope.me.organizationMemberships[idx];
+                    if ((membership.role == 'ORGANIZER') || (membership.role == 'ADMIN')) {
+                        $rootScope.isOrganizer = true;
+                        break;
+                    }
+                }
+            }
+        },
+
+        clearMe: function() {
+            this._mePromiseRecycle();
+            $rootScope.meDef.promise.reject();
+            $rootScope.me = undefined;
+            $rootScope.isOrganizer = false;
+        },
+
+        _meSetupPromise: function() {
+            if (!angular.isDefined($rootScope.meDef)) {
+                $rootScope.meDef = $q.defer();
+            }
+        },
+
+        _mePromiseRecycle: function() {
+            this._meSetupPromise();
+            if ($rootScope.mePromiseResolved) {
+                $rootScope.meDef = $q.defer();
+            }
+            $rootScope.mePromiseResolved = true;
         },
 
         toHours: function(karmaPoints, dec) {
@@ -389,8 +439,7 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
             fbAccessToken = response.authResponse.accessToken;
 
             if ( updateUser ) {
-                $rootScope.me = Me.get(); 
-                $rootScope.orgs = Me.get( { resource : 'org' } ); 
+                KexUtil.updateMe();
                 processUserChange();
             }
         } else {
@@ -398,8 +447,7 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
             if ( $rootScope.fbUserId ) {
                 $rootScope.fbUserId = undefined;
                 fbAccessToken = undefined;
-                $rootScope.me = undefined;
-                $rootScope.orgs = undefined;
+                KexUtil.clearMe();
                 processUserChange();
             }
         }
@@ -1001,7 +1049,8 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     function load() {
         if ($location.path() == "/me") {
             $scope.who = 'My';
-            $scope.me = Me.get(function() {
+            KexUtil.me().then(function(meObj) {
+                $scope.me = meObj;                
                 $scope.userKey = $scope.me.key;
                 $scope.savedAboutMe = $scope.me.about;
 
@@ -1010,7 +1059,6 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                 postUserKeyResolutionCbs();
                 postUserResolutionCbs();
             });
-
         } else {
             $scope.userKey = $routeParams.userId;
             $scope.me = User.get(
@@ -1115,13 +1163,6 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         var modalInstance = $modal.open({
             backdrop: false,
             templateUrl: 'template/kex/karma-goal-modal.html',
-            resolve: {
-                // This is required since $rootScope.me can get updated
-                // due to oAuth changes.
-                meObj: function () {
-                    return $scope.me;
-                }
-            },
             controller: KarmaGoalModalInstanceCtrl
         });
         
@@ -1179,12 +1220,21 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
 };
 
 var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope, 
-        KexUtil, Me, meObj) {
-    var originalMonthlyGoal = meObj.karmaGoal.monthlyGoal;
-    $scope.goal = { hours: KexUtil.toHours(originalMonthlyGoal, 1) };
-    $scope.saveDisabled = false;
+        KexUtil, Me) {
+    $scope.saveDisabled = true;
+
+    KexUtil.me().then(function(meObj) {
+        $scope.saveDisabled = false;        
+        $scope.goal = { hours: KexUtil.toHours(meObj.karmaGoal.monthlyGoal, 1) };
+        $scope.meObj = meObj;
+    });
+
     $scope.save = function () {
         $scope.saveDisabled = true;
+        // TODO(avaliani): if me has recycled, ideally the modal should close. See if
+        //   url path changes force the modal to close.
+        var meObj = $scope.meObj;
+        var originalMonthlyGoal = meObj.karmaGoal.monthlyGoal;
         meObj.karmaGoal.monthlyGoal = KexUtil.toKarmaPoints(Number($scope.goal.hours));
         Me.save(meObj, 
             function() {
@@ -1193,8 +1243,9 @@ var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope,
             function() {
                 meObj.karmaGoal.monthlyGoal = originalMonthlyGoal;
                 $modalInstance.dismiss();
-            });
+            });        
     };
+
     $scope.cancel = function () {
         $modalInstance.dismiss();
     };
@@ -1207,12 +1258,9 @@ var meEditCtrl = function($scope, Me, $rootScope) {
     };
     $scope.load = function() {
         $scope.who = 'My';
-        $scope.me = Me.get(function() {
+        KexUtil.me().then(function(meObj) {
+            $scope.me = meObj;
             $scope.origAboutMe = $scope.me.about;
-            if (!$scope.me.about) {
-                $scope.me.about = 'Click here to write a few words about yourself!';
-            }
-            $rootScope.me = $scope.me;
         });
     };
     $scope.save = function() {

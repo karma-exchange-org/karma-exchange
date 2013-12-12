@@ -219,11 +219,13 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
                 "If your property is stolen while volunteering that is your responsibility."),
              createWaiver("After school tutoring waiver",
                 "You are responsible for any property you bring."))),
+
     BGCSF_COLUMBIA_PARK("columbia.park",
       "https://bgcsf.thankyou4caring.org/page.aspx?pid=298",
       AMIR,
       asList(
-        TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
+        TestOrgMembership.of(USER1, Organization.Role.ORGANIZER, null),
+        TestOrgMembership.of(USER8, null, Organization.Role.ORGANIZER),
         TestOrgMembership.of(HARISH, Organization.Role.ORGANIZER, null),
         TestOrgMembership.of(POONUM, Organization.Role.ORGANIZER, null)),
       BGCSF,
@@ -231,14 +233,15 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       asList(createWaiver("Soccer clinic waiver",
         "If you are injured while volunteering Columbia Park BGCSF is not liable.\n\n" +
         "If your property is stolen while volunteering that is your responsibility."))),
+
     BGCSF_TENDERLOIN("Tenderloin.clubhouse",
       "https://bgcsf.thankyou4caring.org/page.aspx?pid=298",
       HARISH,
       asList(
         TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null),
-        TestOrgMembership.of(USER1, null, Organization.Role.ORGANIZER),
+        TestOrgMembership.of(USER1, Organization.Role.ORGANIZER, null),
         TestOrgMembership.of(USER2, Organization.Role.ORGANIZER, null),
-        TestOrgMembership.of(AMIR, Organization.Role.ORGANIZER, null)),
+        TestOrgMembership.of(USER8, null, Organization.Role.ORGANIZER)),
       BGCSF),
 
     BENEVOLENT("benevolent.net",
@@ -249,7 +252,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
         TestOrgMembership.of(USER5, Organization.Role.ORGANIZER, Organization.Role.ADMIN),
-        TestOrgMembership.of(USER1, Organization.Role.MEMBER, null),
+        TestOrgMembership.of(USER1, Organization.Role.ORGANIZER, null),
         TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
         TestOrgMembership.of(USER3, null, Organization.Role.ADMIN))),
 
@@ -260,7 +263,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER7, Organization.Role.MEMBER, Organization.Role.ORGANIZER),
         TestOrgMembership.of(USER6, Organization.Role.MEMBER, Organization.Role.ADMIN),
         TestOrgMembership.of(USER5, Organization.Role.ORGANIZER, Organization.Role.ADMIN),
-        TestOrgMembership.of(USER1, Organization.Role.MEMBER, null),
+        TestOrgMembership.of(USER1, Organization.Role.ORGANIZER, null),
         TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
         TestOrgMembership.of(USER3, null, Organization.Role.ADMIN)));
 

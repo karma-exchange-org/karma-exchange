@@ -13,6 +13,7 @@ import org.karmaexchange.dao.AggregateRating;
 import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.dao.PageRef;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.User.OrganizationMembership;
@@ -42,12 +43,15 @@ public class OrganizationMembershipView {
   @Nullable
   private Organization.Role requestedRole;
 
-  public static List<OrganizationMembershipView> create(User user) {
+  public static List<OrganizationMembershipView> create(User user, Role minRole) {
     // The number of memberships a user should have is small. Therefore, fetch them all and
     // then sort them.
     Map<Key<Organization>, OrganizationMembership> membershipMap = Maps.newHashMap();
     for (OrganizationMembership membership : user.getOrganizationMemberships()) {
-      membershipMap.put(KeyWrapper.toKey(membership.getOrganization()), membership);
+      if ((membership.getRole() != null) &&
+          membership.getRole().hasEqualOrMoreCapabilities(minRole)) {
+        membershipMap.put(KeyWrapper.toKey(membership.getOrganization()), membership);
+      }
     }
     List<Organization> organizations = Lists.newArrayList();
     for (Organization org : ofy().load().keys(membershipMap.keySet()).values()) {
