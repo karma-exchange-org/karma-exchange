@@ -1,0 +1,39 @@
+<div class="modal-header text-center font-size-h4">
+    Update Karma Goal
+</div>
+<div class="modal-body">
+
+    <div class="panel-seperated-vertical">
+        <table class="label-value-table set-goal-table">
+            <tbody>
+                <tr>
+                    <td>Hour(s) per month</td>
+                    <td>
+                        <form novalidate class="form-horizontal form-no-margin" role="form" name="goalForm">
+                            <div class="form-group">
+                                <input type="text" 
+                                    name="goalHoursInput"
+                                    class="form-control karma-goal-input"
+                                    ng-model="goal.hours"
+                                    required 
+                                    float-geq-zero/>
+                            </div>
+                        </form>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div ng-show="goalForm.goalHoursInput.$invalid" class="panel-seperated-vertical">
+        <div class="alert alert-danger alert-no-margin">
+            Please enter a number greater than or equal to zero
+        </div>
+    </div>
+
+</div>
+<div class="modal-footer">
+    <button class="btn btn-primary" ng-click="save()" ng-disabled="goalForm.goalHoursInput.$invalid || saveDisabled">Save</button>
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+</div>

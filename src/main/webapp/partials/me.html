@@ -47,11 +47,24 @@
                             <tbody>
                                 <tr>
                                     <td>Goal</td>
-                                    <td><num-with-type num="monthlyKarma.goalHours" type="'hour'"></num-with-type></td>
+                                    <td><strong>
+                                            <num-with-type num="monthlyKarma.goalHours" type="'hour'"></num-with-type> 
+                                        </strong>
+                                        <span ng-show="{ALL:true}[me.permission]" class="icon-edit-span">
+                                            <a href ng-click="editKarmaGoal()"><i class="icon-edit"></i></a>
+                                        </span>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td>Actual</td>
-                                    <td><num-with-type num="monthlyKarma.totalHours" type="'hour'"></num-with-type></td>
+                                    <td>Registered for</td>
+                                    <td>
+                                        <strong>
+                                            <num-with-type num="monthlyKarma.registeredForKarmaHours" type="'hour'"></num-with-type>
+                                        </strong>
+                                        <span class="goal-table-upcoming" ng-show="monthlyKarma.upcomingKarmaHours">
+                                            <em>( Upcoming <num-with-type num="monthlyKarma.upcomingKarmaHours" type="'hour'"></num-with-type> )</em>
+                                        <span>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -61,6 +74,10 @@
                                 pct-completed="monthlyKarma.pctCompleted" 
                                 pct-pending="monthlyKarma.pctUpcoming">
                             </goal-tracking-bar>
+                        </div>
+
+                        <div class="text-center" ng-show="{ALL:true}[me.permission]">
+                            <h4><em>{{monthlyKarma.msg}}</em></h4>
                         </div>
                     </div>
                 </div>
@@ -72,7 +89,12 @@
                 <div class="panel panel-default panel-seperated-vertical">
                     <div class="panel-heading">
                         <h3 class="panel-title">
-                            Introduction <small><a href ng-click="enableIntroEdit()"><i ng-show="{ALL:true}[me.permission]" class="icon-edit"></i></a></small>
+                            Introduction 
+                            <small>
+                                <span class="icon-edit-span">
+                                    <a href ng-click="enableIntroEdit()"><i ng-show="{ALL:true}[me.permission]" class="icon-edit"></i></a>
+                                </span>
+                            </small>
                         </h3>
 
                     </div>
