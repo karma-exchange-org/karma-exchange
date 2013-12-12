@@ -11,11 +11,11 @@
                     <td>
                         <form novalidate class="form-horizontal form-no-margin" role="form" name="goalForm">
                             <div class="form-group">
-                                <input type="text" 
+                                <input type="text"
                                     name="goalHoursInput"
                                     class="form-control karma-goal-input"
                                     ng-model="goal.hours"
-                                    required 
+                                    required
                                     float-geq-zero/>
                             </div>
                         </form>
@@ -25,7 +25,7 @@
             </tbody>
         </table>
     </div>
-    
+
     <div ng-show="goalForm.goalHoursInput.$invalid" class="panel-seperated-vertical">
         <div class="alert alert-danger alert-no-margin">
             Please enter a number greater than or equal to zero

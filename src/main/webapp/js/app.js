@@ -24,7 +24,7 @@ angular
 
 angular.module('globalErrors', []).config(function($provide, $httpProvider, $compileProvider) {
     $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
-    $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {        
+    $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {
         // console.log(angular.toJson(headersGetter()));
         // Check if it is a post request. Mutations require authentication.
         if ((headersGetter()["Content-Type"] != null) && !isLoggedIn()) {
@@ -71,10 +71,10 @@ angular.module('HashBangURLs', []).config(['$locationProvider', function($locati
   $location.hashPrefix('!');
 }]);
 
-kexApp = angular.module( "kexApp", 
+kexApp = angular.module( "kexApp",
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "loadingOnAJAX", "ngFacebook",
      "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs"] )
-.config( function( $routeProvider, $httpProvider, $facebookProvider ) { 
+.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
     $routeProvider
         // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
@@ -90,92 +90,92 @@ kexApp = angular.module( "kexApp",
         .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html', reloadOnSearch: false } )
         .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html', reloadOnSearch: false } )
         .otherwise( { redirectTo : '/event' } );
-    delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ]; 
+    delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ];
     //$httpProvider.defaults.headers.common['X-'] = 'X';
 
 
     var fbAppId;
-    if (document.location.hostname === "localhost" ) { 
-        fbAppId = '276423019167993'; 
-    }   
-    else if (document.location.hostname === "karmademo.dyndns.dk" ) { 
-        fbAppId = '1381630838720301'; 
-    } 
-    else if (document.location.hostname === "kex-latest.appspot.com" ) { 
-        fbAppId = '166052360247234'; 
-    } 
-    else { 
-        fbAppId = '571265879564450'; 
-    } 
+    if (document.location.hostname === "localhost" ) {
+        fbAppId = '276423019167993';
+    }
+    else if (document.location.hostname === "karmademo.dyndns.dk" ) {
+        fbAppId = '1381630838720301';
+    }
+    else if (document.location.hostname === "kex-latest.appspot.com" ) {
+        fbAppId = '166052360247234';
+    }
+    else {
+        fbAppId = '571265879564450';
+    }
     $facebookProvider.setAppId(fbAppId);
-    $facebookProvider.setCustomInit({ 
-        status : true, 
-        cookie : true, 
+    $facebookProvider.setCustomInit({
+        status : true,
+        cookie : true,
         xfbml : false });
-        
+
 })
-.filter( 'newlines', function( ) { 
-    return function( text ) { 
-        if( text ) 
-        { 
-            return text.replace( /\n/g, '<br/>' );  
+.filter( 'newlines', function( ) {
+    return function( text ) {
+        if( text )
+        {
+            return text.replace( /\n/g, '<br/>' );
         }
-    } 
+    }
 })
-.filter( 'noHTML', function( ) { 
-    return function( text ) { 
-        if( text ) 
-        { 
-            return text.replace( /&/g, '&amp;' ).replace( />/g, '&gt;' ).replace( /</g, '&lt;' ); 
+.filter( 'noHTML', function( ) {
+    return function( text ) {
+        if( text )
+        {
+            return text.replace( /&/g, '&amp;' ).replace( />/g, '&gt;' ).replace( /</g, '&lt;' );
         }
-    } 
+    }
 } )
-.filter( 'limit10', function( ) { 
-    return function( text ) { 
-        if( text > 10 ) 
-        { 
-            return 'More than 10'; 
-        } 
-        else if ( text == "0" ) 
-        { 
+.filter( 'limit10', function( ) {
+    return function( text ) {
+        if( text > 10 )
+        {
+            return 'More than 10';
+        }
+        else if ( text == "0" )
+        {
             return 'Event is full';
-        } 
+        }
         else
-        { 
+        {
             return text;
         }
     }
 }
 )
-.filter( 'limit10Verbose', function( ) { 
-    return function( text ) { 
-        if( text > 10 ) 
-        { 
-            return 'Volunteers needed: more than 10'; 
-        } 
-        else if ( text == "0" ) 
-        { 
+.filter( 'limit10Verbose', function( ) {
+    return function( text ) {
+        if( text > 10 )
+        {
+            return 'Volunteers needed: more than 10';
+        }
+        else if ( text == "0" )
+        {
             return "No additional volunteers are needed at this time";
-        } 
+        }
         else
-        { 
+        {
             return "Volunteers needed: " + text;
         }
     }
 }
 )
-.filter( 'badge', function( ) { 
-    return function( text ) { 
-        if( text > 0 ) 
-        { 
-            return "("+text+")"; 
-        } 
+.filter( 'badge', function( ) {
+    return function( text ) {
+        if( text > 0 )
+        {
+            return "("+text+")";
+        }
 
         else
-        { 
-            return ""; 
-        } 
-        return text; 
+        {
+            return "";
+        }
+        return text;
     }
 }
 )
@@ -183,7 +183,7 @@ kexApp = angular.module( "kexApp",
     return function (text, length, end) {
         if (text == null || text.length == 0)
             return null;
-    
+
         if (isNaN(length))
             length = 10;
 
@@ -199,35 +199,35 @@ kexApp = angular.module( "kexApp",
 
     };
 })
-.run( function( $rootScope, Me, $location, FbUtil, $modal) { 
+.run( function( $rootScope, Me, $location, FbUtil, $modal) {
     $rootScope.fbUtil = FbUtil;
-    $rootScope.$on( "$routeChangeStart", function( event, next, current ) { 
-            $rootScope.alerts = [ ]; 
+    $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
+            $rootScope.alerts = [ ];
             $rootScope.locationURL = window.location.href;
-    } ); 
-    $rootScope.addAlert = function( message ) { 
-        if( ! $rootScope.alerts ) 
-        {    
-            $rootScope.alerts = [ ]; 
-        } 
-        $rootScope.alerts.push( { msg : message } ); 
-    }; 
-    $rootScope.showAlert = function( message, alertType ) { 
-        $rootScope.alerts = [ ]; 
-        $rootScope.alerts.push( { type : alertType, msg : message } ); 
+    } );
+    $rootScope.addAlert = function( message ) {
+        if( ! $rootScope.alerts )
+        {
+            $rootScope.alerts = [ ];
+        }
+        $rootScope.alerts.push( { msg : message } );
     };
-    $rootScope.closeAlert = function( index ) { 
-        $rootScope.alerts.splice( index, 1 ); 
-    }; 
-    $rootScope.isMessageOpen = false; 
-    $rootScope.showMessage = function( ) { 
-        $rootScope.isMessageOpen = true; 
-    }; 
-    $rootScope.cancelMessage = function( ) { 
-        $rootScope.isMessageOpen = false; 
-    }; 
-    $rootScope.sendMessage = function( ) { 
-        $rootScope.isMessageOpen = false; 
+    $rootScope.showAlert = function( message, alertType ) {
+        $rootScope.alerts = [ ];
+        $rootScope.alerts.push( { type : alertType, msg : message } );
+    };
+    $rootScope.closeAlert = function( index ) {
+        $rootScope.alerts.splice( index, 1 );
+    };
+    $rootScope.isMessageOpen = false;
+    $rootScope.showMessage = function( ) {
+        $rootScope.isMessageOpen = true;
+    };
+    $rootScope.cancelMessage = function( ) {
+        $rootScope.isMessageOpen = false;
+    };
+    $rootScope.sendMessage = function( ) {
+        $rootScope.isMessageOpen = false;
     };
     $rootScope.openShareEventModal = function (event, header) {
         var modalInstance = $modal.open({
@@ -249,37 +249,37 @@ kexApp = angular.module( "kexApp",
         // TODO(avlaiani): commented out because this is not working.
         // return google.loader.ClientLocation;
     };
-    $rootScope.getGeoCenter = function( ) { 
+    $rootScope.getGeoCenter = function( ) {
         var options = {
           enableHighAccuracy: true,
           timeout: 5000,
           maximumAge: 0
         };
             navigator.geolocation.getCurrentPosition( function( position ) {
-                return { 
-                    latitude : position.coords.latitude, 
+                return {
+                    latitude : position.coords.latitude,
                     longitude : position.coords.longitude
                 };
-                
+
         }, function( ) {
-            return { 
-                    latitude : $rootScope.getGeoLocation.latitude, 
+            return {
+                    latitude : $rootScope.getGeoLocation.latitude,
                     longitude : $rootScope.getGeoLocation.longitude
                 };
-        }, options ); 
-               
+        }, options );
+
     };
 
-    ( function( d ) { 
-            var js, id = 'facebook-jssdk', ref = d.getElementsByTagName( 'script' )[ 0 ]; 
-            if( d.getElementById( id ) ) { 
-                return; 
-            } 
-            js = d.createElement( 'script' ); 
-            js.id = id; 
-            js.async = true; 
-            js.src = "//connect.facebook.net/en_US/all.js"; 
-            ref.parentNode.insertBefore( js, ref ); 
+    ( function( d ) {
+            var js, id = 'facebook-jssdk', ref = d.getElementsByTagName( 'script' )[ 0 ];
+            if( d.getElementById( id ) ) {
+                return;
+            }
+            js = d.createElement( 'script' );
+            js.id = id;
+            js.async = true;
+            js.src = "//connect.facebook.net/en_US/all.js";
+            ref.parentNode.insertBefore( js, ref );
     }( document ) );
 } );
 
@@ -287,18 +287,18 @@ kexApp = angular.module( "kexApp",
  * Webservice factories
  */
 
-kexApp.factory( 'Events', function( $resource ) { 
+kexApp.factory( 'Events', function( $resource ) {
         return $resource( '/api/event/:id/:registerCtlr/:regType', { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' }
-            ); 
+            );
 } );
-kexApp.factory( 'User', function( $resource ) { 
-        return $resource( '/api/user/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } ); 
+kexApp.factory( 'User', function( $resource ) {
+        return $resource( '/api/user/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } );
 } );
-kexApp.factory( 'Me', function( $resource ) { 
-        return $resource( '/api/me/:resource/:filter', { resource : '@resource', filter : '@filter' } ); 
+kexApp.factory( 'Me', function( $resource ) {
+        return $resource( '/api/me/:resource/:filter', { resource : '@resource', filter : '@filter' } );
 } );
-kexApp.factory( 'Org', function( $resource ) { 
-        return $resource( '/api/org/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } ); 
+kexApp.factory( 'Org', function( $resource ) {
+        return $resource( '/api/org/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } );
 } );
 
 /*
@@ -431,7 +431,7 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
     var firstAuthResponse = true;
 
     $rootScope.$on( "fb.auth.authResponseChange", function( event, response ) {
-        if ( response.status === 'connected' ) {                    
+        if ( response.status === 'connected' ) {
             setCookies(response.authResponse);
 
             var updateUser = $rootScope.fbUserId != response.authResponse.userID;
@@ -452,24 +452,24 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
             }
         }
         firstAuthResponse = false;
-    } ); 
+    } );
     function processUserChange() {
         if (!firstAuthResponse) {
             // Fired if the user changes after the first FB.init() invocation.
             $rootScope.$broadcast("fbUtil.userChanged");
         }
-        if (!$rootScope.$$phase) $rootScope.$apply();            
+        if (!$rootScope.$$phase) $rootScope.$apply();
     }
 
     function setCookies(authResponse) {
-        $.cookie( "facebook-uid", authResponse.userID ); 
-        $.cookie( "facebook-token", authResponse.accessToken ); 
-        $.cookie( "login", "facebook" );         
+        $.cookie( "facebook-uid", authResponse.userID );
+        $.cookie( "facebook-token", authResponse.accessToken );
+        $.cookie( "login", "facebook" );
     }
 
-    function removeCookies() {        
-        $.removeCookie( "facebook-uid" ); 
-        $.removeCookie( "facebook-token" ); 
+    function removeCookies() {
+        $.removeCookie( "facebook-uid" );
+        $.removeCookie( "facebook-token" );
         $.removeCookie( "login" );
     }
 
@@ -537,7 +537,7 @@ kexApp.factory('EventUtil', function($q, User, Events, KexUtil, FbUtil) {
                 User.get( { id : eventFilter.userKey, resource : 'event', type : 'PAST'},
                     processImpactTimeline);
             } else {
-                Events.get( { type : "PAST", keywords : eventFilter.keywords }, 
+                Events.get( { type : "PAST", keywords : eventFilter.keywords },
                     processImpactTimeline);
             }
 
@@ -575,96 +575,96 @@ kexApp.factory('EventUtil', function($q, User, Events, KexUtil, FbUtil) {
  * App directives
  */
 
-kexApp.directive( 'uiDraggable', function( ) { 
-        return { 
-            restrict : 'A', 
-            link : function( scope, element, attrs ) { 
-                element.draggable( { 
-                revert : true                    } ); 
-            } 
-        }; 
-} );
-kexApp.directive( 'uiDropListener', function( ) { 
-        return { 
-            restrict : 'A', 
-            link : function( scope, eDroppable, attrs ) { 
-                eDroppable.droppable( { 
-                        drop : function( event, ui ) { 
-                            var fnDropListener = scope.$eval( attrs.uiDropListener ); 
-                            if( fnDropListener && angular.isFunction( fnDropListener ) ) { 
-                                var eDraggable = angular.element( ui.draggable ); 
-                                fnDropListener( eDraggable, eDroppable, event, ui ); 
-                            } 
-                        } 
-                } ); 
-            } 
-        }; 
-} );
-kexApp.directive( 'googleplace', function( ) { 
-        return { 
-            require : 'ngModel',
-            link : function( scope, element, attrs, model ) { 
-                var options = { 
-                    types : [ ], 
-                    componentRestrictions : {} 
-                }; 
-                scope.gPlace = new google.maps.places.Autocomplete( element [ 0 ], options );
-                google.maps.event.addListener( scope.gPlace, 'place_changed', function( ) { 
-                        var placeListener = scope.$eval( attrs.placeListener ); 
-                        if( placeListener && angular.isFunction( placeListener ) ) {
-                            placeListener( scope.gPlace.getPlace( )); 
-                        } 
-                        scope.$apply( function( ) {
-                                model.$setViewValue( element.val( ));                
-                        } ); 
-                } ); 
-            } 
-        }; 
-} );
-kexApp.directive( 'fbgallery', function( $compile ) { 
+kexApp.directive( 'uiDraggable', function( ) {
         return {
-            scope : { 
-            userid : '@'    },
-            restrict : 'A', 
-            // linking method
-            link : function( scope, element, attrs ) { 
-                //$(element).plusGallery(scope.$eval(attrs.fbgallery));
-                scope.$watch( 'userid', function( val ) { 
-                        if( val ) 
-                        { 
-                            $( element ).plusGallery( scope.$eval( attrs.fbgallery ) );     
-                        } 
-                } ); 
-            } 
-        } 
+            restrict : 'A',
+            link : function( scope, element, attrs ) {
+                element.draggable( {
+                revert : true                    } );
+            }
+        };
 } );
-kexApp.directive( "gallery", function( ) { 
-        return function( scope, element, attrs ) { 
+kexApp.directive( 'uiDropListener', function( ) {
+        return {
+            restrict : 'A',
+            link : function( scope, eDroppable, attrs ) {
+                eDroppable.droppable( {
+                        drop : function( event, ui ) {
+                            var fnDropListener = scope.$eval( attrs.uiDropListener );
+                            if( fnDropListener && angular.isFunction( fnDropListener ) ) {
+                                var eDraggable = angular.element( ui.draggable );
+                                fnDropListener( eDraggable, eDroppable, event, ui );
+                            }
+                        }
+                } );
+            }
+        };
+} );
+kexApp.directive( 'googleplace', function( ) {
+        return {
+            require : 'ngModel',
+            link : function( scope, element, attrs, model ) {
+                var options = {
+                    types : [ ],
+                    componentRestrictions : {}
+                };
+                scope.gPlace = new google.maps.places.Autocomplete( element [ 0 ], options );
+                google.maps.event.addListener( scope.gPlace, 'place_changed', function( ) {
+                        var placeListener = scope.$eval( attrs.placeListener );
+                        if( placeListener && angular.isFunction( placeListener ) ) {
+                            placeListener( scope.gPlace.getPlace( ));
+                        }
+                        scope.$apply( function( ) {
+                                model.$setViewValue( element.val( ));
+                        } );
+                } );
+            }
+        };
+} );
+kexApp.directive( 'fbgallery', function( $compile ) {
+        return {
+            scope : {
+            userid : '@'    },
+            restrict : 'A',
+            // linking method
+            link : function( scope, element, attrs ) {
+                //$(element).plusGallery(scope.$eval(attrs.fbgallery));
+                scope.$watch( 'userid', function( val ) {
+                        if( val )
+                        {
+                            $( element ).plusGallery( scope.$eval( attrs.fbgallery ) );
+                        }
+                } );
+            }
+        }
+} );
+kexApp.directive( "gallery", function( ) {
+        return function( scope, element, attrs ) {
             var doStuff = function( element, attrs ) {
-                $( element ).plusGallery( scope.$eval( attrs.fbgallery ) ); 
-            } 
-            scope.$watch( attrs.userid, doStuff( element, attrs ) ); 
+                $( element ).plusGallery( scope.$eval( attrs.fbgallery ) );
+            }
+            scope.$watch( attrs.userid, doStuff( element, attrs ) );
             // scope.$watch(attrs.testTwo, doStuff(element,attrs));
-            
-        } 
+
+        }
 } );
 kexApp.directive( 'unfocus', function( ) { return {
-        restrict : 'A', 
+        restrict : 'A',
         link : function( scope, element, attribs ) {
             element [ 0 ].focus( );
-            element.bind( "blur", function( ) { 
+            element.bind( "blur", function( ) {
                     scope.$apply( attribs [ "unfocus" ] );
             } );
         }
 } } );
 
-kexApp.directive( "eventrepeat", function( ) { 
-        return function( scope, element, attrs ) { 
-            
-                $( element ).recurrenceinput(); 
-            
-            
-        } 
+kexApp.directive( "eventrepeat", function( ) {
+        return function( scope, element, attrs ) {
+
+                $( element ).recurrenceinput();
+
+
+        }
 } );
 
 
@@ -693,7 +693,7 @@ kexApp.directive('shareButtons', function(KexUtil) {
                         '<li class="ng-social-google-plus">Google+</li>' +
                         '<li class="ng-social-twitter">Twitter</li>' +
                     '</ul>' +
-                '</div>'                
+                '</div>'
         }
     });
 
@@ -739,18 +739,18 @@ kexApp.directive('eventRegistrationInfo', function() {
             });
 
             var registrationInfoMapping = {
-                ORGANIZER: { text: 'Organizer', labelClass: 'label-success', 
+                ORGANIZER: { text: 'Organizer', labelClass: 'label-success',
                     type: ['UPCOMING', 'USER-PAST', 'USER-UPCOMING', 'ORG-PAST', 'ORG-UPCOMING', 'DETAILS']},
-                REGISTERED: { text: 'Registered', labelClass: 'label-success', 
+                REGISTERED: { text: 'Registered', labelClass: 'label-success',
                     type: ['UPCOMING', 'ORG-PAST', 'ORG-UPCOMING', 'DETAILS']},
-                WAIT_LISTED: { text: 'Waitlisted', labelClass: 'label-warning', 
+                WAIT_LISTED: { text: 'Waitlisted', labelClass: 'label-warning',
                     type: ['UPCOMING', 'USER-UPCOMING', 'ORG-UPCOMING', 'DETAILS']},
-                CAN_WAIT_LIST: { text: 'Waitlist Open', labelClass: 'label-warning', 
+                CAN_WAIT_LIST: { text: 'Waitlist Open', labelClass: 'label-warning',
                     type: ['UPCOMING', 'ORG-UPCOMING']}
             };
             function updateLabel() {
                 if (scope.type && scope.registrationInfo) {
-                    var registrationInfo = 
+                    var registrationInfo =
                         scope.userRegistrationInfo ? scope.userRegistrationInfo : scope.registrationInfo;
                     var mapping = registrationInfoMapping[registrationInfo];
                     if (mapping && ($.inArray(scope.type, mapping.type) != -1)) {
@@ -780,18 +780,18 @@ kexApp.directive('eventUserRating', function(Events) {
         link: function (scope, element, attrs) {
             scope.updateUserRating = function (newValue) {
                 if (newValue) {
-                    Events.save( 
-                        { id : scope.eventKey, registerCtlr : 'review' }, 
+                    Events.save(
+                        { id : scope.eventKey, registerCtlr : 'review' },
                         { "rating" : { "value" : newValue }},
                         null,
                         function () {
                             Events.get(
                                 { id : scope.eventKey, registerCtlr : 'review' },
                                 function (value) {
-                                    scope.userRating.value = 
+                                    scope.userRating.value =
                                         (value && value.rating) ? value.rating.value : undefined;
                                 });
-                        });                                    
+                        });
                 }
             };
         },
@@ -946,7 +946,7 @@ kexApp.directive('loginClick', function ($facebook,$rootScope) {
                 {
                     scope.$eval(clickAction);
                     return;
-                }       
+                }
                 $facebook.login().then( function() {
                     if(isLoggedIn())
                     {
@@ -988,7 +988,7 @@ kexApp.directive('goalTrackingBar', function() {
                     scope.barType = 'warning';
                 } else {
                     scope.barType = 'success';
-                }                
+                }
             }
         },
         templateUrl: 'template/kex/goal-tracking-bar.html'
@@ -1035,7 +1035,7 @@ kexApp.directive('floatGeqZero', function() {
  * App controllers
  */
 
-var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams, 
+var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         $modal, EventUtil, KexUtil, urlTabsetUtil) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
@@ -1050,7 +1050,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         if ($location.path() == "/me") {
             $scope.who = 'My';
             KexUtil.me().then(function(meObj) {
-                $scope.me = meObj;                
+                $scope.me = meObj;
                 $scope.userKey = $scope.me.key;
                 $scope.savedAboutMe = $scope.me.about;
 
@@ -1064,7 +1064,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             $scope.me = User.get(
                 {
                     id: $scope.userKey
-                }, 
+                },
                 function() {
                     postUserResolutionCbs();
                     $scope.who = $scope.me.firstName + "'s";
@@ -1088,14 +1088,14 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         $scope.goalStartDate = new Date(now.getFullYear(), now.getMonth());
         $scope.goalEndDate = moment($scope.goalStartDate).add('months', 1).toDate();
 
-        User.get( { id : $scope.userKey, resource : 'event', type: "INTERVAL", 
+        User.get( { id : $scope.userKey, resource : 'event', type: "INTERVAL",
             start_time: $scope.goalStartDate.valueOf(), end_time: $scope.goalEndDate.valueOf() },
             function(result) {
                 var totalKarmaPoints = 0;
                 var completedKarmaPoints = 0;
                 for (var idx = 0; idx < result.data.length; idx++) {
                     var event = result.data[idx];
-                    // console_log("Goal tracker processing: event=%s, date=%s, status=%s", 
+                    // console_log("Goal tracker processing: event=%s, date=%s, status=%s",
                     //     event.title, new Date(event.startTime), event.status);
                     totalKarmaPoints += event.karmaPoints;
                     if (event.status == 'COMPLETED') {
@@ -1103,7 +1103,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                     }
                 }
 
-                var monthlyKarma = $scope.monthlyKarma = { };                
+                var monthlyKarma = $scope.monthlyKarma = { };
                 monthlyKarma.upcomingKarmaPoints = totalKarmaPoints - completedKarmaPoints;
                 monthlyKarma.completedKarmaPoints = completedKarmaPoints;
 
@@ -1116,7 +1116,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     }
 
     function updateGoalProgressBar() {
-        if ($scope.monthlyKarma && $scope.userLoaded && $scope.me.karmaGoal) { 
+        if ($scope.monthlyKarma && $scope.userLoaded && $scope.me.karmaGoal) {
             var totalPct = 0;
             var monthlyKarma = $scope.monthlyKarma;
             var monthlyGoal = $scope.me.karmaGoal.monthlyGoal;
@@ -1129,7 +1129,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
 
             monthlyKarma.pctCompleted = completedPct;
             monthlyKarma.pctUpcoming = upcomingPct;
-            
+
             monthlyKarma.goalHours = KexUtil.toHours(monthlyGoal, 1);
 
             function capPercentage(pctValue, totalPct) {
@@ -1159,13 +1159,13 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         $scope.monthlyKarma.msg = KexUtil.selectRandom(msgs);
     }
 
-    $scope.editKarmaGoal = function() {        
+    $scope.editKarmaGoal = function() {
         var modalInstance = $modal.open({
             backdrop: false,
             templateUrl: 'template/kex/karma-goal-modal.html',
             controller: KarmaGoalModalInstanceCtrl
         });
-        
+
         modalInstance.result.then(updateGoalProgressBar);
     }
 
@@ -1207,7 +1207,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         User.save(
             {
                 id: $scope.me.key
-            }, 
+            },
             $scope.me);
     };
 
@@ -1219,12 +1219,12 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     load();
 };
 
-var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope, 
+var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope,
         KexUtil, Me) {
     $scope.saveDisabled = true;
 
     KexUtil.me().then(function(meObj) {
-        $scope.saveDisabled = false;        
+        $scope.saveDisabled = false;
         $scope.goal = { hours: KexUtil.toHours(meObj.karmaGoal.monthlyGoal, 1) };
         $scope.meObj = meObj;
     });
@@ -1236,14 +1236,14 @@ var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope,
         var meObj = $scope.meObj;
         var originalMonthlyGoal = meObj.karmaGoal.monthlyGoal;
         meObj.karmaGoal.monthlyGoal = KexUtil.toKarmaPoints(Number($scope.goal.hours));
-        Me.save(meObj, 
+        Me.save(meObj,
             function() {
                 $modalInstance.close();
             },
             function() {
                 meObj.karmaGoal.monthlyGoal = originalMonthlyGoal;
                 $modalInstance.dismiss();
-            });        
+            });
     };
 
     $scope.cancel = function () {
@@ -1281,7 +1281,7 @@ var meEditCtrl = function($scope, Me, $rootScope) {
     $scope.load();
 };
 
-var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http, Org, 
+var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http, Org,
         Events, FbUtil, KexUtil, EventUtil, urlTabsetUtil, $facebook) {
     $scope.FbUtil = FbUtil;
     $scope.KexUtil = KexUtil;
@@ -1310,7 +1310,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     };
 
     $scope.org = Org.get(
-        { id: $routeParams.orgId }, 
+        { id: $routeParams.orgId },
         function() {
             $scope.orgLoaded = true;
             $facebook.api("/" + $scope.org.page.name).then(function(response) {
@@ -1355,8 +1355,8 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     function loadCalendarTab() {
         function renderCalendar() {
             // This variable is set by the calendar directive which is in
-            // a child scope from this controller! In theory there should be no 
-            // timing issue because a query is required to fetch the event 
+            // a child scope from this controller! In theory there should be no
+            // timing issue because a query is required to fetch the event
             // calendar which should give time for the linking and compiling
             // phases to complete and therefore the link function of the
             // calendar directive to execute.
@@ -1377,7 +1377,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                 {
                     type: "UPCOMING",
                     keywords: "org:" + $scope.org.searchTokenSuffix
-                }, 
+                },
                 function() {
                     angular.forEach($scope.upcomingEvents.data, function(event) {
                         calendarEvents.push({
@@ -1392,24 +1392,24 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                         action();
                     }
                 });
-        }        
+        }
     }
 
     function loadTopVolunteersTab() {
         if (!$scope.topVolunteersTabLoaded) {
             $scope.topVolunteersTabLoaded = true;
             $scope.allTimeLeaders = Org.get(
-                { type: "ALL_TIME" }, 
+                { type: "ALL_TIME" },
                 {
                     id: $routeParams.orgId,
                     resource: "leaderboard"
                 });
             $scope.lastMonthLeaders = Org.get(
-                { type: "THIRTY_DAY" }, 
+                { type: "THIRTY_DAY" },
                 {
                     id: $routeParams.orgId,
                     resource: "leaderboard"
-                });            
+                });
         }
     }
 
@@ -1417,7 +1417,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
         if (!$scope.manageOrgTabLoaded) {
             $scope.manageOrgTabLoaded = true;
             $scope.pendingMembers = Org.get(
-                { membership_status: "PENDING" }, 
+                { membership_status: "PENDING" },
                 {
                     id: $routeParams.orgId,
                     resource: "member"
@@ -1426,43 +1426,43 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     }
 }
 
-var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) { 
-    $scope.query = ""; 
+var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) {
+    $scope.query = "";
     $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
     $scope.refresh = function( ) {
         $scope.orgs = Org.get( { name_prefix : $scope.query } );
     };
-    $scope.join = function( ) { 
-        Org.save( $scope.newOrg, function( ) { 
-                $scope.refresh( ); 
-                $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }}; 
-        } ); 
+    $scope.join = function( ) {
+        Org.save( $scope.newOrg, function( ) {
+                $scope.refresh( );
+                $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
+        } );
     };
 
-    $scope.open = function( ) { 
+    $scope.open = function( ) {
         var modalInstance = $modal.open({
             templateUrl: 'createOrgModal.html',
             scope: $scope,
             controller: createOrgCtrl
         });
     };
-    $scope.$watch( 'query', function( ) { 
-        $scope.refresh( ); 
+    $scope.$watch( 'query', function( ) {
+        $scope.refresh( );
     });
     $scope.refresh( );
 };
 var createOrgCtrl = function ($scope, $modalInstance) {
-    $scope.save = function( ) { 
-        if( $scope.newOrg.page.url ) { 
-            Org.save( $scope.newOrg, function( ) { 
-                    $scope.refresh( ); 
-                    $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }}; 
-            } ); 
-        } 
+    $scope.save = function( ) {
+        if( $scope.newOrg.page.url ) {
+            Org.save( $scope.newOrg, function( ) {
+                    $scope.refresh( );
+                    $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
+            } );
+        }
         $scope.close( );
-    };    
-    $scope.close = function( ) { 
-        $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }}; 
+    };
+    $scope.close = function( ) {
+        $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
         $modalInstance.close();
     };
 }
@@ -1471,17 +1471,17 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
     $scope.modelOpen = false;
     angular.extend( $scope, {
             /** the initial center of the map */
-            center : { 
-                latitude : $rootScope.getGeoLocation().latitude, 
-                longitude : $rootScope.getGeoLocation().longitude 
+            center : {
+                latitude : $rootScope.getGeoLocation().latitude,
+                longitude : $rootScope.getGeoLocation().longitude
             },
             /** the initial zoom level of the map */
             zoom : 4,
             /** list of markers to put in the map */
             markers : [{}],
 
-    } ); 
-    
+    } );
+
     $scope.isMap=false;
     $scope.showMap = function()
     {
@@ -1500,7 +1500,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
             fbUserId = $scope.fbUserId;
             query = $scope.query;
             Events.get(
-                { 
+                {
                     keywords: ($scope.query ? $scope.query : ""),
                     lat: $scope.center.latitude,
                     long:$scope.center.longitude
@@ -1514,7 +1514,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
         var currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
         for (var idx = 0; idx < $scope.events.data.length; idx++) {
             var event = $scope.events.data[idx];
-            var dateVal = new Date(event.startTime); 
+            var dateVal = new Date(event.startTime);
             var showHeader = (dateVal.getDate() != currentDate.getDate()) ||
                 (dateVal.getMonth() != currentDate.getMonth()) ||
                 (dateVal.getFullYear() != currentDate.getFullYear());
@@ -1524,16 +1524,16 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
         }
     }
 
-    $scope.$watch('query', function( ) { 
-        $scope.reset( ); 
-    } );    
-    $scope.$watch('fbUserId', function( ) { 
+    $scope.$watch('query', function( ) {
         $scope.reset( );
     } );
-    $scope.addMarker = function( markerLat, markerLng ) { 
-        $scope.markers.push( { 
-            latitude : parseFloat( markerLat ), 
-            longitude : parseFloat( markerLng ) 
+    $scope.$watch('fbUserId', function( ) {
+        $scope.reset( );
+    } );
+    $scope.addMarker = function( markerLat, markerLng ) {
+        $scope.markers.push( {
+            latitude : parseFloat( markerLat ),
+            longitude : parseFloat( markerLng )
         } );
     };
     $scope.register = function(type) {
@@ -1544,7 +1544,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
                 id: eventId,
                 registerCtlr: 'participants',
                 regType: type
-            }, 
+            },
             null,
             function() {
                 $rootScope.openShareEventModal($scope.modelEvent,
@@ -1568,23 +1568,23 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
             });
     };
 
-    $scope.delete = function( ) { 
+    $scope.delete = function( ) {
         var eventId = this.event.key;
-        Events.delete( { id : eventId }, function( ) { 
-                $( "#event_" + eventId ).fadeOut( ); 
+        Events.delete( { id : eventId }, function( ) {
+                $( "#event_" + eventId ).fadeOut( );
         } );
-    }; 
+    };
     $scope.modelEvent = {};
     $scope.toggleEvent = function( ) {
-        if( $( '#' + this.event.key + '_detail' ).is( ":visible" ) ) 
-        { 
-            $( '.event-detail' ).hide( ); 
-        } 
+        if( $( '#' + this.event.key + '_detail' ).is( ":visible" ) )
+        {
+            $( '.event-detail' ).hide( );
+        }
         else
-        { 
-            $( '.event-detail' ).hide( ); 
+        {
+            $( '.event-detail' ).hide( );
             $scope.modelEvent = Events.get( { id : this.event.key, registerCtlr : 'expanded_search_view' } );
-            $( '#' + this.event.key + '_detail' ).show( ); 
+            $( '#' + this.event.key + '_detail' ).show( );
         }
     };
 
@@ -1596,247 +1596,247 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
     $scope.EventUtil = EventUtil;
     angular.extend( $scope, {
             /** the initial center of the map */
-            center : { 
-                latitude : 37, 
-                longitude : - 122 
+            center : {
+                latitude : 37,
+                longitude : - 122
             },
             /** the initial zoom level of the map */
             zoom : 4,
             /** list of markers to put in the map */
             markers : [ {} ],
             // These 2 properties will be set when clicking on the map
-            clicked : null,  
             clicked : null,
-            eventStartDate : null, 
-            eventStartTime : null, 
-            eventEndDate : null, 
+            clicked : null,
+            eventStartDate : null,
+            eventStartTime : null,
+            eventEndDate : null,
             eventEndTime : null,
-    } ); 
-    $scope.suitableForList = [ 
-        { name : 'Kids', key : 'KIDS',   checked : false }, 
-        { name : 'Seniors', key : 'AGE_55_PLUS',   checked : false }, 
-        { name : 'Groups', key : 'GROUPS',     checked : false }, 
-        { name : 'Teens', key : 'TEENS',  checked : false } 
+    } );
+    $scope.suitableForList = [
+        { name : 'Kids', key : 'KIDS',   checked : false },
+        { name : 'Seniors', key : 'AGE_55_PLUS',   checked : false },
+        { name : 'Groups', key : 'GROUPS',     checked : false },
+        { name : 'Teens', key : 'TEENS',  checked : false }
     ];
     $scope.currentUserRating = { value: undefined };
 
     $scope.dropListener = function( eDraggable, eDroppable ) {
-                var isDropForbidden = function( aTarget, item ) { 
-                    if( aTarget.some( function( i ) { 
-                            return i.key == item.key; 
-                    } )) { 
-                        return { reason : 'target already contains "' + item.key + '"' }; 
-                        } else { 
-                            return false; 
-                        } 
+                var isDropForbidden = function( aTarget, item ) {
+                    if( aTarget.some( function( i ) {
+                            return i.key == item.key;
+                    } )) {
+                        return { reason : 'target already contains "' + item.key + '"' };
+                        } else {
+                            return false;
+                        }
                 };
-                var onDropRejected = function( error ) { 
-                    alert( 'Operation not permitted: ' + error.reason ); 
+                var onDropRejected = function( error ) {
+                    alert( 'Operation not permitted: ' + error.reason );
                 };
-                var onDropComplete = function( eSrc, item, index ) { 
+                var onDropComplete = function( eSrc, item, index ) {
                     //console.log('moved "' + item.key + ' from ' + eSrc.data('model') + '[' + index + ']' + ' to ' + eDroppable.data('model'));
                 };
-                var eSrc = eDraggable.parent( ); 
-                var sSrc = eSrc.data( 'model' ); 
+                var eSrc = eDraggable.parent( );
+                var sSrc = eSrc.data( 'model' );
                 var sTarget = eDroppable.data( 'model' );
-                if( sSrc != sTarget ) { 
-                    $scope.$apply( function( ) { 
-                            var index = eDraggable.data( 'index' ); 
-                            var aSrc = $scope.$eval( sSrc ); 
-                            var aTarget = $scope.$eval( sTarget ); 
-                            var item = aSrc [ index ]; 
-                            var error = isDropForbidden( aTarget, item ); 
-                            if( error ) { 
-                                onDropRejected( error ); 
-                            } else { 
-                                aTarget.push( item ); 
-                                aSrc.splice( index, 1 ); 
-                                onDropComplete( eSrc, item, index ); 
-                            } 
-                    } ); 
+                if( sSrc != sTarget ) {
+                    $scope.$apply( function( ) {
+                            var index = eDraggable.data( 'index' );
+                            var aSrc = $scope.$eval( sSrc );
+                            var aTarget = $scope.$eval( sTarget );
+                            var item = aSrc [ index ];
+                            var error = isDropForbidden( aTarget, item );
+                            if( error ) {
+                                onDropRejected( error );
+                            } else {
+                                aTarget.push( item );
+                                aSrc.splice( index, 1 );
+                                onDropComplete( eSrc, item, index );
+                            }
+                    } );
                 }
         };
         $scope.refreshMap = function( ) {
-            if( $scope.event && $scope.event.location.address.street ) 
-            {    
-                geocoder.geocode( { 'address' : $scope.event.location.address.street + ',' + $scope.event.location.address.city + ',' + $scope.event.location.address.state + ',' + $scope.event.location.address.country }, function( results, status ) { 
-                        if( status == google.maps.GeocoderStatus.OK ) { 
-                            $scope.center.latitude = results [ 0 ].geometry.location.lat( ); 
+            if( $scope.event && $scope.event.location.address.street )
+            {
+                geocoder.geocode( { 'address' : $scope.event.location.address.street + ',' + $scope.event.location.address.city + ',' + $scope.event.location.address.state + ',' + $scope.event.location.address.country }, function( results, status ) {
+                        if( status == google.maps.GeocoderStatus.OK ) {
+                            $scope.center.latitude = results [ 0 ].geometry.location.lat( );
                             $scope.center.longitude = results [ 0 ].geometry.location.lng( );
-                            $scope.setMarker( $scope.center.latitude, $scope.center.longitude ); 
-                            $scope.zoom = 15; 
+                            $scope.setMarker( $scope.center.latitude, $scope.center.longitude );
+                            $scope.zoom = 15;
                             $scope.$apply( );
                         }
-            } )} 
+            } )}
         };
-        $scope.addMarker = function( markerLat, markerLng ) { 
-            $scope.markers.push( { 
-                    latitude : parseFloat( markerLat ), 
-                    longitude : parseFloat( markerLng ) 
+        $scope.addMarker = function( markerLat, markerLng ) {
+            $scope.markers.push( {
+                    latitude : parseFloat( markerLat ),
+                    longitude : parseFloat( markerLng )
             } );
         };
-        $scope.setMarker = function( markerLat, markerLng ) { 
-            $scope.markers = [ {} ]; 
-            $scope.markers.push( { 
-                    latitude : parseFloat( markerLat ), 
-                    longitude : parseFloat( markerLng ) 
+        $scope.setMarker = function( markerLat, markerLng ) {
+            $scope.markers = [ {} ];
+            $scope.markers.push( {
+                    latitude : parseFloat( markerLat ),
+                    longitude : parseFloat( markerLng )
             } );
         };
         $scope.findMe = function( ) {
             if( $scope.geolocationAvailable ) {
                 navigator.geolocation.getCurrentPosition( function( position ) {
-                        $scope.center = { 
-                            latitude : position.coords.latitude, 
+                        $scope.center = {
+                            latitude : position.coords.latitude,
                             longitude : position.coords.longitude
                         };
                         $scope.zoom = 15;
-                        $scope.$apply( ); 
+                        $scope.$apply( );
                 }, function( ) {
-                } ); 
-            }   
+                } );
+            }
         };
-        $scope.getMore = function( type ) 
-        { 
-            if( type === 'REGISTERED' ) 
+        $scope.getMore = function( type )
+        {
+            if( type === 'REGISTERED' )
             {
                 $http( { method : 'GET', url : $scope.eventRegistered.paging.next } ).success( function( data ) {
-                        for( var i = 0; i < data.data.length; i ++ ) 
-                        { 
-                            $scope.eventRegistered.data.push( data.data [ i ] ); 
+                        for( var i = 0; i < data.data.length; i ++ )
+                        {
+                            $scope.eventRegistered.data.push( data.data [ i ] );
                         }
                         $scope.eventRegistered.paging.next = data.paging ? data.paging.next : null;
                 } );
-            } 
-            else if( type === 'ORGANIZER' ) 
+            }
+            else if( type === 'ORGANIZER' )
             {
                 $http( { method : 'GET', url : $scope.eventOrganizers.paging.next } ).success( function( data ) {
-                        for( var i = 0; i < data.data.length; i ++ ) 
-                        { 
-                            $scope.eventOrganizers.data.push( data.data [ i ] ); 
+                        for( var i = 0; i < data.data.length; i ++ )
+                        {
+                            $scope.eventOrganizers.data.push( data.data [ i ] );
                         }
                         $scope.eventOrganizers.paging.next = data.paging ? data.paging.next : null;
                 } );
-            } 
-            else if( type === 'WAIT_LISTED' ) 
+            }
+            else if( type === 'WAIT_LISTED' )
             {
                 $http( { method : 'GET', url : $scope.eventWaitListed.paging.next } ).success( function( data ) {
-                        for( var i = 0; i < data.data.length; i ++ ) 
-                        { 
-                            $scope.eventWaitListed.data.push( data.data [ i ] ); 
+                        for( var i = 0; i < data.data.length; i ++ )
+                        {
+                            $scope.eventWaitListed.data.push( data.data [ i ] );
                         }
                         $scope.eventWaitListed.paging.next = data.paging ? data.paging.next : null;
                 } );
-            }    
+            }
         };
-        $scope.save = function( ) { 
-            $scope.event.startTime = $scope.parseDateReg( $( '#dtst' ).val( )+ ' ' + $( '#tmst' ).val( )); 
-            $scope.event.endTime = $scope.parseDateReg( $( '#dtend' ).val( )+ ' ' + $( '#tmend' ).val( )); 
-            $scope.event.suitableForTypes =[ ]; 
-            for( var i = 0; i < $scope.suitableForList.length; i ++ ) 
+        $scope.save = function( ) {
+            $scope.event.startTime = $scope.parseDateReg( $( '#dtst' ).val( )+ ' ' + $( '#tmst' ).val( ));
+            $scope.event.endTime = $scope.parseDateReg( $( '#dtend' ).val( )+ ' ' + $( '#tmend' ).val( ));
+            $scope.event.suitableForTypes =[ ];
+            for( var i = 0; i < $scope.suitableForList.length; i ++ )
             {
-                if( $scope.suitableForList [ i ].checked === true ) 
-                { 
-                    $scope.event.suitableForTypes.push( $scope.suitableForList [ i ].key ); 
-                }    
-            }    
-            if( $location.$$url == "/event/add" ) 
-            { 
+                if( $scope.suitableForList [ i ].checked === true )
+                {
+                    $scope.event.suitableForTypes.push( $scope.suitableForList [ i ].key );
+                }
+            }
+            if( $location.$$url == "/event/add" )
+            {
                 Events.save( $scope.event, function( data, status, headers, config ) {
-                        $location.path( '/event' ); 
-                } ); 
-            } 
+                        $location.path( '/event' );
+                } );
+            }
             else
-            {    
-                Events.save( { id : $scope.event.key }, $scope.event, function( data, status, headers, config ) { 
-                        
-                } ); 
-            } 
+            {
+                Events.save( { id : $scope.event.key }, $scope.event, function( data, status, headers, config ) {
+
+                } );
+            }
         };
         $scope.refreshEvent = function( ) {
-            $scope.event = Events.get( { id : $routeParams.eventId }, function( ) { 
+            $scope.event = Events.get( { id : $routeParams.eventId }, function( ) {
                     //$("#location-title").val(''+$scope.event.location.title);
                     //$scope.refreshMap();
                     //TDEBT - remove DOM references
-                    
-                    $( '#dtst' ).val( $filter( 'date' )( $scope.event.startTime, 'MM/dd/yyyy' ) ); 
-                    $( '#tmst' ).val( $filter( 'date' )( $scope.event.startTime, 'h:mma' ) ); 
-                    $( '#dtend' ).val( $filter( 'date' )( $scope.event.endTime, 'MM/dd/yyyy' ) ); 
+
+                    $( '#dtst' ).val( $filter( 'date' )( $scope.event.startTime, 'MM/dd/yyyy' ) );
+                    $( '#tmst' ).val( $filter( 'date' )( $scope.event.startTime, 'h:mma' ) );
+                    $( '#dtend' ).val( $filter( 'date' )( $scope.event.endTime, 'MM/dd/yyyy' ) );
                     $( '#tmend' ).val( $filter( 'date' )( $scope.event.endTime, 'h:mma' ) );
                     //$scope.eventStartTime : null,
                     //$scope.eventEndDate : null,
                     //$scope.eventEndTime : null,
-                    
-                    angular.forEach( $scope.suitableForList, function( client ) { 
-                            angular.forEach( $scope.event.suitableForTypes, function( server ) 
+
+                    angular.forEach( $scope.suitableForList, function( client ) {
+                            angular.forEach( $scope.event.suitableForTypes, function( server )
                                 {
-                                    if( server === client.key ) 
-                                    { 
-                                        client.checked = true; 
-                                    }    
-                                } ); 
+                                    if( server === client.key )
+                                    {
+                                        client.checked = true;
+                                    }
+                                } );
                     } );
-                    if( $scope.event.location.address.geoPt != null ) 
+                    if( $scope.event.location.address.geoPt != null )
                     {
-                        $scope.center = { 
-                            latitude : $scope.event.location.address.geoPt.latitude, 
+                        $scope.center = {
+                            latitude : $scope.event.location.address.geoPt.latitude,
                             longitude : $scope.event.location.address.geoPt.longitude
                         };
                         $scope.setMarker( $scope.center.latitude, $scope.center.longitude );
                         $scope.zoom = 15;
                     }
-                    $scope.eventOrganizers = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'ORGANIZER' }, function( ) { 
-                            $scope.eventOrganizers.data.push = function( ) { 
-                                Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'ORGANIZER' } ); 
-                                return Array.prototype.push.apply( this, arguments ); 
-                            }
-                    } ); 
-                    $scope.eventRegistered = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' }, function( ) { 
-                            $scope.eventRegistered.data.push = function( ) { 
-                                Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' } ); 
-                                return Array.prototype.push.apply( this, arguments ); 
-                            }
-                    } ); 
-                    $scope.eventWaitListed = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' }, function( ) { 
-                            $scope.eventWaitListed.data.push = function( ) { 
-                                Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' } ); 
-                                return Array.prototype.push.apply( this, arguments ); 
+                    $scope.eventOrganizers = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'ORGANIZER' }, function( ) {
+                            $scope.eventOrganizers.data.push = function( ) {
+                                Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'ORGANIZER' } );
+                                return Array.prototype.push.apply( this, arguments );
                             }
                     } );
-                    
-                    $scope.eventNoShow = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' }, function( ) { 
-                            $scope.eventNoShow.data.push = function( ) { 
-                                Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' } ); 
-                                return Array.prototype.push.apply( this, arguments ); 
+                    $scope.eventRegistered = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' }, function( ) {
+                            $scope.eventRegistered.data.push = function( ) {
+                                Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' } );
+                                return Array.prototype.push.apply( this, arguments );
                             }
-                    } );                    
-                    
+                    } );
+                    $scope.eventWaitListed = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' }, function( ) {
+                            $scope.eventWaitListed.data.push = function( ) {
+                                Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' } );
+                                return Array.prototype.push.apply( this, arguments );
+                            }
+                    } );
+
+                    $scope.eventNoShow = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' }, function( ) {
+                            $scope.eventNoShow.data.push = function( ) {
+                                Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' } );
+                                return Array.prototype.push.apply( this, arguments );
+                            }
+                    } );
+
                     $scope.noShow = function(){
                         $scope.eventNoShow.data.push($scope.eventRegistered.data[this.$index]);
                         $scope.eventRegistered.data.splice(this.$index,1);
                     };
-                    
+
                     $scope.attended = function(){
                         $scope.eventRegistered.data.push($scope.eventRegistered.data[this.$index]);
                         $scope.eventNoShow.data.splice(this.$index,1);
                     };
-                    
-                    $scope.openImageUpload = function( ) { 
-                        $scope.isImageModelOpen = true; 
+
+                    $scope.openImageUpload = function( ) {
+                        $scope.isImageModelOpen = true;
                     };
-                    $scope.closeImageUpload = function( ) { 
+                    $scope.closeImageUpload = function( ) {
                         //$scope.closeMsg = 'I was closed at: ' + new Date();
-                        $scope.isImageModelOpen = false; 
+                        $scope.isImageModelOpen = false;
                     };
-                    $scope.imageModalOpts = { 
-                        backdropFade : true, 
-                    dialogFade : true         }; 
-                    if( $scope.event.status == 'COMPLETED' ) 
+                    $scope.imageModalOpts = {
+                        backdropFade : true,
+                    dialogFade : true         };
+                    if( $scope.event.status == 'COMPLETED' )
                     {
-                        if( $scope.event.album ) 
-                        { 
+                        if( $scope.event.album )
+                        {
                             // TODO(avaliani): switch to using $facebook.
                             $http( { method : 'GET', url : FbUtil.GRAPH_API_URL + "/" + $scope.event.album.id + "/photos" } ).success( function( data ) {
-                                    $scope.fbAlbum = data.data; 
+                                    $scope.fbAlbum = data.data;
                                     $scope.myInterval = 5000;
                             } );
                         }
@@ -1845,90 +1845,90 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                             Events.get(
                                 { id : $routeParams.eventId, registerCtlr : 'review' },
                                 function (value) {
-                                    $scope.currentUserRating.value = 
+                                    $scope.currentUserRating.value =
                                         (value && value.rating) ? value.rating.value : undefined;
                                 });
                         }
                     }
-            }, function( response ) { 
+            }, function( response ) {
                 //404 or bad
-                
-                if( response.status === 404 ) { 
+
+                if( response.status === 404 ) {
             }} );
         }
         $scope.parseDateReg = function( input ) {
-            var dateReg = 
+            var dateReg =
                 /(\d{1,2})\/(\d{1,2})\/(\d{2,4})\s*(\d{1,2})(:\d{2})*\s*(am|pm|AM|PM)/;
-            var year, month, day, hour, minute, second, 
-            result = dateReg.exec( input ); 
-            if( result ) { 
+            var year, month, day, hour, minute, second,
+            result = dateReg.exec( input );
+            if( result ) {
                 year = + result[3];
                 if (year < 100) {
                     year += 2000;
                 } else if (year < 2000) {
                     year = undefined;
                 }
-                month = + result[1]; 
-                day = + result[2]; 
+                month = + result[1];
+                day = + result[2];
                 hour = + result[4];
                 minute = result[5] ? (+ result[5].substr(1)) : 0;
-                second = 0; 
-                if(( result[6] == 'pm' || result[6] == 'PM' ) && hour != 12 ) { 
-                    hour += 12; 
-                }       
-            }
-            return new Date( year, month - 1, day, hour, minute, second ); 
-        } 
-        $scope.placeChanged = function( place ) {
-            $scope.event.location.title = place.name;
-            $scope.event.location.address.street = ''; 
-            for( var i = 0; i < place.address_components.length; i ++ ) {
-                if( place.address_components [ i ].types [ 0 ]== 'locality' ) 
-                { 
-                    $scope.event.location.address.city = place.address_components [ i ].long_name; 
-                } 
-                else if( place.address_components [ i ].types [ 0 ]== 'country' ) 
-                { 
-                    $scope.event.location.address.country = place.address_components [ i ].long_name; 
-                } 
-                else if( place.address_components [ i ].types [ 0 ]== 'postal_code' ) 
-                { 
-                    $scope.event.location.address.zip = place.address_components [ i ].long_name; 
-                } 
-                else if( place.address_components [ i ].types [ 0 ]== 'administrative_area_level_1' ) 
-                { 
-                    $scope.event.location.address.state = place.address_components [ i ].long_name; 
-                } 
-                else if( place.address_components [ i ].types [ 0 ]== 'street_number' ) 
-                { 
-                    $scope.event.location.address.street = place.address_components [ i ].long_name + ' ' + $scope.event.location.address.street; 
-                } 
-                else if( place.address_components [ i ].types [ 0 ]== 'route' ) 
-                { 
-                    $scope.event.location.address.street = $scope.event.location.address.street + ' ' + place.address_components [ i ].long_name; 
+                second = 0;
+                if(( result[6] == 'pm' || result[6] == 'PM' ) && hour != 12 ) {
+                    hour += 12;
                 }
             }
-            $scope.center = { 
-                latitude : place.geometry.location.lat( ), 
-                longitude : place.geometry.location.lng( ) 
-            }; 
+            return new Date( year, month - 1, day, hour, minute, second );
+        }
+        $scope.placeChanged = function( place ) {
+            $scope.event.location.title = place.name;
+            $scope.event.location.address.street = '';
+            for( var i = 0; i < place.address_components.length; i ++ ) {
+                if( place.address_components [ i ].types [ 0 ]== 'locality' )
+                {
+                    $scope.event.location.address.city = place.address_components [ i ].long_name;
+                }
+                else if( place.address_components [ i ].types [ 0 ]== 'country' )
+                {
+                    $scope.event.location.address.country = place.address_components [ i ].long_name;
+                }
+                else if( place.address_components [ i ].types [ 0 ]== 'postal_code' )
+                {
+                    $scope.event.location.address.zip = place.address_components [ i ].long_name;
+                }
+                else if( place.address_components [ i ].types [ 0 ]== 'administrative_area_level_1' )
+                {
+                    $scope.event.location.address.state = place.address_components [ i ].long_name;
+                }
+                else if( place.address_components [ i ].types [ 0 ]== 'street_number' )
+                {
+                    $scope.event.location.address.street = place.address_components [ i ].long_name + ' ' + $scope.event.location.address.street;
+                }
+                else if( place.address_components [ i ].types [ 0 ]== 'route' )
+                {
+                    $scope.event.location.address.street = $scope.event.location.address.street + ' ' + place.address_components [ i ].long_name;
+                }
+            }
+            $scope.center = {
+                latitude : place.geometry.location.lat( ),
+                longitude : place.geometry.location.lng( )
+            };
             $scope.setMarker( $scope.center.latitude, $scope.center.longitude );
             $scope.zoom = 15;
-            $scope.event.location.address.geoPt = { latitude : $scope.center.latitude, longitude : $scope.center.longitude }; 
+            $scope.event.location.address.geoPt = { latitude : $scope.center.latitude, longitude : $scope.center.longitude };
             $scope.$apply( );
         };
-        if( $location.$$url == "/event/add" ) 
-        { 
-            $scope.findMe( ); 
+        if( $location.$$url == "/event/add" )
+        {
+            $scope.findMe( );
             $scope.event = { "location" : { "title" : null, "description" : null, "address" : { "street" : null, "city" : null, "state" : null, "country" : null, "zip" : null, "geoPt" : null }}};
         }
         else
-        {    
-            $scope.refreshEvent( ); 
+        {
+            $scope.refreshEvent( );
         }
 };
 
-var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location, 
+var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location,
         Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
@@ -1947,7 +1947,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             {
                 id: $scope.event.key,
                 registerCtlr: 'participants'
-            }, 
+            },
             function() {
                 refreshEvent();
             });
@@ -1960,10 +1960,10 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                 id: eventId,
                 registerCtlr: 'participants',
                 regType: type
-            }, 
+            },
             null,
             function() {
-                $rootScope.openShareEventModal($scope.event, 
+                $rootScope.openShareEventModal($scope.event,
                     "Thank you for volunteering!");
                 refreshEvent();
             });
@@ -2059,13 +2059,13 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                     {
                         id: $routeParams.eventId,
                         registerCtlr: 'review'
-                    }, 
+                    },
                     function(value) {
-                        $scope.currentUserRating.value = 
+                        $scope.currentUserRating.value =
                             (value && value.rating) ? value.rating.value : undefined;
                     });
             }
-        }        
+        }
     }
 
     refreshEvent();
@@ -2081,10 +2081,10 @@ var EventModalInstanceCtrl = function ($scope, $modalInstance, event, header, $r
 
 // TODO(avaliani): refactor this dependency
 function isLoggedIn() {
-    if( $.cookie( "facebook-token" ) ) { 
-        return true; 
-    } else { 
-        return false; 
+    if( $.cookie( "facebook-token" ) ) {
+        return true;
+    } else {
+        return false;
     }
 }
 

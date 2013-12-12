@@ -8,13 +8,13 @@
                         <div class="font-size-h4">
                             <strong>
                                 <a href="#!/event/{{event.key}}"><strong>{{event.title}} </strong></a>
-                            </strong>                                            
+                            </strong>
                         </div>
 
                         <div>
                             <div class="pull-left">
                                 <a href="#!/org/{{event.organization.key}}">
-                                    <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org-small">                                                
+                                    <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org-small">
                                 </a>
                             </div>
                             <div class="pull-left">
@@ -37,24 +37,24 @@
                                         +{{event.karmaPoints}} karma
                                     </em>
                                 </strong>
-                            </div>                                            
+                            </div>
                         </div>
                         <div>
                             <div class="pull-right">
-                                <event-registration-info 
+                                <event-registration-info
                                     registration-info="event.registrationInfo"
                                     user-registration-info="event.userEventSearchInfo.registrationInfo"
                                     type="{USER:'USER-PAST', ORG:'ORG-PAST'}[timelineType]">
                                 </event-registration-info>
-                            </div>                                            
+                            </div>
                         </div>
                         <div>
                             <div ng-show="selfProfileView && EventUtil.canWriteReview(event)" class="pull-right">
-                                <event-user-rating 
+                                <event-user-rating
                                     user-rating="event.currentUserRating"
                                     event-key="event.key">
                                 </event-user-rating>
-                            </div>                                            
+                            </div>
                         </div>
                         <div>
                             <div ng-hide="selfProfileView && EventUtil.canWriteReview(event)" class="pull-right">
@@ -72,7 +72,7 @@
                     <div class="border-top-1 vertical-panel-padding" ng-bind-html-unsafe="event.impactSummary | noHTML | newlines"></div>
                 </div>
             </div>
-            
+
             <div class="row vertical-panel-padding" ng-show="event.album">
                 <div class="col-md-12">
                     <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive">

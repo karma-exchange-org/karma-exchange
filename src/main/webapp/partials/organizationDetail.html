@@ -5,13 +5,13 @@
             <div class="panel panel-default panel-seperated-vertical">
                 <div class="panel-body panel-light-gray">
 
-    
+
                     <div class="panel-body-header-h3">
                         {{fbPage.name}}
                     </div>
                     <img ng-src="{{fbPage.cover.source}}" class="img-responsive">
 
-                </div>                
+                </div>
             </div>
 
         </div>
@@ -62,7 +62,7 @@
 
                     </div>
 
-                </div>                
+                </div>
             </div>
 
             <div class="panel panel-default panel-seperated-vertical">
@@ -163,11 +163,11 @@
                     Upcoming Events
                 </tab-heading>
 
-                <upcoming-events 
+                <upcoming-events
                     events="upcomingEvents"
                     search-type="'ORG'">
                 </upcoming-events>
-                
+
             </tab>
             <tab active="tabs.calendar.active" select="tabManager.select('calendar')">
                 <tab-heading>
@@ -177,10 +177,10 @@
                 </tab-heading>
                 <div class="col-md-12 container">
                     <!-- <div full-calendar events="events"></div> -->
-                    <div class="calendar" 
-                        ng-model="calendarEventSources" 
-                        calendar="eventCalendar" 
-                        config="calendarUiConfig.calendar" 
+                    <div class="calendar"
+                        ng-model="calendarEventSources"
+                        calendar="eventCalendar"
+                        config="calendarUiConfig.calendar"
                         ui-calendar="calendarUiConfig.calendar">
                     </div>
                 </div>
@@ -242,7 +242,7 @@
             <!-- <div id="fbgallery" fbgallery userid="{{fbPage.id}}" type="facebook"> -->
             <!-- </div>  -->
             <!-- </tab>  -->
-            <!-- 
+            <!--
                 Commenting out this segment of code since the members tab requires some work in order to be useful.
 
                 <tab>

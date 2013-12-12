@@ -13,7 +13,7 @@
                             <p class="font-size-h4">
                                 {{event.startTime|date:'shortTime'}}
                             </p>
-                            <event-registration-info 
+                            <event-registration-info
                                 registration-info="event.registrationInfo"
                                 user-registration-info="event.userEventSearchInfo.registrationInfo"
                                 type="{USER:'USER-UPCOMING', ORG:'ORG-UPCOMING'}[searchType]">
@@ -25,16 +25,16 @@
                                             <strong class="font-size-h4">{{event.title}}</strong>
                                     </a>
                                     <br>
-                                    <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small> 
+                                    <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
                             </div>
                             <div class="pull-right">
-                                    <p class="text-right font-size-h4">                                            
+                                    <p class="text-right font-size-h4">
                                         <em><strong>+{{event.karmaPoints}} karma</strong></em>
                                     </p>
                                     <div class="pull-right">
                                             <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
                                     </div>
-                            </div>                                         
+                            </div>
                     </div>
                 </div>
             </div>

@@ -9,7 +9,7 @@
                     </strong>
                 </h2>
             </div>
-        </div>                
+        </div>
 
         <div class="row event-view-primary-info-panels">
             <div class="col-md-6">
@@ -41,16 +41,16 @@
                                 </div>
                                 <div class="event-view-icon-text-big">
                                     <strong>
-                                        {{event.startTime|date:'shortTime'}} to {{event.endTime|date:'shortTime'}}                            
-                                    </strong>                        
+                                        {{event.startTime|date:'shortTime'}} to {{event.endTime|date:'shortTime'}}
+                                    </strong>
                                 </div>
-                                
+
                             </div>
 
                         </div>
                     </div>
-                </div>                
-                
+                </div>
+
 
                 <div class="row vertical-panel-padding">
                     <div class="col-md-12">
@@ -84,12 +84,12 @@
                                     <br>
                                     {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}
                                 </div>
-                                
+
                             </div>
 
                         </div>
                     </div>
-                </div>                
+                </div>
 
 
 
@@ -104,7 +104,7 @@
                     </div>
 
                     <div class="font-size-h4">
-                        <event-registration-info 
+                        <event-registration-info
                             registration-info="event.registrationInfo"
                             type="'DETAILS'">
                         </event-registration-info>
@@ -174,9 +174,9 @@
                         <div class="event-description-panel">
                             <div ng-show="event.description" class="event-description-sub-panel">
                                 <h4>
-                                    <strong>                                
+                                    <strong>
                                         Description
-                                    </strong>                                
+                                    </strong>
                                 </h4>
 
                                 <span ng-bind-html-unsafe="event.description | noHTML | newlines">
@@ -193,15 +193,15 @@
                             </div>
                             <div class="event-description-sub-panel">
                                 <h4>
-                                    <strong>                                
+                                    <strong>
                                         Comments and discussion
-                                    </strong>                                
+                                    </strong>
                                 </h4>
                                 <kex-fb-comments href="{{KexUtil.getSEOUrl()}}" num-posts="20">
-                                </kex-fb-comments>                            
+                                </kex-fb-comments>
                             </div>
                         </div>
-                        
+
                     </tab>
 
                     <tab active="tabs.impact.active" disabled="tabs.impact.disabled" select="tabManager.select('impact')">
@@ -209,19 +209,19 @@
                             <i class="icon-bolt"></i> Impact
                         </tab-heading>
 
-                        
+
                         <div class="event-impact-panel">
 
                             <div ng-show="EventUtil.canWriteReview(event)" class="event-impact-rating-sub-panel">
                                 <div ng-show="currentUserRating.value" class="event-impact-rating-text">
-                                    Your rating of this event: 
+                                    Your rating of this event:
                                 </div>
                                 <div ng-hide="currentUserRating.value" class="event-impact-rating-text">
                                     How was the event?
                                 </div>
                                 <div class="event-impact-rating-stars">
                                     <event-user-rating user-rating="currentUserRating" event-key="event.key">
-                                    </event-user-rating>                                
+                                    </event-user-rating>
                                 </div>
                             </div>
                             <div class="event-impact-sub-panel">
@@ -237,27 +237,27 @@
                                     <slide ng-repeat="img in impactImgs" active="img.active">
                                         <img ng-src="{{img.src}}" class="event-impact-img">
                                     </slide>
-                                </carousel>                                
+                                </carousel>
                             </div>
 
                             <div class="event-impact-sub-panel">
                                 <h4>
-                                    <strong>                                
+                                    <strong>
                                         Event feedback
-                                    </strong>                                
+                                    </strong>
                                 </h4>
                                 <kex-fb-comments href="{{KexUtil.getSEOUrl()}}" num-posts="20">
                                 </kex-fb-comments>
-                            </div>                        
+                            </div>
 
                         </div>
-                    
+
                     </tab>
                 </tabset>
             </div>
         </div>
 
-<!-- 
+<!--
         <div class="row" ng-show="event.status=='COMPLETED'" name="past-events-album">
             <img ng-src="{{KexUtil.urlStripProtocol(image.picture)}}" max-height="500">
             <carousel interval="myInterval">
@@ -312,22 +312,22 @@
             </div>
         </div>
 
-        <participants-sidebar 
-            fetched-participants="eventOrganizers" 
+        <participants-sidebar
+            fetched-participants="eventOrganizers"
             type="ORGANIZER"
             header="Organizers"
             participant-count="event.eventOrganizers.length"
             fetch-more="getMore(type)">
         </participants-sidebar>
-        <participants-sidebar 
-            fetched-participants="eventRegistered" 
+        <participants-sidebar
+            fetched-participants="eventRegistered"
             type="REGISTERED"
             header="Volunteers"
             participant-count="event.registeredUsers.length"
             fetch-more="getMore(type)">
         </participants-sidebar>
-        <participants-sidebar 
-            fetched-participants="eventWaitListed" 
+        <participants-sidebar
+            fetched-participants="eventWaitListed"
             type="WAIT_LISTED"
             header="Waitlisted"
             participant-count="event.waitListedUsers.length"
