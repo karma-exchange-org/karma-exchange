@@ -5,11 +5,11 @@
                 <input class="form-control" type="text" ng-model="query" placeholder="Search by name..">
                 <span class="input-group-addon">
                     <i class="icon-search"></i>
-                </span> 
+                </span>
             </div>
         </div>
     </div>
-    <div>        
+    <div>
         <!-- <button class="btn btn-info" ng-click="open()"><i class="icon-plus"></i> Create an Organization</button> -->
         <script type="text/ng-template" id="createOrgModal.html">
             <div class="modal-header">
@@ -33,14 +33,14 @@
                 </button>
             </div>
         </script>
-        
+
     </div>
     <div class="vertical-panel-padding">
         <ul class="list-unstyled">
             <li ng-repeat="org in orgs.data">
                 <div class="well well-sm">
                     <a href="#!/org/{{org.key}}" ng-click="refresh({{org.key}})">
-                        <img ng-src="{{fbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org"> 
+                        <img ng-src="{{fbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org">
                         <strong>{{org.orgName}}</strong>
                     </a>
                 </div>
