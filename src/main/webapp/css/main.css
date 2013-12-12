@@ -144,8 +144,36 @@ text-align:center;
   background-size: 40px 40px;
 }
 
+.icon-edit-span {
+  margin-left: 5px;
+}
+
 .label-value-table tr td:first-child {
   text-align: right;
+}
+
+
+@media screen and (min-width: 450px) {
+  .modal-dialog {
+    width: 400px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+}
+
+.modal-header {
+  padding: 10px 15px;
+  /* background-color: #f5f5f5; */
+}
+
+.modal-body {
+  padding: 0px 20px;
+}
+
+.modal-footer {
+  margin-top: 10px;
+  padding: 10px 20px 10px;
+  /* background-color: #f5f5f5; */
 }
 
 .vertical-panel-padding {
@@ -293,6 +321,15 @@ img.kex-thumbnail-user-mini {
 .row-no-margin {
   margin-left: 0;
   margin-right: 0;
+}
+
+.form-no-margin .form-group {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.alert-no-margin {
+  margin-bottom: 0;
 }
 
 .well-no-margin {
@@ -558,15 +595,34 @@ table>tbody>tr>.leaderboard-leader-col {
  */
 
 .goal-table tr td:first-child {
-  width: 80px;
-}
-
-.goal-table tr td {
+  width: 120px;
   font-weight: bold;
 }
 
 .goal-table tr th {
   font-weight: normal;
+}
+
+.goal-table-upcoming {
+  margin-left: 10px;
+}
+
+.set-goal-table {
+  margin: 0 auto;
+}
+
+.set-goal-table tr td {
+  width: 50%;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.set-goal-table tr td:first-child {
+  font-weight: bold;
+}
+
+.karma-goal-input {
+  width: 80px;
 }
 
 /*==================================================

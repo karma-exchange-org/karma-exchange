@@ -233,7 +233,7 @@ kexApp = angular.module( "kexApp",
         var modalInstance = $modal.open({
             backdrop: false,
             templateUrl: 'template/kex/share-event-modal.html',
-            controller: ModalInstanceCtrl,
+            controller: EventModalInstanceCtrl,
             resolve: {
                 event: function () {
                     return event;
@@ -330,7 +330,7 @@ kexApp.factory('KexUtil', function($rootScope) {
             return this.round(karmaPoints / 60, dec);
         },
         toKarmaPoints: function(hours) {
-            return hours * 60;
+            return Math.round(hours * 60);
         },
 
         /*
@@ -340,6 +340,10 @@ kexApp.factory('KexUtil', function($rootScope) {
          */
         round: function (num, dec) {
            return Math.round(num * Math.pow(10, dec)) / Math.pow(10, dec);
+        },
+
+        selectRandom: function(els) {
+            return els[Math.floor(Math.random() * els.length)];
         }
     }
 });
@@ -959,13 +963,32 @@ kexApp.directive('numWithType', function() {
     }
 });
 
+var FLOAT_GEQ_ZERO = /^((\d+(\.(\d+)?)?)|(\.\d+))$/;
+kexApp.directive('floatGeqZero', function() {
+  return {
+    require: 'ngModel',
+    link: function(scope, elm, attrs, ctrl) {
+      ctrl.$parsers.unshift(function(viewValue) {
+        if (FLOAT_GEQ_ZERO.test(viewValue)) {
+          // it is valid
+          ctrl.$setValidity('floatGeqZero', true);
+          return viewValue;
+        } else {
+          // it is invalid, return undefined (no model update)
+          ctrl.$setValidity('floatGeqZero', false);
+          return undefined;
+        }
+      });
+    }
+  };
+});
 
 /*
  * App controllers
  */
 
 var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams, 
-        EventUtil, KexUtil, urlTabsetUtil) {
+        $modal, EventUtil, KexUtil, urlTabsetUtil) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
 
@@ -980,7 +1003,6 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             $scope.who = 'My';
             $scope.me = Me.get(function() {
                 $scope.userKey = $scope.me.key;
-                $rootScope.me = $scope.me;
                 $scope.savedAboutMe = $scope.me.about;
 
                 // Tab information depends on the user being fetched first.
@@ -1002,14 +1024,17 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             postUserKeyResolutionCbs();
         }
     };
+
     function postUserKeyResolutionCbs() {
         setupGoalTracker();
         getOtherData();
     }
+
     function postUserResolutionCbs() {
         $scope.userLoaded = true;
         updateGoalProgressBar();
     }
+
     function setupGoalTracker() {
         var now = new Date();
         $scope.goalStartDate = new Date(now.getFullYear(), now.getMonth());
@@ -1030,14 +1055,19 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                     }
                 }
 
-                var monthlyKarma = $scope.monthlyKarma = { };
-                monthlyKarma.totalHours = KexUtil.toHours(totalKarmaPoints, 1);
+                var monthlyKarma = $scope.monthlyKarma = { };                
                 monthlyKarma.upcomingKarmaPoints = totalKarmaPoints - completedKarmaPoints;
                 monthlyKarma.completedKarmaPoints = completedKarmaPoints;
+
+                monthlyKarma.upcomingKarmaHours = KexUtil.toHours(monthlyKarma.upcomingKarmaPoints, 1);
+                monthlyKarma.completedKarmaHours = KexUtil.toHours(monthlyKarma.completedKarmaPoints, 1);
+                monthlyKarma.registeredForKarmaHours = monthlyKarma.upcomingKarmaHours + monthlyKarma.completedKarmaHours;
+
                 updateGoalProgressBar();
             });
     }
-    function updateGoalProgressBar() {        
+
+    function updateGoalProgressBar() {
         if ($scope.monthlyKarma && $scope.userLoaded && $scope.me.karmaGoal) { 
             var totalPct = 0;
             var monthlyKarma = $scope.monthlyKarma;
@@ -1046,6 +1076,8 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             totalPct += completedPct;
             var upcomingPct = capPercentage((monthlyKarma.upcomingKarmaPoints * 100) / monthlyGoal, totalPct);
             totalPct += upcomingPct;
+
+            updateGoalProgressBarMsg(totalPct);
 
             monthlyKarma.pctCompleted = completedPct;
             monthlyKarma.pctUpcoming = upcomingPct;
@@ -1062,12 +1094,47 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             }
         }
     }
+
+    function updateGoalProgressBarMsg(totalPct) {
+        var msgs;
+        if (totalPct == 0) {
+            msgs = ["Volunteering is fun! Sign up for an event"];
+        } else if (totalPct < 25) {
+            msgs = ["Ready to earn some more karma?"];
+        } else if (totalPct < 50) {
+            msgs = ["Nice job so far"];
+        } else if (totalPct < 75) {
+            msgs = ["Almost there!"];
+        } else  {
+            msgs = ["High five!", "Karma goal achieved!"];
+        }
+        $scope.monthlyKarma.msg = KexUtil.selectRandom(msgs);
+    }
+
+    $scope.editKarmaGoal = function() {        
+        var modalInstance = $modal.open({
+            backdrop: false,
+            templateUrl: 'template/kex/karma-goal-modal.html',
+            resolve: {
+                // This is required since $rootScope.me can get updated
+                // due to oAuth changes.
+                meObj: function () {
+                    return $scope.me;
+                }
+            },
+            controller: KarmaGoalModalInstanceCtrl
+        });
+        
+        modalInstance.result.then(updateGoalProgressBar);
+    }
+
     function getOtherData() {
         $scope.orgs = User.get({
             id: $scope.userKey,
             resource: 'org'
         });
     };
+
     function loadImpactTab() {
         if (!$scope.impactTabLoaded && $scope.userKey) {
             $scope.impactTabLoaded = true;
@@ -1076,6 +1143,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             });
         }
     }
+
     function loadUpcomingTab() {
         if (!$scope.upcomingTabLoaded && $scope.userKey) {
             $scope.upcomingTabLoaded = true;
@@ -1085,11 +1153,13 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             });
         }
     }
+
     $scope.enableIntroEdit = function() {
         if ($scope.me.permission === "ALL") {
             $scope.edit = true;
         }
     };
+
     $scope.saveIntroEdit = function() {
         $scope.edit = false;
         $scope.savedAboutMe = $scope.me.about;
@@ -1099,11 +1169,35 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             }, 
             $scope.me);
     };
+
     $scope.disableIntroEdit = function() {
         $scope.edit = false;
         $scope.me.about = $scope.savedAboutMe;
     };
+
     load();
+};
+
+var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope, 
+        KexUtil, Me, meObj) {
+    var originalMonthlyGoal = meObj.karmaGoal.monthlyGoal;
+    $scope.goal = { hours: KexUtil.toHours(originalMonthlyGoal, 1) };
+    $scope.saveDisabled = false;
+    $scope.save = function () {
+        $scope.saveDisabled = true;
+        meObj.karmaGoal.monthlyGoal = KexUtil.toKarmaPoints(Number($scope.goal.hours));
+        Me.save(meObj, 
+            function() {
+                $modalInstance.close();
+            },
+            function() {
+                meObj.karmaGoal.monthlyGoal = originalMonthlyGoal;
+                $modalInstance.dismiss();
+            });
+    };
+    $scope.cancel = function () {
+        $modalInstance.dismiss();
+    };
 };
 
 var meEditCtrl = function($scope, Me, $rootScope) {
@@ -1929,7 +2023,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     refreshEvent();
 };
 
-var ModalInstanceCtrl = function ($scope, $modalInstance, event, header, $rootScope) {
+var EventModalInstanceCtrl = function ($scope, $modalInstance, event, header, $rootScope) {
     $scope.event = event;
     $scope.header = header;
     $scope.ok = function () {
