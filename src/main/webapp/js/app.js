@@ -37,7 +37,7 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
         return function(promise) {
             return promise.then(function(successResponse) {
                 if (successResponse.config.method.toUpperCase() != 'GET' && !isExternal(successResponse.config.url)) {
-                    $rootScope.showAlert("Saved successfully!", "success");
+                    // $rootScope.showAlert("Saved successfully!", "success");
                 }
                 return successResponse;
             }, function(errorResponse) {
