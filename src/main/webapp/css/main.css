@@ -603,10 +603,6 @@ table>tbody>tr>.leaderboard-leader-col {
   font-weight: normal;
 }
 
-.goal-table-upcoming {
-  margin-left: 10px;
-}
-
 .set-goal-table {
   margin: 0 auto;
 }
@@ -623,6 +619,34 @@ table>tbody>tr>.leaderboard-leader-col {
 
 .karma-goal-input {
   width: 80px;
+}
+
+.navbar-goal-pct {
+  /*background-color: #F0F0F0;*/
+  margin: 14px 0px 0px 0px;
+  padding: 2px 6px;
+  box-shadow: 0 0 5px rgba(0,0,0,.42) inset, 0 1px 0 rgba(255,255,255,.1);
+  text-align:center;
+  width: 55px;
+}
+
+.navbar-goal-pct-danger {
+  background-color: #DE6C69;
+  /* border left, if we use it, should be on the inside of the box */
+  /*border-left: 10px solid #d9534f;*/
+}
+
+.navbar-goal-pct-warning {
+  background-color: #F2B968;
+}
+
+.navbar-goal-pct-success {
+  background-color: #74C274;
+}
+
+.navbar-goal-pct a {
+  color: black;
+  text-decoration: none;
 }
 
 /*==================================================

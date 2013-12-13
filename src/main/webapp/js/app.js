@@ -305,7 +305,7 @@ kexApp.factory( 'Org', function( $resource ) {
  * Utility API factories
  */
 
-kexApp.factory('KexUtil', function($rootScope, $q, Me) {
+kexApp.factory('KexUtil', function($rootScope) {
     return {
         getBaseUrl: function() {
             return window.location.protocol + '//' + window.location.host;
@@ -326,56 +326,6 @@ kexApp.factory('KexUtil', function($rootScope, $q, Me) {
             return window.location.protocol + '//' + window.location.host + "?metaonly=true&ogtype="+ogtype+"&ogtitle="+encodeURIComponent(ogtitle)+"&ogimage="+encodeURIComponent(ogimage)+"&ogurl="+encodeURIComponent(window.location.href);
         },
 
-        // Get the promise corresponding to me
-        me: function() {
-            this._meSetupPromise();
-            return $rootScope.meDef.promise;
-        },
-
-        updateMe: function() {
-            Me.get(
-                angular.bind(this, function(value) {
-                    this._mePromiseRecycle();
-                    $rootScope.me = value;
-                    $rootScope.meDef.resolve($rootScope.me);
-                    updateIsOrganizer();
-                }),
-                angular.bind(this, function(httpResponse) {
-                    this.clearMe();
-                }));
-
-            function updateIsOrganizer() {
-                for (var idx = 0; idx < $rootScope.me.organizationMemberships.length; idx++) {
-                    var membership = $rootScope.me.organizationMemberships[idx];
-                    if ((membership.role == 'ORGANIZER') || (membership.role == 'ADMIN')) {
-                        $rootScope.isOrganizer = true;
-                        break;
-                    }
-                }
-            }
-        },
-
-        clearMe: function() {
-            this._mePromiseRecycle();
-            $rootScope.meDef.promise.reject();
-            $rootScope.me = undefined;
-            $rootScope.isOrganizer = false;
-        },
-
-        _meSetupPromise: function() {
-            if (!angular.isDefined($rootScope.meDef)) {
-                $rootScope.meDef = $q.defer();
-            }
-        },
-
-        _mePromiseRecycle: function() {
-            this._meSetupPromise();
-            if ($rootScope.mePromiseResolved) {
-                $rootScope.meDef = $q.defer();
-            }
-            $rootScope.mePromiseResolved = true;
-        },
-
         toHours: function(karmaPoints, dec) {
             return this.round(karmaPoints / 60, dec);
         },
@@ -394,7 +344,168 @@ kexApp.factory('KexUtil', function($rootScope, $q, Me) {
 
         selectRandom: function(els) {
             return els[Math.floor(Math.random() * els.length)];
+        },
+
+        getFirstOfMonth: function(date) {
+            return new Date(date.getFullYear(), date.getMonth());
+        },
+
+        addMonths: function(date, val) {
+            return moment(date).add('months', 1).toDate();
         }
+    }
+});
+
+kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil) {
+    return {
+        // Get the promise corresponding to me
+        me: function() {
+            this._meSetupPromise();
+            return $rootScope.meDef.promise;
+        },
+
+        updateMe: function() {
+            Me.get(
+                angular.bind(this, function(value) {
+                    this._mePromiseRecycle();
+                    $rootScope.me = value;
+                    updateIsOrganizer();
+                    updateKarmaGoal();
+                    $rootScope.meDef.resolve($rootScope.me);
+                }),
+                angular.bind(this, function(httpResponse) {
+                    this.clearMe();
+                }));
+
+            function updateIsOrganizer() {
+                for (var idx = 0; idx < $rootScope.me.organizationMemberships.length; idx++) {
+                    var membership = $rootScope.me.organizationMemberships[idx];
+                    if ((membership.role == 'ORGANIZER') || (membership.role == 'ADMIN')) {
+                        $rootScope.isOrganizer = true;
+                        break;
+                    }
+                }
+            }
+
+            function updateKarmaGoal() {
+                $rootScope.goalInfo = {};
+                KarmaGoalUtil.loadKarmaGoalInfo($rootScope.me, KexUtil.getFirstOfMonth(new Date()), $rootScope.goalInfo);
+            }
+        },
+
+        clearMe: function() {
+            this._mePromiseRecycle();
+            $rootScope.meDef.promise.reject();
+            $rootScope.me = undefined;
+            $rootScope.isOrganizer = false;
+            $rootScope.goalInfo = {};
+        },
+
+        _meSetupPromise: function() {
+            if (!angular.isDefined($rootScope.meDef)) {
+                $rootScope.meDef = $q.defer();
+            }
+        },
+
+        _mePromiseRecycle: function() {
+            this._meSetupPromise();
+            if ($rootScope.mePromiseResolved) {
+                $rootScope.meDef = $q.defer();
+            }
+            $rootScope.mePromiseResolved = true;
+        },
+    }
+});
+
+
+kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
+    return {
+        loadKarmaGoalInfo: function(user, firstOfMonth, goalInfo) {
+            var goalStartDate = firstOfMonth;
+            var goalEndDate = KexUtil.addMonths(firstOfMonth, 1);
+
+            User.get( { id : user.key, resource : 'event', type: "INTERVAL",
+                start_time: goalStartDate.valueOf(), end_time: goalEndDate.valueOf() },
+                angular.bind(this, function(result) {
+                    var totalKarmaPoints = 0;
+                    var completedKarmaPoints = 0;
+                    for (var idx = 0; idx < result.data.length; idx++) {
+                        var event = result.data[idx];
+                        // console_log("Goal tracker processing: event=%s, date=%s, status=%s",
+                        //     event.title, new Date(event.startTime), event.status);
+                        totalKarmaPoints += event.karmaPoints;
+                        if (event.status == 'COMPLETED') {
+                            completedKarmaPoints += event.karmaPoints;
+                        }
+                    }
+
+                    goalInfo.goalStartDate = goalStartDate;
+                    goalInfo.goalEndDate = goalEndDate;
+
+                    goalInfo.upcomingKarmaPoints = totalKarmaPoints - completedKarmaPoints;
+                    goalInfo.completedKarmaPoints = completedKarmaPoints;
+                    goalInfo.registeredForKarmaPoints = totalKarmaPoints;
+
+                    goalInfo.upcomingKarmaHours = KexUtil.toHours(goalInfo.upcomingKarmaPoints, 1);
+                    goalInfo.completedKarmaHours = KexUtil.toHours(goalInfo.completedKarmaPoints, 1);
+                    goalInfo.registeredForKarmaHours = goalInfo.upcomingKarmaHours + goalInfo.completedKarmaHours;
+
+                    this.updateKarmaGoalTarget(user, goalInfo);
+                }));
+        },
+
+        updateKarmaGoalTarget: function(user, goalInfo) {
+            var monthlyGoal = user.karmaGoal.monthlyGoal;
+
+            var totalPct = 0;
+            var completedPct = capPercentage((goalInfo.completedKarmaPoints * 100) / monthlyGoal, totalPct);
+            totalPct += completedPct;
+            var upcomingPct = capPercentage((goalInfo.upcomingKarmaPoints * 100) / monthlyGoal, totalPct);
+            totalPct += upcomingPct;
+
+            goalInfo.msg = getGoalMsg(totalPct);
+            goalInfo.pctTotal = totalPct;
+            goalInfo.pctCompleted = completedPct;
+            goalInfo.pctUpcoming = upcomingPct;
+            goalInfo.goalHours = KexUtil.toHours(monthlyGoal, 1);
+            goalInfo.barType = this.getGoalBarType(totalPct);
+
+            function capPercentage(pctValue, totalPct) {
+                pctValue = Math.round(pctValue);
+                if (pctValue + totalPct > 100) {
+                    return 100 - totalPct;
+                } else {
+                    return pctValue;
+                }
+            }
+
+            function getGoalMsg(totalPct) {
+                var msgs;
+                if (totalPct == 0) {
+                    msgs = ["Volunteering is fun! Sign up for an event"];
+                } else if (totalPct < 25) {
+                    msgs = ["Ready to earn some more karma?"];
+                } else if (totalPct < 75) {
+                    msgs = ["Nice job so far"];
+                } else if (totalPct < 100) {
+                    msgs = ["Almost there!"];
+                } else  {
+                    msgs = ["High five!", "Karma goal achieved!"];
+                }
+                return KexUtil.selectRandom(msgs);
+            }
+        },
+
+        getGoalBarType: function(registeredPct) {
+            if (registeredPct < 25) {
+                return 'danger';
+            } else if (registeredPct < 75) {
+                return 'warning';
+            } else {
+                return 'success';
+            }
+        }
+
     }
 });
 
@@ -426,7 +537,8 @@ kexApp.factory('ApiCache', function($rootScope) {
     };
 });
 
-kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location, $window, ApiCache) {
+kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
+        $window, ApiCache, MeUtil) {
     var fbAccessToken;
     var firstAuthResponse = true;
 
@@ -439,7 +551,7 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
             fbAccessToken = response.authResponse.accessToken;
 
             if ( updateUser ) {
-                KexUtil.updateMe();
+                MeUtil.updateMe();
                 processUserChange();
             }
         } else {
@@ -447,7 +559,7 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
             if ( $rootScope.fbUserId ) {
                 $rootScope.fbUserId = undefined;
                 fbAccessToken = undefined;
-                KexUtil.clearMe();
+                MeUtil.clearMe();
                 processUserChange();
             }
         }
@@ -517,7 +629,6 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
         }
     };
 });
-
 
 kexApp.factory('EventUtil', function($q, User, Events, KexUtil, FbUtil) {
     return {
@@ -963,7 +1074,7 @@ kexApp.directive('loginClick', function ($facebook,$rootScope) {
     };
 });
 
-kexApp.directive('goalTrackingBar', function() {
+kexApp.directive('goalTrackingBar', function(KarmaGoalUtil) {
     return {
         restrict: 'E',
         scope: {
@@ -981,13 +1092,11 @@ kexApp.directive('goalTrackingBar', function() {
             });
 
             function updateBarType() {
-                var registeredPct = scope.pctCompleted + scope.pctPending;
-                if (registeredPct < 25) {
-                    scope.barType = 'danger';
-                } else if (registeredPct < 75) {
-                    scope.barType = 'warning';
-                } else {
-                    scope.barType = 'success';
+                if (angular.isDefined(scope.pctCompleted) &&
+                    angular.isDefined(scope.pctPending)) {
+
+                    scope.barType =
+                        KarmaGoalUtil.getGoalBarType(scope.pctCompleted + scope.pctPending);
                 }
             }
         },
@@ -1036,7 +1145,7 @@ kexApp.directive('floatGeqZero', function() {
  */
 
 var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
-        $modal, EventUtil, KexUtil, urlTabsetUtil) {
+        $modal, EventUtil, KexUtil, urlTabsetUtil, KarmaGoalUtil, MeUtil) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
 
@@ -1049,15 +1158,15 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     function load() {
         if ($location.path() == "/me") {
             $scope.who = 'My';
-            KexUtil.me().then(function(meObj) {
+            MeUtil.me().then(function(meObj) {
                 $scope.me = meObj;
                 $scope.userKey = $scope.me.key;
                 $scope.savedAboutMe = $scope.me.about;
+                $scope.userGoalInfo = $rootScope.goalInfo;
 
                 // Tab information depends on the user being fetched first.
                 tabManager.reloadActiveTab();
                 postUserKeyResolutionCbs();
-                postUserResolutionCbs();
             });
         } else {
             $scope.userKey = $routeParams.userId;
@@ -1066,97 +1175,16 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                     id: $scope.userKey
                 },
                 function() {
-                    postUserResolutionCbs();
                     $scope.who = $scope.me.firstName + "'s";
+                    $scope.userGoalInfo = {};
+                    KarmaGoalUtil.loadKarmaGoalInfo($scope.me, KexUtil.getFirstOfMonth(new Date()), $scope.userGoalInfo);
                 });
             postUserKeyResolutionCbs();
         }
     };
 
     function postUserKeyResolutionCbs() {
-        setupGoalTracker();
         getOtherData();
-    }
-
-    function postUserResolutionCbs() {
-        $scope.userLoaded = true;
-        updateGoalProgressBar();
-    }
-
-    function setupGoalTracker() {
-        var now = new Date();
-        $scope.goalStartDate = new Date(now.getFullYear(), now.getMonth());
-        $scope.goalEndDate = moment($scope.goalStartDate).add('months', 1).toDate();
-
-        User.get( { id : $scope.userKey, resource : 'event', type: "INTERVAL",
-            start_time: $scope.goalStartDate.valueOf(), end_time: $scope.goalEndDate.valueOf() },
-            function(result) {
-                var totalKarmaPoints = 0;
-                var completedKarmaPoints = 0;
-                for (var idx = 0; idx < result.data.length; idx++) {
-                    var event = result.data[idx];
-                    // console_log("Goal tracker processing: event=%s, date=%s, status=%s",
-                    //     event.title, new Date(event.startTime), event.status);
-                    totalKarmaPoints += event.karmaPoints;
-                    if (event.status == 'COMPLETED') {
-                        completedKarmaPoints += event.karmaPoints;
-                    }
-                }
-
-                var monthlyKarma = $scope.monthlyKarma = { };
-                monthlyKarma.upcomingKarmaPoints = totalKarmaPoints - completedKarmaPoints;
-                monthlyKarma.completedKarmaPoints = completedKarmaPoints;
-
-                monthlyKarma.upcomingKarmaHours = KexUtil.toHours(monthlyKarma.upcomingKarmaPoints, 1);
-                monthlyKarma.completedKarmaHours = KexUtil.toHours(monthlyKarma.completedKarmaPoints, 1);
-                monthlyKarma.registeredForKarmaHours = monthlyKarma.upcomingKarmaHours + monthlyKarma.completedKarmaHours;
-
-                updateGoalProgressBar();
-            });
-    }
-
-    function updateGoalProgressBar() {
-        if ($scope.monthlyKarma && $scope.userLoaded && $scope.me.karmaGoal) {
-            var totalPct = 0;
-            var monthlyKarma = $scope.monthlyKarma;
-            var monthlyGoal = $scope.me.karmaGoal.monthlyGoal;
-            var completedPct = capPercentage((monthlyKarma.completedKarmaPoints * 100) / monthlyGoal, totalPct);
-            totalPct += completedPct;
-            var upcomingPct = capPercentage((monthlyKarma.upcomingKarmaPoints * 100) / monthlyGoal, totalPct);
-            totalPct += upcomingPct;
-
-            updateGoalProgressBarMsg(totalPct);
-
-            monthlyKarma.pctCompleted = completedPct;
-            monthlyKarma.pctUpcoming = upcomingPct;
-
-            monthlyKarma.goalHours = KexUtil.toHours(monthlyGoal, 1);
-
-            function capPercentage(pctValue, totalPct) {
-                pctValue = Math.round(pctValue);
-                if (pctValue + totalPct > 100) {
-                    return 100 - totalPct;
-                } else {
-                    return pctValue;
-                }
-            }
-        }
-    }
-
-    function updateGoalProgressBarMsg(totalPct) {
-        var msgs;
-        if (totalPct == 0) {
-            msgs = ["Volunteering is fun! Sign up for an event"];
-        } else if (totalPct < 25) {
-            msgs = ["Ready to earn some more karma?"];
-        } else if (totalPct < 75) {
-            msgs = ["Nice job so far"];
-        } else if (totalPct < 100) {
-            msgs = ["Almost there!"];
-        } else  {
-            msgs = ["High five!", "Karma goal achieved!"];
-        }
-        $scope.monthlyKarma.msg = KexUtil.selectRandom(msgs);
     }
 
     $scope.editKarmaGoal = function() {
@@ -1166,7 +1194,9 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             controller: KarmaGoalModalInstanceCtrl
         });
 
-        modalInstance.result.then(updateGoalProgressBar);
+        modalInstance.result.then(function() {
+            KarmaGoalUtil.updateKarmaGoalTarget($rootScope.me, $rootScope.goalInfo);
+        });
     }
 
     function getOtherData() {
@@ -1220,10 +1250,10 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
 };
 
 var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope,
-        KexUtil, Me) {
+        KexUtil, Me, MeUtil) {
     $scope.saveDisabled = true;
 
-    KexUtil.me().then(function(meObj) {
+    MeUtil.me().then(function(meObj) {
         $scope.saveDisabled = false;
         $scope.goal = { hours: KexUtil.toHours(meObj.karmaGoal.monthlyGoal, 1) };
         $scope.meObj = meObj;
@@ -1251,14 +1281,14 @@ var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope,
     };
 };
 
-var meEditCtrl = function($scope, Me, $rootScope) {
+var meEditCtrl = function($scope, Me, $rootScope, MeUtil) {
     $scope.newMail = {
         email: null,
         primary: null
     };
     $scope.load = function() {
         $scope.who = 'My';
-        KexUtil.me().then(function(meObj) {
+        MeUtil.me().then(function(meObj) {
             $scope.me = meObj;
             $scope.origAboutMe = $scope.me.about;
         });
