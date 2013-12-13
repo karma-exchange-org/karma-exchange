@@ -40,7 +40,7 @@
                             <thead>
                                 <tr>
                                     <th colspan="2">
-                                        <span class="text-uppercase">Month of {{ goalStartDate | date:'MMMM yyyy'}}</span>
+                                        <span class="text-uppercase">Month of {{ userGoalInfo.goalStartDate | date:'MMMM yyyy'}}</span>
                                     </th>
                                 </tr>
                             </thead>
@@ -48,7 +48,7 @@
                                 <tr>
                                     <td>Goal</td>
                                     <td><strong>
-                                            <num-with-type num="monthlyKarma.goalHours" type="'hour'"></num-with-type>
+                                            <num-with-type num="userGoalInfo.goalHours" type="'hour'"></num-with-type>
                                         </strong>
                                         <span ng-show="{ALL:true}[me.permission]" class="icon-edit-span">
                                             <a href ng-click="editKarmaGoal()"><i class="icon-edit"></i></a>
@@ -59,11 +59,11 @@
                                     <td>Registered for</td>
                                     <td>
                                         <strong>
-                                            <num-with-type num="monthlyKarma.registeredForKarmaHours" type="'hour'"></num-with-type>
+                                            <num-with-type num="userGoalInfo.registeredForKarmaHours" type="'hour'"></num-with-type>
                                         </strong>
-                                        <span class="goal-table-upcoming" ng-show="monthlyKarma.upcomingKarmaHours">
-                                            <em>( Upcoming <num-with-type num="monthlyKarma.upcomingKarmaHours" type="'hour'"></num-with-type> )</em>
-                                        <span>
+                                        <div ng-show="userGoalInfo.upcomingKarmaHours">
+                                            <em>( Upcoming <num-with-type num="userGoalInfo.upcomingKarmaHours" type="'hour'"></num-with-type> )</em>
+                                        <div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -71,13 +71,13 @@
 
                         <div class="panel-seperated-vertical">
                             <goal-tracking-bar
-                                pct-completed="monthlyKarma.pctCompleted"
-                                pct-pending="monthlyKarma.pctUpcoming">
+                                pct-completed="userGoalInfo.pctCompleted"
+                                pct-pending="userGoalInfo.pctUpcoming">
                             </goal-tracking-bar>
                         </div>
 
                         <div class="text-center" ng-show="{ALL:true}[me.permission]">
-                            <h4><em>{{monthlyKarma.msg}}</em></h4>
+                            <h4><em>{{userGoalInfo.msg}}</em></h4>
                         </div>
                     </div>
                 </div>

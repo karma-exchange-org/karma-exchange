@@ -182,6 +182,17 @@
                                     </fb:login-button>
                             </li>
                         -->
+                        <li ng-show="goalInfo.msg">
+                            <div class="navbar-goal-pct navbar-goal-pct-{{goalInfo.barType}}"
+                                    popover-placement="bottom"
+                                    popover="Karma&nbsp;Goal Completion&nbsp;%"
+                                    popover-trigger="mouseenter"
+                                    popover-popup-delay="250">
+                                <a href="#!/me">
+                                    {{goalInfo.pctTotal}} %
+                                </a>
+                            </div>
+                        </li>
                         <li class="dropdown">
                             <a ng-show="me" href="#" class="dropdown-toggle" toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
                             <a ng-hide="me" href="" class="dropdown-toggle" toggle="dropdown">Info <b class="caret"></b></a>

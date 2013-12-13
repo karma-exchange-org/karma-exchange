@@ -3,7 +3,7 @@
 /* ==========================================================================
    Author's custom styles
    ========================================================================== */
-   
+
 
 .angular-google-map {
   height: 100%;
@@ -16,9 +16,9 @@
   max-width: inherit !important;
 }
 
-body { 
-  padding-top: 60px; 
-  padding-bottom: 40px; 
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
   /* background: url(../img/bg.gif);*/
 }
 
@@ -108,12 +108,12 @@ text-align:center;
 
 .add-window div {
   padding: 5px 20px;
-  
+
 }
 
 .add-window div div {
   width : 100%;
-  
+
 }
 
 .box h3{
@@ -123,9 +123,9 @@ text-align:center;
 }
 .box {
   width:100%;
-  
+
   background:#FFF;
-  
+
 }
 
 .text-uppercase {
@@ -207,7 +207,7 @@ text-align:center;
   padding: 0px 15px;
 }
 
-/* 
+/*
  * The grid panel layout requires top and left padding because margins with
  * inline block and foat elements do not collapse.
  */
@@ -215,7 +215,7 @@ text-align:center;
   padding: 10px 0 0 10px;
 }
 
-.panel-grid-el-2-col {  
+.panel-grid-el-2-col {
   min-width: 200px;
   width: 50%;
   padding-right: 10px;
@@ -232,11 +232,11 @@ text-align:center;
   padding-left: 10px;
 }
 
-.font-size-h4 {  
+.font-size-h4 {
   font-size: 18px;
 }
 
-.font-size-h3 {  
+.font-size-h3 {
   font-size: 24px;
 }
 
@@ -266,27 +266,27 @@ img.center {
 }
 
 img.kex-thumbnail-with-label {
- margin-right: 8px; 
+ margin-right: 8px;
 }
 
 img.kex-thumbnail-org {
-  height: 40px; 
-  width: 40px; 
+  height: 40px;
+  width: 40px;
 }
 
 img.kex-thumbnail-org-small {
-  height: 32px; 
-  width: 32px; 
+  height: 32px;
+  width: 32px;
 }
 
 img.kex-thumbnail-user {
-  height: 40px; 
-  width: 40px; 
+  height: 40px;
+  width: 40px;
 }
 
 img.kex-thumbnail-user-mini {
-  height: 25px; 
-  width: 25px; 
+  height: 25px;
+  width: 25px;
 }
 
 .list-inline-no-padding {
@@ -304,9 +304,9 @@ img.kex-thumbnail-user-mini {
   background-position: center center;
 }
 
-.kex-icon {  
-  height: 15px; 
-  width: 15px; 
+.kex-icon {
+  height: 15px;
+  width: 15px;
 }
 
 .border-top-1 {
@@ -353,8 +353,8 @@ img.kex-thumbnail-user-mini {
   vertical-align: middle;
 }
 
-/*  
- * Event sidebar 
+/*
+ * Event sidebar
  */
 
 .event-sidebar-element {
@@ -368,7 +368,7 @@ img.kex-thumbnail-user-mini {
   margin-bottom: 10px;
 }
 
-/*  
+/*
  * Event info panels
  */
 
@@ -433,13 +433,13 @@ img.kex-thumbnail-user-mini {
   /*font-style: italic;*/
 }
 
-/*  
+/*
  * Event view details tabs
  */
 
 .event-description-panel {
   padding: 1px 15px 0px 15px;
-  background-color: #F0F0F0;  
+  background-color: #F0F0F0;
 }
 
 .event-impact-panel {
@@ -472,7 +472,7 @@ img.kex-thumbnail-user-mini {
 
 .event-impact-rating-stars {
   display: table-cell;
-  vertical-align: middle;  
+  vertical-align: middle;
 }
 
 .carousel-inner>.item>.event-impact-img {
@@ -558,7 +558,7 @@ img.kex-thumbnail-user-mini {
 
 .org-donation-btn {
   margin-top: 10px;
-  text-align: center;  
+  text-align: center;
 }
 
 /*
@@ -603,10 +603,6 @@ table>tbody>tr>.leaderboard-leader-col {
   font-weight: normal;
 }
 
-.goal-table-upcoming {
-  margin-left: 10px;
-}
-
 .set-goal-table {
   margin: 0 auto;
 }
@@ -625,17 +621,45 @@ table>tbody>tr>.leaderboard-leader-col {
   width: 80px;
 }
 
+.navbar-goal-pct {
+  /*background-color: #F0F0F0;*/
+  margin: 14px 0px 0px 0px;
+  padding: 2px 6px;
+  box-shadow: 0 0 5px rgba(0,0,0,.42) inset, 0 1px 0 rgba(255,255,255,.1);
+  text-align:center;
+  width: 55px;
+}
+
+.navbar-goal-pct-danger {
+  background-color: #DE6C69;
+  /* border left, if we use it, should be on the inside of the box */
+  /*border-left: 10px solid #d9534f;*/
+}
+
+.navbar-goal-pct-warning {
+  background-color: #F2B968;
+}
+
+.navbar-goal-pct-success {
+  background-color: #74C274;
+}
+
+.navbar-goal-pct a {
+  color: black;
+  text-decoration: none;
+}
+
 /*==================================================
- * Angular-ui 
+ * Angular-ui
  * ===============================================*/
 
 /*
   From http://angular-ui.github.io/bootstrap/
-  "Original Bootstrap's CSS depends on empty href attributes to style cursors 
-  for several components (pagination, tabs etc.). But in AngularJS adding empty 
-  href attributes to link tags will cause unwanted route changes. This is why we 
-  need to remove empty href attributes from directive templates and as a result 
-  styling is not applied correctly. The remedy is simple, just add the following 
+  "Original Bootstrap's CSS depends on empty href attributes to style cursors
+  for several components (pagination, tabs etc.). But in AngularJS adding empty
+  href attributes to link tags will cause unwanted route changes. This is why we
+  need to remove empty href attributes from directive templates and as a result
+  styling is not applied correctly. The remedy is simple, just add the following
   styling to your application:"
 */
 .nav, .pagination, .carousel a { cursor: pointer; }
@@ -645,7 +669,7 @@ table>tbody>tr>.leaderboard-leader-col {
  * ===============================================*/
 .effect7
 {
-    position:relative;       
+    position:relative;
     -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
        -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
             box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
@@ -653,7 +677,7 @@ table>tbody>tr>.leaderboard-leader-col {
 .effect7:before, .effect7:after
 {
   content:"";
-    position:absolute; 
+    position:absolute;
     z-index:-1;
     -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
     -moz-box-shadow:0 0 20px rgba(0,0,0,0.8);
@@ -664,21 +688,21 @@ table>tbody>tr>.leaderboard-leader-col {
     right:10px;
     -moz-border-radius:100px / 10px;
     border-radius:100px / 10px;
-} 
+}
 .effect7:after
 {
-  right:10px; 
+  right:10px;
     left:auto;
-    -webkit-transform:skew(8deg) rotate(3deg); 
-       -moz-transform:skew(8deg) rotate(3deg);     
-        -ms-transform:skew(8deg) rotate(3deg);     
-         -o-transform:skew(8deg) rotate(3deg); 
+    -webkit-transform:skew(8deg) rotate(3deg);
+       -moz-transform:skew(8deg) rotate(3deg);
+        -ms-transform:skew(8deg) rotate(3deg);
+         -o-transform:skew(8deg) rotate(3deg);
             transform:skew(8deg) rotate(3deg);
 }
 
 .effect8
 {
-    position:relative;       
+    position:relative;
     -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
        -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
             box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
@@ -686,7 +710,7 @@ table>tbody>tr>.leaderboard-leader-col {
 .effect8:before, .effect8:after
 {
   content:"";
-    position:absolute; 
+    position:absolute;
     z-index:-1;
     -webkit-box-shadow:0 0 20px rgba(0,0,0,0.8);
     -moz-box-shadow:0 0 20px rgba(0,0,0,0.8);
@@ -697,15 +721,15 @@ table>tbody>tr>.leaderboard-leader-col {
     right:0;
     -moz-border-radius:100px / 10px;
     border-radius:100px / 10px;
-} 
+}
 .effect8:after
 {
-  right:10px; 
+  right:10px;
     left:auto;
-    -webkit-transform:skew(8deg) rotate(3deg); 
-       -moz-transform:skew(8deg) rotate(3deg);     
-        -ms-transform:skew(8deg) rotate(3deg);     
-         -o-transform:skew(8deg) rotate(3deg); 
+    -webkit-transform:skew(8deg) rotate(3deg);
+       -moz-transform:skew(8deg) rotate(3deg);
+        -ms-transform:skew(8deg) rotate(3deg);
+         -o-transform:skew(8deg) rotate(3deg);
             transform:skew(8deg) rotate(3deg);
 }
 
@@ -727,7 +751,7 @@ img {
   width: 860px;
   margin-left: auto;
   margin-right: auto;
-  
+
 }
 
 /***** END MAIN CONTAINER *****/
@@ -740,7 +764,7 @@ img {
 .topcontainer {
   width: 100%;
   height: 150px;
-  
+
 }
 
 /***** END TOP BANNER CONTAINER *****/
@@ -751,7 +775,7 @@ img {
 
 .timelinecontainer {
   position: relative;
-  width: 100%;  
+  width: 100%;
   min-height: 600px;
   margin-top: 10px;
 }
@@ -760,7 +784,7 @@ img {
   margin-left: 50%;
   height: 99%;
   width: 3px;
-  background: #c3ccdf;  
+  background: #c3ccdf;
   position: absolute;
 }
 
@@ -774,8 +798,8 @@ img {
   margin: 0px;
   margin-top: 30px;
   list-style-type: none;
-  width:860px;    
-  
+  width:860px;
+
 }
 
 
@@ -788,9 +812,9 @@ img {
   background: #fff;
   border: 1px solid #c4cde0;
 
-  -moz-border-radius:3px; 
-  border-radius:3px; 
-  -webkit-border-radius:3px; 
+  -moz-border-radius:3px;
+  border-radius:3px;
+  -webkit-border-radius:3px;
 }
 
 .block:hover {
