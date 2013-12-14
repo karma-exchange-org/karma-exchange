@@ -185,7 +185,7 @@
                         <li ng-show="goalInfo.msg">
                             <div class="navbar-goal-pct navbar-goal-pct-{{goalInfo.barType}}"
                                     popover-placement="bottom"
-                                    popover="Karma&nbsp;Goal Completion&nbsp;%"
+                                    popover="Karma&nbsp;Goal Completion&nbsp;% for&nbsp;{{ goalInfo.goalStartDate | date:'MMM-yyyy' }}"
                                     popover-trigger="mouseenter"
                                     popover-popup-delay="250">
                                 <a href="#!/me">

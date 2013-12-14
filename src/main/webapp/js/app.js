@@ -433,9 +433,12 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
                         var event = result.data[idx];
                         // console_log("Goal tracker processing: event=%s, date=%s, status=%s",
                         //     event.title, new Date(event.startTime), event.status);
-                        totalKarmaPoints += event.karmaPoints;
-                        if (event.status == 'COMPLETED') {
-                            completedKarmaPoints += event.karmaPoints;
+                        if ((event.registrationInfo == 'ORGANIZER') ||
+                                (event.registrationInfo == 'REGISTERED') ) {
+                            totalKarmaPoints += event.karmaPoints;
+                            if (event.status == 'COMPLETED') {
+                                completedKarmaPoints += event.karmaPoints;
+                            }
                         }
                     }
 
@@ -444,18 +447,32 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
 
                     goalInfo.upcomingKarmaPoints = totalKarmaPoints - completedKarmaPoints;
                     goalInfo.completedKarmaPoints = completedKarmaPoints;
-                    goalInfo.registeredForKarmaPoints = totalKarmaPoints;
-
-                    goalInfo.upcomingKarmaHours = KexUtil.toHours(goalInfo.upcomingKarmaPoints, 1);
-                    goalInfo.completedKarmaHours = KexUtil.toHours(goalInfo.completedKarmaPoints, 1);
-                    goalInfo.registeredForKarmaHours = goalInfo.upcomingKarmaHours + goalInfo.completedKarmaHours;
 
                     this.updateKarmaGoalTarget(user, goalInfo);
                 }));
         },
 
-        updateKarmaGoalTarget: function(user, goalInfo) {
+        updateCurrentUserKarmaGoalTarget: function(upcomingPtsDelta, upcomingEventDate) {
+            this.updateKarmaGoalTarget($rootScope.me, $rootScope.goalInfo,
+                upcomingPtsDelta, upcomingEventDate);
+        },
+
+        updateKarmaGoalTarget: function(user, goalInfo, upcomingPtsDelta, upcomingEventDate) {
             var monthlyGoal = user.karmaGoal.monthlyGoal;
+
+            if (upcomingPtsDelta && upcomingEventDate) {
+                if (KexUtil.getFirstOfMonth(upcomingEventDate).getTime() ==
+                        goalInfo.goalStartDate.getTime()) {
+                    goalInfo.upcomingKarmaPoints =
+                        Math.max(0, goalInfo.upcomingKarmaPoints + upcomingPtsDelta);
+                }
+            }
+
+            goalInfo.registeredForKarmaPoints = goalInfo.upcomingKarmaPoints + goalInfo.completedKarmaPoints;
+
+            goalInfo.upcomingKarmaHours = KexUtil.toHours(goalInfo.upcomingKarmaPoints, 1);
+            goalInfo.completedKarmaHours = KexUtil.toHours(goalInfo.completedKarmaPoints, 1);
+            goalInfo.registeredForKarmaHours = goalInfo.upcomingKarmaHours + goalInfo.completedKarmaHours;
 
             var totalPct = 0;
             var completedPct = capPercentage((goalInfo.completedKarmaPoints * 100) / monthlyGoal, totalPct);
@@ -630,8 +647,28 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
     };
 });
 
-kexApp.factory('EventUtil', function($q, User, Events, KexUtil, FbUtil) {
+kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUtil, KarmaGoalUtil) {
     return {
+        postRegistrationTasks: function(event, participantType) {
+            this._postRegistrationTasks(event, participantType, true);
+        },
+
+        postUnRegistrationTasks: function(event, participantType) {
+            this._postRegistrationTasks(event, participantType, false);
+        },
+
+        _postRegistrationTasks: function(event, participantType, isRegisterAction) {
+            // Organizers don't go through this flow.
+            if (participantType == 'REGISTERED') {
+                KarmaGoalUtil.updateCurrentUserKarmaGoalTarget(
+                    isRegisterAction ? event.karmaPoints : -event.karmaPoints,
+                    new Date(event.startTime));
+                if (isRegisterAction) {
+                    $rootScope.openShareEventModal(event, "Thank you for volunteering!");
+                }
+            }
+        },
+
         canWriteReview: function (event) {
             // The registration info is computed with respect to the current user's
             // key. Also, organizers can not write reviews.
@@ -1195,7 +1232,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         });
 
         modalInstance.result.then(function() {
-            KarmaGoalUtil.updateKarmaGoalTarget($rootScope.me, $rootScope.goalInfo);
+            KarmaGoalUtil.updateCurrentUserKarmaGoalTarget();
         });
     }
 
@@ -1496,7 +1533,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
         $modalInstance.close();
     };
 }
-var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
+var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil, EventUtil) {
     $scope.KexUtil = KexUtil;
     $scope.modelOpen = false;
     angular.extend( $scope, {
@@ -1577,9 +1614,8 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil ) {
             },
             null,
             function() {
-                $rootScope.openShareEventModal($scope.modelEvent,
-                    "Thank you for volunteering!");
-                //alert and close
+                EventUtil.postRegistrationTasks($scope.modelEvent, type);
+
                 $scope.modelEvent.registrationInfo = type;
                 $scope.events.data[$scope.modelIndex].registrationInfo = type;
                 if (type === 'REGISTERED') {
@@ -1979,6 +2015,8 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                 registerCtlr: 'participants'
             },
             function() {
+                EventUtil.postUnRegistrationTasks(
+                    $scope.event, $scope.event.registrationInfo);
                 refreshEvent();
             });
     }
@@ -1993,8 +2031,8 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             },
             null,
             function() {
-                $rootScope.openShareEventModal($scope.event,
-                    "Thank you for volunteering!");
+                EventUtil.postRegistrationTasks(
+                    $scope.event, type);
                 refreshEvent();
             });
     };
