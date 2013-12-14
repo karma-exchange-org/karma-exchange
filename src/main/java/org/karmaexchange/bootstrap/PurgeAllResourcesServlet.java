@@ -49,6 +49,7 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     Iterable<Key<Leaderboard>> leaderboardKeys =
         ofy().load().type(Leaderboard.class).keys().iterable();
     Iterable<Key<Waiver>> waiverKeys = ofy().load().type(Waiver.class).keys().iterable();
+    // Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     ofy().delete().keys(eventKeys);
     ofy().delete().keys(userKeys);
@@ -57,6 +58,7 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     ofy().delete().keys(reviewKeys);
     ofy().delete().keys(leaderboardKeys);
     ofy().delete().keys(waiverKeys);
+    // Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     statusWriter.println("Deleted all resources.");
   }

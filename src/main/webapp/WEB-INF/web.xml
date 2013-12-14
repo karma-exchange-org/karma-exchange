@@ -173,6 +173,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
             <url-pattern>/local_test/*</url-pattern>
             <url-pattern>/mapreduce/*</url-pattern>
             <url-pattern>/task/*</url-pattern>
+            <url-pattern>/api/admin/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>admin</role-name>

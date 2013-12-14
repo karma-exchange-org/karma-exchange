@@ -163,6 +163,12 @@ public final class User extends NameBaseDao<User> {
   }
 
   @Override
+  protected void postProcessInsert() {
+    super.postProcessInsert();
+    UserUsage.trackUsage(this);
+  }
+
+  @Override
   protected void processUpdate(User oldUser) {
     super.processUpdate(oldUser);
     // Some fields can not be manipulated by updating the user.
@@ -177,6 +183,14 @@ public final class User extends NameBaseDao<User> {
     organizationMemberships = oldUser.organizationMemberships;
 
     validateUser();
+
+    UserUsage.trackUsage(this);
+  }
+
+  @Override
+  protected void processPartialUpdate() {
+    super.processPartialUpdate();
+    UserUsage.trackUsage(this);
   }
 
   @Override

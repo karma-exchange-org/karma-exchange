@@ -110,10 +110,11 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   }
 
   final void partialUpdate() {
-    processPartialUpdate(null);
     // Partial updates have task-specific permission rules vs. per object type permission rules.
     // But all mutations require either a logged in user or an admin user.
     validateLoginStatusForMutation();
+
+    processPartialUpdate();
     ofy().save().entity(this).now();
   }
 
@@ -153,10 +154,14 @@ public abstract class BaseDao<T extends BaseDao<T>> {
           getKey(), prevObj.getKey()),
         ErrorInfo.Type.BAD_REQUEST);
     }
-    processPartialUpdate(prevObj);
+    updateModificationInfo(prevObj);
   }
 
-  final void processPartialUpdate(T prevObj) {
+  protected void processPartialUpdate() {
+    updateModificationInfo(null);
+  }
+
+  private final void updateModificationInfo(@Nullable T prevObj) {
     if (getModificationInfo() == null) {
       // Handle objects that were created without modification info.
       if ((prevObj == null) || (prevObj.getModificationInfo() == null)) {
