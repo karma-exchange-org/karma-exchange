@@ -199,7 +199,11 @@ kexApp = angular.module( "kexApp",
 
     };
 })
-.run( function( $rootScope, Me, $location, FbUtil, $modal) {
+
+// Force service instantiation to handle angular lazy instantation for the
+// following services:
+//   - MeUtil
+.run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil) {
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
             $rootScope.alerts = [ ];
@@ -357,7 +361,8 @@ kexApp.factory('KexUtil', function($rootScope) {
 });
 
 kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil) {
-    return {
+
+    var MeUtil = {
         // Get the promise corresponding to me
         me: function() {
             this._meSetupPromise();
@@ -395,7 +400,7 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil) {
 
         clearMe: function() {
             this._mePromiseRecycle();
-            $rootScope.meDef.promise.reject();
+            $rootScope.meDef.reject();
             $rootScope.me = undefined;
             $rootScope.isOrganizer = false;
             $rootScope.goalInfo = {};
@@ -414,7 +419,17 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil) {
             }
             $rootScope.mePromiseResolved = true;
         },
-    }
+    };
+
+    $rootScope.$on("fbUtil.userChanged", function (event, status) {
+        if ( status === 'connected' ) {
+            MeUtil.updateMe();
+        } else {
+            MeUtil.clearMe();
+        }
+    });
+
+    return MeUtil;
 });
 
 
@@ -528,9 +543,13 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
 
 kexApp.factory('ApiCache', function($rootScope) {
     var cache = {};
+    var firstUserChange = true;
 
     $rootScope.$on( "fbUtil.userChanged", function (event) {
-        cache = {};
+        if (!firstUserChange) {
+            cache = {};
+        }
+        firstUserChange = false;
     });
 
     return {
@@ -554,12 +573,13 @@ kexApp.factory('ApiCache', function($rootScope) {
     };
 });
 
-kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
-        $window, ApiCache, MeUtil) {
+kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
+        $window, ApiCache, $q) {
     var fbAccessToken;
     var firstAuthResponse = true;
+    var afterFirstAuth = $q.defer();
 
-    $rootScope.$on( "fb.auth.authResponseChange", function( event, response ) {
+    $rootScope.$on("fb.auth.authResponseChange", function( event, response ) {
         if ( response.status === 'connected' ) {
             setCookies(response.authResponse);
 
@@ -568,26 +588,29 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
             fbAccessToken = response.authResponse.accessToken;
 
             if ( updateUser ) {
-                MeUtil.updateMe();
-                processUserChange();
+                processUserChange(response.status);
             }
         } else {
             removeCookies();
+            var userLoggedOut = false;
             if ( $rootScope.fbUserId ) {
+                userLoggedOut = true;
                 $rootScope.fbUserId = undefined;
                 fbAccessToken = undefined;
-                MeUtil.clearMe();
-                processUserChange();
             }
+            if ( userLoggedOut || firstAuthResponse ) {
+                processUserChange(response.status);
+            }
+        }
+        if (firstAuthResponse) {
+            afterFirstAuth.resolve();
         }
         firstAuthResponse = false;
     } );
-    function processUserChange() {
-        if (!firstAuthResponse) {
-            // Fired if the user changes after the first FB.init() invocation.
-            $rootScope.$broadcast("fbUtil.userChanged");
-        }
-        if (!$rootScope.$$phase) $rootScope.$apply();
+    function processUserChange(status) {
+        // Fired first time user information is available (post FB.init) and any
+        // subsequent time that it changes.
+        $rootScope.$broadcast("fbUtil.userChanged", status);
     }
 
     function setCookies(authResponse) {
@@ -608,10 +631,6 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
 
         getImageUrl: function (id, type) {
             return angular.isDefined(id) ? ("//graph.facebook.com/" + id + "/picture?type=" + type) : undefined;
-        },
-
-        getAccessToken: function () {
-            return fbAccessToken;
         },
 
         login: function () {
@@ -643,7 +662,12 @@ kexApp.factory('FbUtil', function($rootScope, KexUtil, $facebook, Me, $location,
 
             ApiCache.update(cacheKey, promise);
             return promise;
+        },
+
+        afterFirstAuth: function () {
+            return afterFirstAuth.promise;
         }
+
     };
 });
 
@@ -1604,7 +1628,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil, Event
         } );
     };
     $scope.register = function(type) {
-        var eventId = this.modelEvent.key;
+        var eventId = $scope.modelEvent.key;
         $scope.modelIndex = this.$index;
         Events.save(
             {
