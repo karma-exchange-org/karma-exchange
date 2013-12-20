@@ -14,22 +14,24 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import org.apache.commons.lang3.time.DateUtils;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AlbumRef;
+import org.karmaexchange.dao.Badge;
 import org.karmaexchange.dao.BadgeSummary;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.BadgeSummary.Icon;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.UpsertParticipantTxn;
@@ -51,6 +53,8 @@ import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Waiver;
 import org.karmaexchange.provider.FacebookSocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.task.ComputeLeaderboardServlet;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
@@ -58,7 +62,9 @@ import org.karmaexchange.util.AdminUtil.AdminSubtask;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.VoidWork;
 
 public class TestResourcesBootstrapTask extends BootstrapTask {
 
@@ -67,60 +73,26 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   private final String baseUrl;
   private final ServletContext servletCtx;
 
-  private static final Badge BGCSF_GOLD_BADGE = new Badge("BGCSF", "mentor for a year",
-      "/img/badges/badge_gold.png");
-  private static final Badge BGCSF_BRONZE_BADGE = new Badge("BGCSF", "event volunteer",
-      "/img/badges/badge_bronze.png");
-
-  @Data
-  private static class Badge {
-    private final String orgName;
-    private final String description;
-    private final Icon icon;
-
-    public Badge(String orgName, String description, String iconUrl) {
-      this.orgName = orgName;
-      this.description = description;
-      Icon icon = new Icon();
-      icon.setUrl(iconUrl);
-      this.icon = icon;
-    }
-  }
-
   public enum TestUser {
     USER1("100006074376957", "Susan", "Liangberg", null,
-      ImmutableList.<BadgeSummary>of(),
       Long.valueOf(6 * 60)),
-    USER2("100006058506752", "John", "Occhinostein", "john.ocho@KidsClub.org",
-      ImmutableList.<BadgeSummary>of(createBadgeSummary(7, BGCSF_BRONZE_BADGE))),
-    USER3("100006051787601", "Rick", "Narayananson", "rick.narayananson@kidsclub.org",
-      ImmutableList.<BadgeSummary>of(createBadgeSummary(8, BGCSF_BRONZE_BADGE))),
+    USER2("100006058506752", "John", "Occhinostein", "john.ocho@KidsClub.org"),
+    USER3("100006051787601", "Rick", "Narayananson", "rick.narayananson@kidsclub.org"),
     USER4("100006076592978", "Joe", "Warmanescu"),
     USER5("100006052237443", "Joe", "Narayananwitz"),
     USER6("100006093303024", "Ruth", "Carrierostein"),
     USER7("100006045731576", "Mary", "Greenestein"),
     USER8("100006080162988", "Richard", "Dinglewitz"),
-    USER9("100006054577389", "Dick", "McDonaldberg", "dick@fakekidsclub.org",
-      ImmutableList.<BadgeSummary>of(createBadgeSummary(9, BGCSF_BRONZE_BADGE))),
+    USER9("100006054577389", "Dick", "McDonaldberg", "dick@fakekidsclub.org"),
     USER10("100006053377578", "Linda", "Laverdetberg"),
-    USER11("100006084302920", "Carol", "Wisemanwitz", "carol@kidsclub.org",
-      ImmutableList.<BadgeSummary>of(createBadgeSummary(10, BGCSF_BRONZE_BADGE))),
+    USER11("100006084302920", "Carol", "Wisemanwitz", "carol@kidsclub.org"),
     USER12("100006069696646", "Donna", "Zuckerson"),
     USER13("100006083973038", "Harry", "Occhinoman"),
     AMIR("1111368160", "Amir", "Valiani", null,
-      ImmutableList.<BadgeSummary>of(
-        createBadgeSummary(1, BGCSF_GOLD_BADGE),
-        createBadgeSummary(3, BGCSF_BRONZE_BADGE)),
       Long.valueOf(8 * 60)),
     HARISH("537854733", "Harish", "Balijepalli", null,
-      ImmutableList.<BadgeSummary>of(
-        createBadgeSummary(1, BGCSF_GOLD_BADGE),
-        createBadgeSummary(3, BGCSF_BRONZE_BADGE)),
       Long.valueOf(4 * 60)),
     POONUM("3205292", "Poonum", "Kaberwal", null,
-      ImmutableList.<BadgeSummary>of(
-        createBadgeSummary(1, BGCSF_GOLD_BADGE),
-        createBadgeSummary(3, BGCSF_BRONZE_BADGE)),
       Long.valueOf(4 * 60));
 
     private final String fbId;
@@ -132,26 +104,22 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     @Nullable
     private final String email;
     @Getter
-    private final List<BadgeSummary> badges;
-    @Getter
     private final Long monthlyKarmaPtsGoal;
 
     private TestUser(String fbId, String firstName, String lastName) {
-      this(fbId, firstName, lastName, null, ImmutableList.<BadgeSummary>of());
+      this(fbId, firstName, lastName, null);
+    }
+
+    private TestUser(String fbId, String firstName, String lastName, @Nullable String email) {
+      this(fbId, firstName, lastName, email, null);
     }
 
     private TestUser(String fbId, String firstName, String lastName, @Nullable String email,
-        List<BadgeSummary> badges) {
-      this(fbId, firstName, lastName, email, badges, null);
-    }
-
-    private TestUser(String fbId, String firstName, String lastName, @Nullable String email,
-        List<BadgeSummary> badges, Long monthlyKarmaPtsGoal) {
+        Long monthlyKarmaPtsGoal) {
       this.fbId = fbId;
       this.firstName = firstName;
       this.lastName = lastName;
       this.email = email;
-      this.badges = badges;
       this.monthlyKarmaPtsGoal = monthlyKarmaPtsGoal;
     }
 
@@ -170,7 +138,6 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       if (email != null) {
         user.getRegisteredEmails().add(new RegisteredEmail(email, true));
       }
-      user.setBadges(badges);
       if (monthlyKarmaPtsGoal != null) {
         KarmaGoal goal = new KarmaGoal();
         user.setKarmaGoal(goal);
@@ -186,15 +153,6 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     public SocialNetworkProviderType getSocialNetworkProviderType() {
       return SocialNetworkProviderType.FACEBOOK;
-    }
-
-    private static BadgeSummary createBadgeSummary(int count, Badge badge) {
-      BadgeSummary badgeSummary = new BadgeSummary();
-      badgeSummary.setCount(count);
-      badgeSummary.setOrgName(badge.orgName);
-      badgeSummary.setDescription(badge.description);
-      badgeSummary.setIcon(badge.icon);
-      return badgeSummary;
     }
   }
 
@@ -370,6 +328,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       pendingReview.persistReview();
     }
 
+    statusWriter.println("About to award badges...");
+    awardBadges(createEventsResult.getEvents());
+
     statusWriter.println("About to update organization leaderboards...");
     String leaderboardJobId = ComputeLeaderboardServlet.startComputeLeaderboardMapReduce();
     statusWriter.println("Leaderboard update initiated. View status at: " +
@@ -507,7 +468,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
-      USER11.getKey(), USER12.getKey(), USER13.getKey(), AMIR.getKey());
+      USER11.getKey(), USER12.getKey(), AMIR.getKey());
     waitListedUsers = asList(USER3.getKey());
     event = createEvent("Youth Soccer Clinic", BGCSF_TENDERLOIN, soccerField,
       computeEventDate(now, -2, 4), 1,
@@ -747,5 +708,64 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       throw new RuntimeException(e);
     }
     return org;
+  }
+
+  private void awardBadges(Collection<Event> events) {
+    // TODO(avaliani): when organization badges are awarded Badge -> BadgeSummary will not
+    // be a sufficient mapping.
+    Map<Key<User>, Map<Badge, BadgeSummary>> badgesToAward = Maps.newHashMap();
+
+    List<Key<Event>> pastEventKeys = Lists.newArrayList();
+    Date now = new Date();
+    for (Event initialEvent : events) {
+      if (initialEvent.getStartTime().before(now)) {
+        pastEventKeys.add(Key.create(initialEvent));
+      }
+    }
+
+    Map<Key<Event>, Event> upToDateEvents = ofy().load().keys(pastEventKeys);
+    for (Event upToDateEvent : upToDateEvents.values()) {
+      for (EventParticipant participant : upToDateEvent.getParticipants()) {
+
+        // Award Padawan badges if the a user has attended at least one event.
+        if ((participant.getType() == ParticipantType.ORGANIZER) ||
+            (participant.getType() == ParticipantType.REGISTERED) ) {
+          Key<User> userKey =
+              Key.<User>create(participant.getUser().getKey());
+          Map<Badge, BadgeSummary> userBadges =
+              badgesToAward.get(userKey);
+          if (userBadges == null) {
+            userBadges = Maps.newHashMap();
+            badgesToAward.put(userKey, userBadges);
+          }
+          if (!userBadges.containsKey(Badge.KARMA_PADAWAN)) {
+            userBadges.put(Badge.KARMA_PADAWAN,
+              new BadgeSummary(1, Badge.KARMA_PADAWAN, null, now));
+          }
+        }
+
+      }
+    }
+
+    for (Map.Entry<Key<User>, Map<Badge, BadgeSummary>> entry : badgesToAward.entrySet()) {
+      ofy().transact(new UpdateBadgesTxn(
+        entry.getKey(), entry.getValue().values()));
+    }
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  public static class UpdateBadgesTxn extends VoidWork {
+    private final Key<User> userToUpdateKey;
+    private final Collection<BadgeSummary> badges;
+
+    public void vrun() {
+      User user = ofy().load().key(userToUpdateKey).now();
+      if (user == null) {
+        throw ErrorResponseMsg.createException("user not found", ErrorInfo.Type.BAD_REQUEST);
+      }
+      user.setBadges(Lists.newArrayList(badges));
+      BaseDao.partialUpdate(user);
+    }
   }
 }
