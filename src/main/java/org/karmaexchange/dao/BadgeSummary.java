@@ -1,21 +1,25 @@
 package org.karmaexchange.dao;
 
+import java.util.Date;
+
+import javax.annotation.Nullable;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import com.googlecode.objectify.annotation.Embed;
 
-// TODO(avaliani): cleanup post demo.
 @Data
 @Embed
+@NoArgsConstructor
+@AllArgsConstructor
 public class BadgeSummary {
   private int count;
-  private String orgName;
-  private String description;
-  private Icon icon;
 
-  @Data
-  @Embed
-  public static class Icon {
-    String url;
-  }
+  private Badge badge;
+  @Nullable
+  private OrgPageInfoKeyWrapper org;
+
+  private Date awardedOn;
 }

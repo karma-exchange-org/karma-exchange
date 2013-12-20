@@ -82,11 +82,35 @@
                     </div>
                 </div>
 
+                <div class="panel panel-default panel-seperated-vertical" ng-show="(me.badges.length != 0) || {ALL:true}[me.permission]">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Awards
+                        </h3>
+
+                    </div>
+                    <div class="panel-body panel-light-gray text-center" ng-show="(me.badges.length == 0) && {ALL:true}[me.permission]">
+                        <!-- TODO(avaliani): add link to the awards page -->
+                        <em>Take a look at the spectacular awards you can earn on the awards page!</em>
+                    </div>
+
+                    <div class="panel-body panel-body-no-vertical-padding" ng-show="(me.badges.length != 0)">
+                        <div class="well well-sm panel-seperated-vertical" ng-repeat="badgeInfo in me.badges">
+
+                            <div>
+                                {{badges[badgeInfo.badge].label}}
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
             </div>
 
+            <div class="col-md-6">
 
-            <div class="col-md-6" ng-show="me.about || {ALL:true}[me.permission]">
-                <div class="panel panel-default panel-seperated-vertical">
+                <div class="panel panel-default panel-seperated-vertical" ng-show="me.about || {ALL:true}[me.permission]">
                     <div class="panel-heading">
                         <h3 class="panel-title">
                             Introduction
@@ -131,10 +155,8 @@
                         </ng-switch>
                     </div>
                 </div>
-            </div>
 
-            <div class="col-md-6" ng-show="orgs.data.length">
-                <div class="panel panel-default panel-seperated-vertical">
+                <div class="panel panel-default panel-seperated-vertical" ng-show="orgs.data.length">
                     <div class="panel-heading">
                         <h3 class="panel-title">
                             I am an organizer for
@@ -168,6 +190,7 @@
 
                     </div>
                 </div>
+
             </div>
 
         </div>

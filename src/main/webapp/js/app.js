@@ -203,7 +203,7 @@ kexApp = angular.module( "kexApp",
 // Force service instantiation to handle angular lazy instantation for the
 // following services:
 //   - MeUtil
-.run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil) {
+.run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http ) {
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
             $rootScope.alerts = [ ];
@@ -273,6 +273,22 @@ kexApp = angular.module( "kexApp",
         }, options );
 
     };
+
+    function loadBadges() {
+        var deferred=$q.defer();
+
+        $http.get('/generated/badges.json').success(function(data) {
+            var badges = {};
+            angular.forEach(data, function(badge) {
+              this[badge.name] = badge;
+            }, badges);
+            deferred.resolve(badges);
+        });
+
+        $rootScope.badges = deferred.promise;
+    }
+
+    loadBadges();
 
     ( function( d ) {
             var js, id = 'facebook-jssdk', ref = d.getElementsByTagName( 'script' )[ 0 ];
