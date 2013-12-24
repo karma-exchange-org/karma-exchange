@@ -9,6 +9,7 @@ import static org.karmaexchange.util.OfyService.ofy;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
@@ -538,7 +539,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     registeredUsers = asList(USER2.getKey(), USER5.getKey(), HARISH.getKey(), POONUM.getKey());
     waitListedUsers = asList();
     event = createEvent("San Jose Street Cleanup", UNITED_WAY, unitedWayParkmoorOffice,
-      computeEventDate(now, -37, 0), 1, organizers, registeredUsers, waitListedUsers, 100,
+      computeEventDate(now, -61, 0), 1, organizers, registeredUsers, waitListedUsers, 100,
       "502906759789422");
     events.add(event);
     eventNoShowInfo.add(new EventNoShowInfo(event,
@@ -740,11 +741,27 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
           }
           if (!userBadges.containsKey(Badge.KARMA_PADAWAN)) {
             userBadges.put(Badge.KARMA_PADAWAN,
-              new BadgeSummary(1, Badge.KARMA_PADAWAN, null, now));
+              new BadgeSummary(1, Badge.KARMA_PADAWAN, null));
           }
         }
 
       }
+    }
+
+    // For now award the monthly zen recipient badge to a fixed set of users - history
+    // independent. To do this accurately we would need to know the per month karma goal
+    // per user.
+    List<Key<User>> monthlyZenRecipients = Arrays.asList(
+      AMIR.getKey(), HARISH.getKey(), POONUM.getKey(), USER1.getKey());
+    for (Key<User> monthlyZenRecipient : monthlyZenRecipients) {
+      Map<Badge, BadgeSummary> userBadges =
+          badgesToAward.get(monthlyZenRecipient);
+      if (userBadges == null) {
+        userBadges = Maps.newHashMap();
+        badgesToAward.put(monthlyZenRecipient, userBadges);
+      }
+      userBadges.put(Badge.MONTHLY_ZEN,
+        new BadgeSummary(2, Badge.MONTHLY_ZEN, null));
     }
 
     for (Map.Entry<Key<User>, Map<Badge, BadgeSummary>> entry : badgesToAward.entrySet()) {

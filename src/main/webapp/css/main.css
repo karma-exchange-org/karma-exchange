@@ -132,6 +132,10 @@ text-align:center;
   text-transform: uppercase;
 }
 
+.text-small {
+  font-size: 85%; /* equal to small tag without color change */
+}
+
 .progress {
   position: relative;
   margin-bottom: 0;
@@ -656,6 +660,47 @@ table>tbody>tr>.leaderboard-leader-col {
 .navbar-goal-pct a {
   color: black;
   text-decoration: none;
+}
+
+/*
+ * Badges
+ */
+
+.karma-badge {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 15px;
+  padding-right: 15px;
+
+  font-size: 85%; /* equal to small tag without color change */
+  text-transform: uppercase;
+  text-align: center;
+
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  border-bottom-left-radius: 20px;
+  border: 2px solid rgb(0, 0, 0);
+  background-color: #F0F0F0;
+  overflow: hidden;
+  behavior: url(/css/PIE.htc);
+}
+
+.karma-badge-summary-badge {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.karma-badge-summary-x {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.karma-badge-summary-count {
+  display: table-cell;
+  vertical-align: middle;
 }
 
 /*==================================================

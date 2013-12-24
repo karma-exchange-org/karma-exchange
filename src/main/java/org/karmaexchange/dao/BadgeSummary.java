@@ -1,7 +1,5 @@
 package org.karmaexchange.dao;
 
-import java.util.Date;
-
 import javax.annotation.Nullable;
 
 import lombok.AllArgsConstructor;
@@ -21,5 +19,8 @@ public class BadgeSummary {
   @Nullable
   private OrgPageInfoKeyWrapper org;
 
-  private Date awardedOn;
+  // TODO(avaliani): awarded on has historical information. When we do automatic badge assignment
+  // we will need to store the history somewhere. Therefore once we map that out we can
+  // decide whether or not to store awarded on within the badge summary.
+  //  private List<Date> awardedOn;
 }

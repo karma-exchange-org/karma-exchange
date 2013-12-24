@@ -95,10 +95,12 @@
                     </div>
 
                     <div class="panel-body panel-body-no-vertical-padding" ng-show="(me.badges.length != 0)">
-                        <div class="well well-sm panel-seperated-vertical" ng-repeat="badgeInfo in me.badges">
+                        <div class="row">
 
-                            <div>
-                                {{badges[badgeInfo.badge].label}}
+                            <div class="col-md-6 panel-seperated-vertical" ng-repeat="badgeSummary in me.badges">
+
+                                <karma-badge-summary badge-summary="badgeSummary"></karma-badge-summary>
+
                             </div>
 
                         </div>
