@@ -658,6 +658,10 @@ table>tbody>tr>.leaderboard-leader-col {
   text-decoration: none;
 }
 
+.alert-float {
+  position : fixed;
+  z-index : 1;
+}
 /*==================================================
  * Angular-ui
  * ===============================================*/
