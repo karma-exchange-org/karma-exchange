@@ -1161,12 +1161,8 @@ kexApp.directive('goalTrackingBar', function(KarmaGoalUtil) {
         replace: true,
         transclude: false,
         link: function (scope, element, attrs) {
-            scope.$watch('pctCompleted', function() {
-                updateBarType();
-            });
-            scope.$watch('pctPending', function() {
-                updateBarType();
-            });
+            scope.$watch('pctCompleted', updateBarType);
+            scope.$watch('pctPending', updateBarType);
 
             function updateBarType() {
                 if (angular.isDefined(scope.pctCompleted) &&
@@ -1178,6 +1174,61 @@ kexApp.directive('goalTrackingBar', function(KarmaGoalUtil) {
             }
         },
         templateUrl: 'template/kex/goal-tracking-bar.html'
+    }
+});
+
+
+kexApp.directive('karmaBadge', function($rootScope) {
+    return {
+        restrict: 'E',
+        scope: {
+            badge: '=',
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            $rootScope.badges.then( function (badges) {
+                scope.$watch('badge', function() {
+                    if (angular.isDefined(scope.badge)) {
+                        var badge = badges[scope.badge];
+                        setBadgeText(badge);
+                    }
+
+                    function setBadgeText(badge) {
+                        var label = badge.label;
+                        var firstSpaceBefHalfLength = undefined;
+                        for (var idx = 0; idx < label.length; idx++) {
+                            if ( (label.charAt(idx) === ' ') &&
+                                 ( (firstSpaceBefHalfLength === undefined) ||
+                                   (idx < Math.floor(label.length / 2)) ) ) {
+                                firstSpaceBefHalfLength = idx;
+                            }
+                        }
+
+                        if (firstSpaceBefHalfLength === undefined) {
+                            scope.line1 = label;
+                            scope.line2 = undefined;
+                        } else {
+                            scope.line1 = label.substring(0, firstSpaceBefHalfLength);
+                            scope.line2 = label.substring(firstSpaceBefHalfLength + 1);
+                        }
+                    }
+                });
+            });
+        },
+        templateUrl: 'template/kex/karma-badge.html'
+    }
+});
+
+kexApp.directive('karmaBadgeSummary', function($rootScope) {
+    return {
+        restrict: 'E',
+        scope: {
+            badgeSummary: '=',
+        },
+        replace: true,
+        transclude: false,
+        templateUrl: 'template/kex/karma-badge-summary.html'
     }
 });
 
