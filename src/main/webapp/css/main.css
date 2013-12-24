@@ -345,6 +345,11 @@ img.kex-thumbnail-user-mini {
   margin-bottom: 0;
 }
 
+.alert-float {
+  position : fixed;
+  z-index : 1;
+}
+
 .well-no-margin {
   margin-bottom: 0;
 }
