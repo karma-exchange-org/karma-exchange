@@ -136,6 +136,10 @@ text-align:center;
   font-size: 85%; /* equal to small tag without color change */
 }
 
+table>tbody>tr>td.table-cell-align-middle {
+  vertical-align: middle;
+}
+
 .progress {
   position: relative;
   margin-bottom: 0;
@@ -351,6 +355,10 @@ img.kex-thumbnail-user-mini {
 }
 
 .well-no-margin {
+  margin-bottom: 0;
+}
+
+.table-no-margin {
   margin-bottom: 0;
 }
 
@@ -671,24 +679,15 @@ table>tbody>tr>.leaderboard-leader-col {
  * Badges
  */
 
-.karma-badge {
-  display: table-cell;
-  vertical-align: middle;
-  padding-left: 15px;
-  padding-right: 15px;
+.karma-badge-summary-div {
+  display: inline-block;
+  vertical-align: top;
+  padding: 10px;
+}
 
-  font-size: 85%; /* equal to small tag without color change */
-  text-transform: uppercase;
-  text-align: center;
-
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
-  border-bottom-left-radius: 20px;
-  border: 2px solid rgb(0, 0, 0);
-  background-color: #F0F0F0;
-  overflow: hidden;
-  behavior: url(/css/PIE.htc);
+img.karma-badge-icon {
+  height: 50px;
+  width: 50px;
 }
 
 .karma-badge-summary-badge {
@@ -699,13 +698,33 @@ table>tbody>tr>.leaderboard-leader-col {
 .karma-badge-summary-x {
   display: table-cell;
   vertical-align: middle;
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 5px;
+  padding-right: 5px;
 }
 
 .karma-badge-summary-count {
   display: table-cell;
   vertical-align: middle;
+}
+
+.karma-awards-list-icon {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.karma-awards-list-icon-label {
+  display: table-cell;
+  vertical-align: middle;
+
+  padding-left: 10px;
+  font-size: 85%; /* equal to small tag without color change */
+  font-style: italic;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.karma-awards-list-icon-col {
+  width: 180px;
 }
 
 /*==================================================
