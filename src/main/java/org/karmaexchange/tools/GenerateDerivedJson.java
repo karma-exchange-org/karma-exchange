@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.codehaus.jackson.map.ObjectMapper;
 import org.karmaexchange.dao.Badge;
+import org.karmaexchange.dao.Badge.Icon;
 import org.karmaexchange.dao.CauseType;
 
 import com.google.common.collect.Lists;
@@ -114,6 +115,7 @@ public class GenerateDerivedJson {
     private final Badge.Type type;
     private final boolean multipleAwardsAllowed;
     private final String description;
+    private final Icon icon;
 
     public PersistedBadge(Badge badge) {
       this.name = badge.name();
@@ -121,6 +123,7 @@ public class GenerateDerivedJson {
       this.type = badge.getType();
       this.multipleAwardsAllowed = badge.isMultipleAwardsAllowed();
       this.description = badge.getDescription();
+      this.icon = badge.getIcon();
     }
   }
 }

@@ -80,6 +80,7 @@ kexApp = angular.module( "kexApp",
         // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         .when( '/me', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
         .when( '/about', { templateUrl : 'partials/about.html', reloadOnSearch: false } )
+        .when( '/awards', { templateUrl : 'partials/awards.html', reloadOnSearch: false } )
         .when( '/contact', { templateUrl : 'partials/contact.html', reloadOnSearch: false } )
         .when( '/user/:userId', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
         .when( '/mysettings', { controller : meEditCtrl, templateUrl : 'partials/mysettings.html', reloadOnSearch: false } )
@@ -275,17 +276,42 @@ kexApp = angular.module( "kexApp",
     };
 
     function loadBadges() {
-        var deferred=$q.defer();
+        var badgesDef = $q.defer();
+        var badgesListDef = $q.defer();
 
         $http.get('/generated/badges.json').success(function(data) {
-            var badges = {};
+            var ctx = { badgesMap: {}, badgesList: [] };
             angular.forEach(data, function(badge) {
-              this[badge.name] = badge;
-            }, badges);
-            deferred.resolve(badges);
+                splitBadgeLabel(badge);
+                this.badgesMap[badge.name] = badge;
+                this.badgesList.push(badge);
+            }, ctx);
+            badgesDef.resolve(ctx.badgesMap);
+            badgesListDef.resolve(ctx.badgesList);
         });
 
-        $rootScope.badges = deferred.promise;
+        function splitBadgeLabel(badge) {
+            var label = badge.label;
+            var firstSpaceBefHalfLength = undefined;
+            for (var idx = 0; idx < label.length; idx++) {
+                if ( (label.charAt(idx) === ' ') &&
+                     ( (firstSpaceBefHalfLength === undefined) ||
+                       (idx < Math.floor(label.length / 2)) ) ) {
+                    firstSpaceBefHalfLength = idx;
+                }
+            }
+
+            if (firstSpaceBefHalfLength === undefined) {
+                badge.labelLine1 = label;
+                badge.labelLine2 = undefined;
+            } else {
+                badge.labelLine1 = label.substring(0, firstSpaceBefHalfLength);
+                badge.labelLine2 = label.substring(firstSpaceBefHalfLength + 1);
+            }
+        }
+
+        $rootScope.badges = badgesDef.promise;
+        $rootScope.badgesList = badgesListDef.promise;
     }
 
     loadBadges();
@@ -1191,27 +1217,8 @@ kexApp.directive('karmaBadge', function($rootScope) {
                 scope.$watch('badge', function() {
                     if (angular.isDefined(scope.badge)) {
                         var badge = badges[scope.badge];
-                        setBadgeText(badge);
-                    }
-
-                    function setBadgeText(badge) {
-                        var label = badge.label;
-                        var firstSpaceBefHalfLength = undefined;
-                        for (var idx = 0; idx < label.length; idx++) {
-                            if ( (label.charAt(idx) === ' ') &&
-                                 ( (firstSpaceBefHalfLength === undefined) ||
-                                   (idx < Math.floor(label.length / 2)) ) ) {
-                                firstSpaceBefHalfLength = idx;
-                            }
-                        }
-
-                        if (firstSpaceBefHalfLength === undefined) {
-                            scope.line1 = label;
-                            scope.line2 = undefined;
-                        } else {
-                            scope.line1 = label.substring(0, firstSpaceBefHalfLength);
-                            scope.line2 = label.substring(firstSpaceBefHalfLength + 1);
-                        }
+                        scope.iconUrl = badge.icon.url;
+                        scope.label = badge.label;
                     }
                 });
             });

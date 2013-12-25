@@ -1,0 +1,61 @@
+<div class="container">
+
+      <div class="row">
+
+        <div class="col-lg-12">
+          <h1>Karma Awards</h1>
+
+        </div>
+
+      </div><!-- /.row -->
+
+
+      <div class="row">
+
+        <div class="col-md-8">
+
+          <div class="panel panel-default panel-seperated-vertical">
+              <div class="panel-body panel-light-gray">
+
+                <table class="table table-no-margin">
+                    <thead>
+                        <tr>
+                            <th>Award</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="badge in badgesList">
+
+                            <td class="karma-awards-list-icon-col">
+
+                              <div class="karma-awards-list-icon">
+                                <img ng-src="{{badge.icon.url}}" class="karma-badge-icon">
+                              </div>
+                              <div class="karma-awards-list-icon-label">
+                                  <div>
+                                      {{ badge.labelLine1 }}
+                                  </div>
+                                  <div ng-show="badge.labelLine2">
+                                      {{ badge.labelLine2 }}
+                                  </div>
+                              </div>
+
+                            </td>
+
+                            <td class="table-cell-align-middle">
+                              {{ badge.description }}
+                              <span ng-show="badge.multipleAwardsAllowed">This award can be earned multiple times.</span>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+              </div>
+
+          </div>
+
+        </div>
+
+      </div><!-- /.row -->
+</div>
