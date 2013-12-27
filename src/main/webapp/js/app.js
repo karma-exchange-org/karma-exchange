@@ -1153,24 +1153,19 @@ kexApp.directive('loginClick', function ($facebook,$rootScope) {
     return {
         terminal: true,
         link: function (scope, element, attr) {
-            var clickAction = attr.loginClick ;
-            var msg = "Please login to continue";
-            element.bind('click',function () {
-                if(isLoggedIn())
-                {
+            var clickAction = attr.loginClick;
+            element.bind('click', function () {
+                if (isLoggedIn()) {
                     scope.$eval(clickAction);
-                    return;
+                } else {
+                    $facebook.login().then( function() {
+                        if (isLoggedIn()) {
+                            scope.$eval(clickAction)
+                        } else {
+                            $rootScope.showAlert('Login required', "danger");
+                        }
+                    });
                 }
-                $facebook.login().then( function() {
-                    if(isLoggedIn())
-                    {
-                        scope.$eval(clickAction)
-                    }
-                    else
-                    {
-                        $rootScope.showAlert('Login required', "danger");
-                    }
-                });
                 scope.$apply();
             });
         }
