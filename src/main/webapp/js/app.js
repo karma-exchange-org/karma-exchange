@@ -334,8 +334,7 @@ kexApp = angular.module( "kexApp",
  */
 
 kexApp.factory( 'Events', function( $resource ) {
-        return $resource( '/api/event/:id/:registerCtlr/:regType', { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' }
-            );
+        return $resource( '/api/event/:id/:registerCtlr/:regType', { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' });
 } );
 kexApp.factory( 'User', function( $resource ) {
         return $resource( '/api/user/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } );
@@ -350,6 +349,35 @@ kexApp.factory( 'Org', function( $resource ) {
 /*
  * Utility API factories
  */
+
+kexApp.factory('RecyclablePromiseFactory', function($q) {
+
+    function RecyclablePromise() {
+        this._deferred = $q.defer();
+        this._firstRecycle = true;
+    }
+
+    Object.defineProperty(RecyclablePromise.prototype, "promise", {
+        get: function() {
+            return this._deferred.promise;
+        }
+    });
+
+    RecyclablePromise.prototype.recycle = function() {
+        if ( this._firstRecycle ) {
+            this._firstRecycle = false;
+        } else {
+            this._deferred = $q.defer();
+        }
+        return this._deferred;
+    }
+
+    return {
+        create: function() {
+            return new RecyclablePromise();
+        },
+    };
+});
 
 kexApp.factory('KexUtil', function($rootScope) {
     return {
@@ -402,26 +430,41 @@ kexApp.factory('KexUtil', function($rootScope) {
     }
 });
 
-kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil) {
+kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, RecyclablePromiseFactory) {
+
+    var meRecyclablePromise = RecyclablePromiseFactory.create();
+    var goalInfoRecyclablePromise = RecyclablePromiseFactory.create();
+
+    $rootScope.$on("fbUtil.userChanged", function (event, status) {
+        if ( status === 'connected' ) {
+            MeUtil.updateMe();
+        } else {
+            MeUtil.clearMe();
+        }
+    });
 
     var MeUtil = {
         // Get the promise corresponding to me
         me: function() {
-            this._meSetupPromise();
-            return $rootScope.meDef.promise;
+            return meRecyclablePromise.promise;
+        },
+
+        goalInfo: function() {
+            return goalInfoRecyclablePromise.promise;
         },
 
         updateMe: function() {
+            var meDef = meRecyclablePromise.recycle();
+            var goalInfoDef = goalInfoRecyclablePromise.recycle();
             Me.get(
                 angular.bind(this, function(value) {
-                    this._mePromiseRecycle();
                     $rootScope.me = value;
+                    meDef.resolve($rootScope.me);
                     updateIsOrganizer();
-                    updateKarmaGoal();
-                    $rootScope.meDef.resolve($rootScope.me);
+                    updateKarmaGoal(goalInfoDef);
                 }),
                 angular.bind(this, function(httpResponse) {
-                    this.clearMe();
+                    this._clearMe(meDef, goalInfoDef);
                 }));
 
             function updateIsOrganizer() {
@@ -434,42 +477,27 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil) {
                 }
             }
 
-            function updateKarmaGoal() {
+            function updateKarmaGoal(goalInfoDef) {
                 $rootScope.goalInfo = {};
-                KarmaGoalUtil.loadKarmaGoalInfo($rootScope.me, KexUtil.getFirstOfMonth(new Date()), $rootScope.goalInfo);
+                KarmaGoalUtil.loadKarmaGoalInfo($rootScope.me, KexUtil.getFirstOfMonth(new Date()),
+                    $rootScope.goalInfo, goalInfoDef);
             }
         },
 
         clearMe: function() {
-            this._mePromiseRecycle();
-            $rootScope.meDef.reject();
+            this._clearMe(
+                meRecyclablePromise.recycle(),
+                goalInfoRecyclablePromise.recycle());
+        },
+
+        _clearMe: function(meDef, goalInfoDef) {
+            meDef.reject();
+            goalInfoDef.reject();
             $rootScope.me = undefined;
             $rootScope.isOrganizer = false;
             $rootScope.goalInfo = {};
-        },
-
-        _meSetupPromise: function() {
-            if (!angular.isDefined($rootScope.meDef)) {
-                $rootScope.meDef = $q.defer();
-            }
-        },
-
-        _mePromiseRecycle: function() {
-            this._meSetupPromise();
-            if ($rootScope.mePromiseResolved) {
-                $rootScope.meDef = $q.defer();
-            }
-            $rootScope.mePromiseResolved = true;
-        },
-    };
-
-    $rootScope.$on("fbUtil.userChanged", function (event, status) {
-        if ( status === 'connected' ) {
-            MeUtil.updateMe();
-        } else {
-            MeUtil.clearMe();
         }
-    });
+    };
 
     return MeUtil;
 });
@@ -477,12 +505,13 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil) {
 
 kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
     return {
-        loadKarmaGoalInfo: function(user, firstOfMonth, goalInfo) {
+        loadKarmaGoalInfo: function(user, firstOfMonth, goalInfo, goalInfoDef) {
             var goalStartDate = firstOfMonth;
             var goalEndDate = KexUtil.addMonths(firstOfMonth, 1);
 
-            User.get( { id : user.key, resource : 'event', type: "INTERVAL",
-                start_time: goalStartDate.valueOf(), end_time: goalEndDate.valueOf() },
+            User.get(
+                { id : user.key, resource : 'event', type: "INTERVAL",
+                  start_time: goalStartDate.valueOf(), end_time: goalEndDate.valueOf() },
                 angular.bind(this, function(result) {
                     var totalKarmaPoints = 0;
                     var completedKarmaPoints = 0;
@@ -506,7 +535,16 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
                     goalInfo.completedKarmaPoints = completedKarmaPoints;
 
                     this.updateKarmaGoalTarget(user, goalInfo);
-                }));
+
+                    if (goalInfoDef) {
+                        goalInfoDef.resolve(goalInfo);
+                    }
+                }),
+                function() {
+                    if (goalInfoDef) {
+                        goalInfoDef.reject();
+                    }
+                } );
         },
 
         updateCurrentUserKarmaGoalTarget: function(upcomingPtsDelta, upcomingEventDate) {
@@ -676,7 +714,31 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         },
 
         login: function () {
-            $facebook.login();
+            return $facebook.login();
+        },
+
+        loginRequired: function() {
+            var def = $q.defer();
+
+            if ( isLoggedIn() ) {
+                def.resolve();
+            } else {
+                this.login().then(
+                    function() {
+                        if (isLoggedIn()) {
+                            def.resolve();
+                        } else {
+                            def.reject();
+                            $rootScope.showAlert('Login required', "danger");
+                        }
+                    },
+                    function() {
+                        def.reject();
+                        $rootScope.showAlert('Login required', "danger");
+                    });
+            }
+
+            return def.promise;
         },
 
         logout: function () {
@@ -713,7 +775,7 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
     };
 });
 
-kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUtil, KarmaGoalUtil) {
+kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUtil, KarmaGoalUtil, MeUtil) {
     return {
         postRegistrationTasks: function(event, participantType) {
             this._postRegistrationTasks(event, participantType, true);
@@ -726,12 +788,19 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
         _postRegistrationTasks: function(event, participantType, isRegisterAction) {
             // Organizers don't go through this flow.
             if (participantType == 'REGISTERED') {
-                KarmaGoalUtil.updateCurrentUserKarmaGoalTarget(
-                    isRegisterAction ? event.karmaPoints : -event.karmaPoints,
-                    new Date(event.startTime));
+
+                // Make sure goalInfo() is available to update. Must check this since
+                // this routine can be called immediately after login.
+                MeUtil.goalInfo().then( function() {
+                    KarmaGoalUtil.updateCurrentUserKarmaGoalTarget(
+                        isRegisterAction ? event.karmaPoints : -event.karmaPoints,
+                        new Date(event.startTime));
+                });
+
                 if (isRegisterAction) {
                     $rootScope.openShareEventModal(event, "Thank you for volunteering!");
                 }
+
             }
         },
 
@@ -1149,7 +1218,7 @@ kexApp.directive('upcomingEvents', function() {
     }
 });
 
-kexApp.directive('loginClick', function ($facebook,$rootScope) {
+kexApp.directive('loginClick', function ($facebook, $rootScope) {
     return {
         terminal: true,
         link: function (scope, element, attr) {
@@ -1160,7 +1229,7 @@ kexApp.directive('loginClick', function ($facebook,$rootScope) {
                 } else {
                     $facebook.login().then( function() {
                         if (isLoggedIn()) {
-                            scope.$eval(clickAction)
+                            scope.$eval(clickAction);
                         } else {
                             $rootScope.showAlert('Login required', "danger");
                         }
@@ -1626,8 +1695,12 @@ var createOrgCtrl = function ($scope, $modalInstance) {
         $modalInstance.close();
     };
 }
-var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil, EventUtil) {
+var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
+        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q ) {
     $scope.KexUtil = KexUtil;
+
+    var eventSearchRecyclablePromise = RecyclablePromiseFactory.create();
+
     $scope.modelOpen = false;
     angular.extend( $scope, {
             /** the initial center of the map */
@@ -1657,6 +1730,8 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil, Event
     var fbUserId, query;
     $scope.reset = function( force ) {
         if ((fbUserId != $scope.fbUserId) || (query != $scope.query) || force) {
+
+            var eventSearchDef = eventSearchRecyclablePromise.recycle();
             fbUserId = $scope.fbUserId;
             query = $scope.query;
             Events.get(
@@ -1665,7 +1740,14 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil, Event
                     lat: $scope.center.latitude,
                     long:$scope.center.longitude
                 },
-                processEvents);
+                function(value) {
+                    processEvents(value);
+                    eventSearchDef.resolve();
+                },
+                function() {
+                    eventSearchDef.reject();
+                });
+
         }
     };
     function processEvents(value) {
@@ -1687,9 +1769,12 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil, Event
     $scope.$watch('query', function( ) {
         $scope.reset( );
     } );
-    $scope.$watch('fbUserId', function( ) {
-        $scope.reset( );
-    } );
+
+    $rootScope.$on("fbUtil.userChanged", function (event, status) {
+        // Only dependency is the cookie identifying the user.
+        $scope.reset();
+    });
+
     $scope.addMarker = function( markerLat, markerLng ) {
         $scope.markers.push( {
             latitude : parseFloat( markerLat ),
@@ -1697,34 +1782,48 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil, Event
         } );
     };
     $scope.register = function(type) {
-        var eventId = $scope.modelEvent.key;
+        // TODO(avaliani): If the events are refreshed in the course of login, then $index is not valid.
         $scope.modelIndex = this.$index;
-        Events.save(
-            {
-                id: eventId,
-                registerCtlr: 'participants',
-                regType: type
-            },
-            null,
-            function() {
-                EventUtil.postRegistrationTasks($scope.modelEvent, type);
+        var eventId = $scope.modelEvent.key;
 
-                $scope.modelEvent.registrationInfo = type;
-                $scope.events.data[$scope.modelIndex].registrationInfo = type;
-                if (type === 'REGISTERED') {
-                    //$rootScope.showAlert("Your registration is successful!","success");
-                    $scope.modelEvent.numRegistered++;
-                    $scope.events.data[$scope.modelIndex].cachedParticipantImages.push({
-                        "participant": {
-                            "key": $rootScope.me.key
-                        },
-                        "imageUrl": $rootScope.me.profileImage.url,
-                        "imageUrlProvider": "FACEBOOK"
-                    });
-                } else if (type === 'WAIT_LISTED') {
-                    //$rootScope.addAlert("You are added to waitlist!","success");
-                }
-            });
+        FbUtil.loginRequired().then( function () {
+
+            Events.save(
+                {
+                    id: eventId,
+                    registerCtlr: 'participants',
+                    regType: type
+                },
+                null,
+                function() {
+                    EventUtil.postRegistrationTasks($scope.modelEvent, type);
+
+                    // The events array refreshes once a user logs in. Make sure it's ready.
+                    // Also, to update the UI we need the user's key and profile image. So make sure me()
+                    // is ready also.
+                    $q.all([eventSearchRecyclablePromise.promise, MeUtil.me()])
+                        .then( function() {
+
+                            $scope.modelEvent.registrationInfo = type;
+                            $scope.events.data[$scope.modelIndex].registrationInfo = type;
+                            if (type === 'REGISTERED') {
+                                //$rootScope.showAlert("Your registration is successful!","success");
+                                $scope.modelEvent.numRegistered++;
+                                $scope.events.data[$scope.modelIndex].cachedParticipantImages.push({
+                                    "participant": {
+                                        "key": $rootScope.me.key
+                                    },
+                                    "imageUrl": $rootScope.me.profileImage.url,
+                                    "imageUrlProvider": "FACEBOOK"
+                                });
+                            } else if (type === 'WAIT_LISTED') {
+                                //$rootScope.addAlert("You are added to waitlist!","success");
+                            }
+
+                        });
+                });
+
+        });
     };
 
     $scope.delete = function( ) {
@@ -1742,7 +1841,9 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil, Event
         else
         {
             $( '.event-detail' ).hide( );
-            $scope.modelEvent = Events.get( { id : this.event.key, registerCtlr : 'expanded_search_view' } );
+            Events.get( { id : this.event.key, registerCtlr : 'expanded_search_view' }, function(data) {
+                $scope.modelEvent = data;
+            } );
             $( '#' + this.event.key + '_detail' ).show( );
         }
     };
