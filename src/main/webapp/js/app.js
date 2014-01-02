@@ -1218,29 +1218,6 @@ kexApp.directive('upcomingEvents', function() {
     }
 });
 
-kexApp.directive('loginClick', function ($facebook, $rootScope) {
-    return {
-        terminal: true,
-        link: function (scope, element, attr) {
-            var clickAction = attr.loginClick;
-            element.bind('click', function () {
-                if (isLoggedIn()) {
-                    scope.$eval(clickAction);
-                } else {
-                    $facebook.login().then( function() {
-                        if (isLoggedIn()) {
-                            scope.$eval(clickAction);
-                        } else {
-                            $rootScope.showAlert('Login required', "danger");
-                        }
-                    });
-                }
-                scope.$apply();
-            });
-        }
-    };
-});
-
 kexApp.directive('goalTrackingBar', function(KarmaGoalUtil) {
     return {
         restrict: 'E',
@@ -1770,7 +1747,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
         $scope.reset( );
     } );
 
-    $rootScope.$on("fbUtil.userChanged", function (event, status) {
+    $scope.$on("fbUtil.userChanged", function (event, status) {
         // Only dependency is the cookie identifying the user.
         $scope.reset();
     });
@@ -2189,7 +2166,8 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
 };
 
 var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location,
-        Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook) {
+        Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook,
+        RecyclablePromiseFactory) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.currentUserRating = {
@@ -2201,6 +2179,11 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     tabManager.addTab('impact', { disabled: true, onSelectionCb: loadImpactTab });
     tabManager.init();
     var tabs = $scope.tabs = tabManager.tabs;
+
+    var eventViewRecyclablePromise = RecyclablePromiseFactory.create();
+    $scope.$on("fbUtil.userChanged", function (event, status) {
+        refreshEvent();
+    });
 
     $scope.unregister = function() {
         Events.delete(
@@ -2216,19 +2199,26 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     }
 
     $scope.register = function(type) {
-        var eventId = $scope.event.key;
-        Events.save(
-            {
-                id: eventId,
-                registerCtlr: 'participants',
-                regType: type
-            },
-            null,
-            function() {
-                EventUtil.postRegistrationTasks(
-                    $scope.event, type);
-                refreshEvent();
+        FbUtil.loginRequired().then( function () {
+
+            eventViewRecyclablePromise.promise.then(function () {
+
+                Events.save(
+                    {
+                        id: $scope.event.key,
+                        registerCtlr: 'participants',
+                        regType: type
+                    },
+                    null,
+                    function() {
+                        EventUtil.postRegistrationTasks(
+                            $scope.event, type);
+                        refreshEvent();
+                    });
+
             });
+
+        });
     };
 
     $scope.getMore = function(type) {
@@ -2266,6 +2256,11 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     };
 
     function refreshEvent() {
+        var eventViewDef = eventViewRecyclablePromise.recycle();
+        var refreshCompletionTracker = new CompletionTracker(
+            ['event', 'eventOrganizers', 'eventRegistered', 'eventWaitListed'],
+            refreshComplete)
+
         $scope.event = Events.get(
             {
                 id: $routeParams.eventId
@@ -2280,25 +2275,51 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                         tabManager.markTabActive('impact');
                     }
                 }
+                refreshCompletionTracker.complete('event');
+            },
+            function() {
+                refreshCompletionTracker.complete('event');
             });
         $scope.eventOrganizers = Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
                 regType: 'ORGANIZER'
+            },
+            function() {
+                refreshCompletionTracker.complete('eventOrganizers');
+            },
+            function() {
+                refreshCompletionTracker.complete('eventOrganizers');
             });
         $scope.eventRegistered = Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
                 regType: 'REGISTERED'
+            },
+            function() {
+                refreshCompletionTracker.complete('eventRegistered');
+            },
+            function() {
+                refreshCompletionTracker.complete('eventRegistered');
             });
         $scope.eventWaitListed = Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
                 regType: 'WAIT_LISTED'
+            },
+            function() {
+                refreshCompletionTracker.complete('eventWaitListed');
+            },
+            function() {
+                refreshCompletionTracker.complete('eventWaitListed');
             });
+
+        function refreshComplete() {
+            eventViewDef.resolve();
+        }
     }
 
     function loadImpactTab() {
@@ -2357,3 +2378,27 @@ function isExternal(url) {
     return false;
 }
 
+
+/**
+ * This class tracks the completion of multiple named events. The completionCb
+ * is invoked once all the events are marked complete.
+ */
+function CompletionTracker(eventArray, completionCb) {
+    this._eventIdxMap = {};
+    for (var idx = 0; idx < eventArray.length; idx++) {
+        this._eventIdxMap[eventArray[idx]] = idx;
+    }
+    this._tracker = new BitArray(eventArray.length);
+    this._completionCb = completionCb;
+}
+
+/**
+ * Marks a tracked event as completed.
+ */
+CompletionTracker.prototype.complete = function(eventName) {
+    var idx = this._eventIdxMap[eventName];
+    this._tracker.set(idx, true);
+    if (this._tracker.count() == this._tracker.length) {
+        this._completionCb();
+    }
+}

@@ -7,31 +7,14 @@
  */
 
 /**
- * Creates a new empty BitArray with the given length or initialises the BitArray with the given hex representation.
+ * Creates a new empty BitArray with the given length.
  */
-var BitArray = function (size, hex) {
+var BitArray = function (size) {
     this.values = [];
+    this._length = size;
 
-    if (hex) {
-        hex = hex.slice(/^0x/.exec(hex) ? 2 : 0);
-
-        if (hex.length * 4 > this.length) {
-            throw 'Hex value is too large for this bit array.'
-        } else if (hex.length * 4 < this.length) {
-            // pad it
-            while(hex.length * 4 < this.length) {
-                hex = '0' + hex;
-            }
-        }
-
-        for (var i = 0; i < (hex.length / 8); i++) {
-            var slice = hex.slice(i * 8, i * 8 + 8);
-            this.values[i] = parseInt(slice, 16);
-        }
-    } else {
-        for (var i = 0; i < Math.ceil(size / 32); i += 1) {
-            this.values[i] = 0;
-        }
+    for (var i = 0; i < Math.ceil(size / 32); i += 1) {
+        this.values[i] = 0;
     }
 };
 
@@ -41,6 +24,15 @@ var BitArray = function (size, hex) {
 BitArray.prototype.size = function () {
     return this.values.length * 32;
 };
+
+/**
+ * Returns the number of settable bits in this BitArray.
+ */
+Object.defineProperty(BitArray.prototype, "length", {
+    get: function() {
+        return this._length;
+    }
+});
 
 /**
  * Sets the bit at index to a value (boolean.)
