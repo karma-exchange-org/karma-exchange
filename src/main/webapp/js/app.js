@@ -204,7 +204,9 @@ kexApp = angular.module( "kexApp",
 // Force service instantiation to handle angular lazy instantation for the
 // following services:
 //   - MeUtil
-.run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http ) {
+//   - FbAuthDepResource
+.run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
+        FbAuthDepResource ) {
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
             $rootScope.alerts = [ ];
@@ -333,18 +335,66 @@ kexApp = angular.module( "kexApp",
  * Webservice factories
  */
 
-kexApp.factory( 'Events', function( $resource ) {
-        return $resource( '/api/event/:id/:registerCtlr/:regType', { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' });
+kexApp.factory( 'Events', function( FbAuthDepResource ) {
+    return FbAuthDepResource.create( '/api/event/:id/:registerCtlr/:regType',
+        { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' });
 } );
-kexApp.factory( 'User', function( $resource ) {
-        return $resource( '/api/user/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } );
+kexApp.factory( 'User', function( FbAuthDepResource ) {
+    return FbAuthDepResource.create( '/api/user/:id/:resource/:filter',
+        { id : '@id', resource : '@resource', filter : '@filter' } );
 } );
-kexApp.factory( 'Me', function( $resource ) {
-        return $resource( '/api/me/:resource/:filter', { resource : '@resource', filter : '@filter' } );
+kexApp.factory( 'Me', function( FbAuthDepResource ) {
+    return FbAuthDepResource.create( '/api/me/:resource/:filter',
+        { resource : '@resource', filter : '@filter' } );
 } );
-kexApp.factory( 'Org', function( $resource ) {
-        return $resource( '/api/org/:id/:resource/:filter', { id : '@id', resource : '@resource', filter : '@filter' } );
+kexApp.factory( 'Org', function( FbAuthDepResource ) {
+    return FbAuthDepResource.create( '/api/org/:id/:resource/:filter',
+        { id : '@id', resource : '@resource', filter : '@filter' } );
 } );
+
+kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) {
+    var wrappedMethods = ['get', 'save', 'query', 'remove', 'delete'];
+
+    var authRespDef = $q.defer();
+    var isFirstAuthResp = true;
+    $rootScope.$on("fbUtil.userChanged", function (event, status) {
+        if ( isFirstAuthResp ) {
+            isFirstAuthResp = false;
+            authRespDef.resolve();
+        } else {
+            // If any resource depends on handling user changes after the
+            // first auth response this event must be listened to in order
+            // to update the resource.
+            $rootScope.$broadcast("FbAuthDepResource.userChanged", status);
+        }
+    });
+
+    return {
+        create: function() {
+            var wrappedRsrc = {
+                _rsrc: $resource.apply(null, arguments)
+            };
+
+            for (var mIdx = 0; mIdx < wrappedMethods.length; mIdx++) {
+                var m = wrappedMethods[mIdx];
+                wrappedRsrc[m] = wrapMethod(m);
+
+                function wrapMethod(m) {
+                    return function() {
+                        var methodArgs = arguments;
+                        return authRespDef.promise.then( function() {
+                            return wrappedRsrc._rsrc[m].apply(
+                                wrappedRsrc._rsrc, methodArgs);
+                        });
+                    };
+                }
+            }
+
+            return wrappedRsrc;
+        }
+
+    }
+});
 
 /*
  * Utility API factories
@@ -657,7 +707,6 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         $window, ApiCache, $q) {
     var fbAccessToken;
     var firstAuthResponse = true;
-    var afterFirstAuth = $q.defer();
 
     $rootScope.$on("fb.auth.authResponseChange", function( event, response ) {
         if ( response.status === 'connected' ) {
@@ -681,9 +730,6 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
             if ( userLoggedOut || firstAuthResponse ) {
                 processUserChange(response.status);
             }
-        }
-        if (firstAuthResponse) {
-            afterFirstAuth.resolve();
         }
         firstAuthResponse = false;
     } );
@@ -767,11 +813,6 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
             ApiCache.update(cacheKey, promise);
             return promise;
         },
-
-        afterFirstAuth: function () {
-            return afterFirstAuth.promise;
-        }
-
     };
 });
 
@@ -807,7 +848,7 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
         canWriteReview: function (event) {
             // The registration info is computed with respect to the current user's
             // key. Also, organizers can not write reviews.
-            return event.registrationInfo == 'REGISTERED';
+            return angular.isDefined(event) && event.registrationInfo == 'REGISTERED';
         },
         getImpactViewUrl: function (event) {
             // TODO(avaliani): the impact url should be different from the event details url.
@@ -1040,6 +1081,8 @@ kexApp.directive('eventRegistrationInfo', function() {
                         scope.showLabel = true;
                         scope.labelText = mapping.text;
                         scope.labelClass = 'label kex-bs-label ' + mapping.labelClass;
+                    } else {
+                        scope.showLabel = false;
                     }
                 } else {
                     scope.showLabel = false;
@@ -1346,11 +1389,14 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             });
         } else {
             $scope.userKey = $routeParams.userId;
-            $scope.me = User.get(
+            // We shouldn't pick up $rootScope.me.
+            $scope.me = undefined;
+            User.get(
                 {
                     id: $scope.userKey
                 },
-                function() {
+                function(result) {
+                    $scope.me = result;
                     $scope.who = $scope.me.firstName + "'s";
                     $scope.userGoalInfo = {};
                     KarmaGoalUtil.loadKarmaGoalInfo($scope.me, KexUtil.getFirstOfMonth(new Date()), $scope.userGoalInfo);
@@ -1376,10 +1422,14 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     }
 
     function getOtherData() {
-        $scope.orgs = User.get({
-            id: $scope.userKey,
-            resource: 'org'
-        });
+        User.get(
+            {
+                id: $scope.userKey,
+                resource: 'org'
+            },
+            function(result) {
+                $scope.orgs = result;
+            });
     };
 
     function loadImpactTab() {
@@ -1394,10 +1444,14 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     function loadUpcomingTab() {
         if (!$scope.upcomingTabLoaded && $scope.userKey) {
             $scope.upcomingTabLoaded = true;
-            $scope.events = User.get({
-                id: $scope.userKey,
-                resource: 'event'
-            });
+            User.get(
+                {
+                    id: $scope.userKey,
+                    resource: 'event'
+                },
+                function(result) {
+                    $scope.events = result;
+                });
         }
     }
 
@@ -1515,17 +1569,21 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
         }
     };
 
-    $scope.org = Org.get(
+    Org.get(
         { id: $routeParams.orgId },
-        function() {
+        function(result) {
+            $scope.org = result;
             $scope.orgLoaded = true;
             $facebook.api("/" + $scope.org.page.name).then(function(response) {
                 $scope.fbPage = response;
             });
 
             if ($scope.org.parentOrg) {
-                $scope.parentOrg = Org.get(
-                    { id: $scope.org.parentOrg.key });
+                Org.get(
+                    { id: $scope.org.parentOrg.key },
+                    function(result) {
+                        $scope.parentOrg = result;
+                    });
             }
 
             if ($scope.org.permission === "ALL") {
@@ -1539,10 +1597,13 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
 
             tabManager.reloadActiveTab();
         });
-    $scope.childOrgs = Org.get(
+    Org.get(
         {
             id: $routeParams.orgId,
             resource: "children"
+        },
+        function(result) {
+            $scope.childOrgs = result;
         });
 
     function loadImpactTab() {
@@ -1579,12 +1640,13 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     function loadUpcomingEvents(action) {
         if (!$scope.upcomingEventsLoaded && $scope.orgLoaded) {
             $scope.upcomingEventsLoaded = true;
-            $scope.upcomingEvents = Events.get(
+            Events.get(
                 {
                     type: "UPCOMING",
                     keywords: "org:" + $scope.org.searchTokenSuffix
                 },
-                function() {
+                function(result) {
+                    $scope.upcomingEvents = result;
                     angular.forEach($scope.upcomingEvents.data, function(event) {
                         calendarEvents.push({
                             title: event.title,
@@ -1604,17 +1666,23 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     function loadTopVolunteersTab() {
         if (!$scope.topVolunteersTabLoaded) {
             $scope.topVolunteersTabLoaded = true;
-            $scope.allTimeLeaders = Org.get(
-                { type: "ALL_TIME" },
+            Org.get(
                 {
+                    type: "ALL_TIME",
                     id: $routeParams.orgId,
                     resource: "leaderboard"
+                },
+                function(result) {
+                    $scope.allTimeLeaders = result;
                 });
-            $scope.lastMonthLeaders = Org.get(
-                { type: "THIRTY_DAY" },
+            Org.get(
                 {
+                    type: "THIRTY_DAY",
                     id: $routeParams.orgId,
                     resource: "leaderboard"
+                },
+                function(result) {
+                    $scope.lastMonthLeaders = result;
                 });
         }
     }
@@ -1622,11 +1690,14 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     function loadManageOrgTab() {
         if (!$scope.manageOrgTabLoaded) {
             $scope.manageOrgTabLoaded = true;
-            $scope.pendingMembers = Org.get(
-                { membership_status: "PENDING" },
+            Org.get(
                 {
+                    membership_status: "PENDING",
                     id: $routeParams.orgId,
                     resource: "member"
+                },
+                function(result) {
+                    $scope.pendingMembers = result;
                 });
         }
     }
@@ -1636,7 +1707,11 @@ var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) {
     $scope.query = "";
     $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
     $scope.refresh = function( ) {
-        $scope.orgs = Org.get( { name_prefix : $scope.query } );
+        Org.get(
+            { name_prefix : $scope.query },
+            function(result) {
+                $scope.orgs = result;
+            });
     };
     $scope.join = function( ) {
         Org.save( $scope.newOrg, function( ) {
@@ -1704,28 +1779,21 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
     $scope.showList = function(){
         $scope.isMap=false;
     };
-    var fbUserId, query;
-    $scope.reset = function( force ) {
-        if ((fbUserId != $scope.fbUserId) || (query != $scope.query) || force) {
-
-            var eventSearchDef = eventSearchRecyclablePromise.recycle();
-            fbUserId = $scope.fbUserId;
-            query = $scope.query;
-            Events.get(
-                {
-                    keywords: ($scope.query ? $scope.query : ""),
-                    lat: $scope.center.latitude,
-                    long:$scope.center.longitude
-                },
-                function(value) {
-                    processEvents(value);
-                    eventSearchDef.resolve();
-                },
-                function() {
-                    eventSearchDef.reject();
-                });
-
-        }
+    $scope.reset = function( ) {
+        var eventSearchDef = eventSearchRecyclablePromise.recycle();
+        Events.get(
+            {
+                keywords: ($scope.query ? $scope.query : ""),
+                lat: $scope.center.latitude,
+                long:$scope.center.longitude
+            },
+            function(value) {
+                processEvents(value);
+                eventSearchDef.resolve();
+            },
+            function() {
+                eventSearchDef.reject();
+            });
     };
     function processEvents(value) {
         $scope.events = value;
@@ -1743,11 +1811,14 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
         }
     }
 
+    var query = undefined;
     $scope.$watch('query', function( ) {
-        $scope.reset( );
-    } );
+        if (query != $scope.query) {
+            $scope.reset();
+        }
+    });
 
-    $scope.$on("fbUtil.userChanged", function (event, status) {
+    $scope.$on("FbAuthDepResource.userChanged", function (event, status) {
         // Only dependency is the cookie identifying the user.
         $scope.reset();
     });
@@ -1825,7 +1896,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
         }
     };
 
-    $scope.reset(true);
+    $scope.reset();
 };
 
 var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil, EventUtil, KexUtil ) {
@@ -1990,7 +2061,8 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
             }
         };
         $scope.refreshEvent = function( ) {
-            $scope.event = Events.get( { id : $routeParams.eventId }, function( ) {
+            Events.get( { id : $routeParams.eventId }, function( result ) {
+                    $scope.event = result;
                     //$("#location-title").val(''+$scope.event.location.title);
                     //$scope.refreshMap();
                     //TDEBT - remove DOM references
@@ -2021,31 +2093,43 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                         $scope.setMarker( $scope.center.latitude, $scope.center.longitude );
                         $scope.zoom = 15;
                     }
-                    $scope.eventOrganizers = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'ORGANIZER' }, function( ) {
+                    Events.get(
+                        { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'ORGANIZER' },
+                        function( result ) {
+                            $scope.eventOrganizers = result;
                             $scope.eventOrganizers.data.push = function( ) {
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'ORGANIZER' } );
                                 return Array.prototype.push.apply( this, arguments );
                             }
-                    } );
-                    $scope.eventRegistered = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' }, function( ) {
+                        } );
+                    Events.get(
+                        { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' },
+                        function( result ) {
+                            $scope.eventRegistered = result;
                             $scope.eventRegistered.data.push = function( ) {
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' } );
                                 return Array.prototype.push.apply( this, arguments );
                             }
-                    } );
-                    $scope.eventWaitListed = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' }, function( ) {
+                        } );
+                    Events.get(
+                        { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' },
+                        function( result ) {
+                            $scope.eventWaitListed = result;
                             $scope.eventWaitListed.data.push = function( ) {
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' } );
                                 return Array.prototype.push.apply( this, arguments );
                             }
-                    } );
+                        } );
 
-                    $scope.eventNoShow = Events.get( { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' }, function( ) {
+                    Events.get(
+                        { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' },
+                        function( result ) {
+                            $scope.eventNoShow = result;
                             $scope.eventNoShow.data.push = function( ) {
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' } );
                                 return Array.prototype.push.apply( this, arguments );
                             }
-                    } );
+                        } );
 
                     $scope.noShow = function(){
                         $scope.eventNoShow.data.push($scope.eventRegistered.data[this.$index]);
@@ -2181,7 +2265,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     var tabs = $scope.tabs = tabManager.tabs;
 
     var eventViewRecyclablePromise = RecyclablePromiseFactory.create();
-    $scope.$on("fbUtil.userChanged", function (event, status) {
+    $scope.$on("FbAuthDepResource.userChanged", function (event, status) {
         refreshEvent();
     });
 
@@ -2261,11 +2345,12 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             ['event', 'eventOrganizers', 'eventRegistered', 'eventWaitListed'],
             refreshComplete)
 
-        $scope.event = Events.get(
+        Events.get(
             {
                 id: $routeParams.eventId
             },
-            function() {
+            function( result ) {
+                $scope.event = result;
                 if ($scope.event.status == 'COMPLETED') {
                     tabs.impact.disabled = false;
                     if (tabs.impact.active) {
@@ -2280,37 +2365,40 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             function() {
                 refreshCompletionTracker.complete('event');
             });
-        $scope.eventOrganizers = Events.get(
+        Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
                 regType: 'ORGANIZER'
             },
-            function() {
+            function( result ) {
+                $scope.eventOrganizers = result;
                 refreshCompletionTracker.complete('eventOrganizers');
             },
             function() {
                 refreshCompletionTracker.complete('eventOrganizers');
             });
-        $scope.eventRegistered = Events.get(
+        Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
                 regType: 'REGISTERED'
             },
-            function() {
+            function( result ) {
+                $scope.eventRegistered = result;
                 refreshCompletionTracker.complete('eventRegistered');
             },
             function() {
                 refreshCompletionTracker.complete('eventRegistered');
             });
-        $scope.eventWaitListed = Events.get(
+        Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
                 regType: 'WAIT_LISTED'
             },
-            function() {
+            function( result ) {
+                $scope.eventWaitListed = result;
                 refreshCompletionTracker.complete('eventWaitListed');
             },
             function() {
