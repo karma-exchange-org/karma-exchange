@@ -224,7 +224,7 @@
         <div class="container">
             <div class="messagesList" app-messages>
             </div>
-            <div class="container input-block-level alert-float">
+            <div class="container input-block-level alert-float" ng-show="alerts && (alerts.length > 0)">
                 <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">
                     {{alert.msg}}
                 </alert>
