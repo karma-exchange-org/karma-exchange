@@ -1,4 +1,10 @@
 <div>
+    <div class="row row-no-margin" ng-show="events.data.length == 0">
+        <div class="col-md-12">
+            <h4><em>No upcoming events</em></h4>
+        </div>
+    </div>
+
     <div class="row row-no-margin" ng-repeat="event in events.data">
         <div class="col-md-12">
 

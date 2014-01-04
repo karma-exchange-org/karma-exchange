@@ -31,135 +31,141 @@
                  </div>
 
         </div>
-                <div ng-hide="isMap" class="row col-md-12 vertical-panel-padding">
+        <div ng-show="!isMap && (events.data.length == 0)" class="row vertical-panel-padding">
+            <div class="col-md-12">
+                <h4><em>No <span ng-show="query.length > 0">matching </span> upcoming events</em></h4>
+            </div>
+        </div>
+        <div ng-hide="isMap" class="row col-md-12 vertical-panel-padding">
 
-                        <ul class="list-unstyled container">
-                        <li ng-repeat="event in events.data" id="event_{{event.key}}">
+            <ul class="list-unstyled container">
+                <li ng-repeat="event in events.data" id="event_{{event.key}}">
 
-                        <div>
-                                <h4 ng-show="event.showHeader" class="event-search-result-date">
-                                        {{event.startTime | date:event.dateFormat}}
-                                </h4>
+                    <div>
+                        <h4 ng-show="event.showHeader" class="event-search-result-date">
+                                {{event.startTime | date:event.dateFormat}}
+                        </h4>
 
-                                <div class="well row col-md-12">
+                        <div class="well row col-md-12">
 
 
-                                        <div class="col-md-2 event-search-result-summary">
+                                <div class="col-md-2 event-search-result-summary">
+                                        <a href ng-click="toggleEvent();">
+                                                <p class="font-size-h4">{{event.startTime | date:'shortTime'}}</p>
+                                        </a>
+                                        <event-registration-info
+                                            registration-info="event.registrationInfo"
+                                            type="'UPCOMING'">
+                                        </event-registration-info>
+                                </div>
+                                <div class="col-md-10 event-search-result-summary">
+                                        <div class="pull-left">
                                                 <a href ng-click="toggleEvent();">
-                                                        <p class="font-size-h4">{{event.startTime | date:'shortTime'}}</p>
+                                                        <strong class="font-size-h4">{{event.title}}</strong>
+                                                        <br>
+                                                        <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
                                                 </a>
-                                                <event-registration-info
-                                                    registration-info="event.registrationInfo"
-                                                    type="'UPCOMING'">
-                                                </event-registration-info>
                                         </div>
-                                        <div class="col-md-10 event-search-result-summary">
-                                                <div class="pull-left">
+                                        <div class="pull-right">
+                                                <p class="text-right font-size-h4">
                                                         <a href ng-click="toggleEvent();">
-                                                                <strong class="font-size-h4">{{event.title}}</strong>
-                                                                <br>
-                                                                <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
+                                                                <em><strong>+{{event.karmaPoints}} karma</strong></em>
                                                         </a>
-                                                </div>
+                                                </p>
                                                 <div class="pull-right">
-                                                        <p class="text-right font-size-h4">
-                                                                <a href ng-click="toggleEvent();">
-                                                                        <em><strong>+{{event.karmaPoints}} karma</strong></em>
-                                                                </a>
-                                                        </p>
-                                                        <div class="pull-right">
-                                                                <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
-                                                        </div>
+                                                        <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
                                                 </div>
                                         </div>
-                                        <div class="row event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
+                                </div>
+                                <div class="row event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
 
-                                                <table class="table">
-                                                        <thead>
-                                                        <tr>
-                                                                <th class="col-md-4">
-                                                                        What?
-                                                                </th>
-                                                                <th class="col-md-3">
-                                                                        When? Where?
-                                                                </th>
-                                                                <th class="col-md-3">
-                                                                        Who?
-                                                                </th>
-                                                                <th class="col-md-2">
-                                                                </th>
-                                                        </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                        <tr>
-                                                                <td>
-                                                                        {{modelEvent.description}}
-                                                                </td>
-                                                                <td>
-                                                                        <p>
-                                                                                <strong>{{modelEvent.startTime|date:'shortTime'}} - {{modelEvent.endTime|date:'shortTime'}}</strong>
-                                                                        </p>
+                                        <table class="table">
+                                                <thead>
+                                                <tr>
+                                                        <th class="col-md-4">
+                                                                What?
+                                                        </th>
+                                                        <th class="col-md-3">
+                                                                When? Where?
+                                                        </th>
+                                                        <th class="col-md-3">
+                                                                Who?
+                                                        </th>
+                                                        <th class="col-md-2">
+                                                        </th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <tr>
+                                                        <td>
+                                                                {{modelEvent.description}}
+                                                        </td>
+                                                        <td>
+                                                                <p>
+                                                                        <strong>{{modelEvent.startTime|date:'shortTime'}} - {{modelEvent.endTime|date:'shortTime'}}</strong>
+                                                                </p>
 
-                                                                        <p>
+                                                                <p>
 
-                                                                                <strong>{{modelEvent.location.title}}</strong><br>
-                                                                                <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
-                                                                                    {{modelEvent.location.address.street}}<br>
-                                                                                    {{modelEvent.location.address.city}}, {{modelEvent.location.address.state}} {{modelEvent.location.address.zip}}<br>
-                                                                                </a>
-                                                                        </p>
-                                                                </td>
-                                                                <td>
-                                                                        <p>
-                                                                                Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered | limit10 }}</strong>
-                                                                        </p>
-                                                                        <p>
-                                                                                Volunteers attending: <strong>{{modelEvent.numRegistered}}</strong>
-                                                                        </p>
-                                                                        <p>
-                                                                                Organized by:
-                                                                        </p>
-                                                                        <p>
-                                                                                <org-event-summary org="event.organizationDetails"></org-event-summary>
-                                                                        </p>
-                                                                        <p>
-                                                                                Organizer:
-                                                                        </p>
-                                                                        <p>
-                                                                                <event-participant-summary user="modelEvent.firstOrganizer" type="'ORGANIZER'"></event-participant-summary>
-                                                                        </p>
-                                                                </td>
-                                                                <td>
-                                                                        <p>
+                                                                        <strong>{{modelEvent.location.title}}</strong><br>
+                                                                        <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
+                                                                            {{modelEvent.location.address.street}}<br>
+                                                                            {{modelEvent.location.address.city}}, {{modelEvent.location.address.state}} {{modelEvent.location.address.zip}}<br>
+                                                                        </a>
+                                                                </p>
+                                                        </td>
+                                                        <td>
+                                                                <p>
+                                                                        Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered | limit10 }}</strong>
+                                                                </p>
+                                                                <p>
+                                                                        Volunteers attending: <strong>{{modelEvent.numRegistered}}</strong>
+                                                                </p>
+                                                                <p>
+                                                                        Organized by:
+                                                                </p>
+                                                                <p>
+                                                                        <org-event-summary org="event.organizationDetails"></org-event-summary>
+                                                                </p>
+                                                                <p>
+                                                                        Organizer:
+                                                                </p>
+                                                                <p>
+                                                                        <event-participant-summary user="modelEvent.firstOrganizer" type="'ORGANIZER'"></event-participant-summary>
+                                                                </p>
+                                                        </td>
+                                                        <td>
+                                                                <p>
 
-                                                                                <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
-                                                                                <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
-                                                                                <!--
-                                                                                        Not really needed anymore since we have a label containing the registration info.
+                                                                        <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
+                                                                        <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
+                                                                        <!--
+                                                                                Not really needed anymore since we have a label containing the registration info.
 
-                                                                                        <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
-                                                                                                <i class="icon-ok"></i> You are registered!
-                                                                                        </span>
-                                                                                        <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
-                                                                                                <i class="icon-ok"></i> You are waitlisted!
-                                                                                        </span>
-                                                                                -->
-                                                                        </p>
-                                                                        <p>
-                                                                                <a href="#!/event/{{modelEvent.key}}" class="btn btn-info"><i class=" icon-info-sign icon-white"></i> More info</a>
-                                                                        </p>
-                                                                </td>
-                                                        </tr>
+                                                                                <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
+                                                                                        <i class="icon-ok"></i> You are registered!
+                                                                                </span>
+                                                                                <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
+                                                                                        <i class="icon-ok"></i> You are waitlisted!
+                                                                                </span>
+                                                                        -->
+                                                                </p>
+                                                                <p>
+                                                                        <a href="#!/event/{{modelEvent.key}}" class="btn btn-info"><i class=" icon-info-sign icon-white"></i> More info</a>
+                                                                </p>
+                                                        </td>
+                                                </tr>
 
-                                                        </tbody>
-                                                </table>
-                                                <div class="fb-like" href=""+window.location.protocol + '//' + window.location.host + "?_escaped_fragment_="+"/event/"+{{modelEvent.key}} send="true" width="450" show-faces="true" colorscheme="dark" action="recommend"> </div>
-                                        </div>
+                                                </tbody>
+                                        </table>
 
                                 </div>
                         </div>
-                        </li>
-                        </ul>
-                </div>
 
+                    </div>
+
+                </li>
+            </ul>
+
+        </div>
 </div>

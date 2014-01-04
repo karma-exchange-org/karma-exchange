@@ -1,85 +1,98 @@
-<div class="row row-no-margin" ng-repeat="pastEventsGroup in timelineEvents">
-    <div class="col-md-6" ng-repeat="event in pastEventsGroup">
-        <div class="well well-sm">
-            <div class="row">
-                <div class="col-md-12">
+<div>
+    <div class="row row-no-margin" ng-show="timelineEvents.length == 0">
+        <div class="col-md-12">
+            <h4><em>No events recorded at this time</em></h4>
+        </div>
+    </div>
 
-                    <div class="pull-left">
-                        <div class="font-size-h4">
-                            <strong>
-                                <a href="#!/event/{{event.key}}"><strong>{{event.title}} </strong></a>
-                            </strong>
-                        </div>
+    <div class="row row-no-margin" ng-repeat="pastEventsGroup in timelineEvents">
+        <div class="col-md-6" ng-repeat="event in pastEventsGroup">
+            <div class="well well-sm">
+                <div class="row">
+                    <div class="col-md-12">
 
-                        <div>
-                            <div class="pull-left">
-                                <a href="#!/org/{{event.organization.key}}">
-                                    <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org-small">
-                                </a>
-                            </div>
-                            <div class="pull-left">
-                                <div>
-                                    <a href="#!/org/{{event.organization.key}}">
-                                        {{event.organizationDetails.orgName}}
-                                    </a>
-                                </div>
-                                <div><small>{{event.startTime | date:'mediumDate'}}</small></div>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <div class="pull-right responsive-div-pad-left">
-                        <div>
-                            <div class="pull-right font-size-h4">
+                        <div class="pull-left">
+                            <div class="font-size-h4">
                                 <strong>
-                                    <em>
-                                        +{{event.karmaPoints}} karma
-                                    </em>
+                                    <a href="#!/event/{{event.key}}"><strong>{{event.title}} </strong></a>
                                 </strong>
                             </div>
+
+                            <div>
+                                <div class="pull-left">
+                                    <a href="#!/org/{{event.organization.key}}">
+                                        <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org-small">
+                                    </a>
+                                </div>
+                                <div class="pull-left">
+                                    <div>
+                                        <a href="#!/org/{{event.organization.key}}">
+                                            {{event.organizationDetails.orgName}}
+                                        </a>
+                                    </div>
+                                    <div><small>{{event.startTime | date:'mediumDate'}}</small></div>
+                                </div>
+                            </div>
+
                         </div>
-                        <div>
-                            <div class="pull-right">
-                                <event-registration-info
-                                    registration-info="event.registrationInfo"
-                                    user-registration-info="event.userEventSearchInfo.registrationInfo"
-                                    type="{USER:'USER-PAST', ORG:'ORG-PAST'}[timelineType]">
-                                </event-registration-info>
+
+                        <div class="pull-right responsive-div-pad-left">
+                            <div>
+                                <div class="pull-right font-size-h4">
+                                    <strong>
+                                        <em>
+                                            +{{event.karmaPoints}} karma
+                                        </em>
+                                    </strong>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="pull-right">
+                                    <event-registration-info
+                                        registration-info="event.registrationInfo"
+                                        user-registration-info="event.userEventSearchInfo.registrationInfo"
+                                        type="{USER:'USER-PAST', ORG:'ORG-PAST'}[timelineType]">
+                                    </event-registration-info>
+                                </div>
+                            </div>
+                            <div>
+                                <div ng-show="selfProfileView && EventUtil.canWriteReview(event)" class="pull-right">
+                                    <event-user-rating
+                                        user-rating="event.currentUserRating"
+                                        event-key="event.key">
+                                    </event-user-rating>
+                                </div>
+                            </div>
+                            <div>
+                                <div ng-hide="selfProfileView && EventUtil.canWriteReview(event)" class="pull-right">
+                                    <aggregate-rating value="event.rating">
+                                    </aggregate-rating>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <div ng-show="selfProfileView && EventUtil.canWriteReview(event)" class="pull-right">
-                                <event-user-rating
-                                    user-rating="event.currentUserRating"
-                                    event-key="event.key">
-                                </event-user-rating>
-                            </div>
+
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="border-top-1">
                         </div>
-                        <div>
-                            <div ng-hide="selfProfileView && EventUtil.canWriteReview(event)" class="pull-right">
-                                <aggregate-rating value="event.rating">
-                                </aggregate-rating>
+                        <div ng-show="event.impactSummary">
+                            <div class="vertical-panel-padding" ng-bind-html-unsafe="event.impactSummary | noHTML | newlines">
                             </div>
                         </div>
                     </div>
-
                 </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-12" ng-show="event.impactSummary">
-                    <div class="border-top-1 vertical-panel-padding" ng-bind-html-unsafe="event.impactSummary | noHTML | newlines"></div>
+                <div class="row vertical-panel-padding" ng-show="event.album">
+                    <div class="col-md-12">
+                        <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive">
+                    </div>
                 </div>
-            </div>
 
-            <div class="row vertical-panel-padding" ng-show="event.album">
-                <div class="col-md-12">
-                    <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive">
-                </div>
+                <kex-fb-comments href="{{EventUtil.getImpactViewUrl(event)}}" num-posts="3"></<kex-fb-comments>
             </div>
-
-            <kex-fb-comments href="{{EventUtil.getImpactViewUrl(event)}}" num-posts="3"></<kex-fb-comments>
         </div>
     </div>
 </div>
