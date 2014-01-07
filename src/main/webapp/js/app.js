@@ -567,10 +567,11 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
                     var completedKarmaPoints = 0;
                     for (var idx = 0; idx < result.data.length; idx++) {
                         var event = result.data[idx];
-                        // console_log("Goal tracker processing: event=%s, date=%s, status=%s",
-                        //     event.title, new Date(event.startTime), event.status);
-                        if ((event.registrationInfo == 'ORGANIZER') ||
-                                (event.registrationInfo == 'REGISTERED') ) {
+                        // console_log("Goal tracker processing[%s]: event=%s, reg=%s, date=%s, status=%s, duration=%s",
+                        //     user.firstName, event.title, event.userEventSearchInfo.registrationInfo, new Date(event.startTime), event.status,
+                        //     KexUtil.toHours(event.karmaPoints, 0));
+                        if ((event.userEventSearchInfo.registrationInfo == 'ORGANIZER') ||
+                                (event.userEventSearchInfo.registrationInfo == 'REGISTERED') ) {
                             totalKarmaPoints += event.karmaPoints;
                             if (event.status == 'COMPLETED') {
                                 completedKarmaPoints += event.karmaPoints;
