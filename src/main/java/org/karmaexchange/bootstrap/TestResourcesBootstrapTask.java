@@ -447,17 +447,31 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       registeredUsers = asList(AMIR.getKey());
       waitListedUsers = asList();
       event = createEvent("Credit Coaching", UNITED_WAY, unitedWayParkmoorOffice,
-        computeEventDate(extraEventStartDate, 0, 7), 1, organizers, registeredUsers,
+        computeEventDate(extraEventStartDate, 0, 5), 1, organizers, registeredUsers,
         waitListedUsers, 5, null);
       events.add(event);
 
-      organizers = asList(USER5.getKey());
-      registeredUsers = asList(HARISH.getKey(), POONUM.getKey());
-      waitListedUsers = asList();
-      event = createEvent("Resume Workshop", BENEVOLENT, benevolentParkmoorOffice,
-        computeEventDate(extraEventStartDate, 5, 7), 1, organizers, registeredUsers,
-        waitListedUsers, 5, null);
-      events.add(event);
+      if ((extraEventCnt/2) % 2 == 0) {
+        organizers = asList(USER5.getKey());
+        registeredUsers = asList(HARISH.getKey(), POONUM.getKey());
+        waitListedUsers = asList();
+        event = createEvent("Resume Workshop", BENEVOLENT, benevolentParkmoorOffice,
+          computeEventDate(extraEventStartDate, 5, 7), 1, organizers, registeredUsers,
+          waitListedUsers, 5, null);
+        events.add(event);
+      } else {
+        organizers = asList(USER1.getKey());
+        registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
+          USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
+          USER11.getKey(), USER12.getKey(), USER13.getKey(),
+          HARISH.getKey(), POONUM.getKey());
+        waitListedUsers = asList();
+        event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
+          computeEventDate(extraEventStartDate, 5, 4), 1, organizers, registeredUsers,
+          waitListedUsers, 100, null, columbiaParkSoccerWaiverKey);
+        event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
+        events.add(event);
+      }
 
       extraEventStartDate = computeEventDate(extraEventStartDate, numDaysToAddPerIteration, 0);
     }
@@ -564,7 +578,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   private static Event createEvent(String title, TestOrganization testOrg, Location location,
       Date startTime, int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
       List<Key<User>> waitListedUsers, int maxRegistrations, @Nullable String albumId,
-      Key<Waiver> waiverKey) {
+      @Nullable Key<Waiver> waiverKey) {
     eventNum++;
     Event event = new Event();
     event.setTitle(title);
