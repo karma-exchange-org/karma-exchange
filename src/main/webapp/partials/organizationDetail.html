@@ -21,11 +21,9 @@
             <div class="panel panel-default panel-seperated-vertical">
                 <div class="panel-body org-info-panel">
 
-                    <em>
-                        <strong class="font-size-h4">
-                            +{{org.karmaPoints}} karma
-                        </strong>
-                    </em>
+                    <div class="font-size-h4">
+                        <karma-hours karma-points="org.karmaPoints"></karma-hours>
+                    </div>
                     <div>
                         Event rating:
                         <aggregate-rating value="org.eventRating"></aggregate-rating>
@@ -259,7 +257,7 @@
                             <hr>
                             <ul class="list-inline">
                                 <li ng-repeat="user in orgOwners.data">
-                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong></a>
                                     <p>
                                     </p>
                                 </li>
@@ -274,7 +272,7 @@
                             <hr>
                             <ul class="list-inline">
                                 <li ng-repeat="user in orgOrgnaizers.data">
-                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong></a>
                                     <p>
                                     </p>
                                 </li>

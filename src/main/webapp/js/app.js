@@ -74,6 +74,7 @@ angular.module('HashBangURLs', []).config(['$locationProvider', function($locati
 kexApp = angular.module( "kexApp",
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "loadingOnAJAX", "ngFacebook",
      "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs"] )
+
 .config( function( $routeProvider, $httpProvider, $facebookProvider ) {
     $routeProvider
         // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
@@ -115,6 +116,7 @@ kexApp = angular.module( "kexApp",
         xfbml : false });
 
 })
+
 .filter( 'newlines', function( ) {
     return function( text ) {
         if( text )
@@ -123,6 +125,7 @@ kexApp = angular.module( "kexApp",
         }
     }
 })
+
 .filter( 'noHTML', function( ) {
     return function( text ) {
         if( text )
@@ -131,6 +134,7 @@ kexApp = angular.module( "kexApp",
         }
     }
 } )
+
 .filter( 'limit10', function( ) {
     return function( text ) {
         if( text > 10 )
@@ -148,6 +152,7 @@ kexApp = angular.module( "kexApp",
     }
 }
 )
+
 .filter( 'limit10Verbose', function( ) {
     return function( text ) {
         if( text > 10 )
@@ -165,6 +170,7 @@ kexApp = angular.module( "kexApp",
     }
 }
 )
+
 .filter( 'badge', function( ) {
     return function( text ) {
         if( text > 0 )
@@ -180,6 +186,7 @@ kexApp = angular.module( "kexApp",
     }
 }
 )
+
 .filter('truncate', function () {
     return function (text, length, end) {
         if (text == null || text.length == 0)
@@ -1359,6 +1366,39 @@ kexApp.directive('floatGeqZero', function() {
     }
   };
 });
+
+kexApp.directive('karmaHours', function(KexUtil) {
+    return {
+        restrict: 'E',
+        scope: {
+            karmaPoints: '=',
+            type: '@'
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.$watch('karmaPoints', updateHours);
+            scope.$watch('type', updateHours);
+
+            function updateHours() {
+                if (angular.isDefined(scope.karmaPoints)) {
+                    var karmaHours = KexUtil.toHours(scope.karmaPoints, 1);
+                    if (angular.isDefined(scope.type) && (scope.type == 'BRIEF')) {
+                        scope.karmaHoursText = "+" + karmaHours + " karma";
+                    } else {
+                        if (karmaHours == 1) {
+                            scope.karmaHoursText = "+1 karma hour"
+                        } else {
+                            scope.karmaHoursText = "+" + karmaHours + " karma hours";
+                        }
+                    }
+                }
+            };
+        },
+        templateUrl: 'template/kex/karma-hours.html'
+    }
+});
+
 
 /*
  * App controllers
