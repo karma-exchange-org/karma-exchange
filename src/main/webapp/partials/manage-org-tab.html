@@ -8,7 +8,7 @@
         <ul class="list-inline">
             <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ADMIN'}">
                 <p>
-                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong></a>
                 </p>
                 <p>
                 </p>
@@ -26,7 +26,7 @@
         <ul class="list-inline">
             <li ng-repeat="user in pendingMembers.data | filter: {requestedRole: 'ORGANIZER'}">
                 <p>
-                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong></a>
                 </p>
                 <p>
                 </p>
@@ -44,7 +44,7 @@
         <ul class="list-inline">
             <li ng-repeat="user in pendingMembers.data | filter:{requestedRole: 'MEMBER'}">
                 <p>
-                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong>{{user.karmaPoints}}<i class="icon-bolt"></i></a>
+                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong></a>
                 </p>
                 <p>
                 </p>

@@ -136,12 +136,8 @@
                         </button>
                     </div>
 
-                    <div>
-                        <em>
-                            <strong class="font-size-h3">
-                                +{{event.karmaPoints}} karma
-                            </strong>
-                        </em>
+                    <div class="font-size-h3">
+                        <karma-hours karma-points="event.karmaPoints"></karma-hours>
                     </div>
                     <div ng-show="event.status=='COMPLETED'">
                         <aggregate-rating value="event.rating">
