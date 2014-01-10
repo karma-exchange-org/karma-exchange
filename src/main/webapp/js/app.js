@@ -751,12 +751,14 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         $.cookie( "facebook-uid", authResponse.userID );
         $.cookie( "facebook-token", authResponse.accessToken );
         $.cookie( "login", "facebook" );
+        $rootScope.isLoggedIn = true;
     }
 
     function removeCookies() {
         $.removeCookie( "facebook-uid" );
         $.removeCookie( "facebook-token" );
         $.removeCookie( "login" );
+        $rootScope.isLoggedIn = false;
     }
 
     return {
@@ -1791,6 +1793,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
 var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
         EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q ) {
     $scope.KexUtil = KexUtil;
+    $scope.FbUtil = FbUtil;
 
     var eventSearchRecyclablePromise = RecyclablePromiseFactory.create();
 
