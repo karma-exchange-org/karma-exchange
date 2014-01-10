@@ -52,6 +52,8 @@
         -->
         <link href="css/angular-social.css" rel="stylesheet">
 
+        <link rel="stylesheet" type="text/css" href="css/animate.css">
+
         <link rel="stylesheet" href="css/main.css">
         <style>
             .ng-cloak { display: none; }
@@ -212,7 +214,7 @@
                                 </li>
                             </ul>
                         </li>
-                        <li ng-hide="me">
+                        <li ng-hide="isLoggedIn">
                             <button type="button" ng-click="fbUtil.login()" class="btn btn-default navbar-btn">
                                 <img src="/img/facebook.png" class="kex-icon"> Login
                             </button>
@@ -221,39 +223,40 @@
                 </div>
             </div>
         </nav>
+
+        <div class="container input-block-level alert-float" ng-show="alerts && (alerts.length > 0)">
+            <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">
+                {{alert.msg}}
+            </alert>
+        </div>
+
+        <div ng-view>
+        </div>
+
         <div class="container">
-            <div class="messagesList" app-messages>
-            </div>
-            <div class="container input-block-level alert-float" ng-show="alerts && (alerts.length > 0)">
-                <alert ng-repeat="alert in alerts" type="alert.type" close="closeAlert($index)">
-                    {{alert.msg}}
-                </alert>
-            </div>
-            <div ng-view>
-            </div>
             <div>
                 <form ng-show="isMessageOpen" class="add-window" ng-submit="sendMessage()">
-            <div class="header">
-                Send a message
-                <a ng-click="cancelMessage()"><i class="icon-remove pull-right"></i></a>
+                    <div class="header">
+                        Send a message
+                        <a ng-click="cancelMessage()"><i class="icon-remove pull-right"></i></a>
+                    </div>
+                    <div class="inner">
+                        <div>
+                            <input class="row form-control" type="text" ng-model="message.subject" required placeholder="Subject">
+                            <textarea class="row" ng-model="message.body" rows="5" placeholder="Message">
+                            </textarea>
+                        </div>
+                        <div class="button-bar">
+                            <input type="submit" value="Send" class="btn btn-primary form-control">
+                            <button type="button" class="btn btn-default" ng-click="cancelMessage()">
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-            <div class="inner">
-                <div>
-                <input class="row form-control" type="text" ng-model="message.subject" required placeholder="Subject">
-                <textarea class="row" ng-model="message.body" rows="5" placeholder="Message">
-                </textarea>
-                </div>
-                <div class="button-bar">
-                <input type="submit" value="Send" class="btn btn-primary form-control">
-                <button type="button" class="btn btn-default" ng-click="cancelMessage()">
-                    Cancel
-                </button>
-                </div>
-            </div>
-            </form>
-            </div>
-
         </div>
+
         <div>
             <div id="fb-root">
             </div>
