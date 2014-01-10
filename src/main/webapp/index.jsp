@@ -151,30 +151,29 @@
         <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
             <!-- Keep the navbar content at container width. The navbar background extends across the screen. -->
             <div class="container">
+
                 <div class="navbar-header">
-                    <button type="button" class="navbar-toggle" toggle="collapse" target=".navbar-responsive-collapse">
-                        <span class="icon-bar">
-                        </span>
-                        <span class="icon-bar">
-                        </span>
-                        <span class="icon-bar">
-                        </span>
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-responsive-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#!/event">KarmaExchange </a>
+                    <a class="navbar-brand" href="#!/event">KarmaExchange</a>
                 </div>
+
                 <div class="navbar-collapse collapse navbar-responsive-collapse">
                     <ul class="nav navbar-nav">
                         <li>
-                            <a href="#!/event"><i class="icon-search icon-white"></i> Find Events</a>
+                            <a href="#!/event"><div class="nav-icon"><i class="icon-search icon-white"></i></div> Find Events</a>
                         </li>
                         <li ng-show="me">
-                            <a href="#!/me"><i class="icon-calendar icon-white"></i> My Events</a>
+                            <a href="#!/me"><div class="nav-icon"><i class="icon-calendar icon-white"></i></div> My Events</a>
                         </li>
                         <li>
-                            <a href="#!/org"><i class="icon-group icon-white"></i> Organizations</a>
+                            <a href="#!/org"><div class="nav-icon"><i class="icon-sitemap icon-white"></i></div> Organizations</a>
                         </li>
                         <li ng-show="isOrganizer">
-                            <a href="#!/event/add"><i class="icon-plus icon-white"></i> Create Events</a>
+                            <a href="#!/event/add"><div class="nav-icon"><i class="icon-plus icon-white"></i></div> Create Events</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -200,17 +199,17 @@
                             <a ng-hide="me" href="" class="dropdown-toggle" toggle="dropdown">Info <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li ng-show="me">
-                                    <a href="#!/mysettings"><i class="icon-cog"></i> Profile</a>
+                                    <a href="#!/mysettings"><div class="nav-icon"><i class="icon-cog"></i></div> Profile</a>
                                 </li>
                                 <li ng-show="me">
-                                    <a href="/#" ng-click="fbUtil.logout()"><i class="icon-off"></i> Logout</a>
+                                    <a href="/#" ng-click="fbUtil.logout()"><div class="nav-icon"><i class="icon-off"></i></div> Logout</a>
                                 </li>
                                 <li ng-show="me" class="divider"></li>
                                 <li>
-                                    <a href="#!/about"><i class="icon-info"></i> About us</a>
+                                    <a href="#!/about"><div class="nav-icon"><i class="icon-info"></i></div> About us</a>
                                 </li>
                                 <li>
-                                    <a href="#!/contact"><i class="icon-envelope"></i> Contact us</a>
+                                    <a href="#!/contact"><div class="nav-icon"><i class="icon-envelope"></i></div> Contact us</a>
                                 </li>
                             </ul>
                         </li>
@@ -221,6 +220,7 @@
                         </li>
                     </ul>
                 </div>
+
             </div>
         </nav>
 
