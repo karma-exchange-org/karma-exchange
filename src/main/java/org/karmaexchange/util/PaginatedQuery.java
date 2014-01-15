@@ -34,6 +34,7 @@ public class PaginatedQuery<T extends BaseDao<T>> {
   @Nullable
   private final Cursor afterCursor;
   private final Collection<QueryClause> queryClauses;
+  @Nullable
   private final UriInfo uriInfo;
   private final int limit;
 
@@ -42,7 +43,9 @@ public class PaginatedQuery<T extends BaseDao<T>> {
     List<T> searchResults = Lists.newArrayList(Iterators.limit(queryIter, limit));
     Cursor nextCursor = queryIter.getCursor();
     PagingInfo pagingInfo =
-        PagingInfo.create(nextCursor, limit, queryIter.hasNext(), uriInfo);
+        (uriInfo == null) ?
+            null :
+            PagingInfo.create(nextCursor, limit, queryIter.hasNext(), uriInfo);
     return new Result<T>(searchResults, nextCursor, pagingInfo, this);
   }
 
@@ -94,17 +97,27 @@ public class PaginatedQuery<T extends BaseDao<T>> {
     private final int limit;
     @Nullable
     private final Cursor afterCursor;
+    @Nullable
     private final UriInfo uriInfo;
 
     public static <T extends BaseDao<T>> Builder<T> create(Class<T> resourceClass,
         UriInfo uriInfo, int defaultLimit) {
-      return new Builder<T>(resourceClass, uriInfo, defaultLimit);
+      return new Builder<T>(resourceClass, uriInfo, null, defaultLimit);
     }
 
-    private Builder(Class<T> resourceClass, UriInfo uriInfo, int defaultLimit) {
+    public static <T extends BaseDao<T>> Builder<T> create(Class<T> resourceClass,
+        @Nullable UriInfo uriInfo, @Nullable MultivaluedMap<String, String> queryParams,
+        int defaultLimit) {
+      return new Builder<T>(resourceClass, uriInfo, queryParams, defaultLimit);
+    }
+
+    private Builder(Class<T> resourceClass, @Nullable UriInfo uriInfo,
+        @Nullable MultivaluedMap<String, String> queryParams, int defaultLimit) {
+      if (uriInfo != null) {
+        queryParams = uriInfo.getQueryParameters();
+      }
       this.resourceClass = resourceClass;
       this.uriInfo = uriInfo;
-      MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
       String afterCursorStr = queryParams.getFirst(PagingInfo.AFTER_CURSOR_PARAM);
       if (afterCursorStr != null) {
         afterCursor = Cursor.fromWebSafeString(afterCursorStr);

@@ -19,7 +19,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -58,6 +58,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.task.ComputeLeaderboardServlet;
 import org.karmaexchange.util.AdminUtil;
+import org.karmaexchange.util.ServletUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
 
 import com.google.appengine.api.datastore.GeoPt;
@@ -290,11 +291,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final Organization.Role requestedRole;
   }
 
-  public TestResourcesBootstrapTask(PrintWriter statusWriter, Cookie[] cookies,
-      ServletContext servletCtx, String baseUrl) {
-    super(statusWriter, cookies);
+  public TestResourcesBootstrapTask(HttpServletRequest req, ServletContext servletCtx,
+      PrintWriter statusWriter) {
+    super(statusWriter);
     this.servletCtx = servletCtx;
-    this.baseUrl = baseUrl;
+    baseUrl = ServletUtil.getBaseUri(req);
   }
 
   @Override
