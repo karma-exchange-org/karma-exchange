@@ -8,8 +8,6 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.User.RegisteredEmail;
-import org.karmaexchange.util.UserService;
-import org.karmaexchange.util.AdminUtil.AdminTaskType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -53,18 +51,15 @@ public class UserUsage {
     return (owner == null) ? null : owner.getString();
   }
 
-  public static void trackUsage(User user) {
-    // Just record OAuth filter based user creations / updates.
-    if (UserService.getCurrentUserKey().equals(AdminTaskType.OAUTH_FILTER.getKey())) {
-      UserUsage usage = new UserUsage(
-        Key.create(user),
-        NAME_FIELD_VALUE,
-        user.getFirstName(),
-        user.getLastName(),
-        new Date(),
-        getPrimaryEmail(user));
-      ofy().save().entity(usage).now();
-    }
+  public static void trackUser(User user) {
+    UserUsage usage = new UserUsage(
+      Key.create(user),
+      NAME_FIELD_VALUE,
+      user.getFirstName(),
+      user.getLastName(),
+      new Date(),
+      getPrimaryEmail(user));
+    ofy().save().entity(usage).now();
   }
 
   private static String getPrimaryEmail(User user) {
@@ -74,5 +69,43 @@ public class UserUsage {
       }
     }
     return null;
+  }
+
+  public static void trackAccess(Key<User> user) {
+    UserAccess access = new UserAccess(
+      user,
+      NAME_FIELD_VALUE,
+      new Date());
+    ofy().save().entity(access).now();
+  }
+
+  // Used only to delete test user's history
+  public static void deleteHistory(Key<User> userKey) {
+    ofy().delete().key(getKeyForUser(userKey));
+    ofy().delete().key(UserAccess.getKeyForUser(userKey));
+  }
+
+  private static Key<UserUsage> getKeyForUser(Key<User> userKey) {
+    return Key.create(userKey, UserUsage.class, NAME_FIELD_VALUE);
+  }
+
+  @Entity
+  @Data
+  @AllArgsConstructor
+  @NoArgsConstructor
+  public static class UserAccess {
+    @Parent
+    private Key<?> owner;
+
+    // The owner is unique. There is only one UserAccess entity per owner. Therefore, use
+    // the same 'name' for all UserAccess entities.
+    @Id
+    private String name = NAME_FIELD_VALUE;
+
+    private Date lastVisited;
+
+    private static Key<UserAccess> getKeyForUser(Key<User> userKey) {
+      return Key.create(userKey, UserAccess.class, NAME_FIELD_VALUE);
+    }
   }
 }

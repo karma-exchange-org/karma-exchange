@@ -17,9 +17,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.karmaexchange.provider.SocialNetworkProvider;
-import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
-import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.task.UpdateNamedKeysAdminTaskServlet;
@@ -286,7 +284,7 @@ public class Organization extends NameBaseDao<Organization> {
     }
     User currentUser = ofy().transactionless().load().key(getCurrentUserKey()).now();
     if (currentUser == null) {
-      throw ErrorResponseMsg.createException("current user not found", ErrorInfo.Type.BAD_REQUEST);
+      return false;
     }
     // In the future we can support hierarchical ADMIN roles if people request it.
     return currentUser.hasOrgMembership(Key.create(this), Role.ADMIN);

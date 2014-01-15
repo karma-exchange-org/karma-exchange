@@ -165,7 +165,7 @@ public final class User extends NameBaseDao<User> {
   @Override
   protected void postProcessInsert() {
     super.postProcessInsert();
-    UserUsage.trackUsage(this);
+    UserUsage.trackUser(this);
   }
 
   @Override
@@ -183,14 +183,6 @@ public final class User extends NameBaseDao<User> {
     organizationMemberships = oldUser.organizationMemberships;
 
     validateUser();
-
-    UserUsage.trackUsage(this);
-  }
-
-  @Override
-  protected void processPartialUpdate() {
-    super.processPartialUpdate();
-    UserUsage.trackUsage(this);
   }
 
   @Override
@@ -255,14 +247,17 @@ public final class User extends NameBaseDao<User> {
     }
   }
 
-  public static void persistNewUser(User user) {
-    ofy().transact(new PersistNewUserTxn(user));
+  public static User persistNewUser(User user) {
+    PersistNewUserTxn persistNewUserTxn = new PersistNewUserTxn(user);
+    ofy().transact(persistNewUserTxn);
+    return persistNewUserTxn.user;
   }
 
   @Data
   @EqualsAndHashCode(callSuper=false)
+  @AllArgsConstructor
   private static class PersistNewUserTxn extends VoidWork {
-    private final User user;
+    private User user;
 
     public void vrun() {
       User existingUser = ofy().load().key(Key.create(user)).now();
@@ -271,6 +266,8 @@ public final class User extends NameBaseDao<User> {
       if (existingUser == null) {
         User.bootstrapProfileImage(user);
         BaseDao.upsert(user);
+      } else {
+        user = existingUser;
       }
     }
   }

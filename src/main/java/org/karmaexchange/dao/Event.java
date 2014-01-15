@@ -706,7 +706,8 @@ public final class Event extends IdBaseDao<Event> {
   @Override
   protected Permission evalPermission() {
     User currentUser = ofy().transactionless().load().key(getCurrentUserKey()).now();
-    if (currentUser.hasOrgMembership(KeyWrapper.toKey(organization),
+    if ((currentUser != null) &&
+        currentUser.hasOrgMembership(KeyWrapper.toKey(organization),
           Organization.Role.ORGANIZER)) {
       return Permission.ALL;
     }
