@@ -1,9 +1,7 @@
 package org.karmaexchange.security;
 
-import static org.karmaexchange.util.OfyService.ofy;
-
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -18,23 +16,19 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-
-import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
-import org.karmaexchange.provider.SocialNetworkProvider;
+import org.karmaexchange.dao.UserUsage;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
-import org.karmaexchange.util.AdminUtil;
-import org.karmaexchange.util.AdminUtil.AdminTaskType;
 import org.karmaexchange.util.ServletUtil;
 import org.karmaexchange.util.UserService;
 
-import com.googlecode.objectify.Key;
-import com.googlecode.objectify.VoidWork;
+import com.google.appengine.api.memcache.AsyncMemcacheService;
+import com.google.appengine.api.memcache.ErrorHandlers;
+import com.google.appengine.api.memcache.Expiration;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 public class OAuthFilter implements Filter {
 
@@ -84,90 +78,60 @@ public class OAuthFilter implements Filter {
   }
 
   private OAuthCredential getCredential(HttpServletRequest req) {
-    OAuthCredential credential;
-    AdminUtil.setCurrentUser(AdminTaskType.OAUTH_FILTER);
-    try {
-      credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
-      if (credential == null) {
-        return null;
-      }
-
-      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] checking if oAuth token is cached");
-
-      // 1. If the oauth token is cached, then it's valid. Just use it.
-      if (!credentialIsCached(credential)) {
-
-        log.log(OAUTH_LOG_LEVEL, "[" + credential + "] verifying oauth token");
-
-        // 2. If it's not cached, check with the social network provider if it's valid.
-        if (verifyCredential(credential)) {
-
-          log.log(OAUTH_LOG_LEVEL, "[" + credential + "] updating oauth token");
-
-          // The token is valid, so we need to update the token.
-          updateCachedCredential(credential);
-        } else {
-          throw ErrorResponseMsg.createException("authentication credentials are not valid",
-            ErrorInfo.Type.AUTHENTICATION);
-        }
-      }
-    } finally {
-      UserService.clearCurrentUser();
+    OAuthCredential credential = SocialNetworkProviderFactory.getLoginProviderCredential(req);
+    if (credential == null) {
+      return null;
     }
+
+    AsyncMemcacheService asyncCache = MemcacheServiceFactory.getAsyncMemcacheService();
+    asyncCache.setErrorHandler(ErrorHandlers.getConsistentLogAndContinue(Level.INFO));
+
+    log.log(OAUTH_LOG_LEVEL, "[" + credential + "] checking if oAuth token is cached");
+
+    // 1. If the oauth token is cached, then it's valid. Just use it.
+    if (!credentialIsCached(asyncCache, credential)) {
+
+      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] verifying oauth token");
+
+      // 2. If it's not cached, check with the social network provider if it's valid.
+      if (verifyCredential(credential)) {
+
+        log.log(OAUTH_LOG_LEVEL, "[" + credential + "] updating oauth token");
+
+        // The token is valid, so we need to update the token.
+        updateCachedCredential(asyncCache, credential);
+      } else {
+        throw ErrorResponseMsg.createException("authentication credentials are not valid",
+          ErrorInfo.Type.AUTHENTICATION);
+      }
+    }
+
     return credential;
   }
 
-  public static boolean credentialIsCached(OAuthCredential credential) {
-    // The assumption here is that it is impossible to persist a fake provider + uid + token.
-    // When we create the user object we will always construct the globalUidAndToken from scratch.
-    // TODO(avaliani): Validate that Objectify @Cached is actually being hit.
-    Iterable<Key<User>> keys = ofy().load().type(User.class)
-        .filter("oauthCredentials.globalUidAndToken", credential.getGlobalUidAndToken())
-        .keys();
-    Iterator<Key<User>> keysIter = keys.iterator();
-    return keysIter.hasNext();
+  private static boolean credentialIsCached(AsyncMemcacheService asyncCache,
+      OAuthCredential credential) {
+    try {
+      return asyncCache.get(credential.getGlobalUidAndToken()).get() != null;
+    } catch (ExecutionException e) {
+      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] memcache get execution exception");
+      return false;
+    } catch (InterruptedException e) {
+      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] memcache get iterrupted exception");
+      return false;
+    }
   }
 
   private static boolean verifyCredential(OAuthCredential credential) {
     return SocialNetworkProviderFactory.getProvider(credential).verifyCredential();
   }
 
-  private static void updateCachedCredential(OAuthCredential credential) {
-    ofy().transact(new UpdateCredentialTxn(credential));
+  private static void updateCachedCredential(AsyncMemcacheService asyncCache,
+      OAuthCredential credential) {
+    // TODO(avaliani): set cache expiration based on token
+    asyncCache.put(credential.getGlobalUidAndToken(), Boolean.TRUE,
+      Expiration.byDeltaSeconds(10*60));
+    UserUsage.trackAccess(User.getKey(credential));
   }
 
-  @Data
-  @EqualsAndHashCode(callSuper=false)
-  private static class UpdateCredentialTxn extends VoidWork {
-    private final OAuthCredential credential;
-    private final SocialNetworkProvider socialNetworkProvider;
-
-    public UpdateCredentialTxn(OAuthCredential credential) {
-      this.credential = credential;
-      socialNetworkProvider = SocialNetworkProviderFactory.getProvider(credential);
-    }
-
-    public void vrun() {
-      User user = ofy().load().key(User.getKey(credential)).now();
-      if (user == null) {
-        // throw ErrorResponseMsg.createException("User registration is required",
-        //   ErrorInfo.Type.UNREGISTERED_USER);
-        User.persistNewUser(socialNetworkProvider.createUser());
-      } else {
-        updateCachedCredential(user);
-      }
-    }
-
-    private void updateCachedCredential(User user) {
-      for (OAuthCredential persistedCredential : user.getOauthCredentials()) {
-        if (persistedCredential.getGlobalUid().equals(credential.getGlobalUid())) {
-          persistedCredential.setToken(credential.getToken());
-          BaseDao.partialUpdate(user);
-          return;
-        }
-      }
-      log.log(OAUTH_LOG_LEVEL, "[" + credential + "] " +
-          "User found by credentials, but credential does not exist for updating");
-    }
-  }
 }

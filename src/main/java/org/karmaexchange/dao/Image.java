@@ -1,6 +1,7 @@
 package org.karmaexchange.dao;
 
 import static org.karmaexchange.util.OfyService.ofy;
+import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.Date;
 
@@ -108,7 +109,14 @@ public class Image extends IdBaseDao<Image> {
     // TODO(avaliani): fill this in. Organizers of events should have
     // the ability to delete pictures also if the picture is owned by an
     // event.
-    BaseDao<?> ownerDao = (BaseDao<?>) ofy().load().key(owner).now();
-    return ownerDao.getPermission();
+
+    // This first check is required to handle bootstrapping of user profile images.
+    // TODO(avaliani): re-eval in the future.
+    if (owner.equals(getCurrentUserKey())) {
+      return Permission.ALL;
+    } else {
+      BaseDao<?> ownerDao = (BaseDao<?>) ofy().load().key(owner).now();
+      return ownerDao.getPermission();
+    }
   }
 }

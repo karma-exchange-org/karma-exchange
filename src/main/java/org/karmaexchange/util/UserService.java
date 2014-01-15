@@ -7,6 +7,8 @@ import javax.annotation.Nullable;
 
 import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.provider.SocialNetworkProvider;
+import org.karmaexchange.provider.SocialNetworkProviderFactory;
 
 import com.googlecode.objectify.Key;
 
@@ -48,7 +50,13 @@ public final class UserService {
 
   // Objectify caches this in the session cache.
   public static User getCurrentUser() {
-    return ofy().load().key(getCurrentUserKey()).now();
+    User user = ofy().load().key(getCurrentUserKey()).now();
+    if (user == null) {
+      SocialNetworkProvider socialNetworkProvider =
+          SocialNetworkProviderFactory.getProvider(getCurrentUserCredential());
+      user = User.persistNewUser(socialNetworkProvider.createUser());
+    }
+    return user;
   }
 
   public static OAuthCredential getCurrentUserCredential() {

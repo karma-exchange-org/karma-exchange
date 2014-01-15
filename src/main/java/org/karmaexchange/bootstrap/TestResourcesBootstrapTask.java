@@ -51,6 +51,7 @@ import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.SuitableForType;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.UserUsage;
 import org.karmaexchange.dao.Waiver;
 import org.karmaexchange.provider.FacebookSocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
@@ -77,7 +78,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   public enum TestUser {
     USER1("100006074376957", "Susan", "Liangberg", null,
-      Long.valueOf(6 * 60)),
+      Long.valueOf(6 * 60), false),
     USER2("100006058506752", "John", "Occhinostein", "john.ocho@KidsClub.org"),
     USER3("100006051787601", "Rick", "Narayananson", "rick.narayananson@kidsclub.org"),
     USER4("100006076592978", "Joe", "Warmanescu"),
@@ -91,11 +92,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     USER12("100006069696646", "Donna", "Zuckerson"),
     USER13("100006083973038", "Harry", "Occhinoman"),
     AMIR("1111368160", "Amir", "Valiani", null,
-      Long.valueOf(8 * 60)),
+      Long.valueOf(8 * 60), true),
     HARISH("537854733", "Harish", "Balijepalli", null,
-      Long.valueOf(4 * 60)),
+      Long.valueOf(4 * 60), true),
     POONUM("3205292", "Poonum", "Kaberwal", null,
-      Long.valueOf(4 * 60));
+      Long.valueOf(4 * 60), true);
 
     private final String fbId;
     @Getter
@@ -107,22 +108,25 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     private final String email;
     @Getter
     private final Long monthlyKarmaPtsGoal;
+    @Getter
+    private final boolean saveUsageInfo;
 
     private TestUser(String fbId, String firstName, String lastName) {
       this(fbId, firstName, lastName, null);
     }
 
     private TestUser(String fbId, String firstName, String lastName, @Nullable String email) {
-      this(fbId, firstName, lastName, email, null);
+      this(fbId, firstName, lastName, email, null, false);
     }
 
     private TestUser(String fbId, String firstName, String lastName, @Nullable String email,
-        Long monthlyKarmaPtsGoal) {
+        Long monthlyKarmaPtsGoal, boolean saveUsageInfo) {
       this.fbId = fbId;
       this.firstName = firstName;
       this.lastName = lastName;
       this.email = email;
       this.monthlyKarmaPtsGoal = monthlyKarmaPtsGoal;
+      this.saveUsageInfo = saveUsageInfo;
     }
 
     public Key<User> getKey() {
@@ -308,6 +312,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       }
       BaseDao.upsert(testUser.createUser());
       User.updateProfileImage(testUser.getKey(), testUser.getSocialNetworkProviderType());
+      if (!testUser.saveUsageInfo) {
+        UserUsage.deleteHistory(testUser.getKey());
+      }
     }
     statusWriter.println("About to persist organizations...");
     persistOrganizations();
