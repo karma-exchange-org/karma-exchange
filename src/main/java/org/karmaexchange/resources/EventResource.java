@@ -52,6 +52,7 @@ import com.googlecode.objectify.Key;
 import com.javadocmd.simplelatlng.LatLng;
 import com.javadocmd.simplelatlng.LatLngTool;
 import com.javadocmd.simplelatlng.util.LengthUnit;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 @Path("/event")
 public class EventResource extends BaseDaoResourceEx<Event, EventView> {
@@ -92,7 +93,25 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   public static ListResponseMsg<EventSearchView> eventSearch(UriInfo uriInfo,
       Collection<? extends FilterQueryClause> filters, @Nullable Key<User> eventSearchUserKey) {
-    MultivaluedMap<String, String> reqParams = uriInfo.getQueryParameters();
+    EventSearchResults eventSearchResult =
+        eventSearch(uriInfo, null, filters, eventSearchUserKey);
+    return ListResponseMsg.create(
+      eventSearchResult.results,
+      eventSearchResult.pagingInfo);
+  }
+
+  public static void eventSearchWarmup() {
+    MultivaluedMap<String, String> reqParams = new MultivaluedMapImpl();
+    eventSearch(null, reqParams, ImmutableList.<FilterQueryClause>of(), null);
+  }
+
+  private static EventSearchResults eventSearch(@Nullable UriInfo uriInfo,
+      @Nullable MultivaluedMap<String, String> reqParams,
+      Collection<? extends FilterQueryClause> filters,
+      @Nullable Key<User> eventSearchUserKey) {
+    if (uriInfo != null) {
+      reqParams = uriInfo.getQueryParameters();
+    }
     EventSearchType searchType = reqParams.containsKey(SEARCH_TYPE_PARAM) ?
         EventSearchType.valueOf(reqParams.getFirst(SEARCH_TYPE_PARAM)) : null;
     Long startTimeValue = reqParams.containsKey(START_TIME_PARAM) ?
@@ -129,7 +148,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
     Date endTime = (endTimeValue == null) ? new Date() : new Date(endTimeValue);
 
     PaginatedQuery.Builder<Event> queryBuilder =
-        PaginatedQuery.Builder.create(Event.class, uriInfo, DEFAULT_NUM_SEARCH_RESULTS)
+        PaginatedQuery.Builder.create(Event.class, uriInfo, reqParams, DEFAULT_NUM_SEARCH_RESULTS)
         .addFilters(filters);
     queryBuilder.setOrder(
       ((searchType == EventSearchType.UPCOMING) || (searchType == EventSearchType.INTERVAL)) ?
@@ -149,10 +168,17 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
     PaginatedQuery.Result<Event> queryResult = queryBuilder.build().execute();
     PostFilteredEventSearchResults postFilteredResults =
         postFilterByDistance(reqParams, queryResult);
-    return ListResponseMsg.create(
+    return new EventSearchResults(
       EventSearchView.create(postFilteredResults.results, searchType, eventSearchUserKey,
         loadReviews),
       postFilteredResults.pagingInfo);
+  }
+
+  @Data
+  private static class EventSearchResults {
+    private final List<EventSearchView> results;
+    @Nullable
+    private final PagingInfo pagingInfo;
   }
 
   @Data
