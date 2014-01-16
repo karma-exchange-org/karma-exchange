@@ -2,20 +2,20 @@
     <total-storage-limit>1000M</total-storage-limit>
     <queue>
         <name>default</name>
-        <rate>100/s</rate>
-        <bucket-size>100</bucket-size>
+        <rate>1/s</rate>
+        <bucket-size>1</bucket-size>
         <retry-parameters>
             <task-age-limit>3d</task-age-limit>
         </retry-parameters>
-        <max-concurrent-requests>300</max-concurrent-requests>
+        <max-concurrent-requests>1</max-concurrent-requests>
     </queue>
     <queue>
         <name>mapreduce-workers</name>
-        <rate>100/s</rate>
-        <bucket-size>100</bucket-size>
+        <rate>1/s</rate>
+        <bucket-size>1</bucket-size>
         <retry-parameters>
             <task-age-limit>3d</task-age-limit>
         </retry-parameters>
-        <max-concurrent-requests>100</max-concurrent-requests>
+        <max-concurrent-requests>10</max-concurrent-requests>
     </queue>
 </queue-entries>
