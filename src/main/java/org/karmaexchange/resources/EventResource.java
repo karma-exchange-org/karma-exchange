@@ -86,7 +86,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
   }
 
   @GET
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventSearchView> getResources() {
     return eventSearch(uriInfo, ImmutableList.<FilterQueryClause>of(), null);
   }
@@ -244,7 +244,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   @Path("{event_key}/expanded_search_view")
   @GET
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON})
   public Response getExpandedEventSearchView(
     @PathParam("event_key") String eventKeyStr) {
     Event event = getResourceObj(eventKeyStr);
@@ -253,7 +253,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   @Path("{event_key}/participants/{participant_type}")
   @GET
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON})
   public ListResponseMsg<EventParticipantView> getParticipants(
       @PathParam("event_key") String eventKeyStr,
       @PathParam("participant_type") ParticipantType participantType) {
@@ -268,7 +268,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   @Path("{event_key}/participants/{participant_type}")
   @POST
-  @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  @Consumes({MediaType.APPLICATION_JSON})
   public Response upsertParticipants(
       @PathParam("event_key") String eventKeyStr,
       @PathParam("participant_type") ParticipantType participantType,
@@ -290,7 +290,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   @Path("{event_key}/review")
   @GET
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON})
   public Review getReview(
       @PathParam("event_key") String eventKeyStr) {
     return ofy().load().key(Review.getKeyForCurrentUser(Key.<Event>create(eventKeyStr))).now();
@@ -298,7 +298,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   @Path("{event_key}/review")
   @POST
-  @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  @Consumes({MediaType.APPLICATION_JSON})
   public void upsertReview(
       @PathParam("event_key") String eventKeyStr,
       Review review) {
@@ -314,7 +314,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   @Path("{event_key}/review_comment_view")
   @GET
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
+  @Produces({MediaType.APPLICATION_JSON})
   public ListResponseMsg<ReviewCommentView> getReviewComments(
       @PathParam("event_key") String eventKeyStr) {
     Key<Event> eventKey = OfyUtil.createKey(eventKeyStr);
