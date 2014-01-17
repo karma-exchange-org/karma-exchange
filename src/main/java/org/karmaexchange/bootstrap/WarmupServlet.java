@@ -1,29 +1,26 @@
 package org.karmaexchange.bootstrap;
 
-import java.io.PrintWriter;
+import java.io.IOException;
 
-import org.karmaexchange.resources.EventResource;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @SuppressWarnings("serial")
-public class WarmupServlet extends BootstrapTaskServlet {
+public class WarmupServlet extends HttpServlet {
 
   @Override
-  public BootstrapTask createTask() {
-    return new WarmupTask(statusWriter);
-  }
-
-}
-
-class WarmupTask extends BootstrapTask {
-
-  public WarmupTask(PrintWriter statusWriter) {
-    super(statusWriter);
+  public void doGet(HttpServletRequest req, HttpServletResponse resp)
+      throws IOException, ServletException {
+    getServletContext()
+      .getRequestDispatcher("/api/event")
+      .forward(req, resp);
   }
 
   @Override
-  protected void performTask() {
-    statusWriter.println("Warming up event search...");
-    EventResource.eventSearchWarmup();
-    statusWriter.println("Warmup completed.");
+  public void doPost(HttpServletRequest req, HttpServletResponse resp)
+      throws IOException, ServletException {
+    doGet(req, resp);
   }
 }

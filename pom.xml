@@ -114,26 +114,10 @@
             <artifactId>appengine-pipeline</artifactId>
             <version>RELEASE</version>
         </dependency>
-        <!-- Included to resolve guava version dependency conflict. See mapreduce exclusions
-             section comment. -->
-        <dependency>
-            <groupId>com.google.appengine.tools</groupId>
-            <artifactId>appengine-gcs-client</artifactId>
-            <version>RELEASE</version>
-        </dependency>
         <dependency>
             <groupId>com.google.appengine.tools</groupId>
             <artifactId>appengine-mapreduce</artifactId>
             <version>RELEASE</version>
-            <!-- Mapreduce depends on guava min version 14.0 and max version 14.99.
-                 But it also depends on appengine-gcs-client which depends on guava version 15.
-                 To resolve this dependency conflict we ignore the mapreduce guava dependency. -->
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.javadocmd</groupId>
