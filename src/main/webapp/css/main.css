@@ -201,12 +201,16 @@ table>tbody>tr>td.table-cell-align-middle {
   margin-top: 10px;
 }
 
+.panel-no-margin {
+  margin-bottom: 0px;
+}
+
 .panel-seperated-vertical {
   margin-top: 10px;
   margin-bottom: 10px;
 }
 
-.panel-filled-light-bg, .panel-light-gray {
+.panel-body-filled, .panel-filled-light-bg, .panel-light-gray {
   /*padding: 10px;*/
   background-color: #F0F0F0;
 }
@@ -411,32 +415,6 @@ img.kex-thumbnail-user-mini {
  * Event info panels
  */
 
-.event-view-primary-info-panels {
-  overflow: hidden;
-}
-
-.event-view-icon-panel {
-  padding: 5px 10px;
-  background-color: #F0F0F0;
-  /*box-shadow: 3px 3px 0px #777;*/
-}
-
-.event-view-karma-panel {
-  padding: 5px 10px;
-  background-color: #F0F0F0;
-  text-align: center;
-  /*vertical-align: middle;*/
-
-  /*
-   * Equal height hack
-   * http://stackoverflow.com/questions/18227326/make-columns-the-same-height-in-bootstrap
-   */
-  margin-bottom: -99999px;
-  padding-bottom: 99999px;
-
-  /*box-shadow: 3px 3px 0px #777;*/
-}
-
 .event-view-icon-img-div {
   width: 50px;
   display: table-cell;
@@ -476,16 +454,6 @@ img.kex-thumbnail-user-mini {
  * Event view details tabs
  */
 
-.event-description-panel {
-  padding: 1px 15px 0px 15px;
-  background-color: #F0F0F0;
-}
-
-.event-impact-panel {
-  padding: 1px 15px 0px 15px;
-  background-color: #F0F0F0;
-}
-
 .event-description-sub-panel {
   margin-bottom: 20px;
 }
@@ -495,7 +463,6 @@ img.kex-thumbnail-user-mini {
 }
 
 .event-impact-rating-sub-panel {
-  padding-top: 20px;
   padding-bottom: 20px;
   margin-bottom: 20px;
   border-bottom: 1px solid #ddd;
@@ -1075,6 +1042,7 @@ img {
     font-size: 30px;
   }
 }
+/*
 #event-search #hero .sub-text {
   -webkit-font-smoothing: antialiased;
   -webkit-animation-delay: 0.6s;
@@ -1101,6 +1069,7 @@ img {
     font-size: 15px;
   }
 }
+*/
 #event-search #hero .cta {
   -webkit-animation-delay: 0.6s;
   -moz-animation-delay: 0.6s;
@@ -1108,7 +1077,12 @@ img {
   -ms-animation-delay: 0.6s;
   animation-delay: 0.6s;
   text-align: center;
-  margin-top: 60px;
+  margin-top: 40px;
+}
+@media (max-width: 767px) {
+  #event-search #hero .cta {
+    margin-top: 25px;
+  }
 }
 #event-search #hero .cta a {
   margin: 0px 20px;
