@@ -13,146 +13,143 @@
             </div>
         </div>
 
-        <div class="row event-view-primary-info-panels">
+        <div class="row">
             <div class="col-md-6">
 
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="event-view-icon-panel">
+                <div class="panel panel-default panel-no-margin">
+                    <div class="panel-body panel-body-filled">
 
-                            <div class="event-view-icon-img-div">
-                                <div class="text-center">
-                                    <div class="event-view-icon-img-only-div">
-                                        <i class="icon-calendar icon-white"></i>
-                                    </div>
-                                    <div>
-                                        <small>
-                                            <a href="//www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank">
-                                                Export
-                                            </a>
-                                        </small>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="event-view-icon-text-div">
-
-                                <div class="event-view-icon-text-big">
-                                    <strong>
-                                        {{event.startTime | date:'EEEE, MMM d, y'}}
-                                    </strong>
-                                </div>
-                                <div class="event-view-icon-text-big">
-                                    <strong>
-                                        {{event.startTime|date:'shortTime'}} to {{event.endTime|date:'shortTime'}}
-                                    </strong>
-                                </div>
-
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-
-                <div class="row vertical-panel-padding">
-                    <div class="col-md-12">
-                        <div class="event-view-icon-panel">
-
-                            <div class="event-view-icon-img-div">
-                                <div class="text-center">
-
-                                    <div class="event-view-icon-img-only-div">
-                                        <i class="icon-map-marker icon-white"></i>
-                                    </div>
-                                    <div>
-                                        <small>
-                                            <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
-                                                Map
-                                            </a>
-                                        </small>
-                                    </div>
-
-                                </div>
-                            </div>
-                            <div class="event-view-icon-text-div">
-
-                                <div class="event-view-icon-text-big">
-                                    <strong>
-                                        {{event.location.title}}
-                                    </strong>
+                        <div class="event-view-icon-img-div">
+                            <div class="text-center">
+                                <div class="event-view-icon-img-only-div">
+                                    <i class="icon-calendar icon-white"></i>
                                 </div>
                                 <div>
-                                    {{event.location.address.street}}
-                                    <br>
-                                    {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}
+                                    <small>
+                                        <a href="//www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank">
+                                            Export
+                                        </a>
+                                    </small>
                                 </div>
+                            </div>
+                        </div>
+                        <div class="event-view-icon-text-div">
 
+                            <div class="event-view-icon-text-big">
+                                <strong>
+                                    {{event.startTime | date:'EEEE, MMM d, y'}}
+                                </strong>
+                            </div>
+                            <div class="event-view-icon-text-big">
+                                <strong>
+                                    {{event.startTime|date:'shortTime'}} to {{event.endTime|date:'shortTime'}}
+                                </strong>
                             </div>
 
                         </div>
+
                     </div>
                 </div>
 
+                <div class="panel panel-default panel-seperated-vertical">
+                    <div class="panel-body panel-body-filled">
 
+                        <div class="event-view-icon-img-div">
+                            <div class="text-center">
+
+                                <div class="event-view-icon-img-only-div">
+                                    <i class="icon-map-marker icon-white"></i>
+                                </div>
+                                <div>
+                                    <small>
+                                        <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
+                                            Map
+                                        </a>
+                                    </small>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="event-view-icon-text-div">
+
+                            <div class="event-view-icon-text-big">
+                                <strong>
+                                    {{event.location.title}}
+                                </strong>
+                            </div>
+                            <div>
+                                {{event.location.address.street}}
+                                <br>
+                                {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
 
 
             </div>
 
             <div class="col-md-6">
-                <div class="event-view-karma-panel">
 
-                    <div class="event-view-volunteers-needed" ng-show="event.status!='COMPLETED'">
-                        {{event.maxRegistrations - event.registeredUsers.length | limit10Verbose }}
-                    </div>
+                <div class="panel panel-default">
+                    <div class="panel-body panel-body-filled text-center">
 
-                    <div class="font-size-h4">
-                        <event-registration-info
-                            registration-info="event.registrationInfo"
-                            type="'DETAILS'">
-                        </event-registration-info>
-                    </div>
-                    <div class="event-view-action">
-                        <div ng-show="event.registrationInfo=='ORGANIZER'">
-                            <a href="#!/event/{{event.key}}/edit">Edit event</a>
+                        <div class="event-view-volunteers-needed" ng-show="event.status!='COMPLETED'">
+                            {{event.maxRegistrations - event.registeredUsers.length | limit10Verbose }}
                         </div>
+
+                        <div class="font-size-h4">
+                            <event-registration-info
+                                registration-info="event.registrationInfo"
+                                type="'DETAILS'">
+                            </event-registration-info>
+                        </div>
+                        <div class="event-view-action">
+                            <div ng-show="event.registrationInfo=='ORGANIZER'">
+                                <a href="#!/event/{{event.key}}/edit">Edit event</a>
+                            </div>
+                            <div ng-show="event.status!='COMPLETED'">
+                                <div ng-show="event.registrationInfo=='REGISTERED'">
+                                    <a href="" ng-click="unregister()">Unregister</a>
+                                </div>
+                                <div ng-show="event.registrationInfo=='WAIT_LISTED'">
+                                    <a href="" ng-click="unregister()">Remove from waitlist</a>
+                                </div>
+                            </div>
+                        </div>
+
                         <div ng-show="event.status!='COMPLETED'">
-                            <div ng-show="event.registrationInfo=='REGISTERED'">
-                                <a href="" ng-click="unregister()">Unregister</a>
-                            </div>
-                            <div ng-show="event.registrationInfo=='WAIT_LISTED'">
-                                <a href="" ng-click="unregister()">Remove from waitlist</a>
-                            </div>
+                            <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')">
+                                <i class="icon-ok icon-white">
+                                </i>
+                                Register
+                            </button>
+                            <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')">
+                                <i class="icon-ok icon-white">
+                                </i>
+                                Wait list
+                            </button>
                         </div>
-                    </div>
 
-                    <div ng-show="event.status!='COMPLETED'">
-                        <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')">
-                            <i class="icon-ok icon-white">
-                            </i>
-                            Register
-                        </button>
-                        <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')">
-                            <i class="icon-ok icon-white">
-                            </i>
-                            Wait list
-                        </button>
-                    </div>
+                        <div class="font-size-h3">
+                            <karma-hours karma-points="event.karmaPoints"></karma-hours>
+                        </div>
+                        <div ng-show="event.status=='COMPLETED'">
+                            <aggregate-rating value="event.rating">
+                            </aggregate-rating>
+                        </div>
 
-                    <div class="font-size-h3">
-                        <karma-hours karma-points="event.karmaPoints"></karma-hours>
-                    </div>
-                    <div ng-show="event.status=='COMPLETED'">
-                        <aggregate-rating value="event.rating">
-                        </aggregate-rating>
-                    </div>
+                        <ul class="list-inline-no-padding">
+                            <li>
+                                <share-buttons type="'event'" title="event.title" description="event.description" image="'//s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
+                                </share-buttons>
+                            </li>
+                        </ul>
 
-                    <ul class="list-inline-no-padding">
-                        <li>
-                            <share-buttons type="'event'" title="event.title" description="event.description" image="'//s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
-                            </share-buttons>
-                        </li>
-                    </ul>
 
+                    </div>
                 </div>
 
             </div>
@@ -160,7 +157,7 @@
         </div>
 
 
-        <div class="row vertical-panel-padding">
+        <div class="row panel-seperated-vertical">
             <div class="col-md-12">
                 <tabset>
                     <tab active="tabs.details.active" disabled="tabs.details.disabled" select="tabManager.select('details')">
@@ -169,34 +166,39 @@
                         </tab-heading>
 
 
-                        <div class="event-description-panel">
-                            <div ng-show="event.description" class="event-description-sub-panel">
-                                <h4>
-                                    <strong>
-                                        Description
-                                    </strong>
-                                </h4>
 
-                                <span ng-bind-html-unsafe="event.description | noHTML | newlines">
-                                </span>
-                            </div>
-                            <div ng-show="event.specialInstructions" class="event-description-sub-panel">
-                                <h4>
-                                    <strong>
-                                        Special instructions
-                                    </strong>
-                                </h4>
-                                <span ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines">
-                                </span>
-                            </div>
-                            <div class="event-description-sub-panel">
-                                <h4>
-                                    <strong>
-                                        Comments and discussion
-                                    </strong>
-                                </h4>
-                                <kex-fb-comments href="{{KexUtil.getSEOUrl()}}" num-posts="20">
-                                </kex-fb-comments>
+                        <div class="panel panel-default panel-no-margin">
+                            <div class="panel-body panel-body-filled">
+
+                                <div ng-show="event.description" class="event-description-sub-panel">
+                                    <h4>
+                                        <strong>
+                                            Description
+                                        </strong>
+                                    </h4>
+
+                                    <span ng-bind-html-unsafe="event.description | noHTML | newlines">
+                                    </span>
+                                </div>
+                                <div ng-show="event.specialInstructions" class="event-description-sub-panel">
+                                    <h4>
+                                        <strong>
+                                            Special instructions
+                                        </strong>
+                                    </h4>
+                                    <span ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines">
+                                    </span>
+                                </div>
+                                <div class="event-description-sub-panel">
+                                    <h4>
+                                        <strong>
+                                            Comments and discussion
+                                        </strong>
+                                    </h4>
+                                    <kex-fb-comments href="{{KexUtil.getSEOUrl()}}" num-posts="20">
+                                    </kex-fb-comments>
+                                </div>
+
                             </div>
                         </div>
 
@@ -208,46 +210,48 @@
                         </tab-heading>
 
 
-                        <div class="event-impact-panel">
+                        <div class="panel panel-default panel-no-margin">
+                            <div class="panel-body panel-body-filled">
 
-                            <div ng-show="EventUtil.canWriteReview(event)" class="event-impact-rating-sub-panel">
-                                <div ng-show="currentUserRating.value" class="event-impact-rating-text">
-                                    Your rating of this event:
+                                <div ng-show="EventUtil.canWriteReview(event)" class="event-impact-rating-sub-panel">
+                                    <div ng-show="currentUserRating.value" class="event-impact-rating-text">
+                                        Your rating of this event:
+                                    </div>
+                                    <div ng-hide="currentUserRating.value" class="event-impact-rating-text">
+                                        How was the event?
+                                    </div>
+                                    <div class="event-impact-rating-stars">
+                                        <event-user-rating user-rating="currentUserRating" event-key="event.key">
+                                        </event-user-rating>
+                                    </div>
                                 </div>
-                                <div ng-hide="currentUserRating.value" class="event-impact-rating-text">
-                                    How was the event?
+                                <div class="event-impact-sub-panel">
+                                    <div>
+                                        <h4><strong>Impact summary</strong></h4>
+                                    </div>
+                                    <div ng-bind-html-unsafe="event.impactSummary | noHTML | newlines">
+                                    </div>
                                 </div>
-                                <div class="event-impact-rating-stars">
-                                    <event-user-rating user-rating="currentUserRating" event-key="event.key">
-                                    </event-user-rating>
-                                </div>
-                            </div>
-                            <div class="event-impact-sub-panel">
-                                <div>
-                                    <h4><strong>Impact summary</strong></h4>
-                                </div>
-                                <div ng-bind-html-unsafe="event.impactSummary | noHTML | newlines">
-                                </div>
-                            </div>
 
-                            <div class="event-impact-sub-panel" ng-show="impactImgs.length">
-                                <carousel interval="-1">
-                                    <slide ng-repeat="img in impactImgs" active="img.active">
-                                        <img ng-src="{{img.src}}" class="event-impact-img">
-                                    </slide>
-                                </carousel>
-                            </div>
+                                <div class="event-impact-sub-panel" ng-show="impactImgs.length">
+                                    <carousel interval="-1">
+                                        <slide ng-repeat="img in impactImgs" active="img.active">
+                                            <img ng-src="{{img.src}}" class="event-impact-img">
+                                        </slide>
+                                    </carousel>
+                                </div>
 
-                            <div class="event-impact-sub-panel">
-                                <h4>
-                                    <strong>
-                                        Event feedback
-                                    </strong>
-                                </h4>
-                                <kex-fb-comments href="{{KexUtil.getSEOUrl()}}" num-posts="20">
-                                </kex-fb-comments>
-                            </div>
+                                <div class="event-impact-sub-panel">
+                                    <h4>
+                                        <strong>
+                                            Event feedback
+                                        </strong>
+                                    </h4>
+                                    <kex-fb-comments href="{{KexUtil.getSEOUrl()}}" num-posts="20">
+                                    </kex-fb-comments>
+                                </div>
 
+                            </div>
                         </div>
 
                     </tab>
