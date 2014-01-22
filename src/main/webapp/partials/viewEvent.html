@@ -136,12 +136,12 @@
                         <div class="font-size-h3">
                             <karma-hours karma-points="event.karmaPoints"></karma-hours>
                         </div>
-                        <div ng-show="event.status=='COMPLETED'">
+                        <div ng-show="event.status=='COMPLETED'" class="event-view-rating">
                             <aggregate-rating value="event.rating">
                             </aggregate-rating>
                         </div>
 
-                        <div class="event-view-share-buttons">
+                        <div>
                             <share-buttons type="'event'" title="event.title" description="event.description" image="'//s3.mistinfo.com/32/d8/32d8eab76f4c242f665bda66b5edc6c5.jpg'">
                             </share-buttons>
                         </div>
