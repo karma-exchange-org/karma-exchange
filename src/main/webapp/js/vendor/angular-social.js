@@ -19,7 +19,7 @@ angular.module("ngSocial", [])
         },
         replace: true,
         transclude: true,
-        template: '<div class="ng-social-container ng-cloak"><ul class="ng-social" ng-transclude></ul></div>',
+        template: '<div class="ng-social-container ng-cloak"><ul class="ng-social list-inline" ng-transclude></ul></div>',
         controller: ["$scope", "$q", "$http", function($scope, $q, $http) {
             var ctrl = {
                 init: function(scope, element, options) {
@@ -107,7 +107,7 @@ angular.module("ngSocial").directive('ngSocialFacebook', function() {
             getNumber: function(data) {
             	    if(data.data[0])
             	    {
-            	    	return data.data[0].total_count;    
+            	    	return data.data[0].total_count;
             	    }
                 return 0;
             }
@@ -126,7 +126,7 @@ angular.module("ngSocial").directive('ngSocialFacebook', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" ng-click="ctrl.clickShare($event, options)" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                     </a> \
                    </li>',
         controller: function($scope) {
@@ -146,7 +146,7 @@ angular.module("ngSocial").directive('ngSocialFacebook', function() {
 'use strict';
 
 angular.module("ngSocial").directive('ngSocialFacebookMessage', ["Facebook",function() {
- 
+
     return {
         restrict: 'C',
 
@@ -163,14 +163,14 @@ angular.module("ngSocial").directive('ngSocialFacebookMessage', ["Facebook",func
         },
         link: function(scope, element, attrs, ctrl) {
             element.addClass('ng-social-facebook-message');
-           
+
         }
     }
 }]);
 'use strict';
 
 angular.module("ngSocial").directive('ngSocialGoogleCalendar', ["Facebook",function() {
- 
+
     return {
         restrict: 'C',
 
@@ -182,7 +182,7 @@ angular.module("ngSocial").directive('ngSocialGoogleCalendar', ["Facebook",funct
         },
         link: function(scope, element, attrs, ctrl) {
             element.addClass('ng-social-facebook-message');
-           
+
         }
     }
 }]);
@@ -217,7 +217,7 @@ angular.module("ngSocial").directive('ngSocialTwitter', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" ng-click="ctrl.clickShare($event, options)" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                    </li>',
         controller: function($scope) {
         },
@@ -250,7 +250,7 @@ angular.module("ngSocial").directive('ngSocialGooglePlus', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" ng-click="ctrl.clickShare($event, options)" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                    </li>',
         controller: function($scope, $http) {
             /*var url = 'https://plusone.google.com/_/+1/fastbutton?url=' + encodeURIComponent('//news.mistinfo.com/');
@@ -309,7 +309,7 @@ angular.module("ngSocial").directive('ngSocialVk', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" ng-click="ctrl.clickShare($event, options)" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                         <span class="ng-social-text" ng-transclude></span> \
                     </a> \
                     <span ng-show="count" class="ng-social-counter">{{ count }}</span> \
@@ -351,7 +351,7 @@ angular.module("ngSocial").directive('ngSocialOdnoklassniki', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" ng-click="ctrl.clickShare($event, options)" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                         <span class="ng-social-text" ng-transclude></span> \
                     </a> \
                     <span ng-show="count" class="ng-social-counter">{{ count }}</span> \
@@ -395,7 +395,7 @@ angular.module("ngSocial").directive('ngSocialMailru', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" ng-click="ctrl.clickShare($event, options)" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                         <span class="ng-social-text" ng-transclude></span> \
                     </a> \
                     <span ng-show="count" class="ng-social-counter">{{ count }}</span> \
@@ -437,7 +437,7 @@ angular.module("ngSocial").directive('ngSocialPinterest', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" ng-click="ctrl.clickShare($event, options)" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                         <span class="ng-social-text" ng-transclude></span> \
                     </a> \
                     <span ng-show="count" class="ng-social-counter">{{ count }}</span> \
@@ -475,7 +475,7 @@ angular.module("ngSocial").directive('ngSocialGithubForks', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                         <span class="ng-social-text" ng-transclude></span> \
                     </a> \
                     <span ng-show="count" class="ng-social-counter">{{ count }}</span> \
@@ -517,7 +517,7 @@ angular.module("ngSocial").directive('ngSocialGithub', function() {
         transclude: true,
         template: '<li> \
                     <a ng-href="{{ctrl.link(options)}}" target="_blank" class="ng-social-button"> \
-                        <span class="ng-social-icon"></span> \
+                        <div class="ng-social-icon"></div> \
                         <span class="ng-social-text" ng-transclude></span> \
                     </a> \
                     <span ng-show="count" class="ng-social-counter">{{ count }}</span> \

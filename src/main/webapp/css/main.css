@@ -450,6 +450,10 @@ img.kex-thumbnail-user-mini {
   /*font-style: italic;*/
 }
 
+.event-view-share-buttons {
+  padding-top: 5px;
+}
+
 /*
  * Event view details tabs
  */
