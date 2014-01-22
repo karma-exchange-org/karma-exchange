@@ -1024,8 +1024,8 @@ kexApp.directive('shareButtons', function(KexUtil) {
                             'description="description" ' +
                             'image="image">' +
                         '<li class="ng-social-facebook">Facebook</li>' +
-                        '<li class="ng-social-google-plus">Google+</li>' +
                         '<li class="ng-social-twitter">Twitter</li>' +
+                        '<li class="ng-social-google-plus">Google+</li>' +
                     '</ul>' +
                 '</div>'
         }
