@@ -9,18 +9,18 @@
     width: 32px;
     height: 32px;
     vertical-align: middle;
-    background: no-repeat url(/img/social_icons.webp) 0 -346px;
-    background-size: 32px 1401px;
+    background: no-repeat url(/img/social_icons.png) 0 -432px;
+    background-size: auto;
  }
 .ng-social-icon:hover {
     opacity:0.7;
 }
 .ng-social-facebook .ng-social-icon {
-    background-position: 0 -346px;
+    background-position: 0 -432px;
  }
 .ng-social-twitter .ng-social-icon {
-    background-position: 0 -968px;
+    background-position: 0 -1033px;
  }
 .ng-social-google-plus .ng-social-icon {
-    background-position: 0 -934px;
+    background-position: 0 -396px;
 }
