@@ -191,47 +191,16 @@
                 </tab-heading>
 
                 <div class="row row-no-margin">
-                    <div class="col-md-5">
-
-                        <table class="table">
-                            <thead>
-                                <th colspan="2" class="leaderboard-header">
-                                    All Time
-                                </th>
-                            </thead>
-                            <tbody>
-                                <tr ng-class="{true:'leaderboard-even-row', false: 'leaderboard-odd-row'}[($index % 2) == 0]" ng-repeat="leader in allTimeLeaders.scores">
-                                    <td class="leaderboard-num-col">
-                                        {{ $index + 1 }}.
-                                    </td>
-                                    <td class="leaderboard-leader-col">
-                                        <event-participant-summary user="leader.user" type="LEADERBOARD"></event-participant-summary>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
+                    <div class="col-md-5" ng-show="allTimeLeaders">
+                        <leaderboard-table scores="allTimeLeaders.scores" type="'ALL_TIME'">
+                        </leaderboard-table>
                     </div>
-                    <div class="col-md-5">
-
-                        <table class="table">
-                            <thead>
-                                <th colspan="2" class="leaderboard-header">
-                                    Last Thirty Days
-                                </th>
-                            </thead>
-                            <tbody>
-                                <tr ng-class="{true:'leaderboard-even-row', false: 'leaderboard-odd-row'}[($index % 2) == 0]" ng-repeat="leader in lastMonthLeaders.scores">
-                                    <td class="leaderboard-num-col">
-                                        {{ $index + 1 }}.
-                                    </td>
-                                    <td class="leaderboard-leader-col">
-                                        <event-participant-summary user="leader.user" type="LEADERBOARD"></event-participant-summary>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
+                    <div class="col-md-5" ng-show="lastMonthLeaders">
+                        <leaderboard-table scores="lastMonthLeaders.scores" type="'THIRTY_DAY'">
+                        </leaderboard-table>
+                    </div>
+                    <div ng-show="(allTimeLeaders.scores.length == 0) && (lastMonthLeaders.scores.length == 0)">
+                        <h4><em>Leaderboards are not available at this time</em></h4>
                     </div>
                 </div>
             </tab>
