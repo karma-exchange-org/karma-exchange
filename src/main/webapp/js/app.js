@@ -1250,11 +1250,48 @@ kexApp.directive('eventParticipantSummary', function() {
         restrict: 'E',
         scope: {
             user: '=',
+            type: '=',
+            karmaPoints: '=',
+            karmaPointsDisplayType: '@'
+        },
+        replace: true,
+        transclude: false,
+        compile: function(element, attrs) {
+            if (!attrs.karmaPointsDisplayType) { attrs.karmaPointsDisplayType = 'BRIEF'; }
+
+            return function (scope, element, attrs) {
+                scope.$watch('user', updateKarmaPoints);
+                scope.$watch('karmaPoints', updateKarmaPoints);
+
+                function updateKarmaPoints() {
+                    if (angular.isDefined(scope.karmaPoints)) {
+                        scope.summaryKarmaPoints = scope.karmaPoints;
+                    } else if (angular.isDefined(scope.user)) {
+                        scope.summaryKarmaPoints = scope.user.karmaPoints;
+                    }
+                };
+            }
+        },
+        templateUrl: 'template/kex/event-participant-summary.html'
+    }
+});
+
+kexApp.directive('leaderboardTable', function() {
+    return {
+        restrict: 'E',
+        scope: {
+            scores: '=',
             type: '='
         },
         replace: true,
         transclude: false,
-        templateUrl: 'template/kex/event-participant-summary.html'
+        link: function (scope, element, attrs) {
+            scope.headerText = {
+                THIRTY_DAY: 'Last Thirty Days',
+                ALL_TIME: 'All Time'
+            };
+        },
+        templateUrl: 'template/kex/leaderboard-table.html'
     }
 });
 

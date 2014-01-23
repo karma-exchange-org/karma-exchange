@@ -575,29 +575,28 @@ img.kex-thumbnail-user-mini {
  * Leaderboard
  */
 
+.leaderboard > .list-group-item {
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
 .leaderboard-header {
   font-size: 18px;
+  font-weight: 900;
   /*background-color: #CADFFF;*/
-  background-color: #3E7A99;
-  color: #eee
+  /*background-color: #3E7A99;*/
+  /*color: #eee*/
 }
 
-table>tbody>tr>.leaderboard-num-col {
+.leaderboard-leader-num {
+  display: table-cell;
   vertical-align: middle;
-  width: 20px;
+  width: 25px;
 }
 
-table>tbody>tr>.leaderboard-leader-col {
-  padding: 5px;
-}
-
-.leaderboard-even-row {
-  background-color: #F0F0F0;
-}
-
-.leaderboard-odd-row {
-  background-color: #F0F0F0;
-  /*background-color: #DFDFDF;*/
+.leaderboard-leader-name {
+  display: table-cell;
+  vertical-align: top;
 }
 
 /*

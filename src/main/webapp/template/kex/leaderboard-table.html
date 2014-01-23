@@ -1,0 +1,18 @@
+<ul class="list-group leaderboard">
+    <li class="list-group-item active leaderboard-header">
+        {{ headerText[type] }}
+    </li>
+    <li class="list-group-item" ng-repeat="leader in scores">
+        <div class="leaderboard-leader-num">
+            {{ $index + 1 }}.
+        </div>
+        <div class="leaderboard-leader-name">
+            <event-participant-summary
+                user="leader.user"
+                type="LEADERBOARD"
+                karma-points="leader.leaderboardKarmaPoints"
+                karma-points-display-type="VERBOSE">
+            </event-participant-summary>
+        </div>
+    </li>
+</ul>
