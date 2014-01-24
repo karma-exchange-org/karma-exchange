@@ -81,6 +81,7 @@ kexApp = angular.module( "kexApp",
         // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         .when( '/me', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
         .when( '/about', { templateUrl : 'partials/about.html', reloadOnSearch: false } )
+        .when( '/tour', { controller : tourCtrl, templateUrl : 'partials/tour.html', reloadOnSearch: false } )
         .when( '/awards', { templateUrl : 'partials/awards.html', reloadOnSearch: false } )
         .when( '/contact', { templateUrl : 'partials/contact.html', reloadOnSearch: false } )
         .when( '/user/:userId', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
@@ -773,7 +774,7 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
             return $facebook.login();
         },
 
-        loginRequired: function() {
+        loginRequired: function(showAlert) {
             var def = $q.defer();
 
             if ( isLoggedIn() ) {
@@ -785,12 +786,16 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
                             def.resolve();
                         } else {
                             def.reject();
-                            $rootScope.showAlert('Login required', "danger");
+                            if (!angular.isDefined(showAlert) || showAlert) {
+                                $rootScope.showAlert('Login required', "danger");
+                            }
                         }
                     },
                     function() {
                         def.reject();
-                        $rootScope.showAlert('Login required', "danger");
+                        if (!angular.isDefined(showAlert) || showAlert) {
+                            $rootScope.showAlert('Login required', "danger");
+                        }
                     });
             }
 
@@ -2521,6 +2526,14 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     }
 
     refreshEvent();
+};
+
+var tourCtrl = function($scope, FbUtil, $location) {
+    $scope.login = function () {
+        FbUtil.loginRequired(false).then( function () {
+            $location.path("/");
+        });
+    }
 };
 
 var EventModalInstanceCtrl = function ($scope, $modalInstance, event, header, $rootScope) {

@@ -1099,3 +1099,126 @@ img {
 }
 
 /***** END BANNER *****/
+
+/***** TOUR *****/
+
+.tour {
+  /* mixin found in partials/snippets */
+  margin-top: 15px;
+}
+/*
+@media (max-width: 991px) {
+  .tour {
+    margin-top: 50px;
+  }
+}
+*/
+.tour .header {
+  text-align: center;
+}
+.tour .header h1 {
+  /*color: #555;*/
+  font-weight: 200;
+  font-size: 46px;
+  line-height: 51px;
+}
+@media (max-width: 767px) {
+  .tour .header h1 {
+    font-size: 25px;
+    line-height: 35px;
+  }
+}
+.tour .header p {
+  /*font-weight: 300;*/
+  font-size: 18px;
+  line-height: 25px;
+  font-family: Georgia, Serif;
+  color: #666666;
+  word-spacing: -0.06em;
+  /*color: #757575;*/
+}
+.tour .feature {
+  margin-top: 55px;
+  -webkit-font-smoothing: antialiased;
+}
+@media (min-width: 992px) {
+  .tour .feature.backwards .info {
+    float: right;
+  }
+  .tour .feature.backwards .image {
+    float: left;
+  }
+  .tour .feature.backwards .image img {
+    margin: 0 auto;
+  }
+}
+@media (max-width: 991px) {
+  .tour .feature {
+    margin-top: 10px;
+  }
+}
+.tour .feature .info h4 {
+  /*color: #3B88B6;*/
+  font-weight: 300;
+  font-size: 30px;
+  line-height: 39px;
+  margin-top: 35px;
+  text-align: center;
+  width: 83%;
+}
+@media (max-width: 991px) {
+  .tour .feature .info h4 {
+    text-align: center;
+    width: 100%;
+  }
+}
+.tour .feature .info p {
+  /*color: #6C7279;*/
+  color: #666666;
+  word-spacing: -0.06em;
+  font-family: Georgia, Serif;
+  font-size: 17px;
+  line-height: 22px;
+  margin-top: 20px;
+  width: 83%;
+  font-weight: normal;
+}
+@media (max-width: 991px) {
+  .tour .feature .info p {
+    text-align: center;
+    width: 100%;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
+@media (max-width: 991px) {
+  .tour .feature .image img {
+    margin: 0 auto !important;
+    margin-top: 20px;
+  }
+}
+
+.tour .footer {
+  text-align: center;
+  margin-top: -60px;
+}
+@media (max-width: 991px) {
+  .tour .footer {
+    margin-top: -20px;
+  }
+}
+.tour .footer button {
+  /*color: #555;*/
+  font-size: 18px;
+}
+
+.tour .feature {
+  margin-bottom: 130px;
+}
+@media (max-width: 991px) {
+  .tour .feature {
+    margin-bottom: 50px;
+  }
+}
+
+/***** END TOUR *****/
