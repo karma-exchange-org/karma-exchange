@@ -12,15 +12,11 @@
 
 <div class="container">
 
-        <div class="row">
-                <div class="col-md-12">
-                        <div class="input-group">
-                                <input class="form-control" type="text" ng-model="query" placeholder="Search for karma opportunities...">
-                                <span class="input-group-addon">
-                                        <i class="icon-search"></i>
-                                </span>
-                        </div>
-                </div>
+        <div class="input-group">
+                <input class="form-control" type="text" ng-model="query" placeholder="Search for karma opportunities...">
+                <span class="input-group-addon">
+                        <i class="icon-search"></i>
+                </span>
         </div>
         <!--
             Commenting this out until it becomes functional
@@ -48,7 +44,7 @@
                 <h4><em>No <span ng-show="query.length > 0">matching </span> upcoming events</em></h4>
             </div>
         </div>
-        <div ng-hide="isMap" class="row col-md-12 vertical-panel-padding">
+        <div ng-hide="isMap" class="vertical-panel-padding">
 
             <ul class="list-unstyled container">
                 <li ng-repeat="event in events.data" id="event_{{event.key}}">
@@ -58,38 +54,40 @@
                                 {{event.startTime | date:event.dateFormat}}
                         </h4>
 
-                        <div class="well row col-md-12">
+                        <div class="panel panel-default">
+                            <div class="panel-body panel-body-filled">
 
-
-                                <div class="col-md-2 event-search-result-summary">
-                                        <a href ng-click="toggleEvent();">
-                                                <p class="font-size-h4">{{event.startTime | date:'shortTime'}}</p>
-                                        </a>
-                                        <event-registration-info
-                                            registration-info="event.registrationInfo"
-                                            type="'UPCOMING'">
-                                        </event-registration-info>
+                                <div class="row">
+                                    <div class="col-md-2 event-search-result-summary">
+                                            <a href ng-click="toggleEvent();">
+                                                    <p class="font-size-h4">{{event.startTime | date:'shortTime'}}</p>
+                                            </a>
+                                            <event-registration-info
+                                                registration-info="event.registrationInfo"
+                                                type="'UPCOMING'">
+                                            </event-registration-info>
+                                    </div>
+                                    <div class="col-md-10 event-search-result-summary">
+                                            <div class="pull-left">
+                                                    <a href ng-click="toggleEvent();">
+                                                            <strong class="font-size-h4">{{event.title}}</strong>
+                                                            <br>
+                                                            <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
+                                                    </a>
+                                            </div>
+                                            <div class="pull-right">
+                                                    <p class="text-right font-size-h4">
+                                                            <a href ng-click="toggleEvent();">
+                                                                <karma-hours karma-points="event.karmaPoints"></karma-hours>
+                                                            </a>
+                                                    </p>
+                                                    <div class="pull-right">
+                                                            <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
+                                                    </div>
+                                            </div>
+                                    </div>
                                 </div>
-                                <div class="col-md-10 event-search-result-summary">
-                                        <div class="pull-left">
-                                                <a href ng-click="toggleEvent();">
-                                                        <strong class="font-size-h4">{{event.title}}</strong>
-                                                        <br>
-                                                        <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
-                                                </a>
-                                        </div>
-                                        <div class="pull-right">
-                                                <p class="text-right font-size-h4">
-                                                        <a href ng-click="toggleEvent();">
-                                                            <karma-hours karma-points="event.karmaPoints"></karma-hours>
-                                                        </a>
-                                                </p>
-                                                <div class="pull-right">
-                                                        <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
-                                                </div>
-                                        </div>
-                                </div>
-                                <div class="row event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
+                                <div class="event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
 
                                         <table class="table">
                                                 <thead>
@@ -172,6 +170,8 @@
                                         </table>
 
                                 </div>
+
+                            </div>
                         </div>
 
                     </div>
@@ -180,4 +180,5 @@
             </ul>
 
         </div>
+
 </div>
