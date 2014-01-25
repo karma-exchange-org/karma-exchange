@@ -9,7 +9,9 @@ angular
                 numLoadings++;
                 loadingScreen.show();
                 function hideLoadingScreen() {
-                    if (!(--numLoadings)) loadingScreen.hide();
+                    if (!(--numLoadings)) {
+                        loadingScreen.hide();
+                    }
                 }
                 return promise.then(function(response) {
                     hideLoadingScreen();
@@ -27,18 +29,18 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
     $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {
         // console.log(angular.toJson(headersGetter()));
         // Check if it is a post request. Mutations require authentication.
-        if ((headersGetter()["Content-Type"] != null) && !isLoggedIn()) {
-            // Temporarily disabling until this functionality is completed to allow for login.
-            // alert("login required");
-        }
+        // if ((headersGetter()["Content-Type"] !== null) && !isLoggedIn()) {
+        //     // Temporarily disabling until this functionality is completed to allow for login.
+        //     // alert("login required");
+        // }
         return data;
     });
     $httpProvider.responseInterceptors.push(function($rootScope, $timeout, $q) {
         return function(promise) {
             return promise.then(function(successResponse) {
-                if (successResponse.config.method.toUpperCase() != 'GET' && !isExternal(successResponse.config.url)) {
-                    // $rootScope.showAlert("Saved successfully!", "success");
-                }
+                // if (successResponse.config.method.toUpperCase() != 'GET' && !isExternal(successResponse.config.url)) {
+                //     // $rootScope.showAlert("Saved successfully!", "success");
+                // }
                 return successResponse;
             }, function(errorResponse) {
                 if (!isExternal(errorResponse.config.url)) {
@@ -75,65 +77,20 @@ kexApp = angular.module( "kexApp",
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "loadingOnAJAX", "ngFacebook",
      "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs"] )
 
-.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
-    $routeProvider
-        // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
-        // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
-        .when( '/me', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
-        .when( '/about', { templateUrl : 'partials/about.html', reloadOnSearch: false } )
-        .when( '/tour', { controller : tourCtrl, templateUrl : 'partials/tour.html', reloadOnSearch: false } )
-        .when( '/awards', { templateUrl : 'partials/awards.html', reloadOnSearch: false } )
-        .when( '/contact', { templateUrl : 'partials/contact.html', reloadOnSearch: false } )
-        .when( '/user/:userId', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
-        .when( '/mysettings', { controller : meEditCtrl, templateUrl : 'partials/mysettings.html', reloadOnSearch: false } )
-        .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html', reloadOnSearch: false } )
-        .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
-        .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
-        .when( '/event/:eventId', { controller : viewEventCtrl, templateUrl : 'partials/viewEvent.html', reloadOnSearch: false } )
-        .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html', reloadOnSearch: false } )
-        .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html', reloadOnSearch: false } )
-        .otherwise( { redirectTo : '/event' } );
-    delete $httpProvider.defaults.headers.common [ 'X-Requested-With' ];
-    //$httpProvider.defaults.headers.common['X-'] = 'X';
-
-
-    var fbAppId;
-    if (document.location.hostname === "localhost" ) {
-        fbAppId = '276423019167993';
-    }
-    else if (document.location.hostname === "karmademo.dyndns.dk" ) {
-        fbAppId = '1381630838720301';
-    }
-    else if (document.location.hostname === "kex-latest.appspot.com" ) {
-        fbAppId = '166052360247234';
-    }
-    else {
-        fbAppId = '571265879564450';
-    }
-    $facebookProvider.setAppId(fbAppId);
-    $facebookProvider.setCustomInit({
-        status : true,
-        cookie : true,
-        xfbml : false });
-
-})
-
 .filter( 'newlines', function( ) {
-    return function( text ) {
-        if( text )
-        {
+    return function ( text ) {
+        if ( text ) {
             return text.replace( /\n/g, '<br/>' );
         }
-    }
+    };
 })
 
 .filter( 'noHTML', function( ) {
-    return function( text ) {
-        if( text )
-        {
+    return function ( text ) {
+        if( text ) {
             return text.replace( /&/g, '&amp;' ).replace( />/g, '&gt;' ).replace( /</g, '&lt;' );
         }
-    }
+    };
 } )
 
 .filter( 'limit10', function( ) {
@@ -150,7 +107,7 @@ kexApp = angular.module( "kexApp",
         {
             return text;
         }
-    }
+    };
 }
 )
 
@@ -168,7 +125,7 @@ kexApp = angular.module( "kexApp",
         {
             return "Volunteers needed: " + text;
         }
-    }
+    };
 }
 )
 
@@ -184,160 +141,33 @@ kexApp = angular.module( "kexApp",
             return "";
         }
         return text;
-    }
+    };
 }
 )
 
 .filter('truncate', function () {
     return function (text, length, end) {
-        if (text == null || text.length == 0)
+        if (!angular.isDefined(text) || (text.length === 0)) {
             return null;
+        }
 
-        if (isNaN(length))
+        if (isNaN(length)) {
             length = 10;
+        }
 
-        if (end === undefined)
+        if (end === undefined) {
             end = "...";
+        }
 
         if (text.length <= length || text.length - end.length <= length) {
             return text;
-        }
-        else {
+        } else {
             return String(text).substring(0, length-end.length) + end;
         }
 
     };
-})
+});
 
-// Force service instantiation to handle angular lazy instantation for the
-// following services:
-//   - MeUtil
-//   - FbAuthDepResource
-.run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource ) {
-    $rootScope.fbUtil = FbUtil;
-    $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
-            $rootScope.alerts = [ ];
-            $rootScope.locationURL = window.location.href;
-    } );
-    $rootScope.addAlert = function( message ) {
-        if( ! $rootScope.alerts )
-        {
-            $rootScope.alerts = [ ];
-        }
-        $rootScope.alerts.push( { msg : message } );
-    };
-    $rootScope.showAlert = function( message, alertType ) {
-        $rootScope.alerts = [ ];
-        $rootScope.alerts.push( { type : alertType, msg : message } );
-    };
-    $rootScope.closeAlert = function( index ) {
-        $rootScope.alerts.splice( index, 1 );
-    };
-    $rootScope.isMessageOpen = false;
-    $rootScope.showMessage = function( ) {
-        $rootScope.isMessageOpen = true;
-    };
-    $rootScope.cancelMessage = function( ) {
-        $rootScope.isMessageOpen = false;
-    };
-    $rootScope.sendMessage = function( ) {
-        $rootScope.isMessageOpen = false;
-    };
-    $rootScope.openShareEventModal = function (event, header) {
-        var modalInstance = $modal.open({
-            backdrop: false,
-            templateUrl: 'template/kex/share-event-modal.html',
-            controller: EventModalInstanceCtrl,
-            resolve: {
-                event: function () {
-                    return event;
-                },
-                header: function () {
-                    return header;
-                }
-            }
-        });
-    };
-    $rootScope.getGeoLocation = function(){
-        return { latitude: 0, longitude: 0};
-        // TODO(avlaiani): commented out because this is not working.
-        // return google.loader.ClientLocation;
-    };
-    $rootScope.getGeoCenter = function( ) {
-        var options = {
-          enableHighAccuracy: true,
-          timeout: 5000,
-          maximumAge: 0
-        };
-            navigator.geolocation.getCurrentPosition( function( position ) {
-                return {
-                    latitude : position.coords.latitude,
-                    longitude : position.coords.longitude
-                };
-
-        }, function( ) {
-            return {
-                    latitude : $rootScope.getGeoLocation.latitude,
-                    longitude : $rootScope.getGeoLocation.longitude
-                };
-        }, options );
-
-    };
-
-    function loadBadges() {
-        var badgesDef = $q.defer();
-        var badgesListDef = $q.defer();
-
-        $http.get('/generated/badges.json').success(function(data) {
-            var ctx = { badgesMap: {}, badgesList: [] };
-            angular.forEach(data, function(badge) {
-                splitBadgeLabel(badge);
-                this.badgesMap[badge.name] = badge;
-                this.badgesList.push(badge);
-            }, ctx);
-            badgesDef.resolve(ctx.badgesMap);
-            badgesListDef.resolve(ctx.badgesList);
-        });
-
-        function splitBadgeLabel(badge) {
-            var label = badge.label;
-            var firstSpaceBefHalfLength = undefined;
-            for (var idx = 0; idx < label.length; idx++) {
-                if ( (label.charAt(idx) === ' ') &&
-                     ( (firstSpaceBefHalfLength === undefined) ||
-                       (idx < Math.floor(label.length / 2)) ) ) {
-                    firstSpaceBefHalfLength = idx;
-                }
-            }
-
-            if (firstSpaceBefHalfLength === undefined) {
-                badge.labelLine1 = label;
-                badge.labelLine2 = undefined;
-            } else {
-                badge.labelLine1 = label.substring(0, firstSpaceBefHalfLength);
-                badge.labelLine2 = label.substring(firstSpaceBefHalfLength + 1);
-            }
-        }
-
-        $rootScope.badges = badgesDef.promise;
-        $rootScope.badgesList = badgesListDef.promise;
-    }
-
-    loadBadges();
-
-    ( function( d ) {
-            var js, id = 'facebook-jssdk', ref = d.getElementsByTagName( 'script' )[ 0 ];
-            if( d.getElementById( id ) ) {
-                return;
-            }
-            js = d.createElement( 'script' );
-            js.id = id;
-            js.async = true;
-            js.src = "//connect.facebook.net/en_US/all.js";
-            ref.parentNode.insertBefore( js, ref );
-    }( document ) );
-} );
 
 /*
  * Webservice factories
@@ -379,6 +209,16 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
 
     return {
         create: function() {
+            function wrapMethod(m) {
+                return function() {
+                    var methodArgs = arguments;
+                    return authRespDef.promise.then( function() {
+                        return wrappedRsrc._rsrc[m].apply(
+                            wrappedRsrc._rsrc, methodArgs);
+                    });
+                };
+            }
+
             var wrappedRsrc = {
                 _rsrc: $resource.apply(null, arguments)
             };
@@ -386,22 +226,12 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
             for (var mIdx = 0; mIdx < wrappedMethods.length; mIdx++) {
                 var m = wrappedMethods[mIdx];
                 wrappedRsrc[m] = wrapMethod(m);
-
-                function wrapMethod(m) {
-                    return function() {
-                        var methodArgs = arguments;
-                        return authRespDef.promise.then( function() {
-                            return wrappedRsrc._rsrc[m].apply(
-                                wrappedRsrc._rsrc, methodArgs);
-                        });
-                    };
-                }
             }
 
             return wrappedRsrc;
         }
 
-    }
+    };
 });
 
 /*
@@ -428,12 +258,12 @@ kexApp.factory('RecyclablePromiseFactory', function($q) {
             this._deferred = $q.defer();
         }
         return this._deferred;
-    }
+    };
 
     return {
         create: function() {
             return new RecyclablePromise();
-        },
+        }
     };
 });
 
@@ -452,7 +282,7 @@ kexApp.factory('KexUtil', function($rootScope) {
             return (angular.isDefined(str1) && angular.isDefined(str2)) ? (str1 + str2) : undefined;
         },
         getSEOUrl: function(){
-            return window.location.protocol + '//' + window.location.host + "?_escaped_fragment_=" + window.location.hash.replace('#!','')
+            return window.location.protocol + '//' + window.location.host + "?_escaped_fragment_=" + window.location.hash.replace('#!','');
         },
         getOGMetaTagUrl: function(ogtype, ogtitle, ogimage){
             return window.location.protocol + '//' + window.location.host + "?metaonly=true&ogtype="+ogtype+"&ogtitle="+encodeURIComponent(ogtitle)+"&ogimage="+encodeURIComponent(ogimage)+"&ogurl="+encodeURIComponent(window.location.href);
@@ -485,7 +315,7 @@ kexApp.factory('KexUtil', function($rootScope) {
         addMonths: function(date, val) {
             return moment(date).add('months', 1).toDate();
         }
-    }
+    };
 });
 
 kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, RecyclablePromiseFactory) {
@@ -612,6 +442,31 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
         },
 
         updateKarmaGoalTarget: function(user, goalInfo, upcomingPtsDelta, upcomingEventDate) {
+            function capPercentage(pctValue, totalPct) {
+                pctValue = Math.round(pctValue);
+                if (pctValue + totalPct > 100) {
+                    return 100 - totalPct;
+                } else {
+                    return pctValue;
+                }
+            }
+
+            function getGoalMsg(totalPct) {
+                var msgs;
+                if (totalPct === 0) {
+                    msgs = ["Volunteering is fun! Sign up for an event"];
+                } else if (totalPct < 25) {
+                    msgs = ["Ready to earn some more karma?"];
+                } else if (totalPct < 75) {
+                    msgs = ["Nice job so far"];
+                } else if (totalPct < 100) {
+                    msgs = ["Almost there!"];
+                } else  {
+                    msgs = ["High five!", "Karma goal achieved!"];
+                }
+                return KexUtil.selectRandom(msgs);
+            }
+
             var monthlyGoal = user.karmaGoal.monthlyGoal;
 
             if (upcomingPtsDelta && upcomingEventDate) {
@@ -640,31 +495,6 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
             goalInfo.pctUpcoming = upcomingPct;
             goalInfo.goalHours = KexUtil.toHours(monthlyGoal, 1);
             goalInfo.barType = this.getGoalBarType(totalPct);
-
-            function capPercentage(pctValue, totalPct) {
-                pctValue = Math.round(pctValue);
-                if (pctValue + totalPct > 100) {
-                    return 100 - totalPct;
-                } else {
-                    return pctValue;
-                }
-            }
-
-            function getGoalMsg(totalPct) {
-                var msgs;
-                if (totalPct == 0) {
-                    msgs = ["Volunteering is fun! Sign up for an event"];
-                } else if (totalPct < 25) {
-                    msgs = ["Ready to earn some more karma?"];
-                } else if (totalPct < 75) {
-                    msgs = ["Nice job so far"];
-                } else if (totalPct < 100) {
-                    msgs = ["Almost there!"];
-                } else  {
-                    msgs = ["High five!", "Karma goal achieved!"];
-                }
-                return KexUtil.selectRandom(msgs);
-            }
         },
 
         getGoalBarType: function(registeredPct) {
@@ -677,7 +507,7 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
             }
         }
 
-    }
+    };
 });
 
 kexApp.factory('ApiCache', function($rootScope) {
@@ -693,7 +523,9 @@ kexApp.factory('ApiCache', function($rootScope) {
 
     return {
         lookup: function (key) {
-            if (angular.isUndefined(cache[key])) return undefined;
+            if (angular.isUndefined(cache[key])) {
+                return undefined;
+            }
             return cache[key];
         },
         update: function (key, value) {
@@ -706,7 +538,7 @@ kexApp.factory('ApiCache', function($rootScope) {
                     result += ", ";
                 }
                 result += arguments[i].toString();
-            };
+            }
             return result + ")";
         }
     };
@@ -827,7 +659,7 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
 
             ApiCache.update(cacheKey, promise);
             return promise;
-        },
+        }
     };
 });
 
@@ -870,16 +702,6 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
             return KexUtil.getBaseUrl() + '/#!/event/' + event.key;
         },
         getImpactTimelineEvents: function(eventFilter) {
-            var impactTimelineEventsGrouped = $q.defer();
-
-            if (eventFilter.userKey) {
-                User.get( { id : eventFilter.userKey, resource : 'event', type : 'PAST'},
-                    processImpactTimeline);
-            } else {
-                Events.get( { type : "PAST", keywords : eventFilter.keywords },
-                    processImpactTimeline);
-            }
-
             function processImpactTimeline(pastEvents) {
                 var eventsGrouped = [];
                 var curGroup = [];
@@ -903,6 +725,16 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
                 }
 
                 impactTimelineEventsGrouped.resolve(eventsGrouped);
+            }
+
+            var impactTimelineEventsGrouped = $q.defer();
+
+            if (eventFilter.userKey) {
+                User.get( { id : eventFilter.userKey, resource : 'event', type : 'PAST'},
+                    processImpactTimeline);
+            } else {
+                Events.get( { type : "PAST", keywords : eventFilter.keywords },
+                    processImpactTimeline);
             }
 
             return impactTimelineEventsGrouped.promise;
@@ -947,7 +779,7 @@ kexApp.directive( 'googleplace', function( ) {
                     types : [ ],
                     componentRestrictions : {}
                 };
-                scope.gPlace = new google.maps.places.Autocomplete( element [ 0 ], options );
+                scope.gPlace = new google.maps.places.Autocomplete( element[ 0 ], options );
                 google.maps.event.addListener( scope.gPlace, 'place_changed', function( ) {
                         var placeListener = scope.$eval( attrs.placeListener );
                         if( placeListener && angular.isFunction( placeListener ) ) {
@@ -975,35 +807,34 @@ kexApp.directive( 'fbgallery', function( $compile ) {
                         }
                 } );
             }
-        }
+        };
 } );
 kexApp.directive( "gallery", function( ) {
         return function( scope, element, attrs ) {
             var doStuff = function( element, attrs ) {
                 $( element ).plusGallery( scope.$eval( attrs.fbgallery ) );
-            }
+            };
             scope.$watch( attrs.userid, doStuff( element, attrs ) );
             // scope.$watch(attrs.testTwo, doStuff(element,attrs));
 
-        }
+        };
 } );
-kexApp.directive( 'unfocus', function( ) { return {
+kexApp.directive( 'unfocus', function( ) {
+    return {
         restrict : 'A',
         link : function( scope, element, attribs ) {
-            element [ 0 ].focus( );
+            element[ 0 ].focus( );
             element.bind( "blur", function( ) {
-                    scope.$apply( attribs [ "unfocus" ] );
+                    scope.$apply( attribs.unfocus );
             } );
         }
-} } );
+    };
+} );
 
 kexApp.directive( "eventrepeat", function( ) {
         return function( scope, element, attrs ) {
-
                 $( element ).recurrenceinput();
-
-
-        }
+        };
 } );
 
 
@@ -1033,14 +864,14 @@ kexApp.directive('shareButtons', function(KexUtil) {
                         '<li class="ng-social-google-plus">Google+</li>' +
                     '</ul>' +
                 '</div>'
-        }
+        };
     });
 
 kexApp.directive('eventParticipantImgsMini', function() {
     return {
         restrict: 'E',
         scope: {
-            event: '=',
+            event: '='
         },
         replace: true,
         transclude: false,
@@ -1052,7 +883,7 @@ kexApp.directive('eventParticipantImgsMini', function() {
                     '</a>' +
                 '</li>' +
             '</ul>'
-    }
+    };
 });
 
 kexApp.directive('eventRegistrationInfo', function() {
@@ -1061,7 +892,7 @@ kexApp.directive('eventRegistrationInfo', function() {
         scope: {
             type: '=',
             registrationInfo: '=',
-            userRegistrationInfo: '=',
+            userRegistrationInfo: '='
         },
         replace: true,
         transclude: false,
@@ -1106,7 +937,7 @@ kexApp.directive('eventRegistrationInfo', function() {
         },
         template:
             '<span ng-class="labelClass" ng-show="showLabel">{{labelText}}</span>'
-    }
+    };
 });
 
 kexApp.directive('eventUserRating', function(Events) {
@@ -1140,14 +971,14 @@ kexApp.directive('eventUserRating', function(Events) {
             '<span>' +
                 '<rating-ex value="userRating.value" max="5" readonly="false" on-update="updateUserRating(newValue)"></rating-ex>' +
             '</span>'
-    }
+    };
 });
 
 kexApp.directive('aggregateRating', function() {
     return {
         restrict: 'E',
         scope: {
-            value: '=',
+            value: '='
         },
         replace: true,
         transclude: false,
@@ -1156,7 +987,7 @@ kexApp.directive('aggregateRating', function() {
                 '<rating value="value.value" max="5" readonly="true"></rating>' +
                 ' ({{value.count}})' +
             '</span>'
-    }
+    };
 });
 
 kexApp.directive('kexFbComments', function($facebook, $rootScope) {
@@ -1172,6 +1003,23 @@ kexApp.directive('kexFbComments', function($facebook, $rootScope) {
             if (!attrs.numPosts) { attrs.numPosts = 3; }
 
             return function (scope, element, attrs) {
+                function execWhenAttrsResolved(attrNames, execCb) {
+
+                    function createObserveCb(idx) {
+                        return function() {
+                            resolvedAttrs.set(idx, true);
+                            if (resolvedAttrs.count() == attrNames.length) {
+                                execCb();
+                            }
+                        };
+                    }
+
+                    var resolvedAttrs = new BitArray(attrNames.length);
+                    for (var idx=0; idx < attrNames.length; idx++) {
+                        attrs.$observe(attrNames[idx], createObserveCb(idx));
+                    }
+                }
+
                 execWhenAttrsResolved(['href', 'numPosts'], function() {
                     $facebook.promise.then( function(FB) {
                         element.html('<div class="fb-comments" href="' + scope.href + '" ' +
@@ -1179,26 +1027,10 @@ kexApp.directive('kexFbComments', function($facebook, $rootScope) {
                         FB.XFBML.parse(element[0]);
                     });
                 });
-
-                function execWhenAttrsResolved(attrNames, execCb) {
-                    var resolvedAttrs = new BitArray(attrNames.length);
-                    for (var idx=0; idx < attrNames.length; idx++) {
-                        attrs.$observe(attrNames[idx], createObserveCb(idx));
-
-                        function createObserveCb(idx) {
-                            return function() {
-                                resolvedAttrs.set(idx, true);
-                                if (resolvedAttrs.count() == attrNames.length) {
-                                    execCb();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            };
         },
         template: '<div></div>'
-    }
+    };
 });
 
 kexApp.directive('impactTimeline', function(FbUtil, EventUtil) {
@@ -1216,7 +1048,7 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil) {
             scope.EventUtil = EventUtil;
         },
         templateUrl: 'template/kex/impact-timeline.html'
-    }
+    };
 });
 
 kexApp.directive('participantsSidebar', function() {
@@ -1232,14 +1064,14 @@ kexApp.directive('participantsSidebar', function() {
         replace: true,
         transclude: false,
         templateUrl: 'template/kex/participants-sidebar.html'
-    }
+    };
 });
 
 kexApp.directive('orgEventSummary', function(FbUtil) {
     return {
         restrict: 'E',
         scope: {
-            org: '=',
+            org: '='
         },
         replace: true,
         transclude: false,
@@ -1247,7 +1079,7 @@ kexApp.directive('orgEventSummary', function(FbUtil) {
             scope.FbUtil = FbUtil;
         },
         templateUrl: 'template/kex/org-event-summary.html'
-    }
+    };
 });
 
 kexApp.directive('eventParticipantSummary', function() {
@@ -1265,20 +1097,20 @@ kexApp.directive('eventParticipantSummary', function() {
             if (!attrs.karmaPointsDisplayType) { attrs.karmaPointsDisplayType = 'BRIEF'; }
 
             return function (scope, element, attrs) {
-                scope.$watch('user', updateKarmaPoints);
-                scope.$watch('karmaPoints', updateKarmaPoints);
-
                 function updateKarmaPoints() {
                     if (angular.isDefined(scope.karmaPoints)) {
                         scope.summaryKarmaPoints = scope.karmaPoints;
                     } else if (angular.isDefined(scope.user)) {
                         scope.summaryKarmaPoints = scope.user.karmaPoints;
                     }
-                };
-            }
+                }
+
+                scope.$watch('user', updateKarmaPoints);
+                scope.$watch('karmaPoints', updateKarmaPoints);
+            };
         },
         templateUrl: 'template/kex/event-participant-summary.html'
-    }
+    };
 });
 
 kexApp.directive('leaderboardTable', function() {
@@ -1297,7 +1129,7 @@ kexApp.directive('leaderboardTable', function() {
             };
         },
         templateUrl: 'template/kex/leaderboard-table.html'
-    }
+    };
 });
 
 kexApp.directive('upcomingEvents', function() {
@@ -1310,7 +1142,7 @@ kexApp.directive('upcomingEvents', function() {
         replace: true,
         transclude: false,
         templateUrl: 'template/kex/upcoming-events.html'
-    }
+    };
 });
 
 kexApp.directive('goalTrackingBar', function(KarmaGoalUtil) {
@@ -1323,9 +1155,6 @@ kexApp.directive('goalTrackingBar', function(KarmaGoalUtil) {
         replace: true,
         transclude: false,
         link: function (scope, element, attrs) {
-            scope.$watch('pctCompleted', updateBarType);
-            scope.$watch('pctPending', updateBarType);
-
             function updateBarType() {
                 if (angular.isDefined(scope.pctCompleted) &&
                     angular.isDefined(scope.pctPending)) {
@@ -1334,9 +1163,12 @@ kexApp.directive('goalTrackingBar', function(KarmaGoalUtil) {
                         KarmaGoalUtil.getGoalBarType(scope.pctCompleted + scope.pctPending);
                 }
             }
+
+            scope.$watch('pctCompleted', updateBarType);
+            scope.$watch('pctPending', updateBarType);
         },
         templateUrl: 'template/kex/goal-tracking-bar.html'
-    }
+    };
 });
 
 
@@ -1344,7 +1176,7 @@ kexApp.directive('karmaBadge', function($rootScope) {
     return {
         restrict: 'E',
         scope: {
-            badge: '=',
+            badge: '='
         },
         replace: true,
         transclude: false,
@@ -1360,19 +1192,19 @@ kexApp.directive('karmaBadge', function($rootScope) {
             });
         },
         templateUrl: 'template/kex/karma-badge.html'
-    }
+    };
 });
 
 kexApp.directive('karmaBadgeSummary', function($rootScope) {
     return {
         restrict: 'E',
         scope: {
-            badgeSummary: '=',
+            badgeSummary: '='
         },
         replace: true,
         transclude: false,
         templateUrl: 'template/kex/karma-badge-summary.html'
-    }
+    };
 });
 
 // Currently this adds an 's' if num is not one. When needed we
@@ -1388,7 +1220,7 @@ kexApp.directive('numWithType', function() {
         replace: true,
         transclude: false,
         templateUrl: 'template/kex/num-with-type.html'
-    }
+    };
 });
 
 var FLOAT_GEQ_ZERO = /^((\d+(\.(\d+)?)?)|(\.\d+))$/;
@@ -1421,9 +1253,6 @@ kexApp.directive('karmaHours', function(KexUtil) {
         replace: true,
         transclude: false,
         link: function (scope, element, attrs) {
-            scope.$watch('karmaPoints', updateHours);
-            scope.$watch('type', updateHours);
-
             function updateHours() {
                 if (angular.isDefined(scope.karmaPoints)) {
                     var karmaHours = KexUtil.toHours(scope.karmaPoints, 1);
@@ -1431,16 +1260,19 @@ kexApp.directive('karmaHours', function(KexUtil) {
                         scope.karmaHoursText = "+" + karmaHours + " karma";
                     } else {
                         if (karmaHours == 1) {
-                            scope.karmaHoursText = "+1 karma hour"
+                            scope.karmaHoursText = "+1 karma hour";
                         } else {
                             scope.karmaHoursText = "+" + karmaHours + " karma hours";
                         }
                     }
                 }
-            };
+            }
+
+            scope.$watch('karmaPoints', updateHours);
+            scope.$watch('type', updateHours);
         },
         templateUrl: 'template/kex/karma-hours.html'
-    }
+    };
 });
 
 
@@ -1488,7 +1320,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                 });
             postUserKeyResolutionCbs();
         }
-    };
+    }
 
     function postUserKeyResolutionCbs() {
         getOtherData();
@@ -1504,7 +1336,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         modalInstance.result.then(function() {
             KarmaGoalUtil.updateCurrentUserKarmaGoalTarget();
         });
-    }
+    };
 
     function getOtherData() {
         User.get(
@@ -1515,7 +1347,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             function(result) {
                 $scope.orgs = result;
             });
-    };
+    }
 
     function loadImpactTab() {
         if (!$scope.impactTabLoaded && $scope.userKey) {
@@ -1786,7 +1618,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                 });
         }
     }
-}
+};
 
 var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) {
     $scope.query = "";
@@ -1831,7 +1663,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
         $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
         $modalInstance.close();
     };
-}
+};
 var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
         EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q ) {
     $scope.KexUtil = KexUtil;
@@ -1849,7 +1681,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
             /** the initial zoom level of the map */
             zoom : 4,
             /** list of markers to put in the map */
-            markers : [{}],
+            markers : [{}]
 
     } );
 
@@ -1861,7 +1693,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
                 $scope.addMarker(event.location.address.geoPt.latitude,event.location.address.geoPt.longitude);
         });
         $scope.zoom = 10;
-    }
+    };
     $scope.showList = function(){
         $scope.isMap=false;
     };
@@ -1884,7 +1716,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
     function processEvents(value) {
         $scope.events = value;
         var now = new Date();
-        var currentDate = new Date( 1001, 01, 01, 01, 01, 01, 0 );
+        var currentDate = new Date( 1001, 1, 1, 1, 1, 1, 0 );
         for (var idx = 0; idx < $scope.events.data.length; idx++) {
             var event = $scope.events.data[idx];
             var dateVal = new Date(event.startTime);
@@ -2051,9 +1883,10 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                 }
         };
         $scope.refreshMap = function( ) {
-            if( $scope.event && $scope.event.location.address.street )
-            {
-                geocoder.geocode( { 'address' : $scope.event.location.address.street + ',' + $scope.event.location.address.city + ',' + $scope.event.location.address.state + ',' + $scope.event.location.address.country }, function( results, status ) {
+            if( $scope.event && $scope.event.location.address.street ) {
+                geocoder.geocode(
+                    { 'address' : $scope.event.location.address.street + ',' + $scope.event.location.address.city + ',' + $scope.event.location.address.state + ',' + $scope.event.location.address.country },
+                    function( results, status ) {
                         if( status == google.maps.GeocoderStatus.OK ) {
                             $scope.center.latitude = results [ 0 ].geometry.location.lat( );
                             $scope.center.longitude = results [ 0 ].geometry.location.lng( );
@@ -2061,7 +1894,8 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                             $scope.zoom = 15;
                             $scope.$apply( );
                         }
-            } )}
+                    });
+            }
         };
         $scope.addMarker = function( markerLat, markerLng ) {
             $scope.markers.push( {
@@ -2170,7 +2004,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                                     }
                                 } );
                     } );
-                    if( $scope.event.location.address.geoPt != null )
+                    if ( $scope.event.location.address.geoPt !== null )
                     {
                         $scope.center = {
                             latitude : $scope.event.location.address.geoPt.latitude,
@@ -2186,7 +2020,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                             $scope.eventOrganizers.data.push = function( ) {
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'ORGANIZER' } );
                                 return Array.prototype.push.apply( this, arguments );
-                            }
+                            };
                         } );
                     Events.get(
                         { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' },
@@ -2195,7 +2029,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                             $scope.eventRegistered.data.push = function( ) {
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED' } );
                                 return Array.prototype.push.apply( this, arguments );
-                            }
+                            };
                         } );
                     Events.get(
                         { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' },
@@ -2204,7 +2038,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                             $scope.eventWaitListed.data.push = function( ) {
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'WAIT_LISTED' } );
                                 return Array.prototype.push.apply( this, arguments );
-                            }
+                            };
                         } );
 
                     Events.get(
@@ -2214,7 +2048,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                             $scope.eventNoShow.data.push = function( ) {
                                 Events.save( { user : arguments [ 0 ].key }, { id : $routeParams.eventId, registerCtlr : 'participants', regType : 'REGISTERED_NO_SHOW' } );
                                 return Array.prototype.push.apply( this, arguments );
-                            }
+                            };
                         } );
 
                     $scope.noShow = function(){
@@ -2257,11 +2091,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                                 });
                         }
                     }
-            }, function( response ) {
-                //404 or bad
-
-                if( response.status === 404 ) {
-            }} );
+            });
         }
         $scope.parseDateReg = function( input ) {
             var dateReg =
@@ -2584,3 +2414,182 @@ CompletionTracker.prototype.complete = function(eventName) {
         this._completionCb();
     }
 }
+
+
+/*
+ * App config and run methods
+ */
+
+kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
+    $routeProvider
+        // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
+        // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
+        .when( '/me', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
+        .when( '/about', { templateUrl : 'partials/about.html', reloadOnSearch: false } )
+        .when( '/tour', { controller : tourCtrl, templateUrl : 'partials/tour.html', reloadOnSearch: false } )
+        .when( '/awards', { templateUrl : 'partials/awards.html', reloadOnSearch: false } )
+        .when( '/contact', { templateUrl : 'partials/contact.html', reloadOnSearch: false } )
+        .when( '/user/:userId', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
+        .when( '/mysettings', { controller : meEditCtrl, templateUrl : 'partials/mysettings.html', reloadOnSearch: false } )
+        .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html', reloadOnSearch: false } )
+        .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
+        .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
+        .when( '/event/:eventId', { controller : viewEventCtrl, templateUrl : 'partials/viewEvent.html', reloadOnSearch: false } )
+        .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html', reloadOnSearch: false } )
+        .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html', reloadOnSearch: false } )
+        .otherwise( { redirectTo : '/event' } );
+    delete $httpProvider.defaults.headers.common[ 'X-Requested-With' ];
+    //$httpProvider.defaults.headers.common['X-'] = 'X';
+
+
+    var fbAppId;
+    if (document.location.hostname === "localhost" ) {
+        fbAppId = '276423019167993';
+    }
+    else if (document.location.hostname === "karmademo.dyndns.dk" ) {
+        fbAppId = '1381630838720301';
+    }
+    else if (document.location.hostname === "kex-latest.appspot.com" ) {
+        fbAppId = '166052360247234';
+    }
+    else {
+        fbAppId = '571265879564450';
+    }
+    $facebookProvider.setAppId(fbAppId);
+    $facebookProvider.setCustomInit({
+        status : true,
+        cookie : true,
+        xfbml : false });
+
+})
+
+// Force service instantiation to handle angular lazy instantation for the
+// following services:
+//   - MeUtil
+//   - FbAuthDepResource
+.run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
+        FbAuthDepResource ) {
+    $rootScope.fbUtil = FbUtil;
+    $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
+            $rootScope.alerts = [ ];
+            $rootScope.locationURL = window.location.href;
+    } );
+    $rootScope.addAlert = function( message ) {
+        if( ! $rootScope.alerts )
+        {
+            $rootScope.alerts = [ ];
+        }
+        $rootScope.alerts.push( { msg : message } );
+    };
+    $rootScope.showAlert = function( message, alertType ) {
+        $rootScope.alerts = [ ];
+        $rootScope.alerts.push( { type : alertType, msg : message } );
+    };
+    $rootScope.closeAlert = function( index ) {
+        $rootScope.alerts.splice( index, 1 );
+    };
+    $rootScope.isMessageOpen = false;
+    $rootScope.showMessage = function( ) {
+        $rootScope.isMessageOpen = true;
+    };
+    $rootScope.cancelMessage = function( ) {
+        $rootScope.isMessageOpen = false;
+    };
+    $rootScope.sendMessage = function( ) {
+        $rootScope.isMessageOpen = false;
+    };
+    $rootScope.openShareEventModal = function (event, header) {
+        var modalInstance = $modal.open({
+            backdrop: false,
+            templateUrl: 'template/kex/share-event-modal.html',
+            controller: EventModalInstanceCtrl,
+            resolve: {
+                event: function () {
+                    return event;
+                },
+                header: function () {
+                    return header;
+                }
+            }
+        });
+    };
+    $rootScope.getGeoLocation = function(){
+        return { latitude: 0, longitude: 0};
+        // TODO(avlaiani): commented out because this is not working.
+        // return google.loader.ClientLocation;
+    };
+    $rootScope.getGeoCenter = function( ) {
+        var options = {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 0
+        };
+            navigator.geolocation.getCurrentPosition( function( position ) {
+                return {
+                    latitude : position.coords.latitude,
+                    longitude : position.coords.longitude
+                };
+
+        }, function( ) {
+            return {
+                    latitude : $rootScope.getGeoLocation.latitude,
+                    longitude : $rootScope.getGeoLocation.longitude
+                };
+        }, options );
+
+    };
+
+    function loadBadges() {
+        var badgesDef = $q.defer();
+        var badgesListDef = $q.defer();
+
+        $http.get('/generated/badges.json').success(function(data) {
+            var ctx = { badgesMap: {}, badgesList: [] };
+            angular.forEach(data, function(badge) {
+                splitBadgeLabel(badge);
+                this.badgesMap[badge.name] = badge;
+                this.badgesList.push(badge);
+            }, ctx);
+            badgesDef.resolve(ctx.badgesMap);
+            badgesListDef.resolve(ctx.badgesList);
+        });
+
+        function splitBadgeLabel(badge) {
+            var label = badge.label;
+            var firstSpaceBefHalfLength;
+            for (var idx = 0; idx < label.length; idx++) {
+                if ( (label.charAt(idx) === ' ') &&
+                     ( (!angular.isDefined(firstSpaceBefHalfLength)) ||
+                       (idx < Math.floor(label.length / 2)) ) ) {
+                    firstSpaceBefHalfLength = idx;
+                }
+            }
+
+            if (!angular.isDefined(firstSpaceBefHalfLength)) {
+                badge.labelLine1 = label;
+                badge.labelLine2 = undefined;
+            } else {
+                badge.labelLine1 = label.substring(0, firstSpaceBefHalfLength);
+                badge.labelLine2 = label.substring(firstSpaceBefHalfLength + 1);
+            }
+        }
+
+        $rootScope.badges = badgesDef.promise;
+        $rootScope.badgesList = badgesListDef.promise;
+    }
+
+    loadBadges();
+
+    ( function( d ) {
+            var js, id = 'facebook-jssdk', ref = d.getElementsByTagName( 'script' )[ 0 ];
+            if( d.getElementById( id ) ) {
+                return;
+            }
+            js = d.createElement( 'script' );
+            js.id = id;
+            js.async = true;
+            js.src = "//connect.facebook.net/en_US/all.js";
+            ref.parentNode.insertBefore( js, ref );
+    }( document ) );
+} );
+
