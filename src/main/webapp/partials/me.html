@@ -6,7 +6,7 @@
     <div class="col-md-3">
 
         <div class="panel panel-default panel-seperated-vertical">
-            <div class="panel-body panel-light-gray">
+            <div class="panel-body">
 
                 <div class="panel-body-header-h3">{{me.firstName}}</div>
 
@@ -34,7 +34,7 @@
                         </h3>
 
                     </div>
-                    <div class="panel-body panel-light-gray panel-body-no-vertical-padding">
+                    <div class="panel-body panel-body-no-vertical-padding">
 
                         <table class="table label-value-table panel-seperated-vertical goal-table">
                             <thead>
@@ -89,12 +89,12 @@
                         </h3>
 
                     </div>
-                    <div class="panel-body panel-light-gray text-center" ng-show="(me.badges.length == 0) && {ALL:true}[me.permission]">
+                    <div class="panel-body text-center" ng-show="(me.badges.length == 0) && {ALL:true}[me.permission]">
                         <!-- TODO(avaliani): add link to the awards page -->
                         <em>Take a peek at the awards you can earn on <a href="#!/awards">the awards page!</a></em>
                     </div>
 
-                    <div class="panel-body panel-body-no-vertical-padding" ng-show="(me.badges.length != 0)">
+                    <div class="panel-body panel-body-transparent panel-body-no-vertical-padding" ng-show="(me.badges.length != 0)">
                         <div class="karma-badge-summary-div" ng-repeat="badgeSummary in me.badges">
 
                             <karma-badge-summary badge-summary="badgeSummary"></karma-badge-summary>
@@ -120,7 +120,7 @@
                         </h3>
 
                     </div>
-                    <div class="panel-body panel-light-gray">
+                    <div class="panel-body">
                         <ng-switch on="edit">
 
                             <div ng-switch-when="true">
@@ -161,7 +161,7 @@
                         </h3>
                     </div>
 
-                    <div class="panel-body panel-body-no-vertical-padding">
+                    <div class="panel-body panel-body-transparent panel-body-no-vertical-padding">
                         <div class="well well-sm panel-seperated-vertical" ng-repeat="org in orgs.data">
 
                             <div class="img-text-div-img-small">
@@ -178,7 +178,7 @@
                         </div>
                     </div>
 
-                    <div class="panel-footer panel-filled-light-bg">
+                    <div class="panel-footer">
 
                         <div class="text-center">
                             Organizer rating:
