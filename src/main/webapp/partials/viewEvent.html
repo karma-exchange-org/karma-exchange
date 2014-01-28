@@ -17,7 +17,7 @@
             <div class="col-md-6">
 
                 <div class="panel panel-default panel-no-margin">
-                    <div class="panel-body panel-body-filled">
+                    <div class="panel-body">
 
                         <div class="event-view-icon-img-div">
                             <div class="text-center">
@@ -52,7 +52,7 @@
                 </div>
 
                 <div class="panel panel-default panel-seperated-vertical">
-                    <div class="panel-body panel-body-filled">
+                    <div class="panel-body">
 
                         <div class="event-view-icon-img-div">
                             <div class="text-center">
@@ -94,7 +94,7 @@
             <div class="col-md-6">
 
                 <div class="panel panel-default">
-                    <div class="panel-body panel-body-filled text-center">
+                    <div class="panel-body text-center">
 
                         <div class="event-view-volunteers-needed" ng-show="event.status!='COMPLETED'">
                             {{event.maxRegistrations - event.registeredUsers.length | limit10Verbose }}
@@ -166,7 +166,7 @@
 
 
                         <div class="panel panel-default panel-no-margin">
-                            <div class="panel-body panel-body-filled">
+                            <div class="panel-body">
 
                                 <div ng-show="event.description" class="event-description-sub-panel">
                                     <h4>
@@ -209,7 +209,7 @@
 
 
                         <div class="panel panel-default panel-no-margin">
-                            <div class="panel-body panel-body-filled">
+                            <div class="panel-body">
 
                                 <div ng-show="EventUtil.canWriteReview(event)" class="event-impact-rating-sub-panel">
                                     <div ng-show="currentUserRating.value" class="event-impact-rating-text">
