@@ -4,31 +4,44 @@
 
 Our method for collobaration is based upon this wiki: https://gist.github.com/seshness/3943237
 
-### Create a branch with your changes
+### Create a branch prior to making any changes
 
-    $ cd <project git dir>
-    $ git checkout -b <my-awesome-feature>
+    $ git checkout -b <my-awesome-feature-branch-name>
 
 ### Make and test your changes
 
-Make whatever changes you want to make. Make sure all tests pass:
+Make whatever changes you want to make. Make sure all tests pass and the UI features if any you modified work:
+
+    $ mvn appengine:devserver
+
+### Self review your changes
+
+To see what files you've modified:
+
+    $ git status
+
+Use meld to take a look at your changes since your last commit (execute it from the root project directory):
+
+    $ meld .
+
+If you want to compare your changes including locally committed changes against the master branch use difftool:
+
+    $ git difftool master
+
+After you add or delete files make sure to run "git add ." (execute it from the root project directory).
+
+    $ git add --all .
+    $ git status
 
 ### Commit your changes
 
-    $ mvn test
-    $ git add .
-    $ git status
-    $ git commit -a    
+Commit your changes to your local branch:
 
-Don't worry, "git checkout -b" automatically copies your changes to the new branch.
+    $ git commit -a
 
-(Optional) Review your commits:
+Then push your branch to the remote repository as a non-master branch:
 
-    $ gitk
-
-Push your branch to the remote repository as a non-master branch:
-
-    $ git push origin <my-awesome-feature>
+    $ git push origin <my-awesome-feature-branch-name>
 
 ### Submit a pull request for your branch
 
@@ -44,14 +57,14 @@ The code should ideally be reviewed by someone else in the organization. See the
 To incorporate code review feedback just follow the prior modification and push instructions and re-run your tests, but skip the step of creating a new branch:
 
     <make your changes>
-    $ mvn test
-    $ git add .
+    $ mvn appengine:devserver
+    $ git add --all .
     $ git commit -a    
     $ git push origin <my-awesome-feature>
 
 ### Merging the code
 
-Once you have received code review approval follow the [merge instructions](https://help.github.com/articles/merging-a-pull-request). In most cases it should just be as simple as clicking the "Merge pull request" button.
+Once you have received code review approval follow the [merging directly on github instructions](https://help.github.com/articles/merging-a-pull-request). In most cases it should just be as simple as clicking the "Merge pull request" button.
 
 After the code is merged, delete your branch on git hub by clicking "delete branch".
 
@@ -81,6 +94,16 @@ Read https://help.github.com/articles/set-up-git
 
 Note: make sure to register your fake email in github.
 
+### Install meld
+
+Meld is my preferred tool for diffing changes. It's available at http://meldmerge.org/
+
+After you install meld update your gitconfig to use meld as the default diff tool:
+
+    git config --global diff.tool meld
+    git config --global diff.guitool meld
+    git config --global difftool.prompt false
+
 ### Getting a local copy of the repository
 
 Assuming that you're placing the repository in ~/src
@@ -90,6 +113,25 @@ Assuming that you're placing the repository in ~/src
     git clone https://github.com/karma-exchange-org/karma-exchange.git
     cd karma-exchange
     git config --list
+
+If you have configured things as suggested above you should see output like the following from git config:
+
+    $ git config --list
+    user.name=Amir Valiani
+    user.email=first.last@gmail.com
+    credential.helper=cache --timeout=360000
+    core.editor=emacs
+    diff.tool=meld
+    diff.guitool=meld
+    difftool.prompt=false
+    core.repositoryformatversion=0
+    core.filemode=true
+    core.bare=false
+    core.logallrefupdates=true
+    remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+    remote.origin.url=https://github.com/karma-exchange-org/karma-exchange.git
+    branch.master.remote=origin
+    branch.master.merge=refs/heads/master
 
 ## Helpful Git Links
 
