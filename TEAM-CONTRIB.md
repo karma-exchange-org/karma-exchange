@@ -39,9 +39,18 @@ Commit your changes to your local branch:
 
     $ git commit -a
 
+**Pro tip:** use the convenience script git-commit to do both git add and git-commit
+
+    $ git-commit   
+
 Then push your branch to the remote repository as a non-master branch:
 
     $ git push origin <my-awesome-feature-branch-name>
+
+**Pro tip:** use the convenience script git-push instead (saves typing)
+
+    $ git-push
+
 
 ### Submit a pull request for your branch
 
@@ -72,13 +81,17 @@ After the code is merged, delete your branch on git hub by clicking "delete bran
 
 Sync your master branch to the latest changes:
 
-    git checkout master
-    git remote update --prune
-    git pull
+    $ git checkout master
+    $ git remote update --prune
+    $ git pull
 
 Delete your merged branch:
 
-    git branch -d <my-awesome-feature>
+    $ git branch -d <my-awesome-feature>
+
+**Pro tip:** use the convenience script git-cleanup to do all four commands above
+
+    $ git-cleanup
 
 ## Setup
 
@@ -132,6 +145,21 @@ If you have configured things as suggested above you should see output like the 
     remote.origin.url=https://github.com/karma-exchange-org/karma-exchange.git
     branch.master.remote=origin
     branch.master.merge=refs/heads/master
+
+### Convenience scripts
+
+I've created a few convenience scripts that I recommend you download [from here](https://www.dropbox.com/sh/qbeli6omtrbdoyu/oG4QNpe79L)
+
+    git-commit.sh
+    git-push.sh
+    git-cleanup.sh
+
+Once you download them put them in your preferred directory (example below uses ~/bin) and create aliases to them:
+
+    $ cat ~/.bash_aliases
+    alias git-cleanup=~/bin/git-cleanup.sh
+    alias git-commit=~/bin/git-commit.sh
+    alias git-push=~/bin/git-push.sh
 
 ## Helpful Git Links
 
