@@ -1,5 +1,13 @@
 # Instructions for members of the Karma Exchange product team to contribute changes
 
+### Table of Contents
+
+- [Uploading changes](#uploading)
+- [Setup](#setup)
+- [Helpful Git Links](#links)
+
+
+<a name="uploading"/>
 ## Uploading changes
 
 Our method for collobaration is based upon this wiki: https://gist.github.com/seshness/3943237
@@ -93,6 +101,7 @@ Delete your merged branch:
 
     $ git-cleanup
 
+<a name="setup"/>
 ## Setup
 
 ### Setting up git on your computer
@@ -161,6 +170,7 @@ Once you download them put them in your preferred directory (example below uses 
     alias git-commit=~/bin/git-commit.sh
     alias git-push=~/bin/git-push.sh
 
+<a name="links"/>
 ## Helpful Git Links
 
 1. Github:
