@@ -4,16 +4,18 @@
 
 Our method for collobaration is based upon this wiki: https://gist.github.com/seshness/3943237
 
-### Make and test your changes
-
-Make whatever changes you want to make. Make sure all tests pass:
-
-    $ mvn test
-
 ### Create a branch with your changes
 
     $ cd <project git dir>
     $ git checkout -b <my-awesome-feature>
+
+### Make and test your changes
+
+Make whatever changes you want to make. Make sure all tests pass:
+
+### Commit your changes
+
+    $ mvn test
     $ git add .
     $ git status
     $ git commit -a    
