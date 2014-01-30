@@ -209,12 +209,25 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
 
     return {
         create: function() {
+
             function wrapMethod(m) {
                 return function() {
                     var methodArgs = arguments;
+
                     return authRespDef.promise.then( function() {
-                        return wrappedRsrc._rsrc[m].apply(
-                            wrappedRsrc._rsrc, methodArgs);
+
+                        function invokeMethod() {
+                            return wrappedRsrc._rsrc[m].apply(
+                                wrappedRsrc._rsrc, methodArgs);
+                        }
+
+                        if (FbUtil.authTokenRefreshRequired()) {
+                            FbUtil.refreshAuthToken().then(
+                                invokeMethod, invokeMethod);
+                        } else {
+                            invokeMethod();
+                        }
+
                     });
                 };
             }
@@ -546,8 +559,10 @@ kexApp.factory('ApiCache', function($rootScope) {
 
 kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         $window, ApiCache, $q) {
-    var fbAccessToken;
     var firstAuthResponse = true;
+    var authTokenRefreshTime;
+    var authTokenRefreshPromise;
+    var authTokenIsBeingRefreshed = false;
 
     $rootScope.$on("fb.auth.authResponseChange", function( event, response ) {
         if ( response.status === 'connected' ) {
@@ -555,7 +570,6 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
 
             var updateUser = $rootScope.fbUserId != response.authResponse.userID;
             $rootScope.fbUserId = response.authResponse.userID;
-            fbAccessToken = response.authResponse.accessToken;
 
             if ( updateUser ) {
                 processUserChange(response.status);
@@ -566,7 +580,6 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
             if ( $rootScope.fbUserId ) {
                 userLoggedOut = true;
                 $rootScope.fbUserId = undefined;
-                fbAccessToken = undefined;
             }
             if ( userLoggedOut || firstAuthResponse ) {
                 processUserChange(response.status);
@@ -585,6 +598,8 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         $.cookie( "facebook-token", authResponse.accessToken );
         $.cookie( "login", "facebook" );
         $rootScope.isLoggedIn = true;
+        // Force a refresh of the token if it will expire in under 60 seconds.
+        authTokenRefreshTime = moment().add('seconds', authResponse.expiresIn - 60);
     }
 
     function removeCookies() {
@@ -592,6 +607,7 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         $.removeCookie( "facebook-token" );
         $.removeCookie( "login" );
         $rootScope.isLoggedIn = false;
+        authTokenRefreshTime = undefined;
     }
 
     return {
@@ -642,6 +658,33 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
                 // window.location.reload(true);
                 // Make a call to the backend to wipe out any cached user state.
             });
+        },
+
+        authTokenRefreshRequired: function () {
+            return angular.isDefined(authTokenRefreshTime) &&
+                (authTokenRefreshTime.diff(moment()) < 0);
+        },
+
+        refreshAuthToken: function () {
+            if (authTokenIsBeingRefreshed) {
+                return authTokenRefreshPromise;
+            }
+
+            authTokenIsBeingRefreshed = true;
+            authTokenRefreshPromise = $facebook.getLoginStatus(true).then(
+                function (response) {
+                    authTokenIsBeingRefreshed = false;
+                    if (response.status === 'connected') {
+                        // This ensures that there is no ordering issue between when the
+                        // facebook auth response event fires and the login status promise
+                        // is resolved.
+                        setCookies(response.authResponse);
+                    }
+                },
+                function (err) {
+                    authTokenIsBeingRefreshed = false;
+                });
+            return authTokenRefreshPromise;
         },
 
         getAlbumCoverUrl: function (albumId) {
