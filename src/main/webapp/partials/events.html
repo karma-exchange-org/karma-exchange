@@ -39,14 +39,17 @@
                  </div>
 
         </div>
-        <div ng-show="!isMap && (events.data.length == 0)" class="row vertical-panel-padding">
-            <div class="col-md-12">
-                <h4><em>No <span ng-show="query.length > 0">matching </span> upcoming events</em></h4>
-            </div>
-        </div>
         <div ng-hide="isMap" class="vertical-panel-padding">
 
-            <ul class="list-unstyled container">
+            <div ng-show="eventSearchTracker.isPending()">
+                <loading-message msg="karma opportunities"></loading-message>
+            </div>
+
+            <div ng-show="(events.data.length == 0) && !eventSearchTracker.isPending()">
+                <h4><em>No <span ng-show="query.length > 0">matching </span> upcoming events</em></h4>
+            </div>
+
+            <ul class="list-unstyled container" ng-hide="eventSearchTracker.isPending()">
                 <li ng-repeat="event in events.data" id="event_{{event.key}}">
 
                     <div>

@@ -1,29 +1,3 @@
-angular
-    .module('loadingOnAJAX', [])
-    .config(function($httpProvider) {
-        var numLoadings = 0;
-        var loadingScreen = $('<div style="position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;background-color:gray;background-color:rgba(70,70,70,0.2);"><img style="position:absolute;top:50%;left:50%;" alt="" src="/img/fbLoading.gif" /></div>')
-            .appendTo($('body')).hide();
-        $httpProvider.responseInterceptors.push(function($q) {
-            return function(promise) {
-                numLoadings++;
-                loadingScreen.show();
-                function hideLoadingScreen() {
-                    if (!(--numLoadings)) {
-                        loadingScreen.hide();
-                    }
-                }
-                return promise.then(function(response) {
-                    hideLoadingScreen();
-                    return response;
-                }, function(response) {
-                    hideLoadingScreen();
-                    return $q.reject(response);
-                });
-            };
-        });
-    });
-
 angular.module('globalErrors', []).config(function($provide, $httpProvider, $compileProvider) {
     $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
     $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {
@@ -35,7 +9,7 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
         // }
         return data;
     });
-    $httpProvider.responseInterceptors.push(function($rootScope, $timeout, $q) {
+    $httpProvider.responseInterceptors.push(function($rootScope, $q) {
         return function(promise) {
             return promise.then(function(successResponse) {
                 // if (successResponse.config.method.toUpperCase() != 'GET' && !isExternal(successResponse.config.url)) {
@@ -69,12 +43,13 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
         };
     });
 });
+
 angular.module('HashBangURLs', []).config(['$locationProvider', function($location) {
   $location.hashPrefix('!');
 }]);
 
 kexApp = angular.module( "kexApp",
-    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "loadingOnAJAX", "ngFacebook",
+    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "ngFacebook",
      "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs"] )
 
 .filter( 'newlines', function( ) {
@@ -209,29 +184,6 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
 
     return {
         create: function() {
-
-            function wrapMethod(m) {
-                return function() {
-                    var methodArgs = arguments;
-
-                    return authRespDef.promise.then( function() {
-
-                        function invokeMethod() {
-                            return wrappedRsrc._rsrc[m].apply(
-                                wrappedRsrc._rsrc, methodArgs);
-                        }
-
-                        if (FbUtil.authTokenRefreshRequired()) {
-                            FbUtil.refreshAuthToken().then(
-                                invokeMethod, invokeMethod);
-                        } else {
-                            invokeMethod();
-                        }
-
-                    });
-                };
-            }
-
             var wrappedRsrc = {
                 _rsrc: $resource.apply(null, arguments)
             };
@@ -242,6 +194,27 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
             }
 
             return wrappedRsrc;
+
+            function wrapMethod(m) {
+                return function() {
+                    var methodArgs = arguments;
+
+                    return authRespDef.promise.then( function() {
+
+                        if (FbUtil.authTokenRefreshRequired()) {
+                            FbUtil.refreshAuthToken().then(
+                                invokeMethod, invokeMethod);
+                        } else {
+                            invokeMethod();
+                        }
+
+                        function invokeMethod() {
+                            return wrappedRsrc._rsrc[m].apply(
+                                wrappedRsrc._rsrc, methodArgs);
+                        }
+                    });
+                };
+            }
         }
 
     };
@@ -251,6 +224,12 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
  * Utility API factories
  */
 
+/*
+ * This class wraps a promise that can be used prior to the task associated with
+ * the promise being issued. Additionally, using the 'recycle' method a new
+ * promise is created everytime a new task is issued. The most recently
+ * created promise is always returned from the property "promise".
+ */
 kexApp.factory('RecyclablePromiseFactory', function($q) {
 
     function RecyclablePromise() {
@@ -1318,6 +1297,17 @@ kexApp.directive('karmaHours', function(KexUtil) {
     };
 });
 
+kexApp.directive('loadingMessage', function($rootScope) {
+    return {
+        restrict: 'E',
+        scope: {
+            msg: '@'
+        },
+        replace: true,
+        transclude: false,
+        templateUrl: 'template/kex/loading-message.html'
+    };
+});
 
 /*
  * App controllers
@@ -1712,6 +1702,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
 
+    $scope.eventSearchTracker = new PromiseTracker();
     var eventSearchRecyclablePromise = RecyclablePromiseFactory.create();
 
     $scope.modelOpen = false;
@@ -1742,6 +1733,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
     };
     $scope.reset = function( ) {
         var eventSearchDef = eventSearchRecyclablePromise.recycle();
+        $scope.eventSearchTracker.reset(eventSearchDef.promise);
         Events.get(
             {
                 keywords: ($scope.query ? $scope.query : ""),
@@ -2455,6 +2447,35 @@ CompletionTracker.prototype.complete = function(eventName) {
     this._tracker.set(idx, true);
     if (this._tracker.count() == this._tracker.length) {
         this._completionCb();
+    }
+}
+
+function PromiseTracker(promise) {
+    this.reset(promise);
+}
+
+PromiseTracker.prototype.isPending = function() {
+    return this._tracked.length > 0;
+}
+
+PromiseTracker.prototype.reset = function(promise) {
+    this._tracked = [];
+
+    if (angular.isDefined(promise)) {
+        this.track(promise);
+    }
+}
+
+PromiseTracker.prototype.track = function(promise) {
+    this._tracked.push(promise);
+
+    promise.then(
+        angular.bind(this, onDone),
+        angular.bind(this, onDone));
+
+    function onDone() {
+        var index = this._tracked.indexOf(promise);
+        this._tracked.splice(index, 1);
     }
 }
 
