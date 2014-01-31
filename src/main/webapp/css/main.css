@@ -714,6 +714,10 @@ img.karma-badge-icon {
   width: 20px;
 }
 
+.loading-message.in-tab {
+  padding-left: 10px;
+}
+
 /*==================================================
  * Angular-ui
  * ===============================================*/

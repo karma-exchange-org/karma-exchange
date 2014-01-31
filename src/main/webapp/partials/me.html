@@ -5,7 +5,7 @@
 
     <div class="col-md-3">
 
-        <div class="panel panel-default panel-seperated-vertical">
+        <div class="panel panel-default panel-seperated-vertical" ng-show="me.firstName">
             <div class="panel-body">
 
                 <div class="panel-body-header-h3">{{me.firstName}}</div>
@@ -27,7 +27,8 @@
 
             <div class="col-md-6">
 
-                <div class="panel panel-default panel-seperated-vertical">
+                <div class="panel panel-default panel-seperated-vertical"
+                     ng-show="userGoalInfo && !$.isEmptyObject(userGoalInfo)">
                     <div class="panel-heading">
                         <h3 class="panel-title">
                             Karma Goal Tracker
@@ -82,7 +83,8 @@
                     </div>
                 </div>
 
-                <div class="panel panel-default panel-seperated-vertical" ng-show="(me.badges.length != 0) || {ALL:true}[me.permission]">
+                <div class="panel panel-default panel-seperated-vertical"
+                     ng-show="me.badges && ((me.badges.length != 0) || ((me.badges.length == 0) && {ALL:true}[me.permission]))">
                     <div class="panel-heading">
                         <h3 class="panel-title">
                             Awards
@@ -206,11 +208,17 @@
                     Impact
                 </tab-heading>
 
-                <impact-timeline
-                    timeline-events="impactTimelineEvents"
-                    self-profile-view="{ALL:true}[me.permission]"
-                    timeline-type="'USER'">
-                </impact-timeline>
+                <div ng-show="impactTimelineFetchTracker.isPending()">
+                    <loading-message msg="impact timeline" class="in-tab"></loading-message>
+                </div>
+
+                <div ng-show="!impactTimelineFetchTracker.isPending()">
+                    <impact-timeline
+                        timeline-events="impactTimelineEvents"
+                        self-profile-view="{ALL:true}[me.permission]"
+                        timeline-type="'USER'">
+                    </impact-timeline>
+                </div>
             </tab>
             <tab active="tabs.upcoming.active" select="tabManager.select('upcoming')">
                 <tab-heading>
@@ -219,10 +227,16 @@
                     Upcoming Events
                 </tab-heading>
 
-                <upcoming-events
-                    events="events"
-                    search-type="'USER'">
-                </upcoming-events>
+                <div ng-show="upcomingEventsFetchTracker.isPending()">
+                    <loading-message msg="upcoming events" class="in-tab"></loading-message>
+                </div>
+
+                <div ng-show="!upcomingEventsFetchTracker.isPending()">
+                    <upcoming-events
+                        events="events"
+                        search-type="'USER'">
+                    </upcoming-events>
+                </div>
 
             </tab>
         </tabset>
