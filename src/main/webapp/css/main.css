@@ -691,6 +691,29 @@ img.karma-badge-icon {
   width: 180px;
 }
 
+/*
+ * Loading message
+ */
+
+.loading-message {
+  font-size: 16px;
+  font-style: italic;
+}
+
+.loading-message div {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.loading-message .msg {
+  padding-left: 10px;
+}
+
+.loading-message img {
+  height: 20px;
+  width: 20px;
+}
+
 /*==================================================
  * Angular-ui
  * ===============================================*/
