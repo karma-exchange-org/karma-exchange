@@ -724,6 +724,18 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
             return KexUtil.getBaseUrl() + '/#!/event/' + event.key;
         },
         getImpactTimelineEvents: function(eventFilter) {
+            var impactTimelineEventsGrouped = $q.defer();
+
+            if (eventFilter.userKey) {
+                User.get( { id : eventFilter.userKey, resource : 'event', type : 'PAST'},
+                    processImpactTimeline);
+            } else {
+                Events.get( { type : "PAST", keywords : eventFilter.keywords },
+                    processImpactTimeline);
+            }
+
+            return impactTimelineEventsGrouped.promise;
+
             function processImpactTimeline(pastEvents) {
                 var eventsGrouped = [];
                 var curGroup = [];
@@ -748,18 +760,6 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
 
                 impactTimelineEventsGrouped.resolve(eventsGrouped);
             }
-
-            var impactTimelineEventsGrouped = $q.defer();
-
-            if (eventFilter.userKey) {
-                User.get( { id : eventFilter.userKey, resource : 'event', type : 'PAST'},
-                    processImpactTimeline);
-            } else {
-                Events.get( { type : "PAST", keywords : eventFilter.keywords },
-                    processImpactTimeline);
-            }
-
-            return impactTimelineEventsGrouped.promise;
         }
     };
 });
@@ -1388,13 +1388,14 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({
                 userKey: $scope.userKey
             });
+            $scope.impactTimelineFetchTracker = new PromiseTracker($scope.impactTimelineEvents);
         }
     }
 
     function loadUpcomingTab() {
         if (!$scope.upcomingTabLoaded && $scope.userKey) {
             $scope.upcomingTabLoaded = true;
-            User.get(
+            var upcomingEventsPromise = User.get(
                 {
                     id: $scope.userKey,
                     resource: 'event'
@@ -1402,6 +1403,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                 function(result) {
                     $scope.events = result;
                 });
+            $scope.upcomingEventsFetchTracker = new PromiseTracker(upcomingEventsPromise);
         }
     }
 
@@ -2455,6 +2457,7 @@ function PromiseTracker(promise) {
 }
 
 PromiseTracker.prototype.isPending = function() {
+    // return true;
     return this._tracked.length > 0;
 }
 
