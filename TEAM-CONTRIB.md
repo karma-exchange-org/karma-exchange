@@ -77,7 +77,7 @@ To incorporate code review feedback just follow the prior modification and push 
     $ mvn appengine:devserver
     $ git add --all .
     $ git commit -a    
-    $ git push origin <my-awesome-feature>
+    $ git push origin <my-awesome-feature-branch-name>
 
 ### Merging the code
 
@@ -95,7 +95,7 @@ Sync your master branch to the latest changes:
 
 Delete your merged branch:
 
-    $ git branch -d <my-awesome-feature>
+    $ git branch -d <my-awesome-feature-branch-name>
 
 **Pro tip:** use the convenience script git-cleanup to do all four commands above
 
