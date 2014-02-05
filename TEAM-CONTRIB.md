@@ -178,5 +178,6 @@ Once you download them put them in your preferred directory (example below uses 
 2. Github collaboration. This is our template for collaboration:
    * https://gist.github.com/seshness/3943237
 3. Git:
+   * http://git-scm.com/documentation
    * http://www.vogella.com/articles/Git/article.html
    * http://gitref.org/basic/
