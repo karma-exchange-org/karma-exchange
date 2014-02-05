@@ -6,14 +6,6 @@ Copyright (C) 2013 Karma Exchange
 
 Requires [Apache Maven](http://maven.apache.org) 3.1 and JDK 7 in order to run.
 
-To build, run
-
-    mvn package
-
-Building will run the tests, but to explicitly run tests you can use the test target
-
-    mvn test
-
 To start the app, use the [App Engine Maven Plugin](http://code.google.com/p/appengine-maven-plugin/)
 
     mvn appengine:devserver
