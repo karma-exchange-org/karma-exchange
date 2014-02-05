@@ -197,9 +197,9 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
 
             function wrapMethod(m) {
                 return function() {
-                    var methodArgs = arguments;
+                    var wrappedMethodArgs = wrapMethodArgs(arguments);
 
-                    return authRespDef.promise.then( function() {
+                    authRespDef.promise.then( function() {
 
                         if (FbUtil.authTokenRefreshRequired()) {
                             FbUtil.refreshAuthToken().then(
@@ -209,10 +209,70 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
                         }
 
                         function invokeMethod() {
-                            return wrappedRsrc._rsrc[m].apply(
-                                wrappedRsrc._rsrc, methodArgs);
+                            wrappedRsrc._rsrc[m].apply(
+                                wrappedRsrc._rsrc, wrappedMethodArgs.args);
                         }
+
                     });
+
+                    return wrappedMethodArgs.promise;
+
+                    // Until we convert to angular 1.2, wrap the success and failure
+                    // callbacks so we can return a promise from this API.
+                    function wrapMethodArgs(args) {
+                        var wrappedArgs = [];
+                        var successCbFound = false;
+                        var errorCbFound = false;
+                        var retValDefered = $q.defer();
+
+                        for (var argIdx = 0; argIdx < args.length; argIdx++) {
+                            if (angular.isFunction(args[argIdx])) {
+                                if (!successCbFound) {
+                                    successCbFound = true;
+                                    wrappedArgs.push(
+                                        wrapSuccessCb(retValDefered, args[argIdx]));
+                                } else if (!errorCbFound) {
+                                    errorCbFound = true;
+                                    wrappedArgs.push(
+                                        wrapErrorCb(retValDefered, args[argIdx]));
+                                } else {
+                                    wrappedArgs.push(args[argIdx]);
+                                }
+                            } else {
+                                wrappedArgs.push(args[argIdx]);
+                            }
+                        }
+
+                        if (!successCbFound) {
+                            wrappedArgs.push(wrapSuccessCb(retValDefered));
+                        }
+                        if (!errorCbFound) {
+                            wrappedArgs.push(wrapErrorCb(retValDefered));
+                        }
+
+                        return {
+                            args: wrappedArgs,
+                            promise: retValDefered.promise
+                        };
+
+                        function wrapSuccessCb(retValDefered, cbArg) {
+                            return function (value, responseHeaders) {
+                                retValDefered.resolve(value);
+                                if (cbArg) {
+                                    cbArg(value, responseHeaders);
+                                }
+                            }
+                        }
+
+                        function wrapErrorCb(retValDefered, cbArg) {
+                            return function (httpResponse) {
+                                retValDefered.reject(httpResponse);
+                                if (cbArg) {
+                                    cbArg(httpResponse);
+                                }
+                            }
+                        }
+                    }
                 };
             }
         }
@@ -1324,9 +1384,14 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     tabManager.init();
     $scope.tabs = tabManager.tabs;
 
+    $scope.impactTimelineFetchTracker = new PromiseTracker();
+    $scope.upcomingEventsFetchTracker = new PromiseTracker();
+
     function load() {
         if ($location.path() == "/me") {
             $scope.who = 'My';
+            $scope.impactTimelineFetchTracker.track(MeUtil.me());
+            $scope.upcomingEventsFetchTracker.track(MeUtil.me());
             MeUtil.me().then(function(meObj) {
                 $scope.me = meObj;
                 $scope.userKey = $scope.me.key;
@@ -1388,7 +1453,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
             $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({
                 userKey: $scope.userKey
             });
-            $scope.impactTimelineFetchTracker = new PromiseTracker($scope.impactTimelineEvents);
+            $scope.impactTimelineFetchTracker.track($scope.impactTimelineEvents);
         }
     }
 
@@ -1403,7 +1468,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                 function(result) {
                     $scope.events = result;
                 });
-            $scope.upcomingEventsFetchTracker = new PromiseTracker(upcomingEventsPromise);
+            $scope.upcomingEventsFetchTracker.track(upcomingEventsPromise);
         }
     }
 
@@ -1521,7 +1586,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
         }
     };
 
-    Org.get(
+    var orgPromise = Org.get(
         { id: $routeParams.orgId },
         function(result) {
             $scope.org = result;
@@ -1549,6 +1614,11 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
 
             tabManager.reloadActiveTab();
         });
+
+    $scope.impactTimelineFetchTracker = new PromiseTracker(orgPromise);
+    $scope.upcomingEventsFetchTracker = new PromiseTracker(orgPromise);
+    $scope.topVolunteersFetchTracker = new PromiseTracker(orgPromise);
+
     Org.get(
         {
             id: $routeParams.orgId,
@@ -1564,6 +1634,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
             $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({
                 keywords: "org:" + $scope.org.searchTokenSuffix
             });
+            $scope.impactTimelineFetchTracker.track($scope.impactTimelineEvents);
         }
     }
 
@@ -1592,7 +1663,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     function loadUpcomingEvents(action) {
         if (!$scope.upcomingEventsLoaded && $scope.orgLoaded) {
             $scope.upcomingEventsLoaded = true;
-            Events.get(
+            var upcomingEventsPromise = Events.get(
                 {
                     type: "UPCOMING",
                     keywords: "org:" + $scope.org.searchTokenSuffix
@@ -1612,30 +1683,33 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                         action();
                     }
                 });
+            $scope.upcomingEventsFetchTracker.track(upcomingEventsPromise);
         }
     }
 
     function loadTopVolunteersTab() {
         if (!$scope.topVolunteersTabLoaded) {
             $scope.topVolunteersTabLoaded = true;
-            Org.get(
-                {
-                    type: "ALL_TIME",
-                    id: $routeParams.orgId,
-                    resource: "leaderboard"
-                },
-                function(result) {
-                    $scope.allTimeLeaders = result;
-                });
-            Org.get(
-                {
-                    type: "THIRTY_DAY",
-                    id: $routeParams.orgId,
-                    resource: "leaderboard"
-                },
-                function(result) {
-                    $scope.lastMonthLeaders = result;
-                });
+            $scope.topVolunteersFetchTracker.track(
+                Org.get(
+                    {
+                        type: "ALL_TIME",
+                        id: $routeParams.orgId,
+                        resource: "leaderboard"
+                    },
+                    function(result) {
+                        $scope.allTimeLeaders = result;
+                    }));
+            $scope.topVolunteersFetchTracker.track(
+                Org.get(
+                    {
+                        type: "THIRTY_DAY",
+                        id: $routeParams.orgId,
+                        resource: "leaderboard"
+                    },
+                    function(result) {
+                        $scope.lastMonthLeaders = result;
+                    }));
         }
     }
 
@@ -1658,12 +1732,14 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
 var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) {
     $scope.query = "";
     $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
+    $scope.orgQueryTracker = new PromiseTracker();
     $scope.refresh = function( ) {
-        Org.get(
-            { name_prefix : $scope.query },
-            function(result) {
-                $scope.orgs = result;
-            });
+        $scope.orgQueryTracker.reset(
+            Org.get(
+                { name_prefix : $scope.query },
+                function(result) {
+                    $scope.orgs = result;
+                }));
     };
     $scope.join = function( ) {
         Org.save( $scope.newOrg, function( ) {
@@ -1684,6 +1760,7 @@ var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) {
     });
     $scope.refresh( );
 };
+
 var createOrgCtrl = function ($scope, $modalInstance) {
     $scope.save = function( ) {
         if( $scope.newOrg.page.url ) {
@@ -2318,7 +2395,8 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             function() {
                 refreshCompletionTracker.complete('event');
             });
-        Events.get(
+
+        var eventOrganizersPromise = Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
@@ -2331,7 +2409,11 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             function() {
                 refreshCompletionTracker.complete('eventOrganizers');
             });
-        Events.get(
+        if (!angular.isDefined($scope.eventOrganizersFirstFetchTracker)) {
+            $scope.eventOrganizersFirstFetchTracker = new PromiseTracker(eventOrganizersPromise);
+        }
+
+        var eventRegisteredPromise = Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
@@ -2344,7 +2426,11 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             function() {
                 refreshCompletionTracker.complete('eventRegistered');
             });
-        Events.get(
+        if (!angular.isDefined($scope.eventRegisteredFirstFetchTracker)) {
+            $scope.eventRegisteredFirstFetchTracker = new PromiseTracker(eventRegisteredPromise);
+        }
+
+        var eventWaitListedPromise = Events.get(
             {
                 id: $routeParams.eventId,
                 registerCtlr: 'participants',
@@ -2357,6 +2443,10 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             function() {
                 refreshCompletionTracker.complete('eventWaitListed');
             });
+        if (!angular.isDefined($scope.eventWaitListedFirstFetchTracker)) {
+            $scope.eventWaitListedFirstFetchTracker = new PromiseTracker(eventWaitListedPromise);
+        }
+
 
         function refreshComplete() {
             eventViewDef.resolve();
@@ -2457,7 +2547,6 @@ function PromiseTracker(promise) {
 }
 
 PromiseTracker.prototype.isPending = function() {
-    // return true;
     return this._tracked.length > 0;
 }
 

@@ -1,4 +1,5 @@
 <div class="container">
+
     <div class="row">
         <div class="col-md-12">
             <div class="input-group">
@@ -9,6 +10,7 @@
             </div>
         </div>
     </div>
+
     <div>
         <!-- <button class="btn btn-info" ng-click="open()"><i class="icon-plus"></i> Create an Organization</button> -->
         <script type="text/ng-template" id="createOrgModal.html">
@@ -35,8 +37,18 @@
         </script>
 
     </div>
+
     <div class="vertical-panel-padding">
-        <ul class="list-unstyled">
+
+        <div ng-hide="!orgQueryTracker.isPending()">
+            <loading-message msg="organizations"></loading-message>
+        </div>
+
+        <div ng-show="(orgs.data.length == 0) && !orgQueryTracker.isPending()">
+            <h4><em>No <span ng-show="query.length > 0">matching </span> organizations found</em></h4>
+        </div>
+
+        <ul class="list-unstyled" ng-show="!orgQueryTracker.isPending()">
             <li ng-repeat="org in orgs.data">
                 <div class="well well-sm">
                     <a href="#!/org/{{org.key}}" ng-click="refresh({{org.key}})">
@@ -47,4 +59,5 @@
             </li>
         </ul>
     </div>
+
 </div>

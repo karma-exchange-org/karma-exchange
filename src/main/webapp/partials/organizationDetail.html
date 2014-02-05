@@ -1,7 +1,7 @@
 <div class="container">
     <div class="row">
 
-        <div class="col-md-6">
+        <div class="col-md-6" ng-show="fbPage.name">
             <div class="panel panel-default panel-seperated-vertical">
                 <div class="panel-body">
 
@@ -18,7 +18,7 @@
 
         <div class="col-md-6">
 
-            <div class="panel panel-default panel-seperated-vertical">
+            <div class="panel panel-default panel-seperated-vertical" ng-show="org.key">
                 <div class="panel-body org-info-panel">
 
                     <div class="font-size-h4">
@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <div class="panel panel-default panel-seperated-vertical">
+            <div class="panel panel-default panel-seperated-vertical" ng-show="fbPage.mission || org.donationUrl">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         Mission
@@ -109,7 +109,7 @@
 
             </div>
 
-            <div class="panel panel-default panel-seperated-vertical" ng-show="childOrgs.data.length>0">
+            <div class="panel panel-default panel-seperated-vertical" ng-show="childOrgs.data.length > 0">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         Chapters
@@ -151,7 +151,13 @@
                     Impact
                 </tab-heading>
 
-                <impact-timeline timeline-events="impactTimelineEvents" timeline-type="'ORG'"></impact-timeline>
+                <div ng-show="impactTimelineFetchTracker.isPending()">
+                    <loading-message msg="impact timeline" class="in-tab"></loading-message>
+                </div>
+
+                <div ng-show="!impactTimelineFetchTracker.isPending()">
+                    <impact-timeline timeline-events="impactTimelineEvents" timeline-type="'ORG'"></impact-timeline>
+                </div>
 
             </tab>
             <tab active="tabs.upcoming.active" select="tabManager.select('upcoming')">
@@ -161,10 +167,16 @@
                     Upcoming Events
                 </tab-heading>
 
-                <upcoming-events
-                    events="upcomingEvents"
-                    search-type="'ORG'">
-                </upcoming-events>
+                <div ng-show="upcomingEventsFetchTracker.isPending()">
+                    <loading-message msg="upcoming events" class="in-tab"></loading-message>
+                </div>
+
+                <div ng-show="!upcomingEventsFetchTracker.isPending()">
+                    <upcoming-events
+                        events="upcomingEvents"
+                        search-type="'ORG'">
+                    </upcoming-events>
+                </div>
 
             </tab>
             <tab active="tabs.calendar.active" select="tabManager.select('calendar')">
@@ -173,7 +185,12 @@
                     </i>
                     Calendar
                 </tab-heading>
-                <div class="col-md-12 container">
+
+                <div ng-show="upcomingEventsFetchTracker.isPending()">
+                    <loading-message msg="event calendar" class="in-tab"></loading-message>
+                </div>
+
+                <div ng-show="!upcomingEventsFetchTracker.isPending()">
                     <!-- <div full-calendar events="events"></div> -->
                     <div class="calendar"
                         ng-model="calendarEventSources"
@@ -190,7 +207,11 @@
                     Top Volunteers
                 </tab-heading>
 
-                <div class="row row-no-margin">
+                <div ng-show="topVolunteersFetchTracker.isPending()">
+                    <loading-message msg="volunteer leaderboard" class="in-tab"></loading-message>
+                </div>
+
+                <div class="row row-no-margin" ng-show="!topVolunteersFetchTracker.isPending()">
                     <div class="col-md-5" ng-show="allTimeLeaders">
                         <leaderboard-table scores="allTimeLeaders.scores" type="'ALL_TIME'">
                         </leaderboard-table>
