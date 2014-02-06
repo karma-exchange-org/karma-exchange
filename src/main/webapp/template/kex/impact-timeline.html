@@ -5,7 +5,7 @@
         </div>
     </div>
 
-    <div class="row row-no-margin" ng-repeat="pastEventsGroup in timelineEvents">
+    <div class="row row-no-margin impact-timeline" ng-repeat="pastEventsGroup in timelineEvents">
         <div class="col-md-6" ng-repeat="event in pastEventsGroup">
 
             <div class="panel panel-default">
@@ -84,9 +84,9 @@
                         </div>
                     </div>
 
-                    <div class="row vertical-panel-padding" ng-show="event.album">
+                    <div class="row event-cover-img" ng-show="event.album">
                         <div class="col-md-12">
-                            <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive">
+                            <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive img-center img-thumbnail">
                         </div>
                     </div>
 

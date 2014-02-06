@@ -39,3 +39,11 @@
 .navbar-brand {
   padding: 11px 15px;
 }
+
+/*
+ * This is a reversion of the bootstrap customization. This can be dropped
+ * once we switch bootstrap themes.
+ */
+.img-thumbnail {
+  background-color: #fff;
+}
