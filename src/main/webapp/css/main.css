@@ -172,6 +172,12 @@ table>tbody>tr>td.table-cell-align-middle {
   /* background-color: #f5f5f5; */
 }
 
+.img-center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .vertical-panel-padding {
   padding-top: 10px;
 }
@@ -716,6 +722,14 @@ img.karma-badge-icon {
 
 .loading-message.in-tab {
   padding-left: 10px;
+}
+
+/*
+ * Impact timeline
+ */
+
+.impact-timeline .event-cover-img {
+  padding: 10px 0px;
 }
 
 /*==================================================
