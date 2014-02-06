@@ -22,6 +22,11 @@ body {
   /* background: url(../img/bg.gif);*/
 }
 
+.navbar-brand img {
+  width: 180px;
+  height: 27px;
+}
+
 .container-fluid > .content{
 margin-left:280px;
 }
