@@ -48,9 +48,44 @@ angular.module('HashBangURLs', []).config(['$locationProvider', function($locati
   $location.hashPrefix('!');
 }]);
 
+
+angular.module('kexAsyncLoader', []).provider('$kexAsyncLoader', function() {            
+    this.$get = ['$q', '$rootScope', '$window', function($q, $rootScope, $window) {
+        var $kexAsyncLoader=$q.defer();
+        function loadScript(type) {
+            var s = document.createElement('script'); // use global document since Angular's $document is weak
+            switch(type) {
+                case "google-maps" : 
+                    s.src = 'https://maps.googleapis.com/maps/api/js?sensor=false&callback=initialize';
+                    break;
+                default : 
+                    delete s;
+                    return;
+            }
+            document.body.appendChild(s);
+        };
+        function asynchLoad(type){
+            var deferred = $q.defer();
+            $window.initialize = function () {
+                deferred.resolve();
+            };
+            if ($window.attachEvent) {  
+                $window.attachEvent('onload', loadScript(type)); 
+            } else {
+                $window.addEventListener('load', loadScript(type), false);
+            }
+            return deferred.promise;
+        };
+        $kexAsyncLoader.loadGoogleMaps = function(){
+            return asynchLoad("google-maps");
+        };
+        return $kexAsyncLoader;
+    }];
+});
+
 kexApp = angular.module( "kexApp",
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "ngFacebook",
-     "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs"] )
+     "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs","kexAsyncLoader","geolocation"] )
 
 .filter( 'newlines', function( ) {
     return function ( text ) {
@@ -1369,6 +1404,40 @@ kexApp.directive('loadingMessage', function($rootScope) {
     };
 });
 
+kexApp.directive('kexMaps', function($kexAsyncLoader,$window) {
+    return {
+        restrict: 'E',
+        scope: {
+            center: '=',
+            zoom: '=',
+            markers: '=',
+            latitude: '=',
+            longitude: '=',
+            markclick: '=',
+            draggable: '=',
+            refresh: '&'
+        },
+        replace: true,
+        transclude: true,
+        link: function (scope, element, attrs) { 
+        },
+        template:
+            '<div> '+
+                '<div class="google-map" ng-transclude '+
+                        //'refresh="{{refresh}}" '+
+                        'center="center" '+
+                        'zoom="zoom" '+
+                        'markers="markers" '+
+                        'latitude="latitude" '+
+                        'longitude="longitude" '+
+                        'mark-click="false" '+
+                        'draggable="true" '+
+                        'style="height: 600px; width: 100%"> '+
+                 '</div> '+
+             '</div>'
+    };
+});
+
 /*
  * App controllers
  */
@@ -1777,7 +1846,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
     };
 };
 var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
-        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q ) {
+        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q,geolocation ) {
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
 
@@ -1791,12 +1860,23 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
                 latitude : $rootScope.getGeoLocation().latitude,
                 longitude : $rootScope.getGeoLocation().longitude
             },
+            latitude : $rootScope.getGeoLocation().latitude,
+            longitude : $rootScope.getGeoLocation().longitude,
             /** the initial zoom level of the map */
             zoom : 4,
             /** list of markers to put in the map */
-            markers : [{}]
+            markers : [{}],
+            draggable : true,
+            markclick : false
+            
 
     } );
+    
+    geolocation.getLocation().then(function(data){
+      $scope.center = {latitude:data.coords.latitude, longitude:data.coords.longitude};
+      $scope.latitude = $scope.center.latitude;
+      $scope.longitude = $scope.center.longitude;
+    });
 
     $scope.isMap=false;
     $scope.showMap = function()
@@ -2669,6 +2749,7 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
             }
         });
     };
+    
     $rootScope.getGeoLocation = function(){
         return { latitude: 0, longitude: 0};
         // TODO(avlaiani): commented out because this is not working.
@@ -2692,6 +2773,7 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
                     longitude : $rootScope.getGeoLocation.longitude
                 };
         }, options );
+        
 
     };
 

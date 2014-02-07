@@ -18,7 +18,7 @@
                         <i class="icon-search"></i>
                 </span>
         </div>
-        <!--
+         <!--
             Commenting this out until it becomes functional
             <div class="btn-group">
                 <button class="btn btn-default" ng-click="showList()"><i class="icon-list"></i> List</button>
@@ -26,17 +26,15 @@
             </div>
         -->
         <div ng-show="isMap" class="row col-md-12 vertical-panel-padding">
-                <div  class="google-map"
-                        refresh="!isMapElementHidden"
+                <kex-maps
                         center="center"
                         zoom="zoom"
                         markers="markers"
                         latitude="latitude"
                         longitude="longitude"
-                        mark-click="false"
-                        draggable="true"
-                        style="height: 600px; width: 100%">
-                 </div>
+                        markclick="markclick"
+                        draggable="draggable"
+                 ></kex-maps>
 
         </div>
         <div ng-hide="isMap" class="vertical-panel-padding">
