@@ -120,8 +120,8 @@ kexApp = angular.module( "kexApp",
 }
 )
 
-.filter('truncate', function () {
-    return function (text, length, end) {
+.filter('truncate', function (KexUtil) {
+    return function (text, length) {
         if (!angular.isDefined(text) || (text.length === 0)) {
             return null;
         }
@@ -130,14 +130,10 @@ kexApp = angular.module( "kexApp",
             length = 10;
         }
 
-        if (end === undefined) {
-            end = "...";
-        }
-
-        if (text.length <= length || text.length - end.length <= length) {
+        if (text.length <= length) {
             return text;
         } else {
-            return String(text).substring(0, length-end.length) + end;
+            return KexUtil.truncateToWordBoundary(text, length).str;
         }
 
     };
@@ -366,6 +362,21 @@ kexApp.factory('KexUtil', function($rootScope) {
 
         addMonths: function(date, val) {
             return moment(date).add('months', 1).toDate();
+        },
+
+        truncateToWordBoundary: function(str, lim) {
+            var truncSuffix = "...";
+            lim = Math.max(lim, truncSuffix.length);
+            var tooLong = str.length > lim;
+            if (tooLong) {
+                str = str.substr(0, lim - truncSuffix.length);
+                var lastSpaceIdx = str.lastIndexOf(' ');
+                if (lastSpaceIdx === -1) {
+                    lastSpaceIdx = str.length;
+                }
+                str = str.substr(0, lastSpaceIdx) + "...";
+            }
+            return { str: str, truncated: tooLong };
         }
     };
 });
@@ -1376,6 +1387,37 @@ kexApp.directive('loadingMessage', function($rootScope) {
         replace: true,
         transclude: false,
         templateUrl: 'template/kex/loading-message.html'
+    };
+});
+
+kexApp.directive('truncateAndLink', function($rootScope, KexUtil) {
+    return {
+        restrict: 'E',
+        scope: {
+            text: '=',
+            linkText: '@',
+            href: '@',
+            limit: '@'
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.$watch('text', updateText);
+            scope.$watch('href', updateText);
+            scope.$watch('limit', updateText);
+
+            function updateText() {
+                if (  angular.isDefined(scope.text) &&
+                      angular.isDefined(scope.href) &&
+                      angular.isDefined(scope.limit)  ) {
+                    var result =
+                        KexUtil.truncateToWordBoundary(scope.text, scope.limit);
+                    scope.output = result.str;
+                    scope.truncated = result.truncated;
+                }
+            }
+        },
+        templateUrl: 'template/kex/truncate-and-link.html'
     };
 });
 
