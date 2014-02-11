@@ -1052,7 +1052,7 @@ img {
   color: #fff;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
 
-  font-family: 'Open Sans';
+  font-family: 'Open Sans', sans-serif;
   font-weight: 700;
   font-size: 45px;
 
