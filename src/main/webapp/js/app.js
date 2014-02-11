@@ -170,7 +170,7 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
 
     var authRespDef = $q.defer();
     var isFirstAuthResp = true;
-    $rootScope.$on("fbUtil.userChanged", function (event, status) {
+    $rootScope.$on("fbUtil.userChanged", function (event, response) {
         if ( isFirstAuthResp ) {
             isFirstAuthResp = false;
             authRespDef.resolve();
@@ -178,7 +178,7 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
             // If any resource depends on handling user changes after the
             // first auth response this event must be listened to in order
             // to update the resource.
-            $rootScope.$broadcast("FbAuthDepResource.userChanged", status);
+            $rootScope.$broadcast("FbAuthDepResource.userChanged", response);
         }
     });
 
@@ -375,8 +375,8 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, Re
     var meRecyclablePromise = RecyclablePromiseFactory.create();
     var goalInfoRecyclablePromise = RecyclablePromiseFactory.create();
 
-    $rootScope.$on("fbUtil.userChanged", function (event, status) {
-        if ( status === 'connected' ) {
+    $rootScope.$on("fbUtil.userChanged", function (event, response) {
+        if ( response.status === 'connected' ) {
             MeUtil.updateMe();
         } else {
             MeUtil.clearMe();
@@ -603,7 +603,7 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
     var authTokenRefreshPromise;
     var authTokenIsBeingRefreshed = false;
 
-    $rootScope.$on("fb.auth.authResponseChange", function( event, response ) {
+    $rootScope.$on("fb.auth.authResponseChange", function ( event, response ) {
         if ( response.status === 'connected' ) {
             setCookies(response.authResponse);
 
@@ -611,7 +611,7 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
             $rootScope.fbUserId = response.authResponse.userID;
 
             if ( updateUser ) {
-                processUserChange(response.status);
+                processUserChange(response);
             }
         } else {
             removeCookies();
@@ -621,15 +621,25 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
                 $rootScope.fbUserId = undefined;
             }
             if ( userLoggedOut || firstAuthResponse ) {
-                processUserChange(response.status);
+                processUserChange(response);
             }
         }
         firstAuthResponse = false;
-    } );
-    function processUserChange(status) {
+
+        if ( response.error ) {
+            // Ideally we shouldn't show this alert and just silently fail the loginStatus.
+            // However, it appears doing Fb.login after facebook has ignored the
+            // getLoginStatus sometimes results in a dialog box that just hangs.
+            // Need to dig into this more.
+            $rootScope.showAlert('Error connecting to facebook: ' + response.error, "danger");
+            console.log("Error connecting to facebook: %o", response.error);
+        }
+    });
+
+    function processUserChange( response ) {
         // Fired first time user information is available (post FB.init) and any
         // subsequent time that it changes.
-        $rootScope.$broadcast("fbUtil.userChanged", status);
+        $rootScope.$broadcast("fbUtil.userChanged", response);
     }
 
     function setCookies(authResponse) {
@@ -1850,7 +1860,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
         }
     });
 
-    $scope.$on("FbAuthDepResource.userChanged", function (event, status) {
+    $scope.$on("FbAuthDepResource.userChanged", function (event, response) {
         // Only dependency is the cookie identifying the user.
         $scope.reset();
     });
@@ -2295,7 +2305,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     var tabs = $scope.tabs = tabManager.tabs;
 
     var eventViewRecyclablePromise = RecyclablePromiseFactory.create();
-    $scope.$on("FbAuthDepResource.userChanged", function (event, status) {
+    $scope.$on("FbAuthDepResource.userChanged", function (event, response) {
         refreshEvent();
     });
 

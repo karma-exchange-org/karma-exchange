@@ -14,6 +14,7 @@ angular.module('ngFacebook', [])
     var config = {
       permissions:    'email',
       appId:          null,
+      loginStatusTimeoutMs: 15 * 1000,
       customInit:     {}
     };
 
@@ -39,8 +40,15 @@ angular.module('ngFacebook', [])
     this.getCustomInit = function() {
       return config.customInit;
     };
+    this.setLoginStatusTimeoutMs = function(loginStatusTimeoutMs) {
+      config.loginStatusTimeoutMs=loginStatusTimeoutMs;
+      return this;
+    };
+    this.getLoginStatusTimeoutMs = function() {
+      return config.loginStatusTimeoutMs;
+    };
 
-    this.$get = ['$q', '$rootScope', '$window', function($q, $rootScope, $window) {
+    this.$get = ['$q', '$rootScope', '$window', '$timeout', function($q, $rootScope, $window, $timeout) {
       var $facebook=$q.defer();
       $facebook.config = function(property) {
         return config[property];
@@ -127,14 +135,35 @@ angular.module('ngFacebook', [])
         var deferred=$q.defer();
 
         return $facebook.promise.then(function(FB) {
-          FB.getLoginStatus(function(response) {
-            if(response.error)  deferred.reject(response.error);
-            else {
-                deferred.resolve(response);
-                if($facebook.isConnected()==null)
-                    $rootScope.$broadcast("fb.auth.authResponseChange", response, FB);
+          var loginResolved = false;
+
+          if (config.loginStatusTimeoutMs) {
+            $timeout(timeoutLogin, config.loginStatusTimeoutMs);
+          }
+          function timeoutLogin() {
+            if (!loginResolved) {
+              loginResolved = true;
+
+              var response = { error: 'timed out while attempting to get login status' };
+              deferred.reject(response.error);
+              $rootScope.$broadcast("fb.auth.authResponseChange", response, FB);
             }
-            $rootScope.$apply();
+          }
+
+          FB.getLoginStatus(function(response) {
+            if (!loginResolved) {
+              loginResolved = true;
+
+              if (response.error) {
+                deferred.reject(response.error);
+                $rootScope.$broadcast("fb.auth.authResponseChange", response, FB);
+              } else {
+                  deferred.resolve(response);
+                  if($facebook.isConnected()==null)
+                      $rootScope.$broadcast("fb.auth.authResponseChange", response, FB);
+              }
+              $rootScope.$apply();
+            }
           }, force);
           return deferred.promise;
         });
