@@ -5,6 +5,12 @@
    ========================================================================== */
 
 
+@media (max-width: 767px) {
+  .hide-xs {
+    display: none;
+  }
+}
+
 .angular-google-map {
   height: 100%;
   border: 1px #ccc solid;
@@ -730,6 +736,24 @@ img.karma-badge-icon {
 
 .impact-timeline .event-cover-img {
   padding: 10px 0px;
+}
+
+/*
+ * Single row responsive table
+ */
+
+.single-row-resp-table div[class*='col-'] {
+  padding: 0;
+}
+
+.single-row-resp-table .header {
+  padding: 8px;
+  border-bottom: 2px solid #dddddd;
+  font-weight: bold;
+}
+
+.single-row-resp-table .body {
+  padding: 8px;
 }
 
 /*==================================================

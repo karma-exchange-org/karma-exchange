@@ -92,85 +92,90 @@
                                 </div>
                                 <div class="event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
 
-                                        <table class="table">
-                                                <thead>
-                                                <tr>
-                                                        <th class="col-md-4">
-                                                                What?
-                                                        </th>
-                                                        <th class="col-md-3">
-                                                                When? Where?
-                                                        </th>
-                                                        <th class="col-md-3">
-                                                                Who?
-                                                        </th>
-                                                        <th class="col-md-2">
-                                                        </th>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                <tr>
-                                                        <td>
-                                                                {{modelEvent.description}}
-                                                        </td>
-                                                        <td>
-                                                                <p>
-                                                                        <strong>{{modelEvent.startTime|date:'shortTime'}} - {{modelEvent.endTime|date:'shortTime'}}</strong>
-                                                                </p>
+                                    <div class="single-row-resp-table">
+                                        <div class="col-md-4 col-sm-12">
+                                            <div class="header">
+                                                What?
+                                            </div>
+                                            <div class="body">
+                                                <truncate-and-link
+                                                    text="modelEvent.description"
+                                                    link-text="(more)"
+                                                    href="#!/event/{{modelEvent.key}}"
+                                                    limit="500" >
+                                                </truncate-and-link>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-sm-4">
+                                            <div class="header">
+                                                When? Where?
+                                            </div>
+                                            <div class="body">
+                                                <p>
+                                                        <strong>{{modelEvent.startTime|date:'shortTime'}} - {{modelEvent.endTime|date:'shortTime'}}</strong>
+                                                </p>
 
-                                                                <p>
+                                                <p>
 
-                                                                        <strong>{{modelEvent.location.title}}</strong><br>
-                                                                        <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
-                                                                            {{modelEvent.location.address.street}}<br>
-                                                                            {{modelEvent.location.address.city}}, {{modelEvent.location.address.state}} {{modelEvent.location.address.zip}}<br>
-                                                                        </a>
-                                                                </p>
-                                                        </td>
-                                                        <td>
-                                                                <p>
-                                                                        Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered | limit10 }}</strong>
-                                                                </p>
-                                                                <p>
-                                                                        Volunteers attending: <strong>{{modelEvent.numRegistered}}</strong>
-                                                                </p>
-                                                                <p>
-                                                                        Organized by:
-                                                                </p>
-                                                                <p>
-                                                                        <org-event-summary org="event.organizationDetails"></org-event-summary>
-                                                                </p>
-                                                                <p>
-                                                                        Organizer:
-                                                                </p>
-                                                                <p>
-                                                                        <event-participant-summary user="modelEvent.firstOrganizer" type="'ORGANIZER'"></event-participant-summary>
-                                                                </p>
-                                                        </td>
-                                                        <td>
-                                                                <p>
+                                                        <strong>{{modelEvent.location.title}}</strong><br>
+                                                        <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
+                                                            {{modelEvent.location.address.street}}<br>
+                                                            {{modelEvent.location.address.city}}, {{modelEvent.location.address.state}} {{modelEvent.location.address.zip}}<br>
+                                                        </a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3 col-sm-4">
+                                            <div class="header">
+                                                Who?
+                                            </div>
+                                            <div class="body">
+                                                <p>
+                                                        Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered | limit10 }}</strong>
+                                                </p>
+                                                <p>
+                                                        Volunteers attending: <strong>{{modelEvent.numRegistered}}</strong>
+                                                </p>
+                                                <p>
+                                                        Organized by:
+                                                </p>
+                                                <p>
+                                                        <org-event-summary org="event.organizationDetails"></org-event-summary>
+                                                </p>
+                                                <p>
+                                                        Organizer:
+                                                </p>
+                                                <p>
+                                                        <event-participant-summary user="modelEvent.firstOrganizer" type="'ORGANIZER'"></event-participant-summary>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 col-sm-4">
+                                            <div class="header hide-xs">
+                                                &nbsp;
+                                            </div>
+                                            <div class="body text-center">
+                                                <p>
 
-                                                                        <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
-                                                                        <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
-                                                                        <!--
-                                                                                Not really needed anymore since we have a label containing the registration info.
+                                                        <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
+                                                        <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
+                                                        <!--
+                                                                Not really needed anymore since we have a label containing the registration info.
 
-                                                                                <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
-                                                                                        <i class="icon-ok"></i> You are registered!
-                                                                                </span>
-                                                                                <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
-                                                                                        <i class="icon-ok"></i> You are waitlisted!
-                                                                                </span>
-                                                                        -->
-                                                                </p>
-                                                                <p>
-                                                                        <a href="#!/event/{{modelEvent.key}}" class="btn btn-info"><i class=" icon-info-sign icon-white"></i> More info</a>
-                                                                </p>
-                                                        </td>
-                                                </tr>
-
-                                                </tbody>
-                                        </table>
+                                                                <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
+                                                                        <i class="icon-ok"></i> You are registered!
+                                                                </span>
+                                                                <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
+                                                                        <i class="icon-ok"></i> You are waitlisted!
+                                                                </span>
+                                                        -->
+                                                </p>
+                                                <p>
+                                                        <a href="#!/event/{{modelEvent.key}}" class="btn btn-info"><i class=" icon-info-sign icon-white"></i> More info</a>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                 </div>
 
