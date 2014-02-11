@@ -1004,28 +1004,28 @@ img {
   background: #fff;
 }
 
-#event-search #hero {
+#intro-banner #hero {
   background: #4B4848;
   background-size: cover;
   /*background-image: url("../../images/bg2blur2.png");*/
   background-image: url("/img/banner/team_banner.jpg");
   background-position: center center;
-  height: 300px;
+  height: 400px;
   position: relative;
   top: -10px;
   padding-top: 50px;
 }
 @media (max-width: 991px) {
-  #event-search #hero {
+  #intro-banner #hero {
     padding-top: 15px;
   }
 }
 @media (max-width: 767px) {
-  #event-search #hero {
+  #intro-banner #hero {
     height: 250px;
   }
 }
-/*#event-search #hero:before {
+/*#intro-banner #hero:before {
   position: absolute;
   content: '';
   left: 0;
@@ -1034,7 +1034,7 @@ img {
   height: 420px;
   background: -webkit-linear-gradient(top, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 0, 0) 1%, rgba(0, 0, 0, 0.05) 26%, rgba(0, 0, 0, 0.55) 71%, black 100%);
 }*/
-#event-search #hero:after {
+#intro-banner #hero:after {
   position: absolute;
   content: '';
   left: 0;
@@ -1043,24 +1043,32 @@ img {
   height: 100%;
   background: rgba(6, 13, 32, 0.35);
 }
-#event-search #hero .container {
+#intro-banner #hero .container {
   position: relative;
   z-index: 33;
 }
-#event-search #hero h1.hero-text {
+#intro-banner #hero h1.hero-text {
   text-align: center;
-  font-size: 38px;
-  font-weight: 900;
   color: #fff;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+
+  font-family: 'Open Sans';
+  font-weight: 700;
+  font-size: 45px;
+
+  max-width: 840px;
+  margin: 0 auto;
+  margin-top: 68px;
 }
 @media (max-width: 767px) {
-  #event-search #hero h1.hero-text {
+  #intro-banner #hero h1.hero-text {
+    font-weight: 600;
     font-size: 30px;
+    margin-top: 10px;
   }
 }
 /*
-#event-search #hero .sub-text {
+#intro-banner #hero .sub-text {
   -webkit-font-smoothing: antialiased;
   -webkit-animation-delay: 0.6s;
   -moz-animation-delay: 0.6s;
@@ -1077,17 +1085,17 @@ img {
   width: 50%;
 }
 @media (max-width: 991px) {
-  #event-search #hero .sub-text {
+  #intro-banner #hero .sub-text {
     width: 70%;
   }
 }
 @media (max-width: 767px) {
-  #event-search #hero .sub-text {
+  #intro-banner #hero .sub-text {
     font-size: 15px;
   }
 }
 */
-#event-search #hero .cta {
+#intro-banner #hero .cta {
   -webkit-animation-delay: 0.6s;
   -moz-animation-delay: 0.6s;
   -o-animation-delay: 0.6s;
@@ -1097,15 +1105,15 @@ img {
   margin-top: 40px;
 }
 @media (max-width: 767px) {
-  #event-search #hero .cta {
+  #intro-banner #hero .cta {
     margin-top: 25px;
   }
 }
-#event-search #hero .cta a {
+#intro-banner #hero .cta a {
   margin: 0px 20px;
 }
 @media (max-width: 767px) {
-  #event-search #hero .cta a {
+  #intro-banner #hero .cta a {
     font-size: 14px;
     padding: 12px 25px;
     margin: 0px 15px 15px 0px;
