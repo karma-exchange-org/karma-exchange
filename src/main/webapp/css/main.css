@@ -235,6 +235,15 @@ table>tbody>tr>td.table-cell-align-middle {
   font-size: 24px;
 }
 
+.event-search {
+  max-width: 870px;
+}
+
+.event-search .results {
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
 .event-search-result-date {
   text-transform:uppercase;
   /*font-weight:bold;*/
