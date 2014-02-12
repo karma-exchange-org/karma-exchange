@@ -51,18 +51,6 @@ td.mini-thumbnail{
 text-align:center;
 }
 
-.brand
-{
-  height: 20px;
-  width: 100px;
-}
-.event-detail
-{
-  display:none;
-}
-
-
-
 .fb-comments, .fb-comments span, .fb-comments.fb_iframe_widget span iframe {
     width: 100% !important;
 }
