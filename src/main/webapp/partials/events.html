@@ -10,7 +10,7 @@
     </div>
 </div>
 
-<div class="container">
+<div class="container event-search">
 
         <div class="input-group">
                 <input class="form-control" type="text" ng-model="query" placeholder="Search for karma opportunities...">
@@ -49,7 +49,7 @@
                 <h4><em>No <span ng-show="query.length > 0">matching </span> upcoming events</em></h4>
             </div>
 
-            <ul class="list-unstyled container" ng-hide="eventSearchTracker.isPending()">
+            <ul class="list-unstyled results" ng-hide="eventSearchTracker.isPending()">
                 <li ng-repeat="event in events.data" id="event_{{event.key}}">
 
                     <div>
