@@ -1828,7 +1828,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
         $modalInstance.close();
     };
 };
-var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
+var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, KexUtil,
         EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q ) {
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
@@ -1892,7 +1892,9 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
             currentDate = dateVal;
             event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
             event.showHeader = showHeader;
+            event.isCollapsed = true;
         }
+        expandEventOnReset();
     }
 
     var query = undefined;
@@ -1965,20 +1967,47 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
         } );
     };
     $scope.modelEvent = {};
-    $scope.toggleEvent = function( ) {
-        if( $( '#' + this.event.key + '_detail' ).is( ":visible" ) )
-        {
-            $( '.event-detail' ).hide( );
-        }
-        else
-        {
-            $( '.event-detail' ).hide( );
-            Events.get( { id : this.event.key, registerCtlr : 'expanded_search_view' }, function(data) {
-                $scope.modelEvent = data;
-            } );
-            $( '#' + this.event.key + '_detail' ).show( );
-        }
+    $scope.modelEventFetchTracker = new PromiseTracker();
+    $scope.toggleEvent = function() {
+        toggleEventByKey(this.event.key);
     };
+
+    function expandEventOnReset() {
+        if ($routeParams.expand) {
+            toggleEventByKey($routeParams.expand);
+        }
+    }
+
+    function toggleEventByKey(eventKey) {
+        var event;
+
+        // Collapse all other events.
+        for (var idx = 0; idx < $scope.events.data.length; idx++) {
+            var eventAtIdx = $scope.events.data[idx];
+            if (eventAtIdx.key === eventKey) {
+                event = eventAtIdx;
+            } else {
+                eventAtIdx.isCollapsed = true;
+            }
+        }
+
+        if (event) {
+            event.isCollapsed = !event.isCollapsed;
+
+            if ( !event.isCollapsed ) {
+                $scope.modelEventFetchTracker.reset(
+                    Events.get( { id : event.key, registerCtlr : 'expanded_search_view' }, function(data) {
+                        $scope.modelEvent = data;
+                    } ));
+            }
+        }
+
+        if (event && !event.isCollapsed) {
+            $location.search('expand', event.key);
+        } else {
+            $location.search('expand', null);
+        }
+    }
 
     $scope.reset();
 };

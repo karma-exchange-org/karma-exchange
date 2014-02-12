@@ -90,9 +90,16 @@
                                             </div>
                                     </div>
                                 </div>
-                                <div class="event-detail" id="{{event.key}}_detail" collapse="{{event.isCollapse}}">
+                                <!-- TODO(avaliani):  ui-bootstrap collapse is not working. Investigate why.
+                                    <div collapse="event.isCollapsed">
+                                -->
+                                <div ng-show="!event.isCollapsed">
 
-                                    <div class="single-row-resp-table">
+                                    <div class="vertical-panel-padding" ng-show="modelEventFetchTracker.isPending()">
+                                        <loading-message msg="event details"></loading-message>
+                                    </div>
+
+                                    <div class="single-row-resp-table" ng-show="!modelEventFetchTracker.isPending()">
                                         <div class="col-md-4 col-sm-12">
                                             <div class="header">
                                                 What?
