@@ -244,6 +244,14 @@ table>tbody>tr>td.table-cell-align-middle {
   padding-right: 15px;
 }
 
+.event-search .results .panel:hover {
+  border-color: #66afe9;
+  border-radius: 0;
+  outline: 0;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+  box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102, 175, 233, 0.6);
+}
+
 .event-search-result-date {
   text-transform:uppercase;
   /*font-weight:bold;*/
