@@ -49,43 +49,10 @@ angular.module('HashBangURLs', []).config(['$locationProvider', function($locati
 }]);
 
 
-angular.module('kexAsyncLoader', []).provider('$kexAsyncLoader', function() {            
-    this.$get = ['$q', '$rootScope', '$window', function($q, $rootScope, $window) {
-        var $kexAsyncLoader=$q.defer();
-        function loadScript(type) {
-            var s = document.createElement('script'); // use global document since Angular's $document is weak
-            switch(type) {
-                case "google-maps" : 
-                    s.src = 'https://maps.googleapis.com/maps/api/js?sensor=false&callback=initialize';
-                    break;
-                default : 
-                    delete s;
-                    return;
-            }
-            document.body.appendChild(s);
-        };
-        function asynchLoad(type){
-            var deferred = $q.defer();
-            $window.initialize = function () {
-                deferred.resolve();
-            };
-            if ($window.attachEvent) {  
-                $window.attachEvent('onload', loadScript(type)); 
-            } else {
-                $window.addEventListener('load', loadScript(type), false);
-            }
-            return deferred.promise;
-        };
-        $kexAsyncLoader.loadGoogleMaps = function(){
-            return asynchLoad("google-maps");
-        };
-        return $kexAsyncLoader;
-    }];
-});
 
 kexApp = angular.module( "kexApp",
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "ngFacebook",
-     "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs","kexAsyncLoader","geolocation"] )
+     "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs","kexAsyncLoader", "geolocation"] )
 
 .filter( 'newlines', function( ) {
     return function ( text ) {
@@ -1846,7 +1813,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
     };
 };
 var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
-        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q,geolocation ) {
+        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q) {
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
 
@@ -1871,12 +1838,7 @@ var eventsCtrl = function( $scope, $location, Events, $rootScope, KexUtil,
             
 
     } );
-    
-    geolocation.getLocation().then(function(data){
-      $scope.center = {latitude:data.coords.latitude, longitude:data.coords.longitude};
-      $scope.latitude = $scope.center.latitude;
-      $scope.longitude = $scope.center.longitude;
-    });
+
 
     $scope.isMap=false;
     $scope.showMap = function()
