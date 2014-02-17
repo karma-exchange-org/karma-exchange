@@ -14,7 +14,9 @@ Our method for collobaration is based upon this wiki: https://gist.github.com/se
 
 ### Create a branch prior to making any changes
 
-    $ git checkout -b <my-awesome-feature-branch-name>
+Use a temporary branch name until you are ready to do a push.
+
+    $ git checkout -b <temp-branch-name>
 
 ### Make and test your changes
 
@@ -24,19 +26,19 @@ Make whatever changes you want to make. Make sure all tests pass and the UI feat
 
 ### Self review your changes
 
-To see what files you've modified:
+To see how your branch differs from the master branch execute the alias git-diff (see setup).
 
-    $ git status
+    $ git-diff
 
-Use meld to take a look at your changes since your last commit (execute it from the root project directory):
+If you want to just take a look at your changes since your last commit use meld directly (execute it from the root project directory):
 
     $ meld .
 
-If you want to compare your changes including locally committed changes against the master branch use difftool:
+To see what files you've modified since the last commit:
 
-    $ git difftool master
+    $ git status
 
-After you add or delete files make sure to run "git add ." (execute it from the root project directory).
+After you add or delete files make sure to run the following commands (execute them from the root project directory).
 
     $ git add --all .
     $ git status
@@ -45,20 +47,34 @@ After you add or delete files make sure to run "git add ." (execute it from the 
 
 Commit your changes to your local branch:
 
-    $ git commit -a
-
-**Pro tip:** use the convenience script git-commit to do both git add and git-commit
-
     $ git-commit   
 
-Then push your branch to the remote repository as a non-master branch:
+    ###########################################################################
+    # If you are not using the convenience scripts, use the following commands:
+    ###########################################################################
 
-    $ git push origin <my-awesome-feature-branch-name>
+    $ git commit -a
 
-**Pro tip:** use the convenience script git-push instead (saves typing)
+You can do as many commits as you want prior to pushing your changes to github.
 
+### Push your changes to github
+
+Verify you are in the correct local branch:
+
+    $ git branch
+    <Verify the branch name>
+    
+Then rename the branch based upon the content of your changes and then push the branch to the remote repository: 
+
+    $ git branch -m <new_name>
     $ git-push
 
+    ###########################################################################
+    # If you are not using the convenience scripts, use the following commands:
+    ###########################################################################
+
+    $ git branch -m <new_name>
+    $ git push origin <my-awesome-feature-branch-name>
 
 ### Submit a pull request for your branch
 
@@ -71,13 +87,12 @@ Then push your branch to the remote repository as a non-master branch:
 
 The code should ideally be reviewed by someone else in the organization. See the [git hub pull tutorial](https://help.github.com/articles/using-pull-requests#managing-pull-requests) to see how pull requests are processed by the code reviewer.
 
-To incorporate code review feedback just follow the prior modification and push instructions and re-run your tests, but skip the step of creating a new branch:
+To incorporate code review feedback just follow the prior modification and push instructions and re-run your tests, but skip the step of creating a new branch and renaming the branch:
 
     <make your changes>
     $ mvn appengine:devserver
-    $ git add --all .
-    $ git commit -a    
-    $ git push origin <my-awesome-feature-branch-name>
+    $ git-commit
+    $ git-push
 
 ### Merging the code
 
@@ -87,19 +102,19 @@ After the code is merged, delete your branch on git hub by clicking "delete bran
 
 ### Cleanup your local branch
 
-Sync your master branch to the latest changes:
+Sync your master branch to the latest changes and delete your merged branch:
+
+    $ git-cleanup
+
+    ###########################################################################
+    # If you are not using the convenience scripts, use the following commands:
+    ###########################################################################
 
     $ git checkout master
     $ git remote update --prune
     $ git pull
-
-Delete your merged branch:
-
     $ git branch -d <my-awesome-feature-branch-name>
 
-**Pro tip:** use the convenience script git-cleanup to do all four commands above
-
-    $ git-cleanup
 
 <a name="setup"/>
 ## Setup
@@ -155,7 +170,7 @@ If you have configured things as suggested above you should see output like the 
     branch.master.remote=origin
     branch.master.merge=refs/heads/master
 
-### Convenience scripts
+### Convenience scripts / aliases
 
 I've created a few convenience scripts that I recommend you download [from here](https://www.dropbox.com/sh/qbeli6omtrbdoyu/oG4QNpe79L)
 
@@ -169,6 +184,9 @@ Once you download them put them in your preferred directory (example below uses 
     alias git-cleanup=~/bin/git-cleanup.sh
     alias git-commit=~/bin/git-commit.sh
     alias git-push=~/bin/git-push.sh
+    alias git-diff='git difftool master --dir-diff'
+
+Note that 'git-diff' works really well if you have meld setup.
 
 <a name="links"/>
 ## Helpful Git Links
