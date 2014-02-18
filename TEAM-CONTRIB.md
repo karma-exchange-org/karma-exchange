@@ -3,6 +3,7 @@
 ### Table of Contents
 
 - [Uploading changes](#uploading)
+- [Collaborating on a feature branch](#featurebranchcollab)
 - [Setup](#setup)
 - [Helpful Git Links](#links)
 
@@ -66,14 +67,14 @@ Verify you are in the correct local branch:
     
 Then rename the branch based upon the content of your changes and then push the branch to the remote repository: 
 
-    $ git branch -m <new_name>
+    $ git branch -m <my-awesome-feature-branch-name>
     $ git-push
 
     ###########################################################################
     # If you are not using the convenience scripts, use the following commands:
     ###########################################################################
 
-    $ git branch -m <new_name>
+    $ git branch -m <my-awesome-feature-branch-name>
     $ git push origin <my-awesome-feature-branch-name>
 
 ### Submit a pull request for your branch
@@ -96,9 +97,25 @@ To incorporate code review feedback just follow the prior modification and push 
 
 ### Merging the code
 
-Once you have received code review approval follow the [merging directly on github instructions](https://help.github.com/articles/merging-a-pull-request). In most cases it should just be as simple as clicking the "Merge pull request" button.
+Once you have received code review approval, open the pull request page on github and click the "Merge pull request" button. After the code is merged, delete your branch on git hub by clicking "delete branch" button.
 
-After the code is merged, delete your branch on git hub by clicking "delete branch".
+If you have conflicts that prevent you from merging you'll need to update your local master and and merge your feature branch to it:
+
+    $ git checkout master
+    $ git pull
+    <this will update your local master>
+    $ git checkout <my-awesome-feature-branch-name>
+    $ git merge master
+    $ git status
+    $ meld .
+    
+Resolve any conflicts using meld or your editor and test out your changes. Then commit your changes and push them to github. Then you should be able to merge the branch using the github UI.
+    
+    <test out changes to make sure everything still works>
+    $ git-commit
+    $ git-push
+    <go to the github pull request page and re-attempt "Merge pull request">
+
 
 ### Cleanup your local branch
 
@@ -114,6 +131,49 @@ Sync your master branch to the latest changes and delete your merged branch:
     $ git remote update --prune
     $ git pull
     $ git branch -d <my-awesome-feature-branch-name>
+
+
+<a name="featurebranchcollab"/>
+## Collaborating on a feature branch
+
+To collaborate on a feature branch first 'git-push' the branch to github. Then, each collaborator needs to create a local copy of the branch:
+
+    $ git fetch origin
+    $ git checkout -b <collab-feature-branch> origin/<collab-feature-branch>
+
+After you have a local copy, you can make updates to the feature branch using 'git-push' and 'git-commit'
+
+    <make and test changes>
+    <verify all changes since the last commit>
+    
+    $ meld .
+    
+    <commit and push the changes>
+    
+    $ git-commit
+    $ git-push
+
+If the 'git-push' fails because your local feature branch is behind the github feature branch, update your feature branch using 'git-merge'
+
+    <make sure everything is committed>
+    $ git status
+
+    <get the latest changes>
+    
+    $ git-merge
+    $ git status
+    
+If there are conflicts:
+    
+    <resolve the conflicts>
+    
+    $ meld .
+    
+    <test all changes>
+    <commit and push the changes>
+
+    $ git-commit
+    $ git-push
 
 
 <a name="setup"/>
@@ -174,17 +234,19 @@ If you have configured things as suggested above you should see output like the 
 
 I've created a few convenience scripts that I recommend you download [from here](https://www.dropbox.com/sh/qbeli6omtrbdoyu/oG4QNpe79L)
 
+    git-cleanup.sh
     git-commit.sh
     git-push.sh
-    git-cleanup.sh
+    git-merge.sh
 
-Once you download them put them in your preferred directory (example below uses ~/bin) and create aliases to them:
+Once you download them put them in your preferred directory (example below uses ~/bin), chmod them to make them executable ('chmod 744 git*.sh') and create aliases to them:
 
     $ cat ~/.bash_aliases
     alias git-cleanup=~/bin/git-cleanup.sh
     alias git-commit=~/bin/git-commit.sh
-    alias git-push=~/bin/git-push.sh
     alias git-diff='git difftool master --dir-diff'
+    alias git-merge=~/bin/git-merge.sh
+    alias git-push=~/bin/git-push.sh
 
 Note that 'git-diff' works really well if you have meld setup.
 
@@ -193,6 +255,7 @@ Note that 'git-diff' works really well if you have meld setup.
 
 1. Github:
    * https://help.github.com/articles/set-up-git
+   * [Merging a pull request and dealing with merge conflcits](https://help.github.com/articles/merging-a-pull-request). 
 2. Github collaboration. This is our template for collaboration:
    * https://gist.github.com/seshness/3943237
 3. Git:
