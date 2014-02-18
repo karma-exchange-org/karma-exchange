@@ -3,6 +3,7 @@
 ### Table of Contents
 
 - [Uploading changes](#uploading)
+- [Collaborating on a feature branch](#featurebranchcollab)
 - [Setup](#setup)
 - [Helpful Git Links](#links)
 
@@ -130,6 +131,49 @@ Sync your master branch to the latest changes and delete your merged branch:
     $ git remote update --prune
     $ git pull
     $ git branch -d <my-awesome-feature-branch-name>
+
+
+<a name="featurebranchcollab"/>
+## Collaborating on a feature branch
+
+To collaborate on a feature branch first 'git-push' the branch to github. Then, each collaborator needs to create a local copy of the branch:
+
+    $ git fetch origin
+    $ git checkout -b <collab-feature-branch> origin/<collab-feature-branch>
+
+After you have a local copy, you can make updates to the feature branch using 'git-push' and 'git-commit'
+
+    <make and test changes>
+    <verify all changes since the last commit>
+    
+    $ meld .
+    
+    <commit and push the changes>
+    
+    $ git-commit
+    $ git-push
+
+If the 'git-push' fails because your local feature branch is behind the github feature branch, update your feature branch using 'git-merge'
+
+    <make sure everything is committed>
+    $ git status
+
+    <get the latest changes>
+    
+    $ git-merge
+    $ git status
+    
+If there are conflicts:
+    
+    <resolve the conflicts>
+    
+    $ meld .
+    
+    <test all changes>
+    <commit and push the changes>
+
+    $ git-commit
+    $ git-push
 
 
 <a name="setup"/>
