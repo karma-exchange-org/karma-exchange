@@ -146,7 +146,7 @@
         </script>
 
 
-        <nav id="mainHeader" class="navbar navbar-fixed-top navbar-default" role="navigation">
+        <nav id="mainHeader" class="navbar navbar-fixed-top navbar-default" role="navigation" ng-controller="NavbarController">
             <!-- Keep the navbar content at container width. The navbar background extends across the screen. -->
             <div class="container">
 
@@ -161,16 +161,16 @@
 
                 <div class="navbar-collapse collapse navbar-responsive-collapse">
                     <ul class="nav navbar-nav">
-                        <li>
+                        <li ng-class="{ active: isActive('#!/event') }">
                             <a href="#!/event"><div class="nav-icon"></div> Find Events</a>
                         </li>
-                        <li ng-show="me">
+                        <li ng-show="me" ng-class="{ active: isActive('#!/me') }">
                             <a href="#!/me"><div class="nav-icon"></div> My Events</a>
                         </li>
-                        <li>
+                        <li ng-class="{ active: isActive('#!/org') }">
                             <a href="#!/org"><div class="nav-icon"></div> Organizations</a>
                         </li>
-                        <li ng-show="isOrganizer">
+                        <li ng-show="isOrganizer" ng-class="{ active: isActive('#!/event/add') }">
                             <a href="#!/event/add"><div class="nav-icon"></div> Create Events</a>
                         </li>
                     </ul>

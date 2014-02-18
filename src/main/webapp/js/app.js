@@ -2574,6 +2574,16 @@ var tourCtrl = function($scope, FbUtil, $location) {
     }
 };
 
+kexApp.controller('NavbarController', ['$scope', '$location', function($scope, $location) {
+    $scope.isActive = function (url) {
+        return $location.path() === stripHashbang(url);
+
+        function stripHashbang(url) {
+            return (url.indexOf("#!") === 0) ? url.substring(2) : url;
+        }
+    }
+}]);
+
 var EventModalInstanceCtrl = function ($scope, $modalInstance, event, header, $rootScope) {
     $scope.event = event;
     $scope.header = header;
