@@ -190,17 +190,19 @@ If you have configured things as suggested above you should see output like the 
 
 I've created a few convenience scripts that I recommend you download [from here](https://www.dropbox.com/sh/qbeli6omtrbdoyu/oG4QNpe79L)
 
+    git-cleanup.sh
     git-commit.sh
     git-push.sh
-    git-cleanup.sh
+    git-merge.sh
 
-Once you download them put them in your preferred directory (example below uses ~/bin) and create aliases to them:
+Once you download them put them in your preferred directory (example below uses ~/bin), chmod them to make them executable ('chmod 744 git*.sh') and create aliases to them:
 
     $ cat ~/.bash_aliases
     alias git-cleanup=~/bin/git-cleanup.sh
     alias git-commit=~/bin/git-commit.sh
-    alias git-push=~/bin/git-push.sh
     alias git-diff='git difftool master --dir-diff'
+    alias git-merge=~/bin/git-merge.sh
+    alias git-push=~/bin/git-push.sh
 
 Note that 'git-diff' works really well if you have meld setup.
 
