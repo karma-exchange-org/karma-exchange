@@ -146,7 +146,7 @@
         </script>
 
 
-        <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+        <nav id="mainHeader" class="navbar navbar-fixed-top navbar-default" role="navigation">
             <!-- Keep the navbar content at container width. The navbar background extends across the screen. -->
             <div class="container">
 
@@ -162,16 +162,16 @@
                 <div class="navbar-collapse collapse navbar-responsive-collapse">
                     <ul class="nav navbar-nav">
                         <li>
-                            <a href="#!/event"><div class="nav-icon"><i class="icon-search icon-white"></i></div> Find Events</a>
+                            <a href="#!/event"><div class="nav-icon"></div> Find Events</a>
                         </li>
                         <li ng-show="me">
-                            <a href="#!/me"><div class="nav-icon"><i class="icon-calendar icon-white"></i></div> My Events</a>
+                            <a href="#!/me"><div class="nav-icon"></div> My Events</a>
                         </li>
                         <li>
-                            <a href="#!/org"><div class="nav-icon"><i class="icon-sitemap icon-white"></i></div> Organizations</a>
+                            <a href="#!/org"><div class="nav-icon"></div> Organizations</a>
                         </li>
                         <li ng-show="isOrganizer">
-                            <a href="#!/event/add"><div class="nav-icon"><i class="icon-plus icon-white"></i></div> Create Events</a>
+                            <a href="#!/event/add"><div class="nav-icon"></div> Create Events</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
