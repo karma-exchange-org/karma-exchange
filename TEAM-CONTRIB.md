@@ -66,14 +66,14 @@ Verify you are in the correct local branch:
     
 Then rename the branch based upon the content of your changes and then push the branch to the remote repository: 
 
-    $ git branch -m <new_name>
+    $ git branch -m <my-awesome-feature-branch-name>
     $ git-push
 
     ###########################################################################
     # If you are not using the convenience scripts, use the following commands:
     ###########################################################################
 
-    $ git branch -m <new_name>
+    $ git branch -m <my-awesome-feature-branch-name>
     $ git push origin <my-awesome-feature-branch-name>
 
 ### Submit a pull request for your branch
@@ -96,9 +96,25 @@ To incorporate code review feedback just follow the prior modification and push 
 
 ### Merging the code
 
-Once you have received code review approval follow the [merging directly on github instructions](https://help.github.com/articles/merging-a-pull-request). In most cases it should just be as simple as clicking the "Merge pull request" button.
+Once you have received code review approval, open the pull request page on github and click the "Merge pull request" button. After the code is merged, delete your branch on git hub by clicking "delete branch" button.
 
-After the code is merged, delete your branch on git hub by clicking "delete branch".
+If you have conflicts that prevent you from merging you'll need to update your local master and and merge your feature branch to it:
+
+    $ git checkout master
+    $ git pull
+    <this will update your local master>
+    $ git checkout <my-awesome-feature-branch-name>
+    $ git merge master
+    $ git status
+    $ meld .
+    
+Resolve any conflicts using meld or your editor and test out your changes. Then commit your changes and push them to github. Then you should be able to merge the branch using the github UI.
+    
+    <test out changes to make sure everything still works>
+    $ git-commit
+    $ git-push
+    <go to the github pull request page and re-attempt "Merge pull request">
+
 
 ### Cleanup your local branch
 
@@ -193,6 +209,7 @@ Note that 'git-diff' works really well if you have meld setup.
 
 1. Github:
    * https://help.github.com/articles/set-up-git
+   * [Merging a pull request and dealing with merge conflcits](https://help.github.com/articles/merging-a-pull-request). 
 2. Github collaboration. This is our template for collaboration:
    * https://gist.github.com/seshness/3943237
 3. Git:
