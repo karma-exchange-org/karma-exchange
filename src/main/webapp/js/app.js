@@ -560,6 +560,34 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
             goalInfo.barType = this.getGoalBarType(totalPct);
         },
 
+        progressIconStyle: function (registeredPct) {
+            if (!angular.isDefined(registeredPct)) {
+                registeredPct = 0;
+            }
+
+            var shadowDimensions = '0px 0px 8px ' +
+                (2 + Math.round(2 * registeredPct / 100) ) + 'px';
+            var shadowColor = (registeredPct === 100) ? 'yellow' : 'white';
+            var shadowValue = shadowDimensions + ' ' + shadowColor;
+
+            var style = {};
+            style['-webkit-box-shadow'] = shadowValue;
+            style['-moz-box-shadow'] = shadowValue;
+            style['box-shadow'] = shadowValue;
+            return style;
+        },
+
+        completionIconStyle: function (registeredPct) {
+            if (!angular.isDefined(registeredPct)) {
+                registeredPct = 0;
+            }
+            var ICON_SIZE = 30;
+            return {
+                clip: 'rect(' + Math.round(ICON_SIZE * (100 - registeredPct) / 100) +
+                        'px, 200px, 200px, 0px)'
+            };
+        },
+
         getGoalBarType: function(registeredPct) {
             if (registeredPct < 25) {
                 return 'danger';
@@ -2705,7 +2733,7 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
 //   - MeUtil
 //   - FbAuthDepResource
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource ) {
+        FbAuthDepResource, KarmaGoalUtil ) {
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
             $rootScope.alerts = [ ];
@@ -2775,6 +2803,8 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
         }, options );
 
     };
+    $rootScope.progressIconStyle = KarmaGoalUtil.progressIconStyle;
+    $rootScope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
 
     function loadBadges() {
         var badgesDef = $q.defer();

@@ -612,42 +612,6 @@ img.kex-thumbnail-user-mini {
   width: 80px;
 }
 
-.navbar-goal-pct {
-  /*background-color: #F0F0F0;*/
-  margin: 8px 15px;
-  line-height: 20px;
-  padding: 2px 6px;
-  box-shadow: 0 0 5px rgba(0,0,0,.42) inset, 0 1px 0 rgba(255,255,255,.1);
-  text-align:center;
-  width: 55px;
-}
-@media (min-width: 768px) {
-  .navbar-goal-pct {
-    margin: 13px 0px;
-  }
-}
-
-.navbar-goal-pct-danger {
-  background-color: #ddd;
-  /* Red is too harsh. Go with a lighter color. */
-  /* background-color: #DE6C69;*/
-  /* border left, if we use it, should be on the inside of the box */
-  /*border-left: 10px solid #d9534f;*/
-}
-
-.navbar-goal-pct-warning {
-  background-color: #F2B968;
-}
-
-.navbar-goal-pct-success {
-  background-color: #74C274;
-}
-
-.navbar-goal-pct a {
-  color: black;
-  text-decoration: none;
-}
-
 /*
  * Badges
  */
@@ -1265,3 +1229,34 @@ img {
 }
 
 /***** END TOUR *****/
+
+/***** PROGRESS ICON *****/
+
+.navbar .progressIcon {
+  margin: 10px 5px 0px;
+}
+
+@media (max-width: 767px) {
+  .navbar .progressIcon {
+    margin: 5px 20px 14px;
+  }
+}
+
+.progressIcon {
+    height: 30px;
+    width: 30px;
+    background: url(/img/badges/monthly_zen_trim_bw_30.png);
+    background-size: 100%;
+    position: relative;
+    border-radius: 50%;
+}
+
+.progressIcon .completionIcon {
+    height: 100%;
+    width: 100%;
+    background: url(/img/badges/monthly_zen_trim_30.png);
+    background-size: 100%;
+    position: absolute;
+}
+
+/***** END PROGRESS ICON *****/
