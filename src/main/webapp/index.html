@@ -185,7 +185,8 @@
                                  ng-style="progressIconStyle(goalInfo.pctTotal)"
                                  popover-placement="bottom"
                                  popover="{{ goalInfo.pctTotal }}%&nbsp;of {{ goalInfo.goalStartDate | date:'MMM-yyyy' }} Karma&nbsp;Goal"
-                                 popover-trigger="mouseenter">
+                                 popover-trigger="mouseenter"
+                                 ng-click="setLocation('#!/me')">
 
                                 <div class="completionIcon"
                                      ng-style="completionIconStyle(goalInfo.pctTotal)">

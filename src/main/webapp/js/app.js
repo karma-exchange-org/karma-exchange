@@ -329,6 +329,9 @@ kexApp.factory('KexUtil', function($rootScope) {
         strConcat: function(str1, str2) {
             return (angular.isDefined(str1) && angular.isDefined(str2)) ? (str1 + str2) : undefined;
         },
+        stripHashbang: function(url) {
+            return (url.indexOf('#!') === 0) ? url.substring(2) : url;
+        },
         getSEOUrl: function(){
             return window.location.protocol + '//' + window.location.host + "?_escaped_fragment_=" + window.location.hash.replace('#!','');
         },
@@ -2733,7 +2736,7 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
 //   - MeUtil
 //   - FbAuthDepResource
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource, KarmaGoalUtil ) {
+        FbAuthDepResource, KarmaGoalUtil, KexUtil ) {
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
             $rootScope.alerts = [ ];
@@ -2805,6 +2808,10 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
     };
     $rootScope.progressIconStyle = KarmaGoalUtil.progressIconStyle;
     $rootScope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
+
+    $rootScope.setLocation = function (path) {
+        $location.path(KexUtil.stripHashbang(path));
+    };
 
     function loadBadges() {
         var badgesDef = $q.defer();
