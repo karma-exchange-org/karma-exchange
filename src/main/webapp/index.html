@@ -182,16 +182,22 @@
                             </li>
                         -->
                         <li ng-show="goalInfo.msg">
-                            <div class="navbar-goal-pct navbar-goal-pct-{{goalInfo.barType}}"
-                                    popover-placement="bottom"
-                                    popover="Karma&nbsp;Goal Completion&nbsp;% for&nbsp;{{ goalInfo.goalStartDate | date:'MMM-yyyy' }}"
-                                    popover-trigger="mouseenter"
-                                    popover-popup-delay="250">
-                                <a href="#!/me">
-                                    {{goalInfo.pctTotal}} %
-                                </a>
+
+                            <div class="progressIcon"
+                                 ng-style="progressIconStyle(goalInfo.pctTotal)"
+                                 popover-placement="bottom"
+                                 popover="{{ goalInfo.pctTotal }}%&nbsp;of {{ goalInfo.goalStartDate | date:'MMM-yyyy' }} Karma&nbsp;Goal"
+                                 popover-trigger="mouseenter"
+                                 ng-click="setLocation('#!/me')">
+
+                                <div class="completionIcon"
+                                     ng-style="completionIconStyle(goalInfo.pctTotal)">
+                                </div>
+
                             </div>
+
                         </li>
+
                         <li class="dropdown">
                             <a ng-show="me" href="#" class="dropdown-toggle" toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
                             <a ng-hide="me" href="" class="dropdown-toggle" toggle="dropdown">Info <b class="caret"></b></a>
