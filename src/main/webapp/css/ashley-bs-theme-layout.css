@@ -64,12 +64,28 @@ display:block;
 .panel-default {
 	border:none;
 }
-.navbar-default .navbar-toggle {
-	margin-top: 22px;
-}
+
 /*** MEDIA QUERIES ***/
 
-@media(max-width:767px){
+@media(max-width:449px) {
+	.navbar-toggle {
+		position: absolute;
+		right: 7px;
+		top: 6px;
+		padding: 7px 10px;
+	}
+	.navbar-toggle .icon-bar {
+		width: 16px;
+		height: 1px;
+	}
+}
+
+@media(min-width:450px) and (max-width:767px) {
+	.navbar-toggle {
+		position: absolute;
+		right: 7px;
+		top: 11px;
+	}
 }
 
 @media(min-width:768px){}
@@ -534,7 +550,7 @@ hr {
 /* HEADER
 ================================================== */
 #mainHeader{background:#eee;}
-.navbar-brand{padding-top:30px;padding-left: 0;}
+.navbar-brand{padding: 30px 35px;}
 
 
 .fixedHeader {
@@ -555,13 +571,46 @@ hr {
 
 /*** MEDIA QUERIES ***/
 
-@media(max-width:767px){}
+@media(max-width:449px) {
+	.navbar-brand {
+		width: 95%;
+		text-align: center;
+		padding: 16px 35px;
+	}
+	.navbar-brand img {
+	  width: 175px;
+	}
+}
 
-@media(min-width:768px){}
+@media(min-width:450px) and (max-width:767px) {
+	.navbar-brand {
+		width: 95%;
+		text-align: center;
+		padding: 18px 35px;
+	}
+	.navbar-brand img {
+	  width: 300px;
+	}
+}
 
-@media(min-width:992px){}
+@media(min-width:768px) {
+	.navbar-brand img {
+	  width: 200px;
+	}
+}
 
-@media(min-width:1200px){}
+@media(min-width:992px) {
+	.navbar-brand img {
+	  width: 200px;
+	}
+}
+
+@media(min-width:1200px) {
+	.navbar-brand img {
+	  width: 200px;
+	}
+
+}
 
 /*** END MEDIA QUERIES ***/
 
@@ -573,13 +622,12 @@ hr {
 .navbar-nav > li > a {
     display: block;
     font-size: 1em;
-    font-weight: 300;
+    font-weight: 400;
     margin: 0;
-	padding-top:11px;
-	padding-bottom:11px;
 	vertical-align:middle;
     text-decoration: none;
     text-transform: uppercase;
+    padding: 33px 20px 33px 20px;
 	-webkit-transition: all 0.2s ease-out;
 	-moz-transition: all 0.2s ease-out;
 	-o-transition: all 0.2s ease-out;
@@ -604,8 +652,6 @@ hr {
 		display: block;
 	}
 	.navbar-nav > li > a {
-		padding-top:0;
-		padding-bottom:0;
 		height:88px;
 	}
 	#mainHeader .pull-right{ float:right !important; }
