@@ -23,20 +23,20 @@
 }
 
 body {
-  padding-top: 89px;
+  padding-top: 99px;
   padding-bottom: 40px;
   /* background: url(../img/bg.gif);*/
 }
 
 @media(min-width:450px) and (max-width:767px) {
   body {
-    padding-top: 74px;
+    padding-top: 84px;
   }
 }
 
 @media(max-width:449px) {
   body {
-    padding-top: 55px;
+    padding-top: 65px;
   }
 }
 
@@ -1016,8 +1016,8 @@ img {
   background-position: center center;
   height: 400px;
   position: relative;
-  top: -10px;
-  padding-top: 50px;
+  top: -11px;
+  padding-top: 40px;
 }
 @media (max-width: 991px) {
   #intro-banner #hero {
