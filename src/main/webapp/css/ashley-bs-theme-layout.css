@@ -1,4 +1,4 @@
-/* 
+/*
 Document   : layout
 Author     : Little Neko
 Description: layout styles
@@ -14,8 +14,8 @@ Description: layout styles
 #GENERAL
 #PARALLAX STUFF
 #HEADER
-#MAIN MENU 
-#FOOTER 
+#MAIN MENU
+#FOOTER
 #SLIDERS
 #BLOG
 #NEWS
@@ -111,7 +111,7 @@ display:block;
 	display: block;
 	text-align: center;
 	padding-top: 11px;
-	
+
 }
 .iconRounded:before{margin: auto;text-align: center;}
 .iconBig{
@@ -462,7 +462,7 @@ hr {
 .ctaBox{padding:33px 11px;}
 .ctaBoxFullwidth{padding:0;}
 
-.ctaBox a {margin-top:22px;} 
+.ctaBox a {margin-top:22px;}
 .ctaBox h1 {
 	font-size:22px;
 	line-height: 33px;
@@ -491,7 +491,7 @@ hr {
 
 @media(min-width:992px){
 
-	.ctaBox a {float:right; margin-top:0;} 
+	.ctaBox a {float:right; margin-top:0;}
 }
 
 @media(min-width:1200px){}
@@ -641,16 +641,13 @@ hr {
 /*** MEDIA QUERIES ***/
 
 @media(max-width:767px){
-	.navbar-nav > li > a i {
-		margin-right: 10px;
-		font-size: 18px;
+	.navbar-nav > li > a {
+		padding: 10px 20px;
+    	font-size: .8em;
 	}
 }
 
 @media(min-width:768px){
-	.navbar-nav > li > a i {
-		display: block;
-	}
 	.navbar-nav > li > a {
 		height:88px;
 	}
@@ -720,12 +717,12 @@ body#fullScreen #mainHeader{display:none;}
 .newsText{padding:20px 20px 25px 20px; margin-bottom: 22px;}
 .newsText h3{margin-bottom: 8px;}
 .date{font-size:12px; line-height:12px;font-style: italic;}
-.newsText p{font-size:12px;} 
+.newsText p{font-size:12px;}
 
 /* END NEWS
 ================================================== */
 
-/* FOOTER 
+/* FOOTER
 ================================================== */
 
 footer{padding:44px 0;}
@@ -735,7 +732,7 @@ footer{padding:44px 0;}
 
 
 @media(min-width:768px){.footerWidget{float:right;}}
-/* END FOOTER 
+/* END FOOTER
 ================================================== */
 
 
@@ -905,7 +902,7 @@ header#project{padding:22px 0;}
 	position:absolute;
 	left:0; /* centers the loading animation horizontally one the screen */
 	top:50%; /* centers the loading animation vertically one the screen */
-	
+
 	margin-top:-100px; /* is width and height divided by two */
 	text-align: center;
 	padding-top:15px;
@@ -932,12 +929,12 @@ header#project{padding:22px 0;}
     position: relative;
 }
 
-.iconLinks a{  
+.iconLinks a{
     display: inline-block;
     text-decoration:none;
 
 }
-.iconLinks a:hover i{     
+.iconLinks a:hover i{
     -webkit-transition: all 0.2s ease-out;
 	-moz-transition: all 0.2s ease-out;
 	-o-transition: all 0.2s ease-out;
@@ -1062,8 +1059,8 @@ body#comingSoon{padding-top:0; background: #4B4A4A}
 @media(max-width:767px){}
 
 @media(min-width:768px){
-	
-	
+
+
 }
 
 @media(min-width:992px){ #defaultCountdown{margin-top: 70px;}}

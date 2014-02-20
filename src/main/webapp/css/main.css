@@ -1233,7 +1233,7 @@ img {
 /***** PROGRESS ICON *****/
 
 .navbar .progressIcon {
-  margin: 10px 5px 0px;
+  margin: 28px 5px 0px;
 }
 
 @media (max-width: 767px) {
