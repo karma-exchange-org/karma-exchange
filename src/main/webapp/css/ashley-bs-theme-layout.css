@@ -214,11 +214,11 @@ h1, h2, h3, h4, h5, h6, legend {
 }
 h1 {
 	font-size: 44px;
-	line-height: 44px;
+	/* line-height: 44px; */
 	font-weight: 300;
 	font-style: normal;
 	text-align:center;
-	text-transform:uppercase;
+	/* text-transform:uppercase; */
 	position:relative;
 	letter-spacing: 0.1em;
 	margin-bottom: 17px;
@@ -426,7 +426,7 @@ hr {
 /*** buttons ***/
 .btn {
 	text-transform:uppercase;
-	padding:15px 20px;
+	/*padding:15px 20px;*/
 	font-size:18px;
 	 -webkit-transition: all 0.2s ease-out;
 	-moz-transition: all 0.2s ease-out;
@@ -637,6 +637,10 @@ hr {
 .navbar-nav > li > a i {font-size: 16px; text-align: center;padding: 20px 0 10px 0; color:#ccc;}
 .navbar-nav > li > a:hover i, .navbar-nav > li.active > a i {color:#fff;}
 #mainHeader .pull-right{ float:none !important; }
+
+.navbar-nav > li > button {
+    margin: 22px 5px;
+}
 
 /*** MEDIA QUERIES ***/
 

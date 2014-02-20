@@ -198,7 +198,7 @@
                         </li>
 
                         <li class="dropdown">
-                            <a ng-show="me" href="#" class="dropdown-toggle" toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
+                            <a ng-show="me" href="#" class="dropdown-toggle welcome" toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
                             <a ng-hide="me" href="" class="dropdown-toggle" toggle="dropdown">Info <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li ng-show="me">
@@ -218,7 +218,7 @@
                         </li>
                         <li ng-hide="isLoggedIn">
                             <button type="button" ng-click="fbUtil.login()" class="btn btn-default navbar-btn">
-                                <img src="/img/facebook.png" class="kex-icon"> Login
+                                Login
                             </button>
                         </li>
                     </ul>
