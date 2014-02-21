@@ -414,9 +414,9 @@ img.kex-thumbnail-user-mini {
 }
 
 .event-sidebar-panel-header {
-  font-size: 18px;
   font-weight: bold;
   border-bottom: 1px solid #999;
+  margin-top: 0;
   margin-bottom: 10px;
 }
 
@@ -439,12 +439,9 @@ img.kex-thumbnail-user-mini {
 
 .event-view-icon-img-only-div {
   font-size: 30px;
-  margin-bottom: -5px;
+  margin-top: 0;
+  margin-bottom: -2px;
   /*padding-bottom: 5px;*/
-}
-
-.event-view-icon-text-big {
-  font-size: 18px;
 }
 
 .event-view-action {
@@ -454,7 +451,6 @@ img.kex-thumbnail-user-mini {
 
 .event-view-volunteers-needed {
   padding-bottom: 20px;
-  font-size: 18px;
   font-weight: bold;
   /*font-style: italic;*/
 }
