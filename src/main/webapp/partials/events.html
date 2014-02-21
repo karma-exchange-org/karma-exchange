@@ -62,9 +62,11 @@
 
                                 <div class="row">
                                     <div class="col-md-2 event-search-result-summary">
-                                            <a href ng-click="toggleEvent();">
-                                                    <p class="font-size-h4">{{event.startTime | date:'shortTime'}}</p>
-                                            </a>
+                                            <h4 class="margin-top-0">
+                                                <a href ng-click="toggleEvent();">
+                                                    {{event.startTime | date:'shortTime'}}
+                                                </a>
+                                            </h4>
                                             <event-registration-info
                                                 registration-info="event.registrationInfo"
                                                 type="'UPCOMING'">
@@ -72,18 +74,21 @@
                                     </div>
                                     <div class="col-md-10 event-search-result-summary">
                                             <div class="pull-left">
+                                                    <h4 class="margin-0">
+                                                        <a href ng-click="toggleEvent();">
+                                                            <strong>{{event.title}}</strong>
+                                                        </a>
+                                                    </h4>
                                                     <a href ng-click="toggleEvent();">
-                                                            <strong class="font-size-h4">{{event.title}}</strong>
-                                                            <br>
-                                                            <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
+                                                        <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
                                                     </a>
                                             </div>
                                             <div class="pull-right">
-                                                    <p class="text-right font-size-h4">
-                                                            <a href ng-click="toggleEvent();">
-                                                                <karma-hours karma-points="event.karmaPoints"></karma-hours>
-                                                            </a>
-                                                    </p>
+                                                    <h4 class="margin-top-0 text-right">
+                                                        <a href ng-click="toggleEvent();">
+                                                            <karma-hours karma-points="event.karmaPoints"></karma-hours>
+                                                        </a>
+                                                    </h4>
                                                     <div class="pull-right">
                                                             <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
                                                     </div>

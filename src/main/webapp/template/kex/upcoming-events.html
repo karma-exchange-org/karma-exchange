@@ -19,9 +19,9 @@
                     <div class="row">
                         <div class="col-md-2">
 
-                                <p class="font-size-h4">
+                                <h4 class="margin-top-0">
                                     {{event.startTime|date:'shortTime'}}
-                                </p>
+                                </h4>
                                 <event-registration-info
                                     registration-info="event.registrationInfo"
                                     user-registration-info="event.userEventSearchInfo.registrationInfo"
@@ -30,16 +30,17 @@
                         </div>
                         <div class="col-md-10">
                                 <div class="pull-left">
-                                        <a href="#!/event/{{event.key}}">
-                                                <strong class="font-size-h4">{{event.title}}</strong>
-                                        </a>
-                                        <br>
+                                        <h4 class="margin-0">
+                                            <a href="#!/event/{{event.key}}">
+                                                    <strong>{{event.title}}</strong>
+                                            </a>
+                                        </h4>
                                         <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
                                 </div>
                                 <div class="pull-right">
-                                        <p class="text-right font-size-h4">
+                                        <h4 class="text-right margin-top-0">
                                             <karma-hours karma-points="event.karmaPoints"></karma-hours>
-                                        </p>
+                                        </h4>
                                         <div class="pull-right">
                                                 <event-participant-imgs-mini event="event"></event-participant-imgs-mini>
                                         </div>
