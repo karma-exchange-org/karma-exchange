@@ -1289,3 +1289,11 @@ img {
 }
 
 /***** END PROGRESS ICON *****/
+
+/***** ABOUT US *****/
+
+.team-profile {
+  max-width: 330px;
+}
+
+/***** END ABOUT US *****/
