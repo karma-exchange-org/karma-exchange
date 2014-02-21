@@ -218,8 +218,7 @@ table>tbody>tr>td.table-cell-align-middle {
   margin-bottom: 10px;
 }
 
-.panel-body-header-h3 {
-  font-size: 24px;
+.panel-body-header {
   font-weight:bold;
 
   padding-bottom: 5px;
@@ -260,8 +259,10 @@ table>tbody>tr>td.table-cell-align-middle {
   font-size: 18px;
 }
 
-.event-search {
-  max-width: 870px;
+@media(min-width:992px) {
+  .event-search {
+    max-width: 870px;
+  }
 }
 
 .event-search .results {
@@ -269,9 +270,9 @@ table>tbody>tr>td.table-cell-align-middle {
   padding-right: 15px;
 }
 
-.event-search-result-date {
+.upcoming-events .date {
   text-transform:uppercase;
-  /*font-weight:bold;*/
+  letter-spacing: 0.08em;
 }
 
 .event-search-result-summary a {

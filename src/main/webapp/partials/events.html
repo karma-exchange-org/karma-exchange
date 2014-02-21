@@ -49,11 +49,11 @@
                 <h4><em>No <span ng-show="query.length > 0">matching </span> upcoming events</em></h4>
             </div>
 
-            <ul class="list-unstyled results" ng-hide="eventSearchTracker.isPending()">
+            <ul class="list-unstyled results upcoming-events" ng-hide="eventSearchTracker.isPending()">
                 <li ng-repeat="event in events.data" id="event_{{event.key}}">
 
                     <div>
-                        <h4 ng-show="event.showHeader" class="event-search-result-date">
+                        <h4 ng-show="event.showHeader" class="date">
                                 {{event.startTime | date:event.dateFormat}}
                         </h4>
 

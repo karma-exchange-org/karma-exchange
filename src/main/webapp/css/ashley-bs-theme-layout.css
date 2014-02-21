@@ -36,7 +36,7 @@ Description: layout styles
 -webkit-box-shadow:none;box-shadow:none
 }
 .container .jumbotron{border-radius: 0;}
-.jumbotron {font-size: 16px;}
+/*.jumbotron {font-size: 16px;}*/
 .jumbotron h1 {text-align: left;}
 /*forms*/
 .form-control {-webkit-box-shadow:none;box-shadow:none}
@@ -45,25 +45,6 @@ margin-bottom: 20px;
 display:block;
 }
 /*tabs*/
-
-/** expand the link to fill the whole tab **/
-.panel-title a {
-    display: block;
-    padding: 10px 15px;
-    margin: -10px -15px;
-    outline:none;
-}
-
-.panel-default>.panel-heading{
- -webkit-transition: all 0.2s ease-out;
-	-moz-transition: all 0.2s ease-out;
-	-o-transition: all 0.2s ease-out;
-	-ms-transition: all 0.2s ease-out;
-	transition: all 0.2s ease-out;
-}
-.panel-default {
-	border:none;
-}
 
 /*** MEDIA QUERIES ***/
 
@@ -198,8 +179,8 @@ display:block;
 ================================================== */
 
 body {
-	font-size:16px;
-	line-height: 22px;
+	/*font-size:16px;*/
+	/*line-height: 22px;*/
 	font-family: Arial, Helvetica, sans-serif;
 	-webkit-font-smoothing: antialiased; /* Fix for webkit rendering */
 	-webkit-text-size-adjust: 100%;
@@ -209,18 +190,21 @@ body {
 }
 h1, h2, h3, h4, h5, h6, legend {
 	margin:0;
-	font-weight: 300;
+	/*font-weight: 300;*/
+	font-family: 'Open Sans', sans-serif;
+}
+.navbar, .btn, .button-outline {
 	font-family: 'Open Sans', sans-serif;
 }
 h1 {
-	font-size: 44px;
-	/* line-height: 44px; */
-	font-weight: 300;
-	font-style: normal;
+	/*font-size: 44px;*/
+	/*line-height: 44px;*/
+	/*font-weight: 300;*/
+	/*font-style: normal;*/
 	text-align:center;
-	/* text-transform:uppercase; */
+	/*text-transform:uppercase;*/
 	position:relative;
-	letter-spacing: 0.1em;
+	/*letter-spacing: 0.1em;*/
 	margin-bottom: 17px;
 }
 
@@ -264,10 +248,10 @@ h1.noSubtitle{
 
 
 h2 {
-	font-size:24px;
-	line-height: 24px;
-	font-weight: 300;
-	font-style: normal;
+	/*font-size:24px;*/
+	/*line-height: 24px;*/
+	/*font-weight: 300;*/
+	/*font-style*/: normal;
 	padding:0;
 	margin-bottom:17px;
 
@@ -299,38 +283,40 @@ h1.bigTitle:after, .boxWrapper h1:after, .pricingBloc h1:after, .team h1:after, 
 	content:none
 }
 h3, legend {
-	font-size: 18px;
-	line-height: 22px;
+	/*font-size: 18px;*/
+	/*line-height: 22px;*/
 	margin-bottom: 14px;
-	font-weight: 600;
-	letter-spacing: -0.06em;
+	/*font-weight: 600;*/
+	/*letter-spacing: -0.06em;*/
 }
 h4 {
-	font-size: 14px;
-	line-height: 22px;
+	/*font-size: 14px;*/
+	/*line-height: 22px;*/
 	margin-bottom: 6px;
-	font-style: bold;
+	/*font-style: bold;*/
 	font-family: Arial, Helvetica, sans-serif;
-	font-weight:300;
+	/*font-weight:300;*/
 }
 h5 {
-	font-style: normal;
-	font-weight: 300;
-	font-size: 1.116em;
-	line-height: 1.5714em;
+	font-family: Arial, Helvetica, sans-serif;
+	/*font-style*/: normal;
+	/*font-weight: 300;*/
+	/*font-size: 1.116em;*/
+	/*line-height: 1.5714em;*/
 	margin-bottom: 0.916em;
 }
 h6 {
-	font-weight: 300;
+	font-family: Arial, Helvetica, sans-serif;
+	/*font-weight: 300;*/
 	font-style: italic;
 	margin-bottom: 2em;
-	font-size: 1em;
-	line-height:1em;
+	/*font-size: 1em;*/
+	/*line-height:1em;*/
 }
 h1 small, h2 small, h3 small, h4 small {
-	text-transform:none;
-	font-size:0.5em;
-	font-weight:400;
+	/*text-transform:none;*/
+	/*font-size:0.5em;*/
+	/*font-weight:400;*/
 	color:inherit;
 }
 p, ul {
@@ -347,7 +333,7 @@ li {
 }
 a:link, a:visited {
 	text-decoration:none;
-	font-family: 'Open Sans', sans-serif;
+	/*font-family: 'Open Sans', sans-serif;*/
 }
 a:hover, a:active {
 	text-decoration:underline;
@@ -361,10 +347,10 @@ a.readMore {
 	font-style:italic;
 }
 blockquote {
-	font-size:22px;
-	line-height: 33px;
+	/*font-size:22px;*/
+	/*line-height: 33px;*/
 	margin-bottom:0;
-	font-weight:300;
+	/*font-weight:300;*/
 	font-family: 'Open Sans', sans-serif;
 	padding:0;
 	border:none;
@@ -627,19 +613,18 @@ hr {
 	vertical-align:middle;
     text-decoration: none;
     text-transform: uppercase;
-    padding: 33px 20px 33px 20px;
+    padding: 33px 15px;
 	-webkit-transition: all 0.2s ease-out;
 	-moz-transition: all 0.2s ease-out;
 	-o-transition: all 0.2s ease-out;
 	-ms-transition: all 0.2s ease-out;
 	transition: all 0.2s ease-out;
 }
-.navbar-nav > li > a i {font-size: 16px; text-align: center;padding: 20px 0 10px 0; color:#ccc;}
-.navbar-nav > li > a:hover i, .navbar-nav > li.active > a i {color:#fff;}
 #mainHeader .pull-right{ float:none !important; }
 
 .navbar-nav > li > button {
-    margin: 22px 5px;
+    margin: 25px 5px;
+    font-size: 1em;
 }
 
 /*** MEDIA QUERIES ***/
@@ -647,7 +632,17 @@ hr {
 @media(max-width:767px){
 	.navbar-nav > li > a {
 		padding: 10px 20px;
-    	font-size: .8em;
+    	/*font-size: .8em;*/
+	}
+
+	.navbar-nav > li > button {
+		margin: 3px 15px;
+    	/*font-size: .8em;*/
+	}
+
+	.navbar-nav {
+		margin-top: 0px;
+		margin-bottom: 0px;
 	}
 }
 
@@ -720,7 +715,7 @@ body#fullScreen #mainHeader{display:none;}
 ================================================== */
 .newsText{padding:20px 20px 25px 20px; margin-bottom: 22px;}
 .newsText h3{margin-bottom: 8px;}
-.date{font-size:12px; line-height:12px;font-style: italic;}
+/*.date{font-size:12px; line-height:12px;font-style: italic;}*/
 .newsText p{font-size:12px;}
 
 /* END NEWS
