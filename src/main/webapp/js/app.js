@@ -1764,7 +1764,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                         resource: "leaderboard"
                     },
                     function(result) {
-                        $scope.allTimeLeaders = result;
+                        $scope.allTimeLeaders = parseLeaderboardFetch(result);
                     }));
             $scope.topVolunteersFetchTracker.track(
                 Org.get(
@@ -1774,8 +1774,16 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                         resource: "leaderboard"
                     },
                     function(result) {
-                        $scope.lastMonthLeaders = result;
+                        $scope.lastMonthLeaders = parseLeaderboardFetch(result);
                     }));
+        }
+
+        function parseLeaderboardFetch(data) {
+            if (!angular.isDefined(data) || !angular.isDefined(data.scores)) {
+                return { scores: [] };
+            } else {
+                return data;
+            }
         }
     }
 

@@ -1,18 +1,27 @@
-<ul class="list-group leaderboard">
-    <li class="list-group-item active leaderboard-header">
-        {{ headerText[type] }}
-    </li>
-    <li class="list-group-item" ng-repeat="leader in scores">
-        <div class="leaderboard-leader-num">
-            {{ $index + 1 }}.
-        </div>
-        <div class="leaderboard-leader-name">
-            <event-participant-summary
-                user="leader.user"
-                type="LEADERBOARD"
-                karma-points="leader.leaderboardKarmaPoints"
-                karma-points-display-type="VERBOSE">
-            </event-participant-summary>
-        </div>
-    </li>
-</ul>
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h3 class="panel-title">
+            {{ headerText[type] }}
+        </h3>
+    </div>
+    <div class="panel-body">
+
+        <!-- TODO(avaliani): fix this once the leaderboard is functional again -->
+        <ul class="list-group leaderboard">
+            <li class="list-group-item" ng-repeat="leader in scores">
+                <div class="leaderboard-leader-num">
+                    {{ $index + 1 }}.
+                </div>
+                <div class="leaderboard-leader-name">
+                    <event-participant-summary
+                        user="leader.user"
+                        type="LEADERBOARD"
+                        karma-points="leader.leaderboardKarmaPoints"
+                        karma-points-display-type="VERBOSE">
+                    </event-participant-summary>
+                </div>
+            </li>
+        </ul>
+
+    </div>
+</div>

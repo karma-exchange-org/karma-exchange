@@ -212,11 +212,11 @@
                 </div>
 
                 <div class="row row-no-margin" ng-show="!topVolunteersFetchTracker.isPending()">
-                    <div class="col-md-5" ng-show="allTimeLeaders">
+                    <div class="col-md-5" ng-show="allTimeLeaders.scores.length > 0">
                         <leaderboard-table scores="allTimeLeaders.scores" type="'ALL_TIME'">
                         </leaderboard-table>
                     </div>
-                    <div class="col-md-5" ng-show="lastMonthLeaders">
+                    <div class="col-md-5" ng-show="lastMonthLeaders.scores.length > 0">
                         <leaderboard-table scores="lastMonthLeaders.scores" type="'THIRTY_DAY'">
                         </leaderboard-table>
                     </div>

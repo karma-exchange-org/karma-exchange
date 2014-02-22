@@ -25,6 +25,7 @@
 ================================================== */
 
 /** tabs **/
+/*
 .panel-default .panel-heading, .panel-default .panel-footer {
 	color: #fff;
 	background:#4FAFC2;
@@ -41,7 +42,7 @@
 	color: #ddd;
 	text-decoration: none;
 }
-
+*/
 /* END BOOSTRAP CUSTOMIZATION
 ================================================== */
 
@@ -58,6 +59,9 @@ blockquote small {
 }
 h1, h2, h3, h4, h5, h6 {
 	color:#222;
+}
+.panel-heading h1, .panel-heading h2, .panel-heading h3, .panel-heading h4, .panel-heading h5, .panel-heading h6 {
+	color: inherit;
 }
 /*h2 {
  color:#888;
@@ -119,7 +123,7 @@ ul.iconsList li a:hover, ul.iconsList i {
 	color:#fff;
 	border:2px solid #fff;
 }
-.btn:hover {
+.btn:hover, .btn:focus {
 	color:#4FAFC2;
 	border-color:#eee;
 	text-shadow:none;
@@ -129,7 +133,7 @@ ul.iconsList li a:hover, ul.iconsList i {
 	background: #006dcc;
 }
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active, .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled] {
-	background: #555;
+	/*background: #555;*/
 }
 .btn-info {
 	background: #49AFCD;
@@ -335,6 +339,7 @@ section#projectDescription {
 }
 
 /*** Form ***/
+/*
 .form-control:focus{
 	border: none;
 	background-color:#ddd;
@@ -356,7 +361,7 @@ background-color: #B94A48;
 border:none}
 
 #projectQuote, #projectQuote h3{background:#ddd;color:#444;}
-
+*/
 /* END MISCELANIOUS
 ================================================== */
 
