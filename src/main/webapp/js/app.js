@@ -563,23 +563,6 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
             goalInfo.barType = this.getGoalBarType(totalPct);
         },
 
-        progressIconStyle: function (registeredPct) {
-            if (!angular.isDefined(registeredPct)) {
-                registeredPct = 0;
-            }
-
-            var shadowDimensions = '0px 0px 8px ' +
-                (2 + Math.round(2 * registeredPct / 100) ) + 'px';
-            var shadowColor = (registeredPct === 100) ? 'yellow' : 'white';
-            var shadowValue = shadowDimensions + ' ' + shadowColor;
-
-            var style = {};
-            style['-webkit-box-shadow'] = shadowValue;
-            style['-moz-box-shadow'] = shadowValue;
-            style['box-shadow'] = shadowValue;
-            return style;
-        },
-
         completionIconStyle: function (registeredPct) {
             if (!angular.isDefined(registeredPct)) {
                 registeredPct = 0;
@@ -1781,7 +1764,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                         resource: "leaderboard"
                     },
                     function(result) {
-                        $scope.allTimeLeaders = result;
+                        $scope.allTimeLeaders = parseLeaderboardFetch(result);
                     }));
             $scope.topVolunteersFetchTracker.track(
                 Org.get(
@@ -1791,8 +1774,16 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                         resource: "leaderboard"
                     },
                     function(result) {
-                        $scope.lastMonthLeaders = result;
+                        $scope.lastMonthLeaders = parseLeaderboardFetch(result);
                     }));
+        }
+
+        function parseLeaderboardFetch(data) {
+            if (!angular.isDefined(data) || !angular.isDefined(data.scores)) {
+                return { scores: [] };
+            } else {
+                return data;
+            }
         }
     }
 
@@ -2605,6 +2596,16 @@ var tourCtrl = function($scope, FbUtil, $location) {
     }
 };
 
+kexApp.controller('NavbarController',
+        [ '$scope', '$location', 'KarmaGoalUtil', 'KexUtil',
+          function($scope, $location, KarmaGoalUtil, KexUtil) {
+    $scope.isActive = function (url) {
+        return $location.path() === KexUtil.stripHashbang(url);
+    }
+
+    $scope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
+}]);
+
 var EventModalInstanceCtrl = function ($scope, $modalInstance, event, header, $rootScope) {
     $scope.event = event;
     $scope.header = header;
@@ -2736,7 +2737,7 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
 //   - MeUtil
 //   - FbAuthDepResource
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource, KarmaGoalUtil, KexUtil ) {
+        FbAuthDepResource, KexUtil ) {
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
             $rootScope.alerts = [ ];
@@ -2806,8 +2807,6 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
         }, options );
 
     };
-    $rootScope.progressIconStyle = KarmaGoalUtil.progressIconStyle;
-    $rootScope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
 
     $rootScope.setLocation = function (path) {
         $location.path(KexUtil.stripHashbang(path));

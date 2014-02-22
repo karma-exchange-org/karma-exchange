@@ -49,11 +49,11 @@
                 <h4><em>No <span ng-show="query.length > 0">matching </span> upcoming events</em></h4>
             </div>
 
-            <ul class="list-unstyled results" ng-hide="eventSearchTracker.isPending()">
+            <ul class="list-unstyled results upcoming-events" ng-hide="eventSearchTracker.isPending()">
                 <li ng-repeat="event in events.data" id="event_{{event.key}}">
 
                     <div>
-                        <h4 ng-show="event.showHeader" class="event-search-result-date">
+                        <h4 ng-show="event.showHeader" class="date">
                                 {{event.startTime | date:event.dateFormat}}
                         </h4>
 
@@ -167,24 +167,19 @@
                                                 &nbsp;
                                             </div>
                                             <div class="body text-center">
-                                                <p>
+                                                <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success btn-sm" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
+                                                <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success btn-sm" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
+                                                <!--
+                                                        Not really needed anymore since we have a label containing the registration info.
 
-                                                        <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
-                                                        <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
-                                                        <!--
-                                                                Not really needed anymore since we have a label containing the registration info.
-
-                                                                <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
-                                                                        <i class="icon-ok"></i> You are registered!
-                                                                </span>
-                                                                <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
-                                                                        <i class="icon-ok"></i> You are waitlisted!
-                                                                </span>
-                                                        -->
-                                                </p>
-                                                <p>
-                                                        <a href="#!/event/{{modelEvent.key}}" class="btn btn-info"><i class=" icon-info-sign icon-white"></i> More info</a>
-                                                </p>
+                                                        <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
+                                                                <i class="icon-ok"></i> You are registered!
+                                                        </span>
+                                                        <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
+                                                                <i class="icon-ok"></i> You are waitlisted!
+                                                        </span>
+                                                -->
+                                                <a href="#!/event/{{modelEvent.key}}" class="btn btn-info btn-sm"><i class=" icon-info-sign icon-white"></i> More info</a>
                                             </div>
                                         </div>
                                     </div>

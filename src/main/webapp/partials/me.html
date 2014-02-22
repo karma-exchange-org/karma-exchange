@@ -8,7 +8,7 @@
         <div class="panel panel-default panel-seperated-vertical" ng-show="me.firstName">
             <div class="panel-body">
 
-                <div class="panel-body-header-h3">{{me.firstName}}</div>
+                <h3 class="panel-body-header">{{me.firstName}}</h3>
 
                 <img ng-src="{{KexUtil.strConcat(me.profileImage.url,'?type=large')}}" class="img-responsive center">
 
@@ -130,8 +130,8 @@
                                     <textarea rows="5" class="col-md-12" ng-model="$parent.me.about" ></textarea>
                                 </div>
                                 <div class="vertical-panel-padding">
-                                    <button class="btn btn-primary" ng-click="saveIntroEdit()">Save</button>
-                                    <button class="btn btn-default" ng-click="disableIntroEdit()">Cancel</button>
+                                    <button class="btn btn-primary btn-sm" ng-click="saveIntroEdit()">Save</button>
+                                    <button class="btn btn-default btn-sm" ng-click="disableIntroEdit()">Cancel</button>
                                 </div>
                             </div>
 

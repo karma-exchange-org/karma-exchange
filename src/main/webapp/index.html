@@ -14,12 +14,14 @@
         <meta name="fragment" content="!">
 
         <!-- Fonts -->
-        <link href='//fonts.googleapis.com/css?family=Open+Sans:600italic,700italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
+        <link href='//fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
         <!-- Bootstrap + bootstrap themes -->
-        <link rel="stylesheet" href="css/bootstrap.min.css">
-        <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"> -->
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
+        <!-- <link rel="stylesheet" href="css/bootstrap.min.css"> -->
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <!-- <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css"> -->
+        <link rel="stylesheet" href="css/ashley-bs-theme-layout.css">
+        <link rel="stylesheet" href="css/ashley-bs-theme-colors.css">
         <link rel="stylesheet" href="css/app-bootstrap-cust.css">
 
         <!-- SVG icons -->
@@ -144,7 +146,7 @@
         </script>
 
 
-        <nav class="navbar navbar-fixed-top navbar-inverse" role="navigation">
+        <nav id="mainHeader" class="navbar navbar-fixed-top navbar-default" role="navigation" ng-controller="NavbarController">
             <!-- Keep the navbar content at container width. The navbar background extends across the screen. -->
             <div class="container">
 
@@ -159,17 +161,17 @@
 
                 <div class="navbar-collapse collapse navbar-responsive-collapse">
                     <ul class="nav navbar-nav">
-                        <li>
-                            <a href="#!/event"><div class="nav-icon"><i class="icon-search icon-white"></i></div> Find Events</a>
+                        <li ng-class="{ active: isActive('#!/event') }">
+                            <a href="#!/event">Find Events</a>
                         </li>
-                        <li ng-show="me">
-                            <a href="#!/me"><div class="nav-icon"><i class="icon-calendar icon-white"></i></div> My Events</a>
+                        <li ng-show="me" ng-class="{ active: isActive('#!/me') }">
+                            <a href="#!/me">My Events</a>
                         </li>
-                        <li>
-                            <a href="#!/org"><div class="nav-icon"><i class="icon-sitemap icon-white"></i></div> Organizations</a>
+                        <li ng-class="{ active: isActive('#!/org') }">
+                            <a href="#!/org">Organizations</a>
                         </li>
-                        <li ng-show="isOrganizer">
-                            <a href="#!/event/add"><div class="nav-icon"><i class="icon-plus icon-white"></i></div> Create Events</a>
+                        <li ng-show="isOrganizer" ng-class="{ active: isActive('#!/event/add') }">
+                            <a href="#!/event/add">Create Events</a>
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
@@ -182,7 +184,6 @@
                         <li ng-show="goalInfo.msg">
 
                             <div class="progressIcon"
-                                 ng-style="progressIconStyle(goalInfo.pctTotal)"
                                  popover-placement="bottom"
                                  popover="{{ goalInfo.pctTotal }}%&nbsp;of {{ goalInfo.goalStartDate | date:'MMM-yyyy' }} Karma&nbsp;Goal"
                                  popover-trigger="mouseenter"
@@ -197,7 +198,7 @@
                         </li>
 
                         <li class="dropdown">
-                            <a ng-show="me" href="#" class="dropdown-toggle" toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
+                            <a ng-show="me" href="#" class="dropdown-toggle welcome" toggle="dropdown">Welcome, {{me.firstName}} <b class="caret"></b></a>
                             <a ng-hide="me" href="" class="dropdown-toggle" toggle="dropdown">Info <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li ng-show="me">
@@ -216,8 +217,8 @@
                             </ul>
                         </li>
                         <li ng-hide="isLoggedIn">
-                            <button type="button" ng-click="fbUtil.login()" class="btn btn-default navbar-btn">
-                                <img src="/img/facebook.png" class="kex-icon"> Login
+                            <button type="button" ng-click="fbUtil.login()" class="btn btn-default btn-sm navbar-btn">
+                                Login
                             </button>
                         </li>
                     </ul>

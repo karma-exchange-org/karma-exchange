@@ -408,13 +408,22 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         "95126",
         GeoPtWrapper.create(new GeoPt(37.316094f,-121.912575f))));
 
-    List<Key<User>> organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
+    List<Key<User>> organizers = asList(USER2.getKey());
+    List<Key<User>> registeredUsers = asList(USER1.getKey(), USER4.getKey());
+    List<Key<User>> waitListedUsers = asList();
+    Event event = createEvent("After School Tutoring", BGCSF_TENDERLOIN, bgcsfClubhouse,
+      computeEventDate(now, 1, 3), 3, organizers, registeredUsers,
+      waitListedUsers, 10, "502905379789560", bgcsfTutoringWaiverKey);
+    event.setSuitableForTypes(Lists.newArrayList(SuitableForType.AGE_55_PLUS));
+    events.add(event);
+
+    organizers = asList(USER1.getKey(), AMIR.getKey(), HARISH.getKey(),
       POONUM.getKey());
-    List<Key<User>> registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
+    registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey(),
       USER6.getKey(), USER7.getKey(), USER8.getKey(), USER9.getKey(), USER10.getKey(),
       USER11.getKey(), USER12.getKey(), USER13.getKey());
-    List<Key<User>> waitListedUsers = asList();
-    Event event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
+    waitListedUsers = asList();
+    event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
       computeEventDate(now, 2, 4), 1, organizers, registeredUsers,
       waitListedUsers, 100, "502904489789649", columbiaParkSoccerWaiverKey);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));

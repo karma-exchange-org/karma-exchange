@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container vertical-panel-padding">
 
 <div class="row">
     <div class="col-md-9">
@@ -21,9 +21,9 @@
 
                         <div class="event-view-icon-img-div">
                             <div class="text-center">
-                                <div class="event-view-icon-img-only-div">
+                                <h4 class="event-view-icon-img-only-div">
                                     <i class="icon-calendar icon-white"></i>
-                                </div>
+                                </h4>
                                 <div>
                                     <small>
                                         <a href="//www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank">
@@ -35,16 +35,16 @@
                         </div>
                         <div class="event-view-icon-text-div">
 
-                            <div class="event-view-icon-text-big">
+                            <h4 class="margin-0">
                                 <strong>
                                     {{event.startTime | date:'EEEE, MMM d, y'}}
                                 </strong>
-                            </div>
-                            <div class="event-view-icon-text-big">
+                            </h4>
+                            <h4 class="margin-0">
                                 <strong>
                                     {{event.startTime|date:'shortTime'}} to {{event.endTime|date:'shortTime'}}
                                 </strong>
-                            </div>
+                            </h4>
 
                         </div>
 
@@ -57,9 +57,9 @@
                         <div class="event-view-icon-img-div">
                             <div class="text-center">
 
-                                <div class="event-view-icon-img-only-div">
+                                <h4 class="event-view-icon-img-only-div">
                                     <i class="icon-map-marker icon-white"></i>
-                                </div>
+                                </h4>
                                 <div>
                                     <small>
                                         <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
@@ -72,11 +72,11 @@
                         </div>
                         <div class="event-view-icon-text-div">
 
-                            <div class="event-view-icon-text-big">
+                            <h4 class="margin-0">
                                 <strong>
                                     {{event.location.title}}
                                 </strong>
-                            </div>
+                            </h4>
                             <div>
                                 {{event.location.address.street}}
                                 <br>
@@ -96,9 +96,9 @@
                 <div class="panel panel-default">
                     <div class="panel-body text-center">
 
-                        <div class="event-view-volunteers-needed" ng-show="event.status!='COMPLETED'">
+                        <h4 class="event-view-volunteers-needed margin-0" ng-show="event.status!='COMPLETED'">
                             {{event.maxRegistrations - event.registeredUsers.length | limit10Verbose }}
-                        </div>
+                        </h4>
 
                         <div class="font-size-h4">
                             <event-registration-info
@@ -308,9 +308,9 @@
     <div class="col-md-3">
         <div class="row" ng-show="event.organizationDetails">
             <div class="col-md-12">
-                <div class="event-sidebar-panel-header">
+                <h4 class="event-sidebar-panel-header">
                     Organized by
-                </div>
+                </h4>
                 <div class="event-sidebar-element">
                     <org-event-summary org="event.organizationDetails"></org-event-summary>
                 </div>
