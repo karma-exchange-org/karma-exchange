@@ -272,7 +272,7 @@ table>tbody>tr>td.table-cell-align-middle {
 
 .upcoming-events .date {
   text-transform:uppercase;
-  letter-spacing: 0.08em;
+  /*letter-spacing: 0.08em;*/
 }
 
 .event-search-result-summary a {
