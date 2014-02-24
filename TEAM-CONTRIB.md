@@ -3,6 +3,7 @@
 ### Table of Contents
 
 - [Uploading changes](#uploading)
+- [Collaborating on a feature branch](#featurebranchcollab)
 - [Setup](#setup)
 - [Helpful Git Links](#links)
 
@@ -14,7 +15,9 @@ Our method for collobaration is based upon this wiki: https://gist.github.com/se
 
 ### Create a branch prior to making any changes
 
-    $ git checkout -b <my-awesome-feature-branch-name>
+Use a temporary branch name until you are ready to do a push.
+
+    $ git checkout -b <temp-branch-name>
 
 ### Make and test your changes
 
@@ -24,19 +27,19 @@ Make whatever changes you want to make. Make sure all tests pass and the UI feat
 
 ### Self review your changes
 
-To see what files you've modified:
+To see how your branch differs from the master branch execute the alias git-diff (see setup).
 
-    $ git status
+    $ git-diff
 
-Use meld to take a look at your changes since your last commit (execute it from the root project directory):
+If you want to just take a look at your changes since your last commit use meld directly (execute it from the root project directory):
 
     $ meld .
 
-If you want to compare your changes including locally committed changes against the master branch use difftool:
+To see what files you've modified since the last commit:
 
-    $ git difftool master
+    $ git status
 
-After you add or delete files make sure to run "git add ." (execute it from the root project directory).
+After you add or delete files make sure to run the following commands (execute them from the root project directory).
 
     $ git add --all .
     $ git status
@@ -45,20 +48,34 @@ After you add or delete files make sure to run "git add ." (execute it from the 
 
 Commit your changes to your local branch:
 
-    $ git commit -a
-
-**Pro tip:** use the convenience script git-commit to do both git add and git-commit
-
     $ git-commit   
 
-Then push your branch to the remote repository as a non-master branch:
+    ###########################################################################
+    # If you are not using the convenience scripts, use the following commands:
+    ###########################################################################
 
-    $ git push origin <my-awesome-feature-branch-name>
+    $ git commit -a
 
-**Pro tip:** use the convenience script git-push instead (saves typing)
+You can do as many commits as you want prior to pushing your changes to github.
 
+### Push your changes to github
+
+Verify you are in the correct local branch:
+
+    $ git branch
+    <Verify the branch name>
+    
+Then rename the branch based upon the content of your changes and then push the branch to the remote repository: 
+
+    $ git branch -m <my-awesome-feature-branch-name>
     $ git-push
 
+    ###########################################################################
+    # If you are not using the convenience scripts, use the following commands:
+    ###########################################################################
+
+    $ git branch -m <my-awesome-feature-branch-name>
+    $ git push origin <my-awesome-feature-branch-name>
 
 ### Submit a pull request for your branch
 
@@ -71,35 +88,93 @@ Then push your branch to the remote repository as a non-master branch:
 
 The code should ideally be reviewed by someone else in the organization. See the [git hub pull tutorial](https://help.github.com/articles/using-pull-requests#managing-pull-requests) to see how pull requests are processed by the code reviewer.
 
-To incorporate code review feedback just follow the prior modification and push instructions and re-run your tests, but skip the step of creating a new branch:
+To incorporate code review feedback just follow the prior modification and push instructions and re-run your tests, but skip the step of creating a new branch and renaming the branch:
 
     <make your changes>
     $ mvn appengine:devserver
-    $ git add --all .
-    $ git commit -a    
-    $ git push origin <my-awesome-feature-branch-name>
+    $ git-commit
+    $ git-push
 
 ### Merging the code
 
-Once you have received code review approval follow the [merging directly on github instructions](https://help.github.com/articles/merging-a-pull-request). In most cases it should just be as simple as clicking the "Merge pull request" button.
+Once you have received code review approval, open the pull request page on github and click the "Merge pull request" button. After the code is merged, delete your branch on git hub by clicking "delete branch" button.
 
-After the code is merged, delete your branch on git hub by clicking "delete branch".
+If you have conflicts that prevent you from merging you'll need to update your local master and and merge your feature branch to it:
+
+    $ git checkout master
+    $ git pull
+    <this will update your local master>
+    $ git checkout <my-awesome-feature-branch-name>
+    $ git merge master
+    $ git status
+    $ meld .
+    
+Resolve any conflicts using meld or your editor and test out your changes. Then commit your changes and push them to github. Then you should be able to merge the branch using the github UI.
+    
+    <test out changes to make sure everything still works>
+    $ git-commit
+    $ git-push
+    <go to the github pull request page and re-attempt "Merge pull request">
+
 
 ### Cleanup your local branch
 
-Sync your master branch to the latest changes:
+Sync your master branch to the latest changes and delete your merged branch:
+
+    $ git-cleanup
+
+    ###########################################################################
+    # If you are not using the convenience scripts, use the following commands:
+    ###########################################################################
 
     $ git checkout master
     $ git remote update --prune
     $ git pull
-
-Delete your merged branch:
-
     $ git branch -d <my-awesome-feature-branch-name>
 
-**Pro tip:** use the convenience script git-cleanup to do all four commands above
 
-    $ git-cleanup
+<a name="featurebranchcollab"/>
+## Collaborating on a feature branch
+
+To collaborate on a feature branch first 'git-push' the branch to github. Then, each collaborator needs to create a local copy of the branch:
+
+    $ git fetch origin
+    $ git checkout -b <collab-feature-branch> origin/<collab-feature-branch>
+
+After you have a local copy, you can make updates to the feature branch using 'git-push' and 'git-commit'
+
+    <make and test changes>
+    <verify all changes since the last commit>
+    
+    $ meld .
+    
+    <commit and push the changes>
+    
+    $ git-commit
+    $ git-push
+
+If the 'git-push' fails because your local feature branch is behind the github feature branch, update your feature branch using 'git-merge'
+
+    <make sure everything is committed>
+    $ git status
+
+    <get the latest changes>
+    
+    $ git-merge
+    $ git status
+    
+If there are conflicts:
+    
+    <resolve the conflicts>
+    
+    $ meld .
+    
+    <test all changes>
+    <commit and push the changes>
+
+    $ git-commit
+    $ git-push
+
 
 <a name="setup"/>
 ## Setup
@@ -155,26 +230,32 @@ If you have configured things as suggested above you should see output like the 
     branch.master.remote=origin
     branch.master.merge=refs/heads/master
 
-### Convenience scripts
+### Convenience scripts / aliases
 
 I've created a few convenience scripts that I recommend you download [from here](https://www.dropbox.com/sh/qbeli6omtrbdoyu/oG4QNpe79L)
 
+    git-cleanup.sh
     git-commit.sh
     git-push.sh
-    git-cleanup.sh
+    git-merge.sh
 
-Once you download them put them in your preferred directory (example below uses ~/bin) and create aliases to them:
+Once you download them put them in your preferred directory (example below uses ~/bin), chmod them to make them executable ('chmod 744 git*.sh') and create aliases to them:
 
     $ cat ~/.bash_aliases
     alias git-cleanup=~/bin/git-cleanup.sh
     alias git-commit=~/bin/git-commit.sh
+    alias git-diff='git difftool master --dir-diff'
+    alias git-merge=~/bin/git-merge.sh
     alias git-push=~/bin/git-push.sh
+
+Note that 'git-diff' works really well if you have meld setup.
 
 <a name="links"/>
 ## Helpful Git Links
 
 1. Github:
    * https://help.github.com/articles/set-up-git
+   * [Merging a pull request and dealing with merge conflcits](https://help.github.com/articles/merging-a-pull-request). 
 2. Github collaboration. This is our template for collaboration:
    * https://gist.github.com/seshness/3943237
 3. Git:

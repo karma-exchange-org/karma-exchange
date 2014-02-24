@@ -6,9 +6,9 @@
                 <div class="panel-body">
 
 
-                    <div class="panel-body-header-h3">
+                    <h3 class="panel-body-header">
                         {{fbPage.name}}
-                    </div>
+                    </h3>
                     <img ng-src="{{fbPage.cover.source}}" class="img-responsive">
 
                 </div>
@@ -21,9 +21,9 @@
             <div class="panel panel-default panel-seperated-vertical" ng-show="org.key">
                 <div class="panel-body org-info-panel">
 
-                    <div class="font-size-h4">
+                    <h4 class="margin-0">
                         <karma-hours karma-points="org.karmaPoints"></karma-hours>
-                    </div>
+                    </h4>
                     <div>
                         Event rating:
                         <aggregate-rating value="org.eventRating"></aggregate-rating>
@@ -212,11 +212,11 @@
                 </div>
 
                 <div class="row row-no-margin" ng-show="!topVolunteersFetchTracker.isPending()">
-                    <div class="col-md-5" ng-show="allTimeLeaders">
+                    <div class="col-md-5" ng-show="allTimeLeaders.scores.length > 0">
                         <leaderboard-table scores="allTimeLeaders.scores" type="'ALL_TIME'">
                         </leaderboard-table>
                     </div>
-                    <div class="col-md-5" ng-show="lastMonthLeaders">
+                    <div class="col-md-5" ng-show="lastMonthLeaders.scores.length > 0">
                         <leaderboard-table scores="lastMonthLeaders.scores" type="'THIRTY_DAY'">
                         </leaderboard-table>
                     </div>
