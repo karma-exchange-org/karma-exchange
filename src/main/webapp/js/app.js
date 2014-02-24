@@ -863,6 +863,17 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
  * App directives
  */
 
+kexApp.directive('stopClickPropagation', function () {
+    return {
+        restrict: 'A',
+        link: function (scope, element, attr) {
+            element.bind('click', function (e) {
+                e.stopPropagation();
+            });
+        }
+    };
+ });
+
 kexApp.directive( 'uiDraggable', function( ) {
         return {
             restrict : 'A',
@@ -995,7 +1006,7 @@ kexApp.directive('eventParticipantImgsMini', function() {
         template:
             '<ul class="list-inline">' +
                 '<li ng-repeat="userImage in event.cachedParticipantImages">' +
-                    '<a href="#!/user/{{userImage.participant.key}}">' +
+                    '<a href="#!/user/{{userImage.participant.key}}" stop-click-propagation>' +
                         '<img ng-src="{{userImage.imageUrl}}?type=square" class="kex-thumbnail-user-mini">' +
                     '</a>' +
                 '</li>' +
@@ -1990,8 +2001,16 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     };
     $scope.modelEvent = {};
     $scope.modelEventFetchTracker = new PromiseTracker();
-    $scope.toggleEvent = function() {
-        toggleEventByKey(this.event.key);
+    $scope.expandEvent = function() {
+        if (this.event.isCollapsed) {
+            toggleEventByKey(this.event.key);
+        }
+    };
+    $scope.collapseEvent = function($event) {
+        if (!this.event.isCollapsed) {
+            $event.stopPropagation();
+            toggleEventByKey(this.event.key);
+        }
     };
 
     function expandEventOnReset() {
