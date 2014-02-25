@@ -92,20 +92,20 @@
                                 -->
                                 <div ng-show="!event.isCollapsed">
 
-                                    <div class="vertical-panel-padding" ng-show="modelEventFetchTracker.isPending()">
+                                    <div class="vertical-panel-padding" ng-show="event.expandedEventFetchTracker.isPending()">
                                         <loading-message msg="event details"></loading-message>
                                     </div>
 
-                                    <div class="single-row-resp-table row margin-0" ng-show="!modelEventFetchTracker.isPending()">
+                                    <div class="single-row-resp-table row margin-0" ng-show="!event.expandedEventFetchTracker.isPending()">
                                         <div class="col-md-4 col-sm-12">
                                             <div class="header">
                                                 What?
                                             </div>
                                             <div class="body">
                                                 <truncate-and-link
-                                                    text="modelEvent.description"
+                                                    text="event.expandedEvent.description"
                                                     link-text="(more)"
-                                                    href="#!/event/{{modelEvent.key}}"
+                                                    href="#!/event/{{event.key}}"
                                                     limit="500" >
                                                 </truncate-and-link>
                                             </div>
@@ -116,15 +116,15 @@
                                             </div>
                                             <div class="body">
                                                 <p>
-                                                        <strong>{{modelEvent.startTime|date:'shortTime'}} - {{modelEvent.endTime|date:'shortTime'}}</strong>
+                                                        <strong>{{event.expandedEvent.startTime|date:'shortTime'}} - {{event.expandedEvent.endTime|date:'shortTime'}}</strong>
                                                 </p>
 
                                                 <p>
 
-                                                        <strong>{{modelEvent.location.title}}</strong><br>
+                                                        <strong>{{event.expandedEvent.location.title}}</strong><br>
                                                         <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
-                                                            {{modelEvent.location.address.street}}<br>
-                                                            {{modelEvent.location.address.city}}, {{modelEvent.location.address.state}} {{modelEvent.location.address.zip}}<br>
+                                                            {{event.expandedEvent.location.address.street}}<br>
+                                                            {{event.expandedEvent.location.address.city}}, {{event.expandedEvent.location.address.state}} {{event.expandedEvent.location.address.zip}}<br>
                                                         </a>
                                                 </p>
                                             </div>
@@ -135,10 +135,10 @@
                                             </div>
                                             <div class="body">
                                                 <p>
-                                                        Volunteers needed : <strong>{{modelEvent.maxRegistrations-modelEvent.numRegistered | limit10 }}</strong>
+                                                        Volunteers needed : <strong>{{event.expandedEvent.maxRegistrations-event.expandedEvent.numRegistered | limit10 }}</strong>
                                                 </p>
                                                 <p>
-                                                        Volunteers attending: <strong>{{modelEvent.numRegistered}}</strong>
+                                                        Volunteers attending: <strong>{{event.expandedEvent.numRegistered}}</strong>
                                                 </p>
                                                 <p>
                                                         Organized by:
@@ -150,7 +150,7 @@
                                                         Organizer:
                                                 </p>
                                                 <p>
-                                                        <event-participant-summary user="modelEvent.firstOrganizer" type="'ORGANIZER'"></event-participant-summary>
+                                                        <event-participant-summary user="event.expandedEvent.firstOrganizer" type="'ORGANIZER'"></event-participant-summary>
                                                 </p>
                                             </div>
                                         </div>
@@ -159,19 +159,19 @@
                                                 &nbsp;
                                             </div>
                                             <div class="body text-center">
-                                                <button ng-show="{CAN_REGISTER:true}[modelEvent.registrationInfo]" class="btn btn-success btn-sm" ng-click="register('REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
-                                                <button ng-show="{CAN_WAIT_LIST:true}[modelEvent.registrationInfo]" class="btn btn-success btn-sm" ng-click="register('WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
+                                                <button ng-show="{CAN_REGISTER:true}[event.expandedEvent.registrationInfo]" class="btn btn-success btn-sm" ng-click="register(event, 'REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
+                                                <button ng-show="{CAN_WAIT_LIST:true}[event.expandedEvent.registrationInfo]" class="btn btn-success btn-sm" ng-click="register(event, 'WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
                                                 <!--
                                                         Not really needed anymore since we have a label containing the registration info.
 
-                                                        <span ng-show="{REGISTERED:true}[modelEvent.registrationInfo]">
+                                                        <span ng-show="{REGISTERED:true}[event.expandedEvent.registrationInfo]">
                                                                 <i class="icon-ok"></i> You are registered!
                                                         </span>
-                                                        <span ng-show="{WAIT_LISTED:true}[modelEvent.registrationInfo]">
+                                                        <span ng-show="{WAIT_LISTED:true}[event.expandedEvent.registrationInfo]">
                                                                 <i class="icon-ok"></i> You are waitlisted!
                                                         </span>
                                                 -->
-                                                <a href="#!/event/{{modelEvent.key}}" class="btn btn-info btn-sm"><i class=" icon-info-sign icon-white"></i> More info</a>
+                                                <a href="#!/event/{{event.key}}" class="btn btn-info btn-sm"><i class=" icon-info-sign icon-white"></i> More info</a>
                                             </div>
                                         </div>
                                     </div>
