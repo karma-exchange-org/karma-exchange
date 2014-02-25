@@ -1948,10 +1948,8 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
             longitude : parseFloat( markerLng )
         } );
     };
-    $scope.register = function(type) {
-        // TODO(avaliani): If the events are refreshed in the course of login, then $index is not valid.
-        $scope.modelIndex = this.$index;
-        var eventId = $scope.modelEvent.key;
+    $scope.register = function(event, type) {
+        var eventId = event.key;
 
         FbUtil.loginRequired().then( function () {
 
@@ -1963,7 +1961,7 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
                 },
                 null,
                 function() {
-                    EventUtil.postRegistrationTasks($scope.modelEvent, type);
+                    EventUtil.postRegistrationTasks(event.expandedEvent, type);
 
                     // The events array refreshes once a user logs in. Make sure it's ready.
                     // Also, to update the UI we need the user's key and profile image. So make sure me()
@@ -1971,12 +1969,12 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
                     $q.all([eventSearchRecyclablePromise.promise, MeUtil.me()])
                         .then( function() {
 
-                            $scope.modelEvent.registrationInfo = type;
-                            $scope.events.data[$scope.modelIndex].registrationInfo = type;
+                            event.expandedEvent.registrationInfo = type;
+                            event.registrationInfo = type;
                             if (type === 'REGISTERED') {
                                 //$rootScope.showAlert("Your registration is successful!","success");
-                                $scope.modelEvent.numRegistered++;
-                                $scope.events.data[$scope.modelIndex].cachedParticipantImages.push({
+                                event.expandedEvent.numRegistered++;
+                                event.cachedParticipantImages.push({
                                     "participant": {
                                         "key": $rootScope.me.key
                                     },
@@ -1999,8 +1997,6 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
                 $( "#event_" + eventId ).fadeOut( );
         } );
     };
-    $scope.modelEvent = {};
-    $scope.modelEventFetchTracker = new PromiseTracker();
     $scope.expandEvent = function() {
         if (this.event.isCollapsed) {
             toggleEventByKey(this.event.key);
@@ -2022,13 +2018,11 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     function toggleEventByKey(eventKey) {
         var event;
 
-        // Collapse all other events.
+        // Find the event
         for (var idx = 0; idx < $scope.events.data.length; idx++) {
             var eventAtIdx = $scope.events.data[idx];
             if (eventAtIdx.key === eventKey) {
                 event = eventAtIdx;
-            } else {
-                eventAtIdx.isCollapsed = true;
             }
         }
 
@@ -2036,9 +2030,9 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
             event.isCollapsed = !event.isCollapsed;
 
             if ( !event.isCollapsed ) {
-                $scope.modelEventFetchTracker.reset(
+                event.expandedEventFetchTracker = new PromiseTracker(
                     Events.get( { id : event.key, registerCtlr : 'expanded_search_view' }, function(data) {
-                        $scope.modelEvent = data;
+                        event.expandedEvent = data;
                     } ));
             }
         }
