@@ -315,7 +315,7 @@ kexApp.factory('RecyclablePromiseFactory', function($q) {
     };
 });
 
-kexApp.factory('KexUtil', function($rootScope) {
+kexApp.factory('KexUtil', function($location) {
     return {
         getBaseUrl: function() {
             return window.location.protocol + '//' + window.location.host;
@@ -380,6 +380,10 @@ kexApp.factory('KexUtil', function($rootScope) {
                 str = str.substr(0, lastSpaceIdx) + "...";
             }
             return { str: str, truncated: tooLong };
+        },
+
+        setLocation: function (path) {
+            $location.path(this.stripHashbang(path));
         }
     };
 });
@@ -1260,7 +1264,7 @@ kexApp.directive('leaderboardTable', function() {
     };
 });
 
-kexApp.directive('upcomingEvents', function() {
+kexApp.directive('upcomingEvents', function(KexUtil) {
     return {
         restrict: 'E',
         scope: {
@@ -1269,6 +1273,9 @@ kexApp.directive('upcomingEvents', function() {
         },
         replace: true,
         transclude: false,
+        link: function (scope, element, attrs) {
+            scope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);
+        },
         templateUrl: 'template/kex/upcoming-events.html'
     };
 });
@@ -2623,6 +2630,7 @@ kexApp.controller('NavbarController',
         }
     }
 
+    $scope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);
     $scope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
 }]);
 
@@ -2757,7 +2765,7 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
 //   - MeUtil
 //   - FbAuthDepResource
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource, KexUtil ) {
+        FbAuthDepResource ) {
     $rootScope.fbUtil = FbUtil;
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
             $rootScope.alerts = [ ];
@@ -2826,10 +2834,6 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
                 };
         }, options );
 
-    };
-
-    $rootScope.setLocation = function (path) {
-        $location.path(KexUtil.stripHashbang(path));
     };
 
     function loadBadges() {
