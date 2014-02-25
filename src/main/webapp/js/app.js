@@ -2612,8 +2612,15 @@ var tourCtrl = function($scope, FbUtil, $location) {
 kexApp.controller('NavbarController',
         [ '$scope', '$location', 'KarmaGoalUtil', 'KexUtil',
           function($scope, $location, KarmaGoalUtil, KexUtil) {
+
     $scope.isActive = function (url) {
         return $location.path() === KexUtil.stripHashbang(url);
+    }
+
+    $scope.collapseNavbar = function () {
+        if ($('.navbar-toggle').css('display') !='none') {
+            $(".navbar-toggle").trigger( "click" );
+        }
     }
 
     $scope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
