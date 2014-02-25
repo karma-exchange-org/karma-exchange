@@ -2,6 +2,22 @@
    Author's custom styles
    ========================================================================== */
 
+/***** DISPLAY *****/
+
+@media (min-width: 1200px) {
+  .display-default-and-smaller {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1199px) {
+  .display-large-only {
+    display: none !important;
+  }
+}
+
+/***** END DISPLAY *****/
+
 /***** MARGIN *****/
 
 .margin-0 {
@@ -74,14 +90,14 @@ body {
   padding-bottom: 40px;
   /* background: url(../img/bg.gif);*/
 }
-
+/*
 @media(min-width:450px) and (max-width:767px) {
   body {
     padding-top: 84px;
   }
 }
-
-@media(max-width:449px) {
+*/
+@media(max-width:767px) {
   body {
     padding-top: 65px;
   }
