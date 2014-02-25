@@ -13,7 +13,7 @@
             </h4>
 
 
-            <div class="panel panel-default">
+            <div class="panel panel-default panel-clickable" ng-click="setLocation('#!/event/' + event.key)">
                 <div class="panel-body">
 
                     <div class="row">
@@ -31,9 +31,7 @@
                         <div class="col-md-10">
                                 <div class="pull-left">
                                         <h4 class="margin-0">
-                                            <a href="#!/event/{{event.key}}">
-                                                    <strong>{{event.title}}</strong>
-                                            </a>
+                                            <strong>{{event.title}}</strong>
                                         </h4>
                                         <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
                                 </div>
