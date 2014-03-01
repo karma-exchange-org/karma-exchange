@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,10 +19,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
@@ -55,6 +58,7 @@ import com.javadocmd.simplelatlng.util.LengthUnit;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 @Path("/event")
+@NoArgsConstructor
 public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   public static final String START_TIME_PARAM = "start_time";
@@ -78,6 +82,10 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
     UPCOMING,
     PAST,
     INTERVAL
+  }
+
+  public EventResource(UriInfo uriInfo, Request request, ServletContext servletContext) {
+    super(uriInfo, request, servletContext);
   }
 
   @Override

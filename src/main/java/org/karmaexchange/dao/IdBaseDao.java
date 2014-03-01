@@ -16,7 +16,7 @@ import com.googlecode.objectify.annotation.Id;
 @ToString(callSuper=true)
 public abstract class IdBaseDao<T extends IdBaseDao<T>> extends BaseDao<T> {
   @Id
-  private Long id;
+  protected Long id;
 
   @Override
   final protected void syncKeyAndIdForUpsert() {

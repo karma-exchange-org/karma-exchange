@@ -19,6 +19,9 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.resources.msg.BaseDaoView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
@@ -27,6 +30,8 @@ import org.karmaexchange.util.OfyUtil;
 
 import com.googlecode.objectify.Key;
 
+@NoArgsConstructor
+@AllArgsConstructor
 public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoView<T>> {
 
   public static final int DEFAULT_NUM_SEARCH_RESULTS = 25;
@@ -100,6 +105,10 @@ public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoV
   @DELETE
   public void deleteResource(@PathParam("resource") String keyStr) {
     BaseDao.delete(OfyUtil.<T>createKey(keyStr));
+  }
+
+  public void deleteResource(Key<T> key) {
+    BaseDao.delete(key);
   }
 
   // protected abstract Class<T> getResourceClass();
