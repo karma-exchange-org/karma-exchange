@@ -11,7 +11,6 @@ import org.karmaexchange.dao.UserUsage;
 import org.karmaexchange.dao.UserUsage.UserAccess;
 import org.karmaexchange.dao.Waiver;
 import org.karmaexchange.dao.derived.SourceDao;
-import org.karmaexchange.dao.derived.SourceEvent;
 
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyFactory;
@@ -33,7 +32,6 @@ public class OfyService {
     ObjectifyService.register(UserUsage.class);
     ObjectifyService.register(UserAccess.class);
     ObjectifyService.register(SourceDao.class); // does not need to be purged. Never peristed.
-    ObjectifyService.register(SourceEvent.class);
     // Make sure to update PurgeAllResourcesServlet if a new class is added.
   }
 

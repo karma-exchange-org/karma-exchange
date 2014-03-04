@@ -4,12 +4,17 @@ import java.util.List;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
+import lombok.AccessLevel;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.Delegate;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.Setter;
 
+import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.Event.ParticipantType;
+import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
@@ -17,14 +22,10 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Entity;
 
 @XmlRootElement
-@Entity
 @Data
-@EqualsAndHashCode(callSuper=true)
-@ToString(callSuper=true)
-public class SourceEvent extends Event {
+public class SourceEvent {
 
   private static long EVENT_ID = 1; // There is a 1-1 mapping between SourceEvent and Event.
 
@@ -32,19 +33,21 @@ public class SourceEvent extends Event {
 
   private List<SourceEventParticipant> sourceParticipants = Lists.newArrayList();
 
-  @Data
-  @NoArgsConstructor
-  public static final class SourceEventParticipant {
-    private SourceKeyWrapper user;
-    private ParticipantType type;
-  }
+  /*
+   * We delegate instead of extending event because Objectify seems to require that all subclasses
+   * be entities themselves; which we don't want.
+   */
+  @Delegate(types={Event.class, IdBaseDao.class, BaseDao.class})
+  @Getter(AccessLevel.NONE)
+  @Setter(AccessLevel.NONE)
+  private Event event = new Event();
 
   public Event toEvent(Key<Organization> orgKey) {
     validate(orgKey);
-    owner = SourceDao.createKey(orgKey, sourceKey);
-    id = EVENT_ID;
+    event.setOwner(SourceDao.createKey(orgKey, sourceKey).getString());
+    event.setId(EVENT_ID);
     // TODO(avaliani): map source participants
-    return this;
+    return event;
   }
 
   public static Key<Event> createKey(Key<Organization> orgKey, String sourceKey) {
@@ -59,15 +62,22 @@ public class SourceEvent extends Event {
       throw ErrorResponseMsg.createException("sourceKey must be specified",
         ErrorInfo.Type.BAD_REQUEST);
     }
-    if (getKey() != null) {
+    if (event.getKey() != null) {
       throw ErrorResponseMsg.createException(
         "key is a derived field and can not be specified",
         ErrorInfo.Type.BAD_REQUEST);
     }
-    if (!KeyWrapper.toKey(getOrganization()).equals(orgKey)) {
+    if (!KeyWrapper.toKey(event.getOrganization()).equals(orgKey)) {
       throw ErrorResponseMsg.createException(
         "organization field does not match specified organization",
         ErrorInfo.Type.BAD_REQUEST);
     }
+  }
+
+  @Data
+  @NoArgsConstructor
+  public static final class SourceEventParticipant {
+    private SourceKeyWrapper user;
+    private ParticipantType type;
   }
 }
