@@ -51,8 +51,8 @@ h1.margin-top-0, h2.margin-top-0, h3.margin-top-0, h4.margin-top-0, h5.margin-to
   margin: 0 auto;
   margin-top: 5px;
   font-size: 14px;
-  background-color: gray;
-  color: white;
+  background-color: #ddd;
+  color: gray;
   text-align:center;
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
@@ -60,6 +60,7 @@ h1.margin-top-0, h2.margin-top-0, h3.margin-top-0, h4.margin-top-0, h5.margin-to
 
 .collapse-upwards-tab:hover {
   background-color: #4FAFC2;
+  color: white;
   cursor: pointer;
 }
 
