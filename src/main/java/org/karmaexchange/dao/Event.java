@@ -167,6 +167,8 @@ public class Event extends IdBaseDao<Event> {
 
   private KeyWrapper<Waiver> waiver;
 
+  private SourceEventInfo sourceEventInfo;
+
   public enum RegistrationInfo {
     ORGANIZER,
     REGISTERED,
@@ -1499,4 +1501,18 @@ public class Event extends IdBaseDao<Event> {
       BaseDao.partialUpdate(event);
     }
   }
+
+  @Embed
+  @Data
+  @NoArgsConstructor
+  public static final class SourceEventInfo {
+    private String sourceKey;
+    private String registrationUrl; // duplicated to avoid an additional load
+
+    public SourceEventInfo(EventSourceConfig config, String sourceKey) {
+      this.sourceKey = sourceKey;
+      registrationUrl = config.getRegistrationUrl();
+    }
+  }
+
 }

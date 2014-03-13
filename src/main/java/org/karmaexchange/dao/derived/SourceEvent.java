@@ -14,6 +14,8 @@ import lombok.Setter;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
+import org.karmaexchange.dao.Event.SourceEventInfo;
+import org.karmaexchange.dao.EventSourceConfig;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
@@ -42,10 +44,11 @@ public class SourceEvent {
   @Setter(AccessLevel.NONE)
   private Event event = new Event();
 
-  public Event toEvent(Key<Organization> orgKey) {
+  public Event toEvent(Key<Organization> orgKey, EventSourceConfig sourceConfig) {
     validate(orgKey);
     event.setOwner(SourceDao.createKey(orgKey, sourceKey).getString());
     event.setId(EVENT_ID);
+    event.setSourceEventInfo(new SourceEventInfo(sourceConfig, sourceKey));
     // TODO(avaliani): map source participants
     return event;
   }

@@ -2,6 +2,7 @@ package org.karmaexchange.util;
 
 
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.EventSourceConfig;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Organization;
@@ -32,6 +33,7 @@ public class OfyService {
     ObjectifyService.register(UserUsage.class);
     ObjectifyService.register(UserAccess.class);
     ObjectifyService.register(SourceDao.class); // does not need to be purged. Never peristed.
+    ObjectifyService.register(EventSourceConfig.class);
     // Make sure to update PurgeAllResourcesServlet if a new class is added.
   }
 

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.EventSourceConfig;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Organization;
@@ -49,6 +50,8 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     Iterable<Key<Leaderboard>> leaderboardKeys =
         ofy().load().type(Leaderboard.class).keys().iterable();
     Iterable<Key<Waiver>> waiverKeys = ofy().load().type(Waiver.class).keys().iterable();
+    Iterable<Key<EventSourceConfig>> eventSourceConfigKeys =
+        ofy().load().type(EventSourceConfig.class).keys().iterable();
     // Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     ofy().delete().keys(eventKeys);
@@ -58,6 +61,7 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     ofy().delete().keys(reviewKeys);
     ofy().delete().keys(leaderboardKeys);
     ofy().delete().keys(waiverKeys);
+    ofy().delete().keys(eventSourceConfigKeys);
     // Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     statusWriter.println("Deleted all resources.");

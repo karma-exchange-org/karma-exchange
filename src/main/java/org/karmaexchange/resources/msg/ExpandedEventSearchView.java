@@ -9,6 +9,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.CauseType;
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.Event.SourceEventInfo;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Review;
@@ -34,6 +35,8 @@ public class ExpandedEventSearchView extends EventSearchView {
   // TODO(avaliani): need to expand causes.
   private List<CauseType> causes;
 
+  private SourceEventInfo sourceEventInfo;
+
   public static ExpandedEventSearchView create(Event event) {
     // Only fetch the review if the current user is registered for the event.
     Review review = null;
@@ -56,5 +59,7 @@ public class ExpandedEventSearchView extends EventSearchView {
     numOrganizers = event.getOrganizers().size();
 
     causes = event.getCauses();
+
+    sourceEventInfo = event.getSourceEventInfo();
   }
 }
