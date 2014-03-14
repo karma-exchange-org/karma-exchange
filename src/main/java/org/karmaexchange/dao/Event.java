@@ -719,21 +719,11 @@ public class Event extends IdBaseDao<Event> {
 
   public static void upsertParticipant(
       Key<Event> eventKey,
-      Key<User> userToUpsertKey,
+      Key<User> userKey,
       ParticipantType participantType) {
-    Event event = ofy().load().key(eventKey).now();
-    if (event == null) {
-      throw ErrorResponseMsg.createException("event not found",
-        ErrorInfo.Type.BAD_REQUEST);
-    }
-    User user = ofy().load().key(userToUpsertKey).now();
-    if (user == null) {
-      throw ErrorResponseMsg.createException("user not found",
-        ErrorInfo.Type.BAD_REQUEST);
-    }
-    SourceEventSyncUtil.upsertParticipant(event, user, participantType);
+    SourceEventSyncUtil.upsertParticipant(eventKey, userKey, participantType);
     ofy().transact(new UpsertParticipantTxn(
-      eventKey, userToUpsertKey, participantType));
+      eventKey, userKey, participantType));
   }
 
   @Data
@@ -835,6 +825,13 @@ public class Event extends IdBaseDao<Event> {
       event.processParticipantMutation(participantToUpsert, mutationType);
       BaseDao.partialUpdate(event);
     }
+  }
+
+  public static void deleteParticipant(
+      Key<Event> eventKey,
+      Key<User> userKey) {
+    SourceEventSyncUtil.deleteParticipant(eventKey, userKey);
+    ofy().transact(new DeleteParticipantTxn(eventKey, userKey));
   }
 
   @Data

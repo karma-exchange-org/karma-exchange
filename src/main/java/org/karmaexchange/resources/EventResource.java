@@ -28,7 +28,6 @@ import lombok.NoArgsConstructor;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
-import org.karmaexchange.dao.Event.DeleteParticipantTxn;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Review;
@@ -282,7 +281,7 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey =
         (userKeyStr == null) ? getCurrentUserKey() : OfyUtil.<User>createKey(userKeyStr);
-    Key<Event> eventKey =  OfyUtil.createKey(eventKeyStr);;
+    Key<Event> eventKey =  OfyUtil.createKey(eventKeyStr);
     Event.upsertParticipant(eventKey, userKey, participantType);
     return Response.ok().build();
   }
@@ -293,7 +292,8 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
       @PathParam("event_key") String eventKeyStr,
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
-    ofy().transact(new DeleteParticipantTxn(Key.<Event>create(eventKeyStr), userKey));
+    Key<Event> eventKey =  OfyUtil.createKey(eventKeyStr);
+    Event.deleteParticipant(eventKey, userKey);
   }
 
   @Path("{event_key}/review")

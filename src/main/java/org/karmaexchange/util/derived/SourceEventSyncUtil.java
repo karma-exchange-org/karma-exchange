@@ -22,9 +22,41 @@ import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
+import com.googlecode.objectify.Key;
+
 public class SourceEventSyncUtil {
 
-  public static void upsertParticipant(Event event, User user, ParticipantType participantType) {
+  private enum RegistrationAction {
+    REGISTER,
+    UNREGISTER
+  }
+
+  public static void upsertParticipant(Key<Event> eventKey, Key<User> userKey,
+      ParticipantType participantType) {
+    // TODO(avaliani): handle other states
+    if (participantType != ParticipantType.REGISTERED) {
+      return;
+    }
+    syncRegistration(eventKey, userKey, RegistrationAction.REGISTER);
+  }
+
+  public static void deleteParticipant(Key<Event> eventKey, Key<User> userKey) {
+    syncRegistration(eventKey, userKey, RegistrationAction.UNREGISTER);
+  }
+
+  private static void syncRegistration(Key<Event> eventKey, Key<User> userKey,
+      RegistrationAction action) {
+    Event event = ofy().load().key(eventKey).now();
+    if (event == null) {
+      throw ErrorResponseMsg.createException("event not found",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    User user = ofy().load().key(userKey).now();
+    if (user == null) {
+      throw ErrorResponseMsg.createException("user not found",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+
     if (event.getSourceEventInfo() == null) {
       return;
     }
@@ -54,7 +86,7 @@ public class SourceEventSyncUtil {
 
       ObjectMapper mapper = new ObjectMapper();
       RegistrationReq registrationReq = new RegistrationReq(
-        "REGISTER", // TODO(avaliani): fix me
+        action,
         event.getSourceEventInfo().getSourceKey(),
         user.getFirstName(),
         user.getLastName(),
@@ -78,7 +110,7 @@ public class SourceEventSyncUtil {
   @NoArgsConstructor
   @AllArgsConstructor
   private static class RegistrationReq {
-    private String action;
+    private RegistrationAction action;
     private String sourceKey;
     private String firstName;
     private String lastName;
