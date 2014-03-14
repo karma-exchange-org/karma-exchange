@@ -20,14 +20,14 @@ import com.googlecode.objectify.annotation.Entity;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public class EventSourceConfig extends IdBaseDao<EventSourceConfig> {
+public class SourceEventGeneratorInfo extends IdBaseDao<SourceEventGeneratorInfo> {
 
   private static final long EVENT_SOURCE_ID = 1;
 
   private String secret;
   private String registrationUrl;
 
-  public EventSourceConfig(Key<Organization> orgKey, String secret, String registrationUrl) {
+  public SourceEventGeneratorInfo(Key<Organization> orgKey, String secret, String registrationUrl) {
     owner = orgKey;
     id = EVENT_SOURCE_ID;
     this.secret = secret;
@@ -41,7 +41,7 @@ public class EventSourceConfig extends IdBaseDao<EventSourceConfig> {
     return ownerDao.getPermission();
   }
 
-  public static Key<EventSourceConfig> createKey(Key<Organization> orgKey) {
-    return Key.<EventSourceConfig>create(orgKey, EventSourceConfig.class, EVENT_SOURCE_ID);
+  public static Key<SourceEventGeneratorInfo> createKey(Key<Organization> orgKey) {
+    return Key.<SourceEventGeneratorInfo>create(orgKey, SourceEventGeneratorInfo.class, EVENT_SOURCE_ID);
   }
 }

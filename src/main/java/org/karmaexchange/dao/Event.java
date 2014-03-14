@@ -26,6 +26,7 @@ import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.task.ProcessRatingsServlet;
 import org.karmaexchange.util.BoundedHashSet;
 import org.karmaexchange.util.SearchUtil;
+import org.karmaexchange.util.derived.SourceEventSyncUtil;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -714,6 +715,25 @@ public class Event extends IdBaseDao<Event> {
       return Permission.ALL;
     }
     return Permission.READ;
+  }
+
+  public static void upsertParticipant(
+      Key<Event> eventKey,
+      Key<User> userToUpsertKey,
+      ParticipantType participantType) {
+    Event event = ofy().load().key(eventKey).now();
+    if (event == null) {
+      throw ErrorResponseMsg.createException("event not found",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    User user = ofy().load().key(userToUpsertKey).now();
+    if (user == null) {
+      throw ErrorResponseMsg.createException("user not found",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    SourceEventSyncUtil.upsertParticipant(event, user, participantType);
+    ofy().transact(new UpsertParticipantTxn(
+      eventKey, userToUpsertKey, participantType));
   }
 
   @Data
@@ -1507,11 +1527,9 @@ public class Event extends IdBaseDao<Event> {
   @NoArgsConstructor
   public static final class SourceEventInfo {
     private String sourceKey;
-    private String registrationUrl; // duplicated to avoid an additional load
 
-    public SourceEventInfo(EventSourceConfig config, String sourceKey) {
+    public SourceEventInfo(String sourceKey) {
       this.sourceKey = sourceKey;
-      registrationUrl = config.getRegistrationUrl();
     }
   }
 

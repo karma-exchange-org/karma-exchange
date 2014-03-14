@@ -1,4 +1,4 @@
-package org.karmaexchange.dao.derived;
+package org.karmaexchange.resources.derived;
 
 import java.util.List;
 
@@ -15,7 +15,7 @@ import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.SourceEventInfo;
-import org.karmaexchange.dao.EventSourceConfig;
+import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
@@ -44,18 +44,18 @@ public class SourceEvent {
   @Setter(AccessLevel.NONE)
   private Event event = new Event();
 
-  public Event toEvent(Key<Organization> orgKey, EventSourceConfig sourceConfig) {
+  public Event toEvent(Key<Organization> orgKey) {
     validate(orgKey);
-    event.setOwner(SourceDao.createKey(orgKey, sourceKey).getString());
+    event.setOwner(SourceEventNamespaceDao.createKey(orgKey, sourceKey).getString());
     event.setId(EVENT_ID);
-    event.setSourceEventInfo(new SourceEventInfo(sourceConfig, sourceKey));
+    event.setSourceEventInfo(new SourceEventInfo(sourceKey));
     // TODO(avaliani): map source participants
     return event;
   }
 
   public static Key<Event> createKey(Key<Organization> orgKey, String sourceKey) {
     return Key.<Event>create(
-      SourceDao.createKey(orgKey, sourceKey),
+      SourceEventNamespaceDao.createKey(orgKey, sourceKey),
       Event.class,
       EVENT_ID);
   }
@@ -82,5 +82,14 @@ public class SourceEvent {
   public static final class SourceEventParticipant {
     private SourceKeyWrapper user;
     private ParticipantType type;
+  }
+
+  /*
+   * This class provides an identical structure to KeyWrapper however it doesn't
+   * force translate the key into a datastore key.
+   */
+  @Data
+  public static final class SourceKeyWrapper {
+    private String key;
   }
 }

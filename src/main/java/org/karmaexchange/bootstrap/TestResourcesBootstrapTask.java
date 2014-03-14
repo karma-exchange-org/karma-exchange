@@ -36,7 +36,7 @@ import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.UpsertParticipantTxn;
-import org.karmaexchange.dao.EventSourceConfig;
+import org.karmaexchange.dao.SourceEventGeneratorInfo;
 import org.karmaexchange.dao.Organization.AutoMembershipRule;
 import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.User.KarmaGoal;
@@ -705,7 +705,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       BaseDao.upsert(orgDao);
 
       // For testing create an event source config for every organization.
-      EventSourceConfig eventSourceConfig = new EventSourceConfig(
+      SourceEventGeneratorInfo eventSourceConfig = new SourceEventGeneratorInfo(
         Key.create(orgDao),
         "x",
         "https://kex-developer-edition.na15.force.com/services/apexrest/registration");

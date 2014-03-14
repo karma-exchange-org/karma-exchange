@@ -10,7 +10,7 @@ import com.googlecode.objectify.annotation.Id;
 
 @Entity
 @Data
-public class SourceDao {
+public class SourceEventNamespaceDao {
   /*
    * This object is never persisted. It's only used to generate a unique mapping key.
    */
@@ -18,9 +18,9 @@ public class SourceDao {
   @Id
   private String name;
 
-  public static Key<SourceDao> createKey(Key<Organization> organizationKey,
+  public static Key<SourceEventNamespaceDao> createKey(Key<Organization> organizationKey,
       String sourceKey) {
-    return Key.<SourceDao>create(SourceDao.class,
+    return Key.<SourceEventNamespaceDao>create(SourceEventNamespaceDao.class,
       Organization.getUniqueOrgId(organizationKey) + ":" + sourceKey);
   }
 }

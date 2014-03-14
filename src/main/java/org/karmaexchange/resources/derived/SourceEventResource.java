@@ -16,9 +16,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.EventSourceConfig;
+import org.karmaexchange.dao.SourceEventGeneratorInfo;
 import org.karmaexchange.dao.Organization;
-import org.karmaexchange.dao.derived.SourceEvent;
 import org.karmaexchange.resources.EventResource;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventView;
@@ -44,8 +43,8 @@ public class SourceEventResource {
       @QueryParam("org_secret") String orgSecret,
       SourceEvent sourceEvent) {
     Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
-    EventSourceConfig sourceConfig = validateOrgSecret(orgKey, orgSecret);
-    Event event = sourceEvent.toEvent(orgKey, sourceConfig);
+    validateOrgSecret(orgKey, orgSecret);
+    Event event = sourceEvent.toEvent(orgKey);
     // TODO(avaliani): fix return key
     return getEventResource().upsertResource(new EventView(event, false));
   }
@@ -61,8 +60,9 @@ public class SourceEventResource {
     getEventResource().deleteResource(SourceEvent.createKey(orgKey, sourceKey));
   }
 
-  private EventSourceConfig validateOrgSecret(Key<Organization> orgKey, String orgSecret) {
-    EventSourceConfig config = ofy().load().key(EventSourceConfig.createKey(orgKey)).now();
+  private void validateOrgSecret(Key<Organization> orgKey, String orgSecret) {
+    SourceEventGeneratorInfo config =
+        ofy().load().key(SourceEventGeneratorInfo.createKey(orgKey)).now();
     if (config == null) {
       throw ErrorResponseMsg.createException(
         "organization is not configured to support derived events", ErrorInfo.Type.BAD_REQUEST);
@@ -72,7 +72,6 @@ public class SourceEventResource {
         "event source authentication credentials are not valid",
         ErrorInfo.Type.AUTHENTICATION);
     }
-    return config;
   }
 
   private EventResource getEventResource() {

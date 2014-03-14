@@ -2,7 +2,7 @@ package org.karmaexchange.util;
 
 
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.EventSourceConfig;
+import org.karmaexchange.dao.SourceEventGeneratorInfo;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
 import org.karmaexchange.dao.Organization;
@@ -11,7 +11,7 @@ import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.UserUsage;
 import org.karmaexchange.dao.UserUsage.UserAccess;
 import org.karmaexchange.dao.Waiver;
-import org.karmaexchange.dao.derived.SourceDao;
+import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
 
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyFactory;
@@ -32,8 +32,8 @@ public class OfyService {
     ObjectifyService.register(Waiver.class);
     ObjectifyService.register(UserUsage.class);
     ObjectifyService.register(UserAccess.class);
-    ObjectifyService.register(SourceDao.class); // does not need to be purged. Never peristed.
-    ObjectifyService.register(EventSourceConfig.class);
+    ObjectifyService.register(SourceEventNamespaceDao.class); // does not need to be purged. Never peristed.
+    ObjectifyService.register(SourceEventGeneratorInfo.class);
     // Make sure to update PurgeAllResourcesServlet if a new class is added.
   }
 
