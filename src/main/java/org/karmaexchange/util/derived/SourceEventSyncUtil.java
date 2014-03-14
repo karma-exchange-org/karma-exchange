@@ -58,7 +58,7 @@ public class SourceEventSyncUtil {
         event.getSourceEventInfo().getSourceKey(),
         user.getFirstName(),
         user.getLastName(),
-        "amirvaliani@yahoo.com"); // TODO(avaliani): fix me
+        user.getPrimaryEmail());
       mapper.writeValue(connection.getOutputStream(), registrationReq);
 
       int responseCode = connection.getResponseCode();

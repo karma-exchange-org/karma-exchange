@@ -11,6 +11,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.karmaexchange.dao.Organization.Role;
@@ -524,6 +525,16 @@ public final class User extends NameBaseDao<User> {
       }
       return validationErrors;
     }
+  }
+
+  @XmlTransient
+  public String getPrimaryEmail() {
+    for (RegisteredEmail registeredEmail : getRegisteredEmails()) {
+      if (registeredEmail.isPrimary()) {
+        return registeredEmail.getEmail();
+      }
+    }
+    return null;
   }
 
   public void removeFromEventAttendanceHistory(Key<Event> eventKey) {
