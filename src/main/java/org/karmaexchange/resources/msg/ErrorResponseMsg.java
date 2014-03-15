@@ -1,5 +1,8 @@
 package org.karmaexchange.resources.msg;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.annotation.Nullable;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -14,6 +17,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 public class ErrorResponseMsg {
+
+  public static final Level ERR_LOG_LEVEL = Level.WARNING;
+  private static final Logger log = Logger.getLogger(ErrorResponseMsg.class.getName());
+
   // We have this level of nesting to mimic facebook's nesting for error messages.
   // TODO(avaliani): investigate this more.
   private ErrorInfo error;
@@ -34,6 +41,8 @@ public class ErrorResponseMsg {
   }
 
   private static Response createErrorResponse(ErrorResponseMsg msg) {
+    log.log(ERR_LOG_LEVEL, "error while processing request: " + msg);
+
     return Response.status(Response.Status.BAD_REQUEST).entity(msg).build();
   }
 

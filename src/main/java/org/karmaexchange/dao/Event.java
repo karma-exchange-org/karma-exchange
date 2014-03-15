@@ -26,6 +26,7 @@ import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.task.ProcessRatingsServlet;
 import org.karmaexchange.util.BoundedHashSet;
 import org.karmaexchange.util.SearchUtil;
+import org.karmaexchange.util.derived.SourceEventSyncUtil;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -166,6 +167,8 @@ public final class Event extends IdBaseDao<Event> {
   private List<SuitableForType> suitableForTypes = Lists.newArrayList();
 
   private KeyWrapper<Waiver> waiver;
+
+  private SourceEventInfo sourceEventInfo;
 
   public enum RegistrationInfo {
     ORGANIZER,
@@ -714,6 +717,15 @@ public final class Event extends IdBaseDao<Event> {
     return Permission.READ;
   }
 
+  public static void upsertParticipant(
+      Key<Event> eventKey,
+      Key<User> userKey,
+      ParticipantType participantType) {
+    SourceEventSyncUtil.upsertParticipant(eventKey, userKey, participantType);
+    ofy().transact(new UpsertParticipantTxn(
+      eventKey, userKey, participantType));
+  }
+
   @Data
   @EqualsAndHashCode(callSuper=false)
   public static class UpsertParticipantTxn extends VoidWork {
@@ -813,6 +825,13 @@ public final class Event extends IdBaseDao<Event> {
       event.processParticipantMutation(participantToUpsert, mutationType);
       BaseDao.partialUpdate(event);
     }
+  }
+
+  public static void deleteParticipant(
+      Key<Event> eventKey,
+      Key<User> userKey) {
+    SourceEventSyncUtil.deleteParticipant(eventKey, userKey);
+    ofy().transact(new DeleteParticipantTxn(eventKey, userKey));
   }
 
   @Data
@@ -1499,4 +1518,16 @@ public final class Event extends IdBaseDao<Event> {
       BaseDao.partialUpdate(event);
     }
   }
+
+  @Embed
+  @Data
+  @NoArgsConstructor
+  public static final class SourceEventInfo {
+    private String sourceKey;
+
+    public SourceEventInfo(String sourceKey) {
+      this.sourceKey = sourceKey;
+    }
+  }
+
 }

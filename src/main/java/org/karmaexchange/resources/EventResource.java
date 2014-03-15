@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -18,15 +19,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
-import org.karmaexchange.dao.Event.UpsertParticipantTxn;
-import org.karmaexchange.dao.Event.DeleteParticipantTxn;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Review;
@@ -55,6 +56,7 @@ import com.javadocmd.simplelatlng.util.LengthUnit;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 @Path("/event")
+@NoArgsConstructor
 public class EventResource extends BaseDaoResourceEx<Event, EventView> {
 
   public static final String START_TIME_PARAM = "start_time";
@@ -78,6 +80,10 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
     UPCOMING,
     PAST,
     INTERVAL
+  }
+
+  public EventResource(UriInfo uriInfo, Request request, ServletContext servletContext) {
+    super(uriInfo, request, servletContext);
   }
 
   @Override
@@ -273,9 +279,10 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
       @PathParam("event_key") String eventKeyStr,
       @PathParam("participant_type") ParticipantType participantType,
       @QueryParam("user") String userKeyStr) {
-    Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
-    ofy().transact(new UpsertParticipantTxn(
-      Key.<Event>create(eventKeyStr), userKey, participantType));
+    Key<User> userKey =
+        (userKeyStr == null) ? getCurrentUserKey() : OfyUtil.<User>createKey(userKeyStr);
+    Key<Event> eventKey =  OfyUtil.createKey(eventKeyStr);
+    Event.upsertParticipant(eventKey, userKey, participantType);
     return Response.ok().build();
   }
 
@@ -285,7 +292,8 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
       @PathParam("event_key") String eventKeyStr,
       @QueryParam("user") String userKeyStr) {
     Key<User> userKey = (userKeyStr == null) ? getCurrentUserKey() : Key.<User>create(userKeyStr);
-    ofy().transact(new DeleteParticipantTxn(Key.<Event>create(eventKeyStr), userKey));
+    Key<Event> eventKey =  OfyUtil.createKey(eventKeyStr);
+    Event.deleteParticipant(eventKey, userKey);
   }
 
   @Path("{event_key}/review")

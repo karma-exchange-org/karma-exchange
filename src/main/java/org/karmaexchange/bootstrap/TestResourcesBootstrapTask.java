@@ -5,6 +5,8 @@ import static java.util.Arrays.asList;
 import static org.karmaexchange.bootstrap.TestResourcesBootstrapTask.TestUser.*;
 import static org.karmaexchange.bootstrap.TestResourcesBootstrapTask.TestOrganization.*;
 import static org.karmaexchange.util.OfyService.ofy;
+import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_ID;
+import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_SECRET;
 
 import java.io.PrintWriter;
 import java.net.URI;
@@ -40,6 +42,7 @@ import org.karmaexchange.dao.Organization.AutoMembershipRule;
 import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.User.KarmaGoal;
 import org.karmaexchange.dao.User.RegisteredEmail;
+import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.ImageProviderType;
 import org.karmaexchange.dao.KeyWrapper;
@@ -59,6 +62,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.task.ComputeLeaderboardServlet;
 import org.karmaexchange.util.AdminUtil;
+import org.karmaexchange.util.Properties;
 import org.karmaexchange.util.ServletUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
 
@@ -68,12 +72,15 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
+import com.restfb.DefaultFacebookClient;
+import com.restfb.Parameter;
+import com.restfb.FacebookClient.AccessToken;
 
 public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private static int eventNum = 0;
 
-  private final String baseUrl;
+  private final URI baseUri;
   private final ServletContext servletCtx;
 
   public enum TestUser {
@@ -109,7 +116,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     @Getter
     private final Long monthlyKarmaPtsGoal;
     @Getter
-    private final boolean saveUsageInfo;
+    private final boolean realUser;
 
     private TestUser(String fbId, String firstName, String lastName) {
       this(fbId, firstName, lastName, null);
@@ -120,20 +127,20 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     }
 
     private TestUser(String fbId, String firstName, String lastName, @Nullable String email,
-        Long monthlyKarmaPtsGoal, boolean saveUsageInfo) {
+        Long monthlyKarmaPtsGoal, boolean realUser) {
       this.fbId = fbId;
       this.firstName = firstName;
       this.lastName = lastName;
       this.email = email;
       this.monthlyKarmaPtsGoal = monthlyKarmaPtsGoal;
-      this.saveUsageInfo = saveUsageInfo;
+      this.realUser = realUser;
     }
 
     public Key<User> getKey() {
       return User.getKey(createOAuthCredential());
     }
 
-    public User createUser() {
+    public User createUser(ServletContext servletCtx, URI baseUri) {
       User user = User.create(createOAuthCredential());
       user.setFirstName(firstName);
       user.setLastName(lastName);
@@ -149,7 +156,30 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         user.setKarmaGoal(goal);
         goal.setMonthlyGoal(monthlyKarmaPtsGoal);
       }
+
+      // If the user is a non-test facebook user, use facebook to provide the up to date info.
+      if (realUser) {
+        initUser(servletCtx, baseUri, fbId, user);
+      }
+
       return user;
+    }
+
+    private static void initUser(ServletContext servletCtx, URI baseUri, String fbId,
+        User user) {
+      String appId = Properties.get(servletCtx, baseUri, FACEBOOK_APP_ID);
+      String appSecret = Properties.get(servletCtx, baseUri, FACEBOOK_APP_SECRET);
+      AccessToken accessToken =
+          new DefaultFacebookClient().obtainAppAccessToken(appId, appSecret);
+      DefaultFacebookClient fbClient = new DefaultFacebookClient(accessToken.getAccessToken());
+      com.restfb.types.User fbUser = fbClient.fetchObject(fbId, com.restfb.types.User.class,
+        Parameter.with("fields", "id, first_name, last_name, email"));
+
+      user.setFirstName(fbUser.getFirstName());
+      user.setLastName(fbUser.getLastName());
+      if (fbUser.getEmail() != null) {
+        user.setRegisteredEmails(Lists.newArrayList(new RegisteredEmail(fbUser.getEmail(), true)));
+      }
     }
 
     private OAuthCredential createOAuthCredential() {
@@ -299,7 +329,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       PrintWriter statusWriter) {
     super(statusWriter);
     this.servletCtx = servletCtx;
-    baseUrl = ServletUtil.getBaseUri(req);
+    try {
+      baseUri = new URI(ServletUtil.getBaseUri(req));
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -310,9 +344,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       if (user != null) {
         throw new RuntimeException("DB has not been purged");
       }
-      BaseDao.upsert(testUser.createUser());
+      BaseDao.upsert(testUser.createUser(servletCtx, baseUri));
       User.updateProfileImage(testUser.getKey(), testUser.getSocialNetworkProviderType());
-      if (!testUser.saveUsageInfo) {
+      if (!testUser.realUser) {
         UserUsage.deleteHistory(testUser.getKey());
       }
     }
@@ -700,7 +734,15 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private void persistOrganizations() {
     for (final TestOrganization testOrg : TestOrganization.values()) {
-      BaseDao.upsert(createOrganization(testOrg));
+      Organization orgDao = createOrganization(testOrg);
+      BaseDao.upsert(orgDao);
+
+      // For testing create an event source config for every organization.
+      SourceEventGeneratorInfo eventSourceConfig = new SourceEventGeneratorInfo(
+        Key.create(orgDao),
+        "x",
+        "https://kex-developer-edition.na15.force.com/services/apexrest/registration");
+      BaseDao.upsert(eventSourceConfig);
     }
     // The org is created without any memberships to start with.
     for (TestOrganization testOrg : TestOrganization.values()) {
@@ -741,11 +783,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       org.setParentOrg(new OrganizationNamedKeyWrapper(testOrg.parentOrg.getKey()));
     }
     org.getAutoMembershipRules().addAll(testOrg.autoMembershipRules);
-    try {
-      org.initFromPage(servletCtx, new URI(baseUrl));
-    } catch (URISyntaxException e) {
-      throw new RuntimeException(e);
-    }
+    org.initFromPage(servletCtx, baseUri);
     return org;
   }
 

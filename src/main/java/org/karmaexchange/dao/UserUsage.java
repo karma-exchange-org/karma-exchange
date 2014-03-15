@@ -7,8 +7,6 @@ import java.util.Date;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.karmaexchange.dao.User.RegisteredEmail;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -58,17 +56,8 @@ public class UserUsage {
       user.getFirstName(),
       user.getLastName(),
       new Date(),
-      getPrimaryEmail(user));
+      user.getPrimaryEmail());
     ofy().save().entity(usage).now();
-  }
-
-  private static String getPrimaryEmail(User user) {
-    for (RegisteredEmail registeredEmail : user.getRegisteredEmails()) {
-      if (registeredEmail.isPrimary()) {
-        return registeredEmail.getEmail();
-      }
-    }
-    return null;
   }
 
   public static void trackAccess(Key<User> user) {

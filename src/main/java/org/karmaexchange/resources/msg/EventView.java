@@ -30,10 +30,16 @@ public class EventView implements BaseDaoView<Event> {
   private OrgEventSummary organizationDetails;
 
   public EventView(Event event) {
+    this(event, true);
+  }
+
+  public EventView(Event event, boolean initView) {
     this.event = event;
-    Organization org = ofy().load().key(KeyWrapper.toKey(event.getOrganization())).now();
-    if (org != null) {
-      organizationDetails = new OrgEventSummary(org);
+    if (initView) {
+      Organization org = ofy().load().key(KeyWrapper.toKey(event.getOrganization())).now();
+      if (org != null) {
+        organizationDetails = new OrgEventSummary(org);
+      }
     }
   }
 
