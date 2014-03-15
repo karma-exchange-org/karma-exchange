@@ -52,7 +52,7 @@ import com.googlecode.objectify.annotation.Index;
 @Data
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public class Event extends IdBaseDao<Event> {
+public final class Event extends IdBaseDao<Event> {
 
   /*
    * DESIGN DETAILS
