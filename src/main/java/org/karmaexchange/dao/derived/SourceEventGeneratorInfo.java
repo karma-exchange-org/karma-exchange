@@ -1,8 +1,13 @@
-package org.karmaexchange.dao;
+package org.karmaexchange.dao.derived;
 
 import static org.karmaexchange.util.OfyService.ofy;
 
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.karmaexchange.dao.BaseDao;
+import org.karmaexchange.dao.IdBaseDao;
+import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.Permission;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -42,6 +47,7 @@ public class SourceEventGeneratorInfo extends IdBaseDao<SourceEventGeneratorInfo
   }
 
   public static Key<SourceEventGeneratorInfo> createKey(Key<Organization> orgKey) {
-    return Key.<SourceEventGeneratorInfo>create(orgKey, SourceEventGeneratorInfo.class, EVENT_SOURCE_ID);
+    return Key.<SourceEventGeneratorInfo>create(
+      orgKey, SourceEventGeneratorInfo.class, EVENT_SOURCE_ID);
   }
 }

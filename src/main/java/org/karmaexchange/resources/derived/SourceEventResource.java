@@ -15,13 +15,18 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import lombok.Data;
+
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.SourceEventGeneratorInfo;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
 import org.karmaexchange.resources.EventResource;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.AdminUtil;
+import org.karmaexchange.util.AdminUtil.AdminSubtask;
+import org.karmaexchange.util.AdminUtil.AdminTaskType;
 import org.karmaexchange.util.OfyUtil;
 
 import com.googlecode.objectify.Key;
@@ -44,23 +49,54 @@ public class SourceEventResource {
       SourceEvent sourceEvent) {
     Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
     validateOrgSecret(orgKey, orgSecret);
-    Event event = sourceEvent.toEvent(orgKey);
-    // TODO(avaliani): fix return key
-    return getEventResource().upsertResource(new EventView(event, false));
+    UpsertAdminSubtask upsertTask = new UpsertAdminSubtask(sourceEvent, orgKey);
+    AdminUtil.executeSubtaskAsAdmin(
+      AdminTaskType.SOURCE_EVENT_UPDATE, upsertTask);
+    return upsertTask.response;
+  }
+
+  @Data
+  private class UpsertAdminSubtask implements AdminSubtask {
+
+    private final SourceEvent sourceEvent;
+    private final Key<Organization> orgKey;
+    private Response response;
+
+    public UpsertAdminSubtask(SourceEvent sourceEvent, Key<Organization> orgKey) {
+      this.sourceEvent = sourceEvent;
+      this.orgKey = orgKey;
+    }
+
+    @Override
+    public void execute() {
+      Event event = sourceEvent.toEvent(orgKey);
+      // TODO(avaliani): fix return key. Currently it contains derived in the path.
+      response = getEventResource().upsertResource(new EventView(event, false));
+    }
   }
 
   @Path("{source_key}")
   @DELETE
   public void deleteResource(
-      @PathParam("source_key") String sourceKey,
+      final @PathParam("source_key") String sourceKey,
       @QueryParam("org_key") String orgKeyStr,
       @QueryParam("org_secret") String orgSecret) {
-    Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
+    final Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
     validateOrgSecret(orgKey, orgSecret);
-    getEventResource().deleteResource(SourceEvent.createKey(orgKey, sourceKey));
+
+    AdminUtil.executeSubtaskAsAdmin(
+      AdminTaskType.SOURCE_EVENT_UPDATE,
+      new AdminSubtask() {
+
+        @Override
+        public void execute() {
+          getEventResource().deleteResource(SourceEvent.createKey(orgKey, sourceKey));
+        }
+
+      });
   }
 
-  private void validateOrgSecret(Key<Organization> orgKey, String orgSecret) {
+  private static void validateOrgSecret(Key<Organization> orgKey, String orgSecret) {
     SourceEventGeneratorInfo config =
         ofy().load().key(SourceEventGeneratorInfo.createKey(orgKey)).now();
     if (config == null) {

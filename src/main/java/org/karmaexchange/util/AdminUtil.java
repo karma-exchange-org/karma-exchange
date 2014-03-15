@@ -21,7 +21,8 @@ public class AdminUtil {
     OAUTH_FILTER,
     TASK_QUEUE,
     MAP_REDUCE,
-    REGISTRATION;
+    REGISTRATION,
+    SOURCE_EVENT_UPDATE;
 
     public Key<User> getKey() {
       return ReservedKeyType.createReservedKey(UserService.ReservedKeyType.ADMIN, name());
@@ -41,6 +42,17 @@ public class AdminUtil {
 
   public static void setCurrentUser(AdminTaskType type) {
     UserService.setCurrentUser(null, type.getKey());
+  }
+
+  public static void executeSubtaskAsAdmin(AdminTaskType taskType, AdminSubtask subtask) {
+    Key<User> prevKey = UserService.getCurrentUserKey();
+    OAuthCredential prevCredential = UserService.getCurrentUserCredential();
+    setCurrentUser(taskType);
+    try {
+      subtask.execute();
+    } finally {
+      UserService.setCurrentUser(prevCredential, prevKey);
+    }
   }
 
   public static void executeSubtaskAsUser(Key<User> userKey, @Nullable OAuthCredential credential,
