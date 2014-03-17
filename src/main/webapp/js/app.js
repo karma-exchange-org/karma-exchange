@@ -867,6 +867,36 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
  * App directives
  */
 
+/*
+    ``btn-loading`` attribute.
+
+    This attribute will update the button state using Twitter Bootstrap button plugin and
+    according the attribute value.
+
+    The attribute value should be a scope variable.
+    If the variable is ``true`` the button will have the ``loading`` state.
+    If the variable is ``false`` the button will be reset and displayed normaly.
+
+        Usage:
+            <button class="btn" btn-loading="is_loading" data-loading-text="Save in progess ..">Save</button>
+
+    Source: https://gist.github.com/Yukilas/3979293
+*/
+kexApp.directive("btnLoading", function () {
+    return function (scope, element, attrs) {
+        scope.$watch(
+            function () {
+                return scope.$eval(attrs.btnLoading);
+            },
+            function (loading) {
+                if (loading) {
+                    return element.button("loading");
+                }
+                element.button("reset");
+            });
+    }
+});
+
 kexApp.directive('stopClickPropagation', function () {
     return {
         restrict: 'A',
@@ -1958,44 +1988,74 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     $scope.register = function(event, type) {
         var eventId = event.key;
 
-        FbUtil.loginRequired().then( function () {
+        var registrationActionDef = $q.defer();
+        event.registrationActionTracker = new PromiseTracker(registrationActionDef.promise);
 
-            Events.save(
-                {
-                    id: eventId,
-                    registerCtlr: 'participants',
-                    regType: type
-                },
-                null,
+        FbUtil.loginRequired()
+            .then(
+                function () {
+                    // The events array refreshes once a user logs in. Make sure the
+                    // refresh is complete.
+                    // TODO(avaliani): we should move away from refreshing the entire array and
+                    //   instead update the existing array.
+                    return eventSearchRecyclablePromise.promise;
+                })
+            .then(
+                function () {
+                    // Need to update our event reference post login.
+                    event = findEventByKey(eventId);
+
+                    if (  (event == null) ||
+                          ( (event.registrationInfo != "CAN_REGISTER") &&
+                            (event.registrationInfo != "CAN_WAIT_LIST")) ) {
+                        return $q.reject();
+                    }
+
+                    // Restore promise tracker in case it was removed during the refresh.
+                    event.registrationActionTracker = new PromiseTracker(registrationActionDef.promise);
+
+                    return Events.save(
+                        {
+                            id: eventId,
+                            registerCtlr: 'participants',
+                            regType: type
+                        },
+                        null);
+                })
+            .then(
+                function () {
+                    // Also, to update the UI we need the user's key and profile image. So make sure me()
+                    // is ready also. Furthermore, if the events refresh then as part of th refresh
+                    // the expanded event is fetched once again. Make sure that fetch is complete.
+                    return $q.all([
+                        MeUtil.me(),
+                        event.expandedEventPromise]);
+                })
+            .then(
                 function() {
+                    registrationActionDef.resolve();
+
                     EventUtil.postRegistrationTasks(event.expandedEvent, type);
 
-                    // The events array refreshes once a user logs in. Make sure it's ready.
-                    // Also, to update the UI we need the user's key and profile image. So make sure me()
-                    // is ready also.
-                    $q.all([eventSearchRecyclablePromise.promise, MeUtil.me()])
-                        .then( function() {
-
-                            event.expandedEvent.registrationInfo = type;
-                            event.registrationInfo = type;
-                            if (type === 'REGISTERED') {
-                                //$rootScope.showAlert("Your registration is successful!","success");
-                                event.expandedEvent.numRegistered++;
-                                event.cachedParticipantImages.push({
-                                    "participant": {
-                                        "key": $rootScope.me.key
-                                    },
-                                    "imageUrl": $rootScope.me.profileImage.url,
-                                    "imageUrlProvider": "FACEBOOK"
-                                });
-                            } else if (type === 'WAIT_LISTED') {
-                                //$rootScope.addAlert("You are added to waitlist!","success");
-                            }
-
+                    event.expandedEvent.registrationInfo = type;
+                    event.registrationInfo = type;
+                    if (type === 'REGISTERED') {
+                        //$rootScope.showAlert("Your registration is successful!","success");
+                        event.expandedEvent.numRegistered++;
+                        event.cachedParticipantImages.push({
+                            "participant": {
+                                "key": $rootScope.me.key
+                            },
+                            "imageUrl": $rootScope.me.profileImage.url,
+                            "imageUrlProvider": "FACEBOOK"
                         });
+                    } else if (type === 'WAIT_LISTED') {
+                        //$rootScope.addAlert("You are added to waitlist!","success");
+                    }
+                },
+                function () {
+                    registrationActionDef.reject();
                 });
-
-        });
     };
 
     $scope.delete = function( ) {
@@ -2023,24 +2083,19 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     }
 
     function toggleEventByKey(eventKey) {
-        var event;
-
-        // Find the event
-        for (var idx = 0; idx < $scope.events.data.length; idx++) {
-            var eventAtIdx = $scope.events.data[idx];
-            if (eventAtIdx.key === eventKey) {
-                event = eventAtIdx;
-            }
-        }
+        var event = findEventByKey(eventKey);
 
         if (event) {
             event.isCollapsed = !event.isCollapsed;
 
             if ( !event.isCollapsed ) {
-                event.expandedEventFetchTracker = new PromiseTracker(
-                    Events.get( { id : event.key, registerCtlr : 'expanded_search_view' }, function(data) {
-                        event.expandedEvent = data;
-                    } ));
+                event.expandedEventPromise =
+                    Events.get( {
+                        id : event.key, registerCtlr : 'expanded_search_view' },
+                        function(data) {
+                            event.expandedEvent = data;
+                        } );
+                event.expandedEventFetchTracker = new PromiseTracker(event.expandedEventPromise);
             }
         }
 
@@ -2049,6 +2104,16 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         } else {
             $location.search('expand', null);
         }
+    }
+
+    function findEventByKey(eventKey) {
+        for (var idx = 0; idx < $scope.events.data.length; idx++) {
+            var eventAtIdx = $scope.events.data[idx];
+            if (eventAtIdx.key === eventKey) {
+                return eventAtIdx;
+            }
+        }
+        return null;
     }
 
     $scope.reset();
@@ -2404,7 +2469,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
 
 var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location,
         Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook,
-        RecyclablePromiseFactory) {
+        RecyclablePromiseFactory, $q) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.currentUserRating = {
@@ -2417,9 +2482,9 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     tabManager.init();
     var tabs = $scope.tabs = tabManager.tabs;
 
-    var eventViewRecyclablePromise = RecyclablePromiseFactory.create();
+    var eventDetailsRecyclablePromise = RecyclablePromiseFactory.create();
     $scope.$on("FbAuthDepResource.userChanged", function (event, response) {
-        refreshEvent();
+        refreshEvent(true);
     });
 
     $scope.unregister = function() {
@@ -2431,31 +2496,51 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             function() {
                 EventUtil.postUnRegistrationTasks(
                     $scope.event, $scope.event.registrationInfo);
-                refreshEvent();
+                refreshEvent(false);
             });
     }
 
     $scope.register = function(type) {
-        FbUtil.loginRequired().then( function () {
 
-            eventViewRecyclablePromise.promise.then(function () {
+        var registrationActionDef = $q.defer();
+        $scope.registrationActionTracker = new PromiseTracker(registrationActionDef.promise);
 
-                Events.save(
-                    {
-                        id: $scope.event.key,
-                        registerCtlr: 'participants',
-                        regType: type
-                    },
-                    null,
-                    function() {
-                        EventUtil.postRegistrationTasks(
-                            $scope.event, type);
-                        refreshEvent();
-                    });
-
-            });
-
-        });
+        FbUtil.loginRequired()
+            .then(
+                function () {
+                    // Login can cause the event to refresh.
+                    return eventDetailsRecyclablePromise.promise;
+                })
+            .then(
+                function () {
+                    if (  ( ($scope.event.registrationInfo != "CAN_REGISTER") &&
+                            ($scope.event.registrationInfo != "CAN_WAIT_LIST")) ) {
+                        return $q.reject();
+                    }
+                    return Events.save(
+                        {
+                            id: $scope.event.key,
+                            registerCtlr: 'participants',
+                            regType: type
+                        },
+                        null);
+                })
+            .then(
+                function () {
+                    // This is not the fastest way to update the screen, but it's
+                    // good enough for now.
+                    refreshEvent(false);
+                    return eventDetailsRecyclablePromise.promise;
+                })
+            .then(
+                function () {
+                    registrationActionDef.resolve();
+                    EventUtil.postRegistrationTasks(
+                        $scope.event, type);
+                },
+                function () {
+                    registrationActionDef.reject();
+                });
     };
 
     $scope.getMore = function(type) {
@@ -2492,11 +2577,8 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
         }
     };
 
-    function refreshEvent() {
-        var eventViewDef = eventViewRecyclablePromise.recycle();
-        var refreshCompletionTracker = new CompletionTracker(
-            ['event', 'eventOrganizers', 'eventRegistered', 'eventWaitListed'],
-            refreshComplete)
+    function refreshEvent(refreshDetailsOnly) {
+        var eventDetailsDef = eventDetailsRecyclablePromise.recycle();
 
         Events.get(
             {
@@ -2513,11 +2595,16 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                         tabManager.markTabActive('impact');
                     }
                 }
-                refreshCompletionTracker.complete('event');
+                eventDetailsDef.resolve();
             },
             function() {
-                refreshCompletionTracker.complete('event');
+                eventDetailsDef.reject();
             });
+
+        // Skip other queries of only an event fetch is required.
+        if (refreshDetailsOnly) {
+            return;
+        }
 
         var eventOrganizersPromise = Events.get(
             {
@@ -2527,10 +2614,6 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             },
             function( result ) {
                 $scope.eventOrganizers = result;
-                refreshCompletionTracker.complete('eventOrganizers');
-            },
-            function() {
-                refreshCompletionTracker.complete('eventOrganizers');
             });
         if (!angular.isDefined($scope.eventOrganizersFirstFetchTracker)) {
             $scope.eventOrganizersFirstFetchTracker = new PromiseTracker(eventOrganizersPromise);
@@ -2544,10 +2627,6 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             },
             function( result ) {
                 $scope.eventRegistered = result;
-                refreshCompletionTracker.complete('eventRegistered');
-            },
-            function() {
-                refreshCompletionTracker.complete('eventRegistered');
             });
         if (!angular.isDefined($scope.eventRegisteredFirstFetchTracker)) {
             $scope.eventRegisteredFirstFetchTracker = new PromiseTracker(eventRegisteredPromise);
@@ -2561,18 +2640,9 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             },
             function( result ) {
                 $scope.eventWaitListed = result;
-                refreshCompletionTracker.complete('eventWaitListed');
-            },
-            function() {
-                refreshCompletionTracker.complete('eventWaitListed');
             });
         if (!angular.isDefined($scope.eventWaitListedFirstFetchTracker)) {
             $scope.eventWaitListedFirstFetchTracker = new PromiseTracker(eventWaitListedPromise);
-        }
-
-
-        function refreshComplete() {
-            eventViewDef.resolve();
         }
     }
 
@@ -2605,7 +2675,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
         }
     }
 
-    refreshEvent();
+    refreshEvent(false);
 };
 
 var tourCtrl = function($scope, FbUtil, $location) {

@@ -121,12 +121,20 @@
                         </div>
 
                         <div ng-show="event.status!='COMPLETED'">
-                            <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('REGISTERED')">
+                            <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"
+                                    class="btn btn-success"
+                                    ng-click="register('REGISTERED')"
+                                    btn-loading="registrationActionTracker.isPending()"
+                                    data-loading-text="Processing...">
                                 <i class="icon-ok icon-white">
                                 </i>
                                 Register
                             </button>
-                            <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]" class="btn btn-success" ng-click="register('WAIT_LISTED')">
+                            <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"
+                                    class="btn btn-success"
+                                    ng-click="register('WAIT_LISTED')"
+                                    btn-loading="registrationActionTracker.isPending()"
+                                    data-loading-text="Processing...">
                                 <i class="icon-ok icon-white">
                                 </i>
                                 Wait list
