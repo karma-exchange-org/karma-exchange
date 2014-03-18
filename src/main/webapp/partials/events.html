@@ -159,8 +159,20 @@
                                                 &nbsp;
                                             </div>
                                             <div class="body text-center">
-                                                <button ng-show="{CAN_REGISTER:true}[event.expandedEvent.registrationInfo]" class="btn btn-success btn-sm" ng-click="register(event, 'REGISTERED')"><i class="icon-ok icon-white"></i> Register</button>
-                                                <button ng-show="{CAN_WAIT_LIST:true}[event.expandedEvent.registrationInfo]" class="btn btn-success btn-sm" ng-click="register(event, 'WAIT_LISTED')"><i class="icon-ok icon-white"></i> Wait list</button>
+                                                <button ng-show="{CAN_REGISTER:true}[event.expandedEvent.registrationInfo]"
+                                                        class="btn btn-success btn-sm"
+                                                        ng-click="register(event, 'REGISTERED')"
+                                                        btn-loading="event.registrationActionTracker.isPending()"
+                                                        data-loading-text="Processing...">
+                                                    <i class="icon-ok icon-white"></i> Register
+                                                </button>
+                                                <button ng-show="{CAN_WAIT_LIST:true}[event.expandedEvent.registrationInfo]"
+                                                        class="btn btn-success btn-sm"
+                                                        ng-click="register(event, 'WAIT_LISTED')"
+                                                        btn-loading="event.registrationActionTracker.isPending()"
+                                                        data-loading-text="Processing...">
+                                                    <i class="icon-ok icon-white"></i> Wait list
+                                                </button>
                                                 <!--
                                                         Not really needed anymore since we have a label containing the registration info.
 

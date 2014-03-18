@@ -123,7 +123,7 @@ ul.iconsList li a:hover, ul.iconsList i {
 	color:#fff;
 	border:2px solid #fff;
 }
-.btn:hover, .btn:focus {
+.btn:hover:not(.disabled), .btn:focus:not(.disabled) {
 	color:#4FAFC2;
 	border-color:#eee;
 	text-shadow:none;
