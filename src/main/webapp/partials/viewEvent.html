@@ -1,7 +1,7 @@
 <div class="container vertical-panel-padding">
 
 <div class="row">
-    <div class="col-md-9">
+    <div class="col-md-9 col-sm-12">
 
         <div class="row">
             <div class="col-md-12">
@@ -14,7 +14,7 @@
         </div>
 
         <div class="row" ng-show="event.title">
-            <div class="col-md-6">
+            <div class="col-sm-6">
 
                 <div class="panel panel-default panel-no-margin">
                     <div class="panel-body">
@@ -91,7 +91,7 @@
 
             </div>
 
-            <div class="col-md-6">
+            <div class="col-sm-6">
 
                 <div class="panel panel-default">
                     <div class="panel-body text-center">
@@ -328,9 +328,9 @@
 
     </div>
 
-    <div class="col-md-3">
-        <div class="row" ng-show="event.organizationDetails">
-            <div class="col-md-12">
+    <div class="col-md-3 col-sm-12">
+        <div class="row">
+            <div ng-show="event.organizationDetails" class="col-md-12 col-sm-3">
                 <h4 class="event-sidebar-panel-header">
                     Organized by
                 </h4>
@@ -338,34 +338,34 @@
                     <org-event-summary org="event.organizationDetails"></org-event-summary>
                 </div>
             </div>
-        </div>
 
-        <div ng-show="!eventOrganizersFirstFetchTracker.isPending()">
-            <participants-sidebar
-                fetched-participants="eventOrganizers"
-                type="ORGANIZER"
-                header="Organizers"
-                participant-count="event.eventOrganizers.length"
-                fetch-more="getMore(type)">
-            </participants-sidebar>
-        </div>
-        <div ng-show="!eventRegisteredFirstFetchTracker.isPending()">
-            <participants-sidebar
-                fetched-participants="eventRegistered"
-                type="REGISTERED"
-                header="Volunteers"
-                participant-count="event.registeredUsers.length"
-                fetch-more="getMore(type)">
-            </participants-sidebar>
-        </div>
-        <div ng-show="!eventWaitListedFirstFetchTracker.isPending()">
-            <participants-sidebar
-                fetched-participants="eventWaitListed"
-                type="WAIT_LISTED"
-                header="Waitlisted"
-                participant-count="event.waitListedUsers.length"
-                fetch-more="getMore(type)">
-            </participants-sidebar>
+            <div ng-show="!eventOrganizersFirstFetchTracker.isPending()" class="col-md-12 col-sm-3">
+                <participants-sidebar
+                    fetched-participants="eventOrganizers"
+                    type="ORGANIZER"
+                    header="Organizers"
+                    participant-count="event.eventOrganizers.length"
+                    fetch-more="getMore(type)">
+                </participants-sidebar>
+            </div>
+            <div ng-show="!eventRegisteredFirstFetchTracker.isPending()" class="col-md-12 col-sm-3">
+                <participants-sidebar
+                    fetched-participants="eventRegistered"
+                    type="REGISTERED"
+                    header="Volunteers"
+                    participant-count="event.registeredUsers.length"
+                    fetch-more="getMore(type)">
+                </participants-sidebar>
+            </div>
+            <div ng-show="!eventWaitListedFirstFetchTracker.isPending()" class="col-md-12 col-sm-3">
+                <participants-sidebar
+                    fetched-participants="eventWaitListed"
+                    type="WAIT_LISTED"
+                    header="Waitlisted"
+                    participant-count="event.waitListedUsers.length"
+                    fetch-more="getMore(type)">
+                </participants-sidebar>
+            </div>
         </div>
 
     </div>
