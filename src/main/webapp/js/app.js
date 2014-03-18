@@ -2488,16 +2488,28 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     });
 
     $scope.unregister = function() {
+        var unregistrationActionDef = $q.defer();
+        $scope.unregistrationActionTracker = new PromiseTracker(unregistrationActionDef.promise);
+
         Events.delete(
-            {
-                id: $scope.event.key,
-                registerCtlr: 'participants'
-            },
-            function() {
-                EventUtil.postUnRegistrationTasks(
-                    $scope.event, $scope.event.registrationInfo);
-                refreshEvent(false);
-            });
+                {
+                    id: $scope.event.key,
+                    registerCtlr: 'participants'
+                })
+            .then(
+                function () {
+                    refreshEvent(false);
+                    return eventDetailsRecyclablePromise.promise;
+                })
+            .then(
+                function() {
+                    unregistrationActionDef.resolve();
+                    EventUtil.postUnRegistrationTasks(
+                        $scope.event, $scope.event.registrationInfo);
+                },
+                function () {
+                    unregistrationActionDef.reject();
+                });
     }
 
     $scope.register = function(type) {

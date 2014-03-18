@@ -100,13 +100,14 @@
                             {{event.maxRegistrations - event.registeredUsers.length | limit10Verbose }}
                         </h4>
 
-                        <div class="font-size-h4">
+                        <div class="font-size-h4" ng-hide="unregistrationActionTracker.isPending()">
                             <event-registration-info
                                 registration-info="event.registrationInfo"
                                 type="'DETAILS'">
                             </event-registration-info>
                         </div>
-                        <div class="event-view-action">
+
+                        <div class="event-view-action" ng-hide="unregistrationActionTracker.isPending()">
                             <div ng-show="event.registrationInfo=='ORGANIZER'">
                                 <a href="#!/event/{{event.key}}/edit">Edit event</a>
                             </div>
@@ -120,26 +121,40 @@
                             </div>
                         </div>
 
-                        <div ng-show="event.status!='COMPLETED'">
-                            <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"
-                                    class="btn btn-success"
-                                    ng-click="register('REGISTERED')"
-                                    btn-loading="registrationActionTracker.isPending()"
+                        <div ng-hide="unregistrationActionTracker.isPending()">
+                            <div ng-show="event.status!='COMPLETED'">
+                                <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"
+                                        class="btn btn-success"
+                                        ng-click="register('REGISTERED')"
+                                        btn-loading="registrationActionTracker.isPending()"
+                                        data-loading-text="Processing...">
+                                    <i class="icon-ok icon-white">
+                                    </i>
+                                    Register
+                                </button>
+                                <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"
+                                        class="btn btn-success"
+                                        ng-click="register('WAIT_LISTED')"
+                                        btn-loading="registrationActionTracker.isPending()"
+                                        data-loading-text="Processing...">
+                                    <i class="icon-ok icon-white">
+                                    </i>
+                                    Wait list
+                                </button>
+                            </div>
+                        </div>
+
+                        <div ng-show="unregistrationActionTracker.isPending()">
+                            <!-- This button only exists to provide status when unregistering -->
+                            <button class="btn btn-success"
+                                    btn-loading="unregistrationActionTracker.isPending()"
                                     data-loading-text="Processing...">
                                 <i class="icon-ok icon-white">
                                 </i>
-                                Register
-                            </button>
-                            <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"
-                                    class="btn btn-success"
-                                    ng-click="register('WAIT_LISTED')"
-                                    btn-loading="registrationActionTracker.isPending()"
-                                    data-loading-text="Processing...">
-                                <i class="icon-ok icon-white">
-                                </i>
-                                Wait list
+                                Unregister
                             </button>
                         </div>
+
 
                         <h3 class="margin-0">
                             <karma-hours karma-points="event.karmaPoints"></karma-hours>
