@@ -15,12 +15,14 @@ import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.SourceEventInfo;
+import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.HtmlUtil;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
@@ -46,6 +48,18 @@ public class SourceEvent {
 
   public Event toEvent(Key<Organization> orgKey) {
     validate(orgKey);
+    if (event.getDescription() != null) {
+      event.setDescription(HtmlUtil.toPlainText(event.getDescription()).trim());
+    }
+    if (event.getLocation() != null) {
+      Location loc = event.getLocation();
+      if (loc.getTitle() != null) {
+        loc.setTitle(HtmlUtil.toPlainText(loc.getTitle()).trim());
+      }
+      if (loc.getDescription() != null) {
+        loc.setDescription(HtmlUtil.toPlainText(loc.getDescription()).trim());
+      }
+    }
     event.setOwner(SourceEventNamespaceDao.createKey(orgKey, sourceKey).getString());
     event.setId(EVENT_ID);
     event.setSourceEventInfo(new SourceEventInfo(sourceKey));
