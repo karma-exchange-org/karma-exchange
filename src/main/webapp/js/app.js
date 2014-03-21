@@ -836,8 +836,7 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
             return impactTimelineEventsGrouped.promise;
 
             function processImpactTimeline(pastEvents) {
-                var eventsGrouped = [];
-                var curGroup = [];
+                var eventsProcessed = [];
                 for (var idx = 0; idx < pastEvents.data.length; idx++) {
                     var event = pastEvents.data[idx];
                     if (event.album) {
@@ -847,17 +846,14 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
                         event.currentUserRating = { value: undefined };
                     }
 
-                    curGroup.push(event);
-                    if (curGroup.length == 2) {
-                        eventsGrouped.push(curGroup);
-                        curGroup = [];
+                    eventsProcessed.push(event);
+                    if ((idx % 2) == 1) {
+                        // Spacer event.
+                        eventsProcessed.push({});
                     }
                 }
-                if (curGroup.length) {
-                    eventsGrouped.push(curGroup);
-                }
 
-                impactTimelineEventsGrouped.resolve(eventsGrouped);
+                impactTimelineEventsGrouped.resolve(eventsProcessed);
             }
         }
     };

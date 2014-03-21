@@ -1,16 +1,19 @@
 <div>
+
     <div class="row row-no-margin" ng-show="timelineEvents.length == 0">
         <div class="col-md-12">
             <h4><em>No events recorded at this time</em></h4>
         </div>
     </div>
 
-    <div class="row row-no-margin impact-timeline" ng-repeat="pastEventsGroup in timelineEvents">
-        <div class="col-md-6" ng-repeat="event in pastEventsGroup">
+    <div class="timeline dynamic" ng-show="timelineEvents.length != 0">
+        <div class="spine animated"></div>
+        <div ng-class="{'column column_left': ($index % 3 == 0), 'column column_right': ($index % 3 == 1), 'row_separator': ($index % 3 == 2) }"
+             ng-repeat="event in timelineEvents">
 
-            <div class="panel panel-default">
-                <div class="panel-body">
+            <div class="timeline_element blog_post animated" ng-class="{'first': $first, 'last': $last}" ng-show="($index % 3) != 2">
 
+                <div class="title">
                     <div class="row">
                         <div class="col-md-12">
 
@@ -73,28 +76,28 @@
                         </div>
                     </div>
 
-                    <div class="row">
+                    <div class="row" ng-show="event.impactSummary">
                         <div class="col-md-12">
                             <div class="border-top-1">
                             </div>
-                            <div ng-show="event.impactSummary">
-                                <div class="vertical-panel-padding" ng-bind-html-unsafe="event.impactSummary | noHTML | newlines">
+                            <div>
+                                <div class="vertical-panel-padding impact-summary" ng-bind-html-unsafe="event.impactSummary | noHTML | newlines">
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="row event-cover-img" ng-show="event.album">
-                        <div class="col-md-12">
-                            <img ng-src="{{event.album.coverPhotoUrl}}" class="img-responsive img-center img-thumbnail">
-                        </div>
-                    </div>
+                </div>
 
+
+                <div class="img_container" ng-show="event.album"><img ng-src="{{event.album.coverPhotoUrl}}"></div>
+                <div class="footer">
                     <kex-fb-comments href="{{EventUtil.getImpactViewUrl(event)}}" num-posts="3"></<kex-fb-comments>
-
                 </div>
             </div>
 
         </div>
+        <!-- <div class="row_separator animated" id="timeline_date_separator_2012"></div> -->
     </div>
+
 </div>
