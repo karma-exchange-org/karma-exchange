@@ -769,14 +769,6 @@ img.karma-badge-icon {
 }
 
 /*
- * Impact timeline
- */
-
-.impact-timeline .event-cover-img {
-  padding: 10px 0px;
-}
-
-/*
  * Single row responsive table
  */
 
@@ -913,60 +905,6 @@ img {
 }
 
 /***** END TOP BANNER CONTAINER *****/
-
-
-
-/***** TIMELINE CONTAINER *****/
-
-.timelinecontainer {
-  position: relative;
-  width: 100%;
-  min-height: 600px;
-  margin-top: 10px;
-}
-
-.timeline {
-  margin-left: 50%;
-  height: 99%;
-  width: 3px;
-  background: #c3ccdf;
-  position: absolute;
-}
-
-.timeline:hover {
-  cursor: pointer;
-}
-
-#timelineblock {
-  position: relative
-  padding: 0px;
-  margin: 0px;
-  margin-top: 30px;
-  list-style-type: none;
-  width:860px;
-
-}
-
-
-.block {
-  padding: 5px;
-  margin: 0px;
-  width: 340px;
-
-
-  background: #fff;
-  border: 1px solid #c4cde0;
-
-  -moz-border-radius:3px;
-  border-radius:3px;
-  -webkit-border-radius:3px;
-}
-
-.block:hover {
-  border: 1px solid #9fafd0;
-}
-/***** END TIMELINE CONTAINER *****/
-
 
 
 /***** ARROW EDGES *****/
