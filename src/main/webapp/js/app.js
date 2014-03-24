@@ -2708,7 +2708,6 @@ kexApp.controller('NavbarController',
         }
     }
 
-    $scope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);
     $scope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
 }]);
 
@@ -2843,8 +2842,11 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
 //   - MeUtil
 //   - FbAuthDepResource
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource ) {
+        FbAuthDepResource, KexUtil ) {
+
     $rootScope.fbUtil = FbUtil;
+    $rootScope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);
+
     $rootScope.$on( "$routeChangeStart", function( event, next, current ) {
             $rootScope.alerts = [ ];
             $rootScope.locationURL = window.location.href;

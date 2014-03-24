@@ -1,4 +1,4 @@
-<div class="container">
+<div class="organization-search container">
 
     <div class="row">
         <div class="col-md-12">
@@ -48,16 +48,31 @@
             <h4><em>No <span ng-show="query.length > 0">matching </span> organizations found</em></h4>
         </div>
 
-        <ul class="list-unstyled" ng-show="!orgQueryTracker.isPending()">
-            <li ng-repeat="org in orgs.data">
-                <div class="well well-sm">
-                    <a href="#!/org/{{org.key}}" ng-click="refresh({{org.key}})">
-                        <img ng-src="{{fbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org">
-                        <strong>{{org.orgName}}</strong>
-                    </a>
+        <div class="row" ng-show="!orgQueryTracker.isPending()">
+            <div class="col-sm-6 col-md-4" ng-repeat="org in orgs.data">
+
+                <div class="org-summary panel panel-default panel-seperated-vertical panel-clickable"
+                     ng-click="setLocation('#!/org/' + org.key)">
+
+                    <div class="panel-heading">
+                        <div class="thumbnail">
+                            <img ng-src="{{fbUtil.getImageUrl(org.page.name, 'square')}}">
+                        </div>
+                        <div class="title">
+                            <h3 class="panel-title">
+                                {{org.orgName}}
+                            </h3>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        {{org.mission}}
+                    </div>
+
                 </div>
-            </li>
-        </ul>
+
+            </div>
+        </div>
+
     </div>
 
 </div>
