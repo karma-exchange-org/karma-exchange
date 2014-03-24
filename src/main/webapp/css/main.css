@@ -659,6 +659,18 @@ img.kex-thumbnail-user-mini {
 }
 
 /*
+ * User profile
+ */
+
+.user-profile .panel.photo-details {
+  max-width: 262px;
+}
+
+.user-profile .panel.details {
+  max-width: 409px;
+}
+
+/*
  * Goal tracking
  */
 
