@@ -53,6 +53,7 @@ public class Organization extends NameBaseDao<Organization> {
   private String searchableOrgName;
 
   private PageRef page;
+  private String mission;
   @Index
   private OrganizationNamedKeyWrapper parentOrg;
 
@@ -153,6 +154,7 @@ public class Organization extends NameBaseDao<Organization> {
     if (address == null) {
       address = providerGeneratedOrg.getAddress();
     }
+    mission = providerGeneratedOrg.getMission();
   }
 
   @Override

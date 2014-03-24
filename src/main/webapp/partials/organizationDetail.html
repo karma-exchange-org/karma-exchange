@@ -63,7 +63,7 @@
                 </div>
             </div>
 
-            <div class="panel panel-default panel-seperated-vertical" ng-show="fbPage.mission || org.donationUrl">
+            <div class="panel panel-default panel-seperated-vertical" ng-show="org.mission || org.donationUrl">
                 <div class="panel-heading">
                     <h3 class="panel-title">
                         Mission
@@ -71,7 +71,7 @@
 
                 </div>
                 <div class="panel-body">
-                    {{fbPage.mission}}
+                    {{org.mission}}
 
                     <div class="org-donation-btn" ng-show="org.donationUrl">
                         <a class="btn btn-success" href="{{org.donationUrl}}">Make a donation</a>

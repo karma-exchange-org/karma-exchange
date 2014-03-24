@@ -144,6 +144,7 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     org.setName(fbPageName);
     org.setOrgName(fbPage.getName());
     org.setPage(PageRef.create(fbPageName, PAGE_BASE_URL + fbPageName, providerType));
+    org.setMission(fbPage.getMission());
     org.setAddress(getAddress(fbPage.getLocation()));
     return org;
   }

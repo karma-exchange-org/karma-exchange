@@ -591,6 +591,35 @@ img.kex-thumbnail-user-mini {
 }
 
 /*
+ * Organization search.
+ */
+
+.organization-search .panel.org-summary {
+  max-width: 360px;
+}
+
+.organization-search .panel.org-summary .panel-heading {
+  padding: 5px 10px;
+}
+
+.organization-search .panel.org-summary div.thumbnail,
+.organization-search .panel.org-summary div.title {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.organization-search .panel.org-summary div.thumbnail img {
+  height: 35px;
+  width: 35px;
+  max-height: 35px; /* work around default bootstrap css. */
+  max-width: 35px; /* work around default bootstrap css. */
+}
+
+.organization-search .panel.org-summary div.title {
+  padding-left: 10px;
+}
+
+/*
  * Organization details.
  */
 
