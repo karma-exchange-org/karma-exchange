@@ -19,6 +19,7 @@ import org.karmaexchange.provider.SocialNetworkProvider;
 import org.karmaexchange.provider.SocialNetworkProviderFactory;
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.AuthorizationErrorInfo;
+import org.karmaexchange.resources.msg.BaseDaoView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
@@ -52,7 +53,7 @@ import com.googlecode.objectify.annotation.Index;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public final class User extends NameBaseDao<User> {
+public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
 
   private static final int MAX_ATTENDANCE_HISTORY = 10;
 
@@ -557,6 +558,11 @@ public final class User extends NameBaseDao<User> {
       }
     }
     eventAttendanceHistoryPct = ((double) eventsAttended) / eventAttendanceHistory.size() * 100;
+  }
+
+  @Override
+  public User getDao() {
+    return this;
   }
 
   @Embed

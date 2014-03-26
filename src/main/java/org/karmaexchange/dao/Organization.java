@@ -17,6 +17,7 @@ import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.karmaexchange.provider.SocialNetworkProvider;
+import org.karmaexchange.resources.msg.BaseDaoView;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
@@ -46,7 +47,7 @@ import com.googlecode.objectify.annotation.Index;
 @Data
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public class Organization extends NameBaseDao<Organization> {
+public class Organization extends NameBaseDao<Organization> implements BaseDaoView<Organization> {
 
   private String orgName;
   @Index
@@ -390,5 +391,10 @@ public class Organization extends NameBaseDao<Organization> {
         BaseDao.partialUpdate(childOrg);
       }
     }
+  }
+
+  @Override
+  public Organization getDao() {
+    return this;
   }
 }

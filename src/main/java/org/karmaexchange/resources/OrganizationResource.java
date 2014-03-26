@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 
 @Path("/org")
-public class OrganizationResource extends BaseDaoResource<Organization> {
+public class OrganizationResource extends ViewlessBaseDaoResourceEx<Organization> {
 
   public static final String NAME_PREFIX_PARAM = "name_prefix";
   public static final String ROLE_PARAM = "role";
@@ -52,11 +52,6 @@ public class OrganizationResource extends BaseDaoResource<Organization> {
   public static final String MEMBERSHIP_STATUS_PARAM = "membership_status";
   public static final String LEADERBOARD_TYPE_PARAM = "type";
   public static final String INCLUDE_PARENT_ORGS_PARAM = "include_parent_orgs";
-
-  @Override
-  protected Class<Organization> getResourceClass() {
-    return Organization.class;
-  }
 
   @Override
   protected void preProcessUpsert(Organization org) {

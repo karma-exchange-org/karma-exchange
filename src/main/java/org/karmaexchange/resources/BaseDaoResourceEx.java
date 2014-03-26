@@ -43,16 +43,6 @@ public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoV
   @Context
   protected ServletContext servletContext;
 
-
-  // TODO(avaliani): re-add support for list resources using GenericEntity.
-  /*
-  @GET
-  @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public List<T> getResources() {
-    return BaseDao.loadAll(getResourceClass());
-  }
-  */
-
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response upsertResource(U resourceView) {
@@ -110,8 +100,6 @@ public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoV
   public void deleteResource(Key<T> key) {
     BaseDao.delete(key);
   }
-
-  // protected abstract Class<T> getResourceClass();
 
   protected void preProcessUpsert(T resource) {
     // No-op.

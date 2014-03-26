@@ -23,7 +23,7 @@ import org.karmaexchange.util.PaginatedQuery.FilterQueryClause;
 import com.google.common.collect.ImmutableList;
 import com.googlecode.objectify.Key;
 
-public class UserManagedEventResource  extends ViewlessBaseDaoResourceEx<UserManagedEvent> {
+public class UserManagedEventResource extends ViewlessBaseDaoResourceEx<UserManagedEvent> {
 
   private Key<User> userKey;
 
