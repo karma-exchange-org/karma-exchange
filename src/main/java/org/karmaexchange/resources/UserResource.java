@@ -27,7 +27,7 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 
 @Path("/user")
-public class UserResource extends ViewlessBaseDaoResourceEx<User> {
+public class UserResource extends ViewlessBaseDaoResource<User> {
 
   // TODO(avaliani): Lock down user class. Some fields are only visible to owners of the
   //    user class.
