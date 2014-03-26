@@ -6,7 +6,7 @@ import javax.ws.rs.core.Response;
 import org.karmaexchange.dao.Waiver;
 
 @Path("/waiver")
-public class WaiverResource extends ViewlessBaseDaoResourceEx<Waiver> {
+public class WaiverResource extends ViewlessBaseDaoResource<Waiver> {
 
   public static final String PATH = "waiver";
 

@@ -44,7 +44,7 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 
 @Path("/org")
-public class OrganizationResource extends ViewlessBaseDaoResourceEx<Organization> {
+public class OrganizationResource extends ViewlessBaseDaoResource<Organization> {
 
   public static final String NAME_PREFIX_PARAM = "name_prefix";
   public static final String ROLE_PARAM = "role";

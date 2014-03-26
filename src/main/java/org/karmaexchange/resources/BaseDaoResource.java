@@ -32,7 +32,7 @@ import com.googlecode.objectify.Key;
 
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class BaseDaoResourceEx<T extends BaseDao<T>, U extends BaseDaoView<T>> {
+public abstract class BaseDaoResource<T extends BaseDao<T>, U extends BaseDaoView<T>> {
 
   public static final int DEFAULT_NUM_SEARCH_RESULTS = 25;
 

@@ -58,7 +58,7 @@ import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 @Path("/event")
 @NoArgsConstructor
-public class EventResource extends BaseDaoResourceEx<Event, EventView> {
+public class EventResource extends BaseDaoResource<Event, EventView> {
 
   public static final String START_TIME_PARAM = "start_time";
   public static final String END_TIME_PARAM = "end_time";
