@@ -14,6 +14,8 @@ public class OfyUtil {
       return Key.<T>create(str);
     } catch (IllegalArgumentException e) {
       throw ErrorResponseMsg.createException(e, ErrorInfo.Type.BAD_REQUEST);
+    } catch (NullPointerException e) {
+      throw ErrorResponseMsg.createException(e, ErrorInfo.Type.BAD_REQUEST);
     }
   }
 

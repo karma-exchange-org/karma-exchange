@@ -28,6 +28,7 @@ import lombok.NoArgsConstructor;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.ParticipantType;
+import org.karmaexchange.dao.BaseEvent;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Review;
@@ -111,22 +112,14 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
     eventSearch(null, reqParams, ImmutableList.<FilterQueryClause>of(), null);
   }
 
-  private static EventSearchResults eventSearch(@Nullable UriInfo uriInfo,
-      @Nullable MultivaluedMap<String, String> reqParams,
-      Collection<? extends FilterQueryClause> filters,
-      @Nullable Key<User> eventSearchUserKey) {
-    if (uriInfo != null) {
-      reqParams = uriInfo.getQueryParameters();
-    }
+  private static EventSearchType getEventSearchType(
+      MultivaluedMap<String, String> reqParams) {
     EventSearchType searchType = reqParams.containsKey(SEARCH_TYPE_PARAM) ?
         EventSearchType.valueOf(reqParams.getFirst(SEARCH_TYPE_PARAM)) : null;
     Long startTimeValue = reqParams.containsKey(START_TIME_PARAM) ?
         Long.valueOf(reqParams.getFirst(START_TIME_PARAM)) : null;
     Long endTimeValue = reqParams.containsKey(END_TIME_PARAM) ?
         Long.valueOf(reqParams.getFirst(END_TIME_PARAM)) : null;
-    String keywords = reqParams.getFirst(KEYWORDS_PARAM);
-    boolean loadReviews = (eventSearchUserKey != null) &&
-        eventSearchUserKey.equals(getCurrentUserKey());
 
     if (searchType == null) {
       if ((startTimeValue != null) && (endTimeValue != null)) {
@@ -135,6 +128,24 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
         searchType = EventSearchType.UPCOMING;
       }
     }
+    return searchType;
+  }
+
+  public static<T extends BaseEvent<T>> PaginatedQuery.Result<T> eventBaseQuery(
+      Class<T> eventBaseClass,
+      @Nullable UriInfo uriInfo,
+      @Nullable MultivaluedMap<String, String> reqParams,
+      Collection<? extends FilterQueryClause> filters,
+      Key<?> ancestorKey) {
+    if (uriInfo != null) {
+      reqParams = uriInfo.getQueryParameters();
+    }
+    EventSearchType searchType = getEventSearchType(reqParams);
+    Long startTimeValue = reqParams.containsKey(START_TIME_PARAM) ?
+        Long.valueOf(reqParams.getFirst(START_TIME_PARAM)) : null;
+    Long endTimeValue = reqParams.containsKey(END_TIME_PARAM) ?
+        Long.valueOf(reqParams.getFirst(END_TIME_PARAM)) : null;
+
     if ((endTimeValue != null) && (searchType != EventSearchType.INTERVAL))  {
       throw ErrorResponseMsg.createException(
         "parameter '" + END_TIME_PARAM + "' can only be specified " +
@@ -153,8 +164,9 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
     Date startTime = (startTimeValue == null) ? new Date() : new Date(startTimeValue);
     Date endTime = (endTimeValue == null) ? new Date() : new Date(endTimeValue);
 
-    PaginatedQuery.Builder<Event> queryBuilder =
-        PaginatedQuery.Builder.create(Event.class, uriInfo, reqParams, DEFAULT_NUM_SEARCH_RESULTS)
+    PaginatedQuery.Builder<T> queryBuilder =
+        PaginatedQuery.Builder.create(
+            eventBaseClass, uriInfo, reqParams, DEFAULT_NUM_SEARCH_RESULTS)
         .addFilters(filters);
     queryBuilder.setOrder(
       ((searchType == EventSearchType.UPCOMING) || (searchType == EventSearchType.INTERVAL)) ?
@@ -166,14 +178,38 @@ public class EventResource extends BaseDaoResourceEx<Event, EventView> {
       queryBuilder.addFilter(new ConditionFilter(
         (searchType == EventSearchType.UPCOMING) ? "startTime >=" : "startTime <", startTime));
     }
+    if (ancestorKey != null) {
+      queryBuilder.setAncestor(ancestorKey);
+    }
+
+    return queryBuilder.build().execute();
+  }
+
+  private static EventSearchResults eventSearch(@Nullable UriInfo uriInfo,
+      @Nullable MultivaluedMap<String, String> reqParams,
+      Collection<? extends FilterQueryClause> filters,
+      @Nullable Key<User> eventSearchUserKey) {
+    if (uriInfo != null) {
+      reqParams = uriInfo.getQueryParameters();
+    }
+
+    List<FilterQueryClause> combinedFilters = Lists.newArrayList(filters);
+    String keywords = reqParams.getFirst(KEYWORDS_PARAM);
     if (keywords != null) {
-      queryBuilder.addFilter(new ConditionFilter("searchableTokens",
+      combinedFilters.add(new ConditionFilter("searchableTokens",
         SearchUtil.getSearchableTokens(keywords, MAX_SEARCH_KEYWORDS).toArray()));
     }
 
-    PaginatedQuery.Result<Event> queryResult = queryBuilder.build().execute();
+    PaginatedQuery.Result<Event> queryResult = eventBaseQuery(
+      Event.class, uriInfo, reqParams, combinedFilters, null);
+
     PostFilteredEventSearchResults postFilteredResults =
         postFilterByDistance(reqParams, queryResult);
+
+    boolean loadReviews = (eventSearchUserKey != null) &&
+        eventSearchUserKey.equals(getCurrentUserKey());
+    EventSearchType searchType = getEventSearchType(reqParams);
+
     return new EventSearchResults(
       EventSearchView.create(postFilteredResults.results, searchType, eventSearchUserKey,
         loadReviews),

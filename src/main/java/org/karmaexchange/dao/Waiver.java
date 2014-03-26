@@ -7,6 +7,7 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.karmaexchange.resources.msg.BaseDaoView;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
@@ -27,7 +28,7 @@ import com.googlecode.objectify.annotation.Entity;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public class Waiver extends IdBaseDao<Waiver> {
+public class Waiver extends IdBaseDao<Waiver> implements BaseDaoView<Waiver> {
 
   private String description;
   private String embeddedContent;
@@ -81,5 +82,10 @@ public class Waiver extends IdBaseDao<Waiver> {
   protected Permission evalPermission() {
     BaseDao<?> ownerDao = (BaseDao<?>) ofy().load().key(owner).now();
     return ownerDao.getPermission();
+  }
+
+  @Override
+  public Waiver getDao() {
+    return this;
   }
 }

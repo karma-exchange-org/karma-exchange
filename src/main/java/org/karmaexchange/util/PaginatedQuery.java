@@ -18,6 +18,7 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.QueryResultIterator;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.cmd.Query;
 
 import lombok.AccessLevel;
@@ -91,7 +92,7 @@ public class PaginatedQuery<T extends BaseDao<T>> {
     private final Class<T> resourceClass;
     private List<FilterQueryClause> queryFilters = Lists.newArrayList();
     @Nullable
-    private Object ancestor;
+    private Key<?> ancestor;
     @Nullable
     private String order;
     private final int limit;
@@ -142,7 +143,7 @@ public class PaginatedQuery<T extends BaseDao<T>> {
       return this;
     }
 
-    public Builder<T> setAncestor(Object ancestor) {
+    public Builder<T> setAncestor(Key<?> ancestor) {
       this.ancestor = ancestor;
       return this;
     }
@@ -217,7 +218,7 @@ public class PaginatedQuery<T extends BaseDao<T>> {
   @ToString(callSuper=true)
   private static class AncestorQueryClause extends QueryClause {
 
-    private final Object ancestor;
+    private final Key<?> ancestor;
 
     @Override
     public <T> Query<T> apply(Query<T> query) {

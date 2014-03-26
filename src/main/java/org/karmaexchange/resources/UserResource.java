@@ -61,6 +61,12 @@ public class UserResource extends BaseDaoResource<User> {
     return EventResource.eventSearch(uriInfo, Lists.newArrayList(participantFilter), userKey);
   }
 
+  @Path("{user_key}/user_managed_event")
+  public UserManagedEventResource getUserManagedEvents(@PathParam("user_key") String userKeyStr) {
+    Key<User> userKey = OfyUtil.<User>createKey(userKeyStr);
+    return new UserManagedEventResource(uriInfo, request, servletContext, userKey);
+  }
+
   @Path("{user_key}/org")
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})

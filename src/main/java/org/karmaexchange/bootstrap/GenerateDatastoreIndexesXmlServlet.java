@@ -17,6 +17,7 @@ import javax.ws.rs.core.Response;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.RequestStatus;
+import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.EventResource;
 import org.karmaexchange.resources.EventResource.EventSearchType;
 import org.karmaexchange.resources.OrganizationResource;
@@ -98,6 +99,18 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
       .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.PAST.toString())
       .queryParam(EventResource.KEYWORDS_PARAM, "animals"));
 
+    Key<User> arbitraryUserKey = getArbitraryUserKey();
+    issueGetRequestAndCheckRespone(
+      service.path("api/user")
+      .path(arbitraryUserKey.getString())
+      .path("user_managed_event")
+      .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.UPCOMING.toString()));
+    issueGetRequestAndCheckRespone(
+      service.path("api/user")
+      .path(arbitraryUserKey.getString())
+      .path("user_managed_event")
+      .queryParam(EventResource.SEARCH_TYPE_PARAM, EventSearchType.PAST.toString()));
+
     Key<Organization> arbitraryOrgKey = getArbitraryOrganizationKey();
     issueGetRequestAndCheckRespone(
       service.path("api/org")
@@ -164,6 +177,16 @@ public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
     } else {
       throw new RuntimeException(
         "At least one event is required in order to generate the datastore-indexes.xml ");
+    }
+  }
+
+  private Key<User> getArbitraryUserKey() {
+    Iterator<Key<User>> keysIter = ofy().load().type(User.class).limit(1).keys().iterator();
+    if (keysIter.hasNext()) {
+      return keysIter.next();
+    } else {
+      throw new RuntimeException(
+        "At least one user is required in order to generate the datastore-indexes.xml ");
     }
   }
 

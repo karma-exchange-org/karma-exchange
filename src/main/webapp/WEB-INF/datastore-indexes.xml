@@ -12,6 +12,14 @@
         <property name="startTime" direction="desc"/>
     </datastore-index>
 
+    <datastore-index kind="UserManagedEvent" ancestor="true" source="manual">
+        <property name="startTime" direction="asc"/>
+    </datastore-index>
+
+    <datastore-index kind="UserManagedEvent" ancestor="true" source="manual">
+        <property name="startTime" direction="desc"/>
+    </datastore-index>
+
     <!-- Used 1 time in query history -->
     <datastore-index kind="Event" ancestor="false" source="auto">
         <property name="searchableTokens" direction="asc"/>
