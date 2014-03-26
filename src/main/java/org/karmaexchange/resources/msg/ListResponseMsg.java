@@ -13,6 +13,7 @@ import javax.xml.bind.annotation.XmlSeeAlso;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.UserManagedEvent;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.PaginatedQuery;
 import org.karmaexchange.util.URLUtil;
@@ -29,7 +30,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @XmlSeeAlso({EventParticipantView.class, EventSearchView.class, ReviewCommentView.class,
   Organization.class, OrganizationMemberView.class, OrganizationMembershipView.class,
-  WaiverSummaryView.class})
+  WaiverSummaryView.class, UserManagedEvent.class})
 public class ListResponseMsg<T> {
 
   private List<T> data;

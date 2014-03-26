@@ -52,7 +52,7 @@ import com.googlecode.objectify.annotation.Index;
 @Data
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public final class Event extends IdBaseDao<Event> {
+public final class Event extends BaseEvent<Event> {
 
   /*
    * DESIGN DETAILS
@@ -63,8 +63,6 @@ public final class Event extends IdBaseDao<Event> {
    * organizer or admin for the organization can edit the event. This simple model handles the
    * 99% usage scenario.
    */
-
-  public static final int MAX_EVENT_KARMA_POINTS = 500;
 
   public static final int MAX_CACHED_PARTICIPANT_IMAGES = 10;
 
@@ -77,17 +75,10 @@ public final class Event extends IdBaseDao<Event> {
    *   - compare this to Meetup, OneBrick, Golden Gate athletic club, etc.
    */
 
-  private String title;
-  private String description;
   private String specialInstructions; // See flash volunteer.
   @Index
   private List<CauseType> causes = Lists.newArrayList();
 
-  private Location location;
-  @Index
-  private Date startTime;
-  @Index
-  private Date endTime;
   @Ignore
   private Status status;
 
@@ -142,13 +133,6 @@ public final class Event extends IdBaseDao<Event> {
 
   private IndexedAggregateRating rating;
   private DerivedRatingTracker derivedRatings;
-
-  /**
-   * The number of karma points earned by participating in the event. This is derived from the
-   * start and end time.
-   */
-  @Index
-  private int karmaPoints;
 
   @Index
   private List<String> searchableTokens;
@@ -396,11 +380,6 @@ public final class Event extends IdBaseDao<Event> {
     }
   }
 
-  private void initKarmaPoints() {
-    long eventDurationMins = (endTime.getTime() - startTime.getTime()) / (1000 * 60);
-    karmaPoints = (int) Math.min(eventDurationMins, MAX_EVENT_KARMA_POINTS);
-  }
-
   private void initDerivedRatings() {
     derivedRatings = new DerivedRatingTracker(this);
   }
@@ -496,25 +475,22 @@ public final class Event extends IdBaseDao<Event> {
   private void validateEvent() {
     List<ValidationError> validationErrors = Lists.newArrayList();
 
-    if ((null == title) || title.isEmpty()) {
+    validateBaseEvent(validationErrors);
+
+    // Managed events require a location
+    if ((location == null) || (location.getAddress() == null) ||
+        (location.getAddress().getGeoPt() == null)) {
       validationErrors.add(new ResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "title"));
+        this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "location"));
     }
-    // TODO(avaliani): make sure the description has a minimum length. Avoiding this for now
-    //   since we don't have auto event creation.
-    if (null == startTime) {
-      validationErrors.add(new ResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "startTime"));
-    }
-    if (null == endTime) {
-      validationErrors.add(new ResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "endTime"));
-    }
-    if ((startTime != null) && (endTime != null) && !startTime.before(endTime)) {
-      validationErrors.add(new MultiFieldResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_MUST_BE_GT_SPECIFIED_FIELD,
-        "endTime", "startTime"));
-    }
+
+    // Managed events must have a duration
+    if ( (startTime != null) && (endTime != null) && !startTime.before(endTime)) {
+     validationErrors.add(new MultiFieldResourceValidationError(
+       this, ValidationErrorType.RESOURCE_FIELD_VALUE_MUST_BE_GT_SPECIFIED_FIELD,
+       "endTime", "startTime"));
+   }
+
     if (maxRegistrations < 1) {
       validationErrors.add(new LimitResourceValidationError(
         this, ValidationErrorType.RESOURCE_FIELD_VALUE_MUST_BE_GTEQ_LIMIT,
@@ -542,11 +518,6 @@ public final class Event extends IdBaseDao<Event> {
           }
         }
       }
-    }
-    if ((location == null) || (location.getAddress() == null) ||
-        (location.getAddress().getGeoPt() == null)) {
-      validationErrors.add(new ResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "location"));
     }
 
     if (!validationErrors.isEmpty()) {
