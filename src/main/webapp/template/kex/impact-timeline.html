@@ -74,13 +74,11 @@
                                 </div>
 
                             </div>
-                            <div class="input-error-msg">
-                                <div ng-show="newEventSubmitted && newEventForm.karmaHoursInput.$error.floatGeqZero">
-                                    Karma hours must be greater than or equal to zero
-                                </div>
-                                <div ng-show="newEventSubmitted && newEventForm.dateInput.$error.pattern">
-                                    The date must be specified as "mm/dd/yyyy"
-                                </div>
+                            <div class="input-error-msg" ng-show="newEventSubmitted && newEventForm.karmaHoursInput.$error.floatGeqZero">
+                                Karma hours must be greater than or equal to zero
+                            </div>
+                            <div class="input-error-msg" ng-show="newEventSubmitted && newEventForm.dateInput.$error.pattern">
+                                The date must be specified as "mm/dd/yyyy"
                             </div>
 
                             <div class="post ">
