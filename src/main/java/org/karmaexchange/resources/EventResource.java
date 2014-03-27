@@ -80,7 +80,8 @@ public class EventResource extends BaseDaoResource<Event, EventView> {
   public enum EventSearchType {
     UPCOMING,
     PAST,
-    INTERVAL
+    INTERVAL,
+    DESCENDING
   }
 
   public EventResource(UriInfo uriInfo, Request request, ServletContext servletContext) {
@@ -160,6 +161,14 @@ public class EventResource extends BaseDaoResource<Event, EventView> {
             "' of '" + EventSearchType.INTERVAL + "'",
         ErrorInfo.Type.BAD_REQUEST);
     }
+    if ((searchType == EventSearchType.DESCENDING) &&
+        ( (startTimeValue != null) || (endTimeValue != null)) ) {
+      throw ErrorResponseMsg.createException(
+        "parameters '" + START_TIME_PARAM + "' and '" + END_TIME_PARAM +
+          "' can not be specified with a query '" + SEARCH_TYPE_PARAM + "' of '" +
+          EventSearchType.DESCENDING + "'",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
 
     Date startTime = (startTimeValue == null) ? new Date() : new Date(startTimeValue);
     Date endTime = (endTimeValue == null) ? new Date() : new Date(endTimeValue);
@@ -174,7 +183,7 @@ public class EventResource extends BaseDaoResource<Event, EventView> {
     if (searchType == EventSearchType.INTERVAL) {
       queryBuilder.addFilter(new ConditionFilter("startTime >=", startTime));
       queryBuilder.addFilter(new ConditionFilter("startTime <", endTime));
-    } else {
+    } else if (searchType != EventSearchType.DESCENDING) {
       queryBuilder.addFilter(new ConditionFilter(
         (searchType == EventSearchType.UPCOMING) ? "startTime >=" : "startTime <", startTime));
     }

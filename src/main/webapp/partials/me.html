@@ -127,7 +127,7 @@
 
                             <div ng-switch-when="true">
                                 <div>
-                                    <textarea rows="5" class="col-md-12" ng-model="$parent.me.about" ></textarea>
+                                    <textarea rows="5" class="col-md-12 form-control" ng-model="$parent.me.about" ></textarea>
                                 </div>
                                 <div class="vertical-panel-padding">
                                     <button class="btn btn-primary btn-sm" ng-click="saveIntroEdit()">Save</button>
@@ -205,20 +205,14 @@
                 <tab-heading>
                     <i class="icon-bolt">
                     </i>
-                    Impact
+                    Karma Timeline
                 </tab-heading>
 
-                <div ng-show="impactTimelineFetchTracker.isPending()">
-                    <loading-message msg="impact timeline" class="in-tab"></loading-message>
-                </div>
+                <impact-timeline
+                    visible="loadKarmaTab"
+                    user="me">
+                </impact-timeline>
 
-                <div ng-show="!impactTimelineFetchTracker.isPending()">
-                    <impact-timeline
-                        timeline-events="impactTimelineEvents"
-                        self-profile-view="{ALL:true}[me.permission]"
-                        timeline-type="'USER'">
-                    </impact-timeline>
-                </div>
             </tab>
             <tab active="tabs.upcoming.active" select="tabManager.select('upcoming')">
                 <tab-heading>

@@ -1,19 +1,157 @@
 <div>
 
-    <div class="row row-no-margin" ng-show="timelineEvents.length == 0">
+    <div ng-show="timelineSetupTracker.isPending()">
+        <loading-message msg="karma timeline" class="in-tab"></loading-message>
+    </div>
+
+    <div class="row row-no-margin"
+         ng-show="!timelineSetupTracker.isPending() && (processedEvents.length == 0) && !selfProfileView">
+
         <div class="col-md-12">
             <h4><em>No events recorded at this time</em></h4>
         </div>
+
     </div>
 
-    <div class="timeline dynamic" ng-show="timelineEvents.length != 0">
+    <div class="timeline dynamic" ng-show="!timelineSetupTracker.isPending()">
         <div class="spine animated"></div>
+
+        <div class="column column_left" ng-show="selfProfileView">
+            <div class="timeline_element blog_post animated first new-event"
+                 ng-class="{'last' : (processedEvents.length == 0)}">
+
+                <div class="header">
+                    <form novalidate class="new-event-form form-horizontal form-no-margin" role="form" name="newEventForm">
+                        <div class="form-header">
+                            Share upcoming or past karma opportunities
+                        </div>
+
+                        <div class="form-group">
+                            <input type="text"
+                                placeholder="Karma opportunity title"
+                                name="titleInput"
+                                class="form-control"
+                                ng-model="newEvent.title"
+                                ng-ex-focus="expandNewEventForm=1"
+                                required/>
+                        </div>
+                        <div class="input-error-msg" ng-show="newEventSubmitted && newEventForm.titleInput.$error.required">
+                            Please specify a title
+                        </div>
+
+
+                        <div ng-show="expandNewEventForm">
+
+                            <textarea rows="3" class="form-control"
+                                      name="descriptionInput"
+                                      ng-model="newEvent.description"
+                                      placeholder="Karma opportunity description"
+                                      required>
+                            </textarea>
+                            <div class="input-error-msg" ng-show="newEventSubmitted && newEventForm.descriptionInput.$error.required">
+                                Please specify a description
+                            </div>
+
+                            <div>
+
+                                <div class="form-group date">
+                                    <input type="text"
+                                        placeholder="mm/dd/yyyy"
+                                        name="dateInput"
+                                        class="form-control"
+                                        ng-model="newEvent.date"
+                                        ng-pattern="/\s*(\d{1,2})\/(\d{1,2})\/(\d{4})\s*/"/>
+                                </div>
+
+                                <div class="form-group karma-hours">
+                                    <input type="text"
+                                        name="karmaHoursInput"
+                                        id="karmaHoursInput"
+                                        class="form-control"
+                                        ng-model="newEvent.karmaHours"
+                                        float-geq-zero/>
+                                    <label for="karmaHoursInput" class="control-label">karma hours</label>
+                                </div>
+
+                            </div>
+                            <div class="input-error-msg">
+                                <div ng-show="newEventSubmitted && newEventForm.karmaHoursInput.$error.floatGeqZero">
+                                    Karma hours must be greater than or equal to zero
+                                </div>
+                                <div ng-show="newEventSubmitted && newEventForm.dateInput.$error.pattern">
+                                    The date must be specified as "mm/dd/yyyy"
+                                </div>
+                            </div>
+
+                            <div class="post ">
+                                <button class="btn btn-primary btn-sm"
+                                        btn-loading="timelineUpdateTracker.isPending()"
+                                        data-loading-text="Processing..."
+                                        ng-click="post()"
+                                        ng-disabled="newEventSubmitted && newEventForm.$invalid">Post</button>
+                            </div>
+
+                        </div>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+        <div class="row_separator" ng-show="selfProfileView">
+        </div>
+
         <div ng-class="{'column column_left': ($index % 3 == 0), 'column column_right': ($index % 3 == 1), 'row_separator': ($index % 3 == 2) }"
-             ng-repeat="event in timelineEvents">
+             ng-repeat="event in processedEvents">
 
-            <div class="timeline_element blog_post animated" ng-class="{'first': $first, 'last': $last}" ng-show="($index % 3) != 2">
+            <div class="timeline_element blog_post animated" ng-class="{'first': ($first && !selfProfileView), 'last': $last}" ng-show="($index % 3) != 2">
 
-                <div class="title">
+                <div class="header" ng-show="!event.managedEvent">
+                    <div class="row">
+                        <div class="col-md-12">
+
+                            <div class="pull-left">
+                                <h4 class="margin-0">
+                                    <strong>
+                                        <strong>{{event.title}} </strong>
+                                    </strong>
+                                </h4>
+
+                                <div>
+                                    <div class="pull-left post-thumbnail">
+                                        <img ng-src="{{KexUtil.strConcat(user.profileImage.url,'?type=square')}}">
+                                    </div>
+                                    <div class="pull-left">
+                                        <div><small>{{event.startTime | date:'mediumDate'}}</small></div>
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <div class="pull-right karma-hour" ng-show="event.karmaPoints != 0">
+                                <h4 class="margin-0">
+                                    <karma-hours karma-points="event.karmaPoints"></karma-hours>
+                                </h4>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="border-top-1">
+                            </div>
+                            <div>
+                                <div class="vertical-panel-padding impact-summary" ng-bind-html-unsafe="event.description | noHTML | newlines">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="header" ng-show="event.managedEvent">
                     <div class="row">
                         <div class="col-md-12">
 
@@ -25,9 +163,9 @@
                                 </h4>
 
                                 <div>
-                                    <div class="pull-left">
+                                    <div class="pull-left post-thumbnail">
                                         <a href="#!/org/{{event.organization.key}}">
-                                            <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}" class="kex-thumbnail-with-label kex-thumbnail-org-small">
+                                            <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}">
                                         </a>
                                     </div>
                                     <div class="pull-left">
@@ -42,8 +180,8 @@
 
                             </div>
 
-                            <div class="pull-right responsive-div-pad-left">
-                                <div>
+                            <div class="pull-right">
+                                <div class="karma-hour">
                                     <h4 class="pull-right margin-0">
                                         <karma-hours karma-points="event.karmaPoints"></karma-hours>
                                     </h4>
@@ -90,14 +228,16 @@
                 </div>
 
 
-                <div class="img_container" ng-show="event.album"><img ng-src="{{event.album.coverPhotoUrl}}"></div>
+                <div class="img_container" ng-show="event.album">
+                    <img ng-src="{{event.album.coverPhotoUrl}}">
+                </div>
+
                 <div class="footer">
-                    <kex-fb-comments href="{{EventUtil.getImpactViewUrl(event)}}" num-posts="3"></<kex-fb-comments>
+                    <!-- <kex-fb-comments href="{{EventUtil.getImpactViewUrl(event)}}" num-posts="3"></<kex-fb-comments> -->
                 </div>
             </div>
 
         </div>
-        <!-- <div class="row_separator animated" id="timeline_date_separator_2012"></div> -->
     </div>
 
 </div>

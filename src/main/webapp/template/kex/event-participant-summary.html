@@ -1,7 +1,7 @@
 <div>
     <div class="participant-summary-img-panel">
         <a href="#!/user/{{user.key}}">
-            <img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user">
+            <img ng-src="{{KexUtil.strConcat(user.profileImage.url,'?type=square')}}" class="kex-thumbnail-with-label kex-thumbnail-user">
         </a>
     </div>
     <div class="participant-summary-info-panel">

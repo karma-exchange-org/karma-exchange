@@ -44,6 +44,9 @@ public class UserManagedEventResource extends ViewlessBaseDaoResource<UserManage
 
   @Override
   public Response upsertResource(UserManagedEvent resource) {
+    if (!resource.isKeyComplete() && (resource.getOwner() == null)) {
+      resource.setOwner(userKey.getString());
+    }
     validateResource(resource);
     return super.upsertResource(resource);
   }

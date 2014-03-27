@@ -1,4 +1,5 @@
 div.timeline .timeline_element {
+    min-width: 280px;
     max-width: 400px;
 }
 
@@ -305,7 +306,7 @@ div.timeline.center div.column_center div.timeline_element:after {
     }
 }
 
-div.timeline_element div.title {
+div.timeline_element div.header {
     position: relative;
     padding: 10px;
 /*    font-size: 10px;
@@ -315,14 +316,31 @@ div.timeline_element div.title {
 }
 div.timeline_element div.footer {
     position: relative;
+    min-height: 10px;
 /*    font-size: 10px;
     overflow: hidden;
     margin: 10px;
     text-transform: uppercase;*/
 }
 
+div.timeline_element div.karma-hour {
+    padding-left: 30px;
+}
+
+div.timeline_element div.post-thumbnail img {
+    height: 32px;
+    width: 32px;
+}
+
+div.timeline_element div.post-thumbnail {
+    margin-right: 8px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
 /*
-div.timeline_element div.title span.label {
+div.timeline_element div.header span.label {
     position: absolute;
     left: 0px;
     right: 100px;
@@ -331,7 +349,7 @@ div.timeline_element div.title span.label {
     display: block;
     text-overflow: ellipsis;
 }
-div.timeline_element div.title span.date {
+div.timeline_element div.header span.date {
     float: right;
 }
 */
@@ -667,3 +685,54 @@ div.timeline div.facebook_post a {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/****** START NEW TIMELINE EVENT FORM *****/
+
+div.timeline .new-event-form .form-header {
+    margin-bottom: 10px;
+    font-style: italic;
+    font-weight: bold;
+}
+
+div.timeline .new-event-form textarea,
+div.timeline .new-event-form .form-group {
+    margin-bottom: 10px;
+}
+
+div.timeline .new-event-form .date input {
+    width: 100px;
+}
+
+div.timeline .new-event-form .karma-hours input {
+    width: 50px;
+    margin-right: 10px;
+    display: inline-block;
+}
+
+div.timeline .new-event-form .karma-hours label {
+    display: inline-block;
+    font-style: italic;
+}
+
+div.timeline .new-event-form .date {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+div.timeline .new-event-form .karma-hours {
+    display: inline-block;
+}
+
+div.timeline .new-event-form .post {
+    text-align: right;
+}
+
+div.timeline .new-event-form .input-error-msg {
+    color: #b94a48;
+    font-style: italic;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+}
+
+/****** END NEW TIMELINE EVENT FORM *****/
