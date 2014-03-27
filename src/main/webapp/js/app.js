@@ -148,6 +148,10 @@ kexApp.factory( 'Events', function( FbAuthDepResource ) {
     return FbAuthDepResource.create( '/api/event/:id/:registerCtlr/:regType',
         { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' });
 } );
+kexApp.factory( 'UserManagedEvents', function( FbAuthDepResource ) {
+    return FbAuthDepResource.create( '/api/user/:userId/user_managed_event/:userManagedEventId',
+        { userId: '@userId', userManagedEventId : '@userManagedEventId' });
+} );
 kexApp.factory( 'User', function( FbAuthDepResource ) {
     return FbAuthDepResource.create( '/api/user/:id/:resource/:filter',
         { id : '@id', resource : '@resource', filter : '@filter' } );
@@ -821,40 +825,6 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUt
         getImpactViewUrl: function (event) {
             // TODO(avaliani): the impact url should be different from the event details url.
             return KexUtil.getBaseUrl() + '/#!/event/' + event.key;
-        },
-        getImpactTimelineEvents: function(eventFilter) {
-            var impactTimelineEventsGrouped = $q.defer();
-
-            if (eventFilter.userKey) {
-                User.get( { id : eventFilter.userKey, resource : 'event', type : 'PAST'},
-                    processImpactTimeline);
-            } else {
-                Events.get( { type : "PAST", keywords : eventFilter.keywords },
-                    processImpactTimeline);
-            }
-
-            return impactTimelineEventsGrouped.promise;
-
-            function processImpactTimeline(pastEvents) {
-                var eventsProcessed = [];
-                for (var idx = 0; idx < pastEvents.data.length; idx++) {
-                    var event = pastEvents.data[idx];
-                    if (event.album) {
-                        event.album.coverPhotoUrl = FbUtil.getAlbumCoverUrl(event.album.id);
-                    }
-                    if (!event.currentUserRating) {
-                        event.currentUserRating = { value: undefined };
-                    }
-
-                    eventsProcessed.push(event);
-                    if ((idx % 2) == 1) {
-                        // Spacer event.
-                        eventsProcessed.push({});
-                    }
-                }
-
-                impactTimelineEventsGrouped.resolve(eventsProcessed);
-            }
         }
     };
 });
@@ -892,6 +862,18 @@ kexApp.directive("btnLoading", function () {
             });
     }
 });
+
+/* ng-focus was not available in 1.0.8 */
+kexApp.directive('ngExFocus', ['$parse', function($parse) {
+  return function(scope, element, attr) {
+    var fn = $parse(attr['ngExFocus']);
+    element.bind('focus', function(event) {
+      scope.$apply(function() {
+        fn(scope, {$event:event});
+      });
+    });
+  }
+}]);
 
 kexApp.directive('stopClickPropagation', function () {
     return {
@@ -1025,7 +1007,7 @@ kexApp.directive('shareButtons', function(KexUtil) {
         };
     });
 
-kexApp.directive('eventParticipantImgsMini', function() {
+kexApp.directive('eventParticipantImgsMini', function(KexUtil) {
     return {
         restrict: 'E',
         scope: {
@@ -1033,11 +1015,15 @@ kexApp.directive('eventParticipantImgsMini', function() {
         },
         replace: true,
         transclude: false,
+        link: function (scope, element, attrs) {
+            scope.KexUtil = KexUtil;
+        },
         template:
             '<ul class="list-inline">' +
                 '<li ng-repeat="userImage in event.cachedParticipantImages">' +
                     '<a href="#!/user/{{userImage.participant.key}}" stop-click-propagation>' +
-                        '<img ng-src="{{userImage.imageUrl}}?type=square" class="kex-thumbnail-user-mini">' +
+                        '<img ng-src="{{KexUtil.strConcat(userImage.imageUrl,\'?type=square\')}}"' +
+                        '   class="kex-thumbnail-user-mini">' +
                     '</a>' +
                 '</li>' +
             '</ul>'
@@ -1191,19 +1177,181 @@ kexApp.directive('kexFbComments', function($facebook, $rootScope) {
     };
 });
 
-kexApp.directive('impactTimeline', function(FbUtil, EventUtil) {
+kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
+        Events, UserManagedEvents, KexUtil, $q) {
     return {
         restrict: 'E',
         scope: {
-            timelineEvents: '=',
-            selfProfileView: '=',
-            timelineType: '='
+            org: '=',
+            user: '=',
+            visible: '='
         },
         replace: true,
         transclude: false,
         link: function (scope, element, attrs) {
             scope.FbUtil = FbUtil;
             scope.EventUtil = EventUtil;
+            scope.KexUtil = KexUtil;
+
+            var setupDef = $q.defer();
+            scope.timelineSetupTracker = new PromiseTracker(setupDef.promise);
+
+            var loaded = false;
+            scope.$watch('visible', loadTimeline);
+            scope.$watch('user', loadTimeline);
+            scope.$watch('org', loadTimeline);
+
+            scope.combinedEvents = [];
+            scope.processedEvents = [];
+
+            function loadTimeline() {
+                if (!loaded && scope.visible && (scope.user || scope.org)) {
+                    loaded = true;
+                    setupDef.resolve();
+
+                    var pastEventsPromise;
+                    if (scope.user) {
+                        pastEventsPromise =
+                            User.get( { id : scope.user.key, resource : 'event', type : 'PAST'});
+                        scope.timelineType = 'USER';
+                        scope.selfProfileView = (scope.user.permission === 'ALL');
+
+                        scope.timelineSetupTracker.track(
+                            UserManagedEvents.get(
+                                { userId : scope.user.key, type: 'DESCENDING' },
+                                processUserManagedEventsFetch));
+                    } else {
+                        pastEventsPromise =
+                            Events.get( { type : "PAST", keywords : "org:" + scope.org.searchTokenSuffix });
+                        scope.timelineType = 'ORG';
+                    }
+
+                    pastEventsPromise.then(processPastEventsFetch);
+
+                    scope.timelineSetupTracker.track(pastEventsPromise);
+                }
+            }
+
+            function processPastEventsFetch(fetchResult) {
+                scope.pastEventsPaging = fetchResult.paging;
+
+                var pastEvents = fetchResult.data;
+                for (var evtIdx = 0; evtIdx < pastEvents.length; evtIdx++) {
+                    var evt = pastEvents[evtIdx];
+                    evt.managedEvent = true;
+                    if (evt.album) {
+                        evt.album.coverPhotoUrl = FbUtil.getAlbumCoverUrl(evt.album.id);
+                    }
+                }
+                addNewEvents(pastEvents);
+            }
+
+            function processUserManagedEventsFetch(fetchResult) {
+                scope.userManagedEventsPaging = fetchResult.paging;
+                addNewEvents(fetchResult.data);
+            }
+
+            scope.timelineUpdateTracker = new PromiseTracker();
+            scope.expandNewEventForm=false;
+            scope.newEvent = {};
+
+            scope.post = function() {
+                scope.newEventSubmitted = true;
+                if (!scope.newEventForm.$invalid) {
+                    var processedEvent = processNewEvent(scope.newEvent);
+                    var userManagedEventUpdatePromise =
+                        UserManagedEvents.save(
+                            { userId : scope.user.key },
+                            processedEvent );
+
+                    scope.timelineUpdateTracker.track(userManagedEventUpdatePromise);
+                    userManagedEventUpdatePromise.then(function() {
+                        addEventToTimeline(processedEvent);
+
+                        // On success the timeline will be updated. We should reset
+                        // the form.
+                        scope.newEventSubmitted = false;
+                        scope.newEvent = {};
+                        scope.expandNewEventForm=false;
+                    });
+                }
+            }
+
+            function processNewEvent(formEvent) {
+                var dbEvent = {};
+                dbEvent.title = formEvent.title;
+                dbEvent.description = formEvent.description;
+                var startTime, endTime;
+                var karmaPoints = 0;
+                if (formEvent.date) {
+                    startTime = Date.parse(formEvent.date);
+                } else {
+                    startTime = new Date().getTime();
+                }
+                if (formEvent.karmaHours) {
+                    karmaPoints = KexUtil.toKarmaPoints(formEvent.karmaHours);
+                    endTime =
+                        moment(startTime)
+                        .add('hours', formEvent.karmaHours)
+                        .toDate()
+                        .getTime();
+                } else {
+                    endTime = startTime;
+                }
+                dbEvent.startTime = startTime;
+                dbEvent.endTime = endTime;
+                dbEvent.karmaPoints = karmaPoints;
+                return dbEvent;
+            }
+
+            function addEventToTimeline(processedEvent) {
+                var timelineEvent = angular.copy(processedEvent);
+                addNewEvents([timelineEvent]);
+            }
+
+            function addNewEvents(newEvents) {
+                scope.combinedEvents =
+                    mergeEventArrays(scope.combinedEvents, newEvents);
+                scope.processedEvents =
+                    processKarmaTimelineEvents(scope.combinedEvents);
+            }
+
+            function processKarmaTimelineEvents(events) {
+                var eventsProcessed = [];
+                for (var idx = 0; idx < events.length; idx++) {
+                    var event = events[idx];
+                    if (!event.currentUserRating) {
+                        event.currentUserRating = { value: undefined };
+                    }
+
+                    eventsProcessed.push(event);
+                    if ((idx % 2) == 1) {
+                        // Spacer event.
+                        eventsProcessed.push({});
+                    }
+                }
+                return eventsProcessed;
+            }
+
+            function mergeEventArrays(evts1, evts2) {
+                var mergedArray = [];
+                var evts1Idx = 0;
+                var evts2Idx = 0;
+                while ((evts1Idx < evts1.length) && (evts2Idx < evts2.length)) {
+                    var evt1 = evts1[evts1Idx];
+                    var evt2 = evts2[evts2Idx];
+                    if (evt1.startTime > evt2.startTime) {
+                        mergedArray.push(evt1);
+                        evts1Idx++;
+                    } else {
+                        mergedArray.push(evt2);
+                        evts2Idx++;
+                    }
+                }
+                mergedArray = mergedArray.concat(evts1.slice(evts1Idx));
+                mergedArray = mergedArray.concat(evts2.slice(evts2Idx));
+                return mergedArray;
+            }
         },
         templateUrl: 'template/kex/impact-timeline.html'
     };
@@ -1240,7 +1388,7 @@ kexApp.directive('orgEventSummary', function(FbUtil) {
     };
 });
 
-kexApp.directive('eventParticipantSummary', function() {
+kexApp.directive('eventParticipantSummary', function(KexUtil) {
     return {
         restrict: 'E',
         scope: {
@@ -1255,6 +1403,8 @@ kexApp.directive('eventParticipantSummary', function() {
             if (!attrs.karmaPointsDisplayType) { attrs.karmaPointsDisplayType = 'BRIEF'; }
 
             return function (scope, element, attrs) {
+                scope.KexUtil = KexUtil;
+
                 function updateKarmaPoints() {
                     if (angular.isDefined(scope.karmaPoints)) {
                         scope.summaryKarmaPoints = scope.karmaPoints;
@@ -1384,20 +1534,24 @@ kexApp.directive('numWithType', function() {
     };
 });
 
-var FLOAT_GEQ_ZERO = /^((\d+(\.(\d+)?)?)|(\.\d+))$/;
 kexApp.directive('floatGeqZero', function() {
+  var FLOAT_GEQ_ZERO = /^((\d+(\.(\d+)?)?)|(\.\d+))$/;
   return {
     require: 'ngModel',
     link: function(scope, elm, attrs, ctrl) {
       ctrl.$parsers.unshift(function(viewValue) {
-        if (FLOAT_GEQ_ZERO.test(viewValue)) {
-          // it is valid
-          ctrl.$setValidity('floatGeqZero', true);
-          return viewValue;
+        // Let required take care of empty inputs
+        if ((viewValue === undefined) || (viewValue === '')) {
+            ctrl.$setValidity('floatGeqZero', true);
+            return undefined;
+        } else if (FLOAT_GEQ_ZERO.test(viewValue)) {
+            // it is valid
+            ctrl.$setValidity('floatGeqZero', true);
+            return viewValue;
         } else {
-          // it is invalid, return undefined (no model update)
-          ctrl.$setValidity('floatGeqZero', false);
-          return undefined;
+            // it is invalid, return undefined (no model update)
+            ctrl.$setValidity('floatGeqZero', false);
+            return undefined;
         }
       });
     }
@@ -1484,7 +1638,8 @@ kexApp.directive('truncateAndLink', function($rootScope, KexUtil) {
  */
 
 var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
-        $modal, EventUtil, KexUtil, urlTabsetUtil, KarmaGoalUtil, MeUtil) {
+        $modal, EventUtil, KexUtil, urlTabsetUtil, KarmaGoalUtil, MeUtil,
+        UserManagedEvents) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
 
@@ -1494,13 +1649,11 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     tabManager.init();
     $scope.tabs = tabManager.tabs;
 
-    $scope.impactTimelineFetchTracker = new PromiseTracker();
     $scope.upcomingEventsFetchTracker = new PromiseTracker();
 
     function load() {
         if ($location.path() == "/me") {
             $scope.who = 'My';
-            $scope.impactTimelineFetchTracker.track(MeUtil.me());
             $scope.upcomingEventsFetchTracker.track(MeUtil.me());
             MeUtil.me().then(function(meObj) {
                 $scope.me = meObj;
@@ -1509,6 +1662,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                 $scope.userGoalInfo = $rootScope.goalInfo;
 
                 // Tab information depends on the user being fetched first.
+                $scope.meLoaded = true;
                 tabManager.reloadActiveTab();
                 postUserKeyResolutionCbs();
             });
@@ -1525,6 +1679,10 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
                     $scope.who = $scope.me.firstName + "'s";
                     $scope.userGoalInfo = {};
                     KarmaGoalUtil.loadKarmaGoalInfo($scope.me, KexUtil.getFirstOfMonth(new Date()), $scope.userGoalInfo);
+
+                    // Tab information depends on the user being fetched first.
+                    $scope.meLoaded = true;
+                    tabManager.reloadActiveTab();
                 });
             postUserKeyResolutionCbs();
         }
@@ -1558,12 +1716,8 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     }
 
     function loadImpactTab() {
-        if (!$scope.impactTabLoaded && $scope.userKey) {
-            $scope.impactTabLoaded = true;
-            $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({
-                userKey: $scope.userKey
-            });
-            $scope.impactTimelineFetchTracker.track($scope.impactTimelineEvents);
+        if (!$scope.loadKarmaTab && $scope.meLoaded) {
+            $scope.loadKarmaTab = true;
         }
     }
 
@@ -1725,7 +1879,6 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
             tabManager.reloadActiveTab();
         });
 
-    $scope.impactTimelineFetchTracker = new PromiseTracker(orgPromise);
     $scope.upcomingEventsFetchTracker = new PromiseTracker(orgPromise);
     $scope.topVolunteersFetchTracker = new PromiseTracker(orgPromise);
 
@@ -1739,12 +1892,8 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
         });
 
     function loadImpactTab() {
-        if (!$scope.impactTabLoaded && $scope.orgLoaded) {
-            $scope.impactTabLoaded = true;
-            $scope.impactTimelineEvents = EventUtil.getImpactTimelineEvents({
-                keywords: "org:" + $scope.org.searchTokenSuffix
-            });
-            $scope.impactTimelineFetchTracker.track($scope.impactTimelineEvents);
+        if (!$scope.loadKarmaTab && $scope.orgLoaded) {
+            $scope.loadKarmaTab = true;
         }
     }
 

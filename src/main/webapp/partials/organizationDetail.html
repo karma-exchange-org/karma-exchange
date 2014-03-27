@@ -148,16 +148,13 @@
                 <tab-heading>
                     <i class="icon-bolt">
                     </i>
-                    Impact
+                    Karma Timeline
                 </tab-heading>
 
-                <div ng-show="impactTimelineFetchTracker.isPending()">
-                    <loading-message msg="impact timeline" class="in-tab"></loading-message>
-                </div>
-
-                <div ng-show="!impactTimelineFetchTracker.isPending()">
-                    <impact-timeline timeline-events="impactTimelineEvents" timeline-type="'ORG'"></impact-timeline>
-                </div>
+                <impact-timeline
+                    visible="loadKarmaTab"
+                    org="org">
+                </impact-timeline>
 
             </tab>
             <tab active="tabs.upcoming.active" select="tabManager.select('upcoming')">
