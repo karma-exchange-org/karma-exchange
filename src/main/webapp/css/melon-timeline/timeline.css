@@ -700,7 +700,7 @@ div.timeline .new-event-form .form-group {
 }
 
 div.timeline .new-event-form .date input {
-    width: 100px;
+    width: 105px;
 }
 
 div.timeline .new-event-form .karma-hours input {
@@ -714,13 +714,14 @@ div.timeline .new-event-form .karma-hours label {
     font-style: italic;
 }
 
-div.timeline .new-event-form .date {
-    display: inline-block;
-    margin-right: 10px;
-}
-
+div.timeline .new-event-form .date,
 div.timeline .new-event-form .karma-hours {
     display: inline-block;
+    vertical-align: top;
+}
+
+div.timeline .new-event-form .date {
+    margin-right: 10px;
 }
 
 div.timeline .new-event-form .post {
