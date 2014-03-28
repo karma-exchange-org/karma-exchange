@@ -52,21 +52,45 @@ kexApp = angular.module( "kexApp",
     ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "ngFacebook",
      "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs"] )
 
-.filter( 'newlines', function( ) {
-    return function ( text ) {
-        if ( text ) {
-            return text.replace( /\n/g, '<br/>' );
-        }
-    };
-})
+.filter( 'textToHtml', function() {
+    var options = {
+        callback: function( text, href ) {
+            if ( href ) {
+                var trimmedText = trimLinkText(text);
+                var hrefEscaped = escapeHtml(href);
+                var hrefText = '<a href="' + hrefEscaped +
+                    '" title="' + hrefEscaped + '">' + escapeHtml(trimmedText) + '</a>';
+                return hrefText;
+            } else {
+                var noHtmlText = escapeHtml(text);
+                // preserve newlines
+                return noHtmlText.replace( /\n/g, '<br/>' );
+            }
 
-.filter( 'noHTML', function( ) {
-    return function ( text ) {
-        if( text ) {
-            return text.replace( /&/g, '&amp;' ).replace( />/g, '&gt;' ).replace( /</g, '&lt;' );
-        }
+        },
+        punct_regexp: /(?:[!?.,:;'"]|(?:&|&amp;)(?:lt|gt|quot|apos|raquo|laquo|rsaquo|lsaquo);)$/
     };
-} )
+
+    function escapeHtml(str) {
+        return str.replace( /&/g, '&amp;' ).replace( />/g, '&gt;' ).replace( /</g, '&lt;' );
+    }
+
+    function trimLinkText(str) {
+        var MAX_LINK_TEXT_LEN = 30;
+        if (str.length > MAX_LINK_TEXT_LEN) {
+            return str.slice(0, MAX_LINK_TEXT_LEN) + "...";
+        } else {
+            return str;
+        }
+    }
+
+    return function ( text ) {
+        if (text) {
+            return linkify(text, options);
+        }
+    }
+
+})
 
 .filter( 'limit10', function( ) {
     return function( text ) {

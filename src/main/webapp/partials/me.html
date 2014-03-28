@@ -140,12 +140,12 @@
                                 <div ng-switch on="me.permission">
 
                                     <div ng-switch-when="ALL">
-                                        <p ng-show="me.about" ng-bind-html-unsafe="me.about | noHTML | newlines" />
+                                        <p ng-show="me.about" ng-bind-html-unsafe="me.about | textToHtml" />
                                         <p ng-hide="me.about"><em>Click here to write a few words about yourself</em></p>
                                     </div>
 
                                     <div ng-switch-default>
-                                        <p ng-bind-html-unsafe="me.about | noHTML | newlines" />
+                                        <p ng-bind-html-unsafe="me.about | textToHtml" />
                                     </div>
 
                                 </div>
