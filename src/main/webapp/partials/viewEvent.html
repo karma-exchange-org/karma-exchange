@@ -200,7 +200,7 @@
                                         </strong>
                                     </h4>
 
-                                    <span ng-bind-html-unsafe="event.description | noHTML | newlines">
+                                    <span ng-bind-html-unsafe="event.description | textToHtml">
                                     </span>
                                 </div>
                                 <div ng-show="event.specialInstructions" class="event-description-sub-panel">
@@ -209,7 +209,7 @@
                                             Special instructions
                                         </strong>
                                     </h4>
-                                    <span ng-bind-html-unsafe="event.specialInstructions | noHTML | newlines">
+                                    <span ng-bind-html-unsafe="event.specialInstructions | textToHtml">
                                     </span>
                                 </div>
                                 <div class="event-description-sub-panel">
@@ -255,7 +255,7 @@
                                     <div>
                                         <h4><strong>Impact summary</strong></h4>
                                     </div>
-                                    <div ng-bind-html-unsafe="event.impactSummary | noHTML | newlines">
+                                    <div ng-bind-html-unsafe="event.impactSummary | textToHtml">
                                     </div>
                                 </div>
 

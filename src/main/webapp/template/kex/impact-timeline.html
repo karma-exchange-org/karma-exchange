@@ -141,7 +141,7 @@
                             <div class="border-top-1">
                             </div>
                             <div>
-                                <div class="vertical-panel-padding impact-summary" ng-bind-html-unsafe="event.description | noHTML | newlines">
+                                <div class="vertical-panel-padding impact-summary" ng-bind-html-unsafe="event.description | textToHtml">
                                 </div>
                             </div>
                         </div>
@@ -217,7 +217,7 @@
                             <div class="border-top-1">
                             </div>
                             <div>
-                                <div class="vertical-panel-padding impact-summary" ng-bind-html-unsafe="event.impactSummary | noHTML | newlines">
+                                <div class="vertical-panel-padding impact-summary" ng-bind-html-unsafe="event.impactSummary | textToHtml">
                                 </div>
                             </div>
                         </div>
