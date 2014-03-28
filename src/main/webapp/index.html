@@ -172,7 +172,7 @@
                             <a href="#!/event">Find Events</a>
                         </li>
                         <li ng-show="me" ng-class="{ active: isActive('#!/me') }">
-                            <a href="#!/me">My Events</a>
+                            <a href="#!/me">My Profile</a>
                         </li>
                         <li class="dropdown">
                             <a href="" class="dropdown-toggle" toggle="dropdown">More <b class="caret"></b></a>
@@ -224,10 +224,16 @@
                             <a href="#" class="dropdown-toggle display-default-and-smaller" toggle="dropdown">Settings <b class="caret"></b></a>
                             <ul class="dropdown-menu">
                                 <li>
-                                    <a href="#!/mysettings">Profile</a>
+                                    <a href="#!/mysettings">
+                                        <div class="nav-icon"><i class="icon-cog"></i></div>
+                                        Edit profile
+                                    </a>
                                 </li>
                                 <li>
-                                    <a href="/#" ng-click="fbUtil.logout()">Logout</a>
+                                    <a href="/#" ng-click="fbUtil.logout()">
+                                        <div class="nav-icon"><i class="icon-off"></i></div>
+                                        Logout
+                                    </a>
                                 </li>
                             </ul>
                         </li>

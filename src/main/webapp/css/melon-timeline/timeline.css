@@ -11,7 +11,7 @@ div.timeline div.row_separator {
 }
 
 div.timeline {
-    font-family: 'lucida grande',tahoma,verdana,arial,sans-serif;
+    font-family: arial,sans-serif;
     position: relative;
     overflow: hidden;
     margin: 0px auto;
@@ -308,12 +308,28 @@ div.timeline.center div.column_center div.timeline_element:after {
 
 div.timeline_element div.header {
     position: relative;
-    padding: 10px;
-/*    font-size: 10px;
-    overflow: hidden;
-    margin: 10px;
-    text-transform: uppercase;*/
+    padding: 20px 20px 10px 20px;
 }
+div.timeline_element.new-event div.header {
+    padding: 10px;
+}
+div.timeline_element div.header div.org-name {
+    text-transform: uppercase;
+    font-size: 11px;
+}
+@media(min-width:768px) {
+    div.timeline_element div.header div.title-and-thumbnail {
+        max-width: 210px;
+    }
+    div.timeline_element div.header div.org-name {
+        max-width: 160px;
+    }
+}
+
+div.timeline_element div.info {
+    margin-bottom: 10px;
+}
+
 div.timeline_element div.footer {
     position: relative;
     min-height: 10px;
@@ -324,7 +340,7 @@ div.timeline_element div.footer {
 }
 
 div.timeline_element div.karma-hour {
-    padding-left: 30px;
+    padding-left: 20px;
 }
 
 div.timeline_element div.post-thumbnail img {
@@ -333,8 +349,10 @@ div.timeline_element div.post-thumbnail img {
 }
 
 div.timeline_element div.post-thumbnail {
+    margin-top: 1px;
     margin-right: 8px;
     margin-bottom: 5px;
+    margin-left: 1px;
     border-radius: 4px;
     overflow: hidden;
 }
@@ -469,7 +487,8 @@ div.timeline_element.blog_post div.content {
     padding: 0px 10px 10px 10px;
 }
 div.timeline_element.blog_post div.impact-summary {
-    font-style: italic;
+    line-height: 1.38;
+    margin-top: 10px;
 }
 
 div.timeline_element.blog_post div.img_container {

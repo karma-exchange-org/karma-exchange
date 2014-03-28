@@ -105,10 +105,10 @@
             <div class="timeline_element blog_post animated" ng-class="{'first': ($first && !selfProfileView), 'last': $last}" ng-show="($index % 3) != 2">
 
                 <div class="header" ng-show="!event.managedEvent">
-                    <div class="row">
+                    <div class="row info">
                         <div class="col-md-12">
 
-                            <div class="pull-left">
+                            <div class="pull-left title-and-thumbnail">
                                 <h4 class="margin-0">
                                     <strong>
                                         <strong>{{event.title}} </strong>
@@ -141,7 +141,7 @@
                             <div class="border-top-1">
                             </div>
                             <div>
-                                <div class="vertical-panel-padding impact-summary" ng-bind-html-unsafe="event.description | textToHtml">
+                                <div class="impact-summary" ng-bind-html-unsafe="event.description | textToHtml">
                                 </div>
                             </div>
                         </div>
@@ -150,10 +150,11 @@
                 </div>
 
                 <div class="header" ng-show="event.managedEvent">
-                    <div class="row">
+
+                    <div class="row info">
                         <div class="col-md-12">
 
-                            <div class="pull-left">
+                            <div class="pull-left title-and-thumbnail">
                                 <h4 class="margin-0">
                                     <strong>
                                         <a href="#!/event/{{event.key}}"><strong>{{event.title}} </strong></a>
@@ -167,7 +168,7 @@
                                         </a>
                                     </div>
                                     <div class="pull-left">
-                                        <div>
+                                        <div class="org-name">
                                             <a href="#!/org/{{event.organization.key}}">
                                                 {{event.organizationDetails.orgName}}
                                             </a>
@@ -217,7 +218,7 @@
                             <div class="border-top-1">
                             </div>
                             <div>
-                                <div class="vertical-panel-padding impact-summary" ng-bind-html-unsafe="event.impactSummary | textToHtml">
+                                <div class="impact-summary" ng-bind-html-unsafe="event.impactSummary | textToHtml">
                                 </div>
                             </div>
                         </div>
