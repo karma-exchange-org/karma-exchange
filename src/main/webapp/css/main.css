@@ -426,15 +426,6 @@ img.kex-thumbnail-user-mini {
   margin-bottom: 0;
 }
 
-.alert-float {
-  position : fixed;
-  z-index : 100;
-}
-
-.alert-float .alert {
-  margin-bottom: 0;
-}
-
 .well-no-margin {
   margin-bottom: 0;
 }
@@ -442,6 +433,30 @@ img.kex-thumbnail-user-mini {
 .table-no-margin {
   margin-bottom: 0;
 }
+
+
+/*** FLOATING ALERT / WARNINGS ***/
+
+.alert-float {
+  position : fixed;
+  left: 0;
+  right: 0;
+  top: 99px;
+  z-index : 100;
+}
+
+@media(max-width:767px) {
+  .alert-float {
+    top: 65px;
+  }
+}
+
+.alert-float .alert {
+  margin: 0 auto;
+  max-width: 870px;
+}
+
+/*** END FLOATING ALERT / WARNINGS ***/
 
 /*
  * Image and text side by side. Text wraps next to the image instead of under it.
