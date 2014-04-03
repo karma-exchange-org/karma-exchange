@@ -1334,6 +1334,7 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
             }
 
             function addNewEvents(newEvents) {
+                scope.now = new Date().getTime();
                 scope.combinedEvents =
                     mergeEventArrays(scope.combinedEvents, newEvents);
                 scope.processedEvents =
@@ -1375,6 +1376,10 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
                 mergedArray = mergedArray.concat(evts1.slice(evts1Idx));
                 mergedArray = mergedArray.concat(evts2.slice(evts2Idx));
                 return mergedArray;
+            }
+
+            scope.isUpcomingEvent = function(event) {
+                return angular.isDefined(event.startTime) && (event.startTime > scope.now);
             }
         },
         templateUrl: 'template/kex/impact-timeline.html'
@@ -1654,6 +1659,39 @@ kexApp.directive('truncateAndLink', function($rootScope, KexUtil) {
             }
         },
         templateUrl: 'template/kex/truncate-and-link.html'
+    };
+});
+
+kexApp.directive('truncateWithToggle', function($rootScope, KexUtil) {
+    return {
+        restrict: 'E',
+        scope: {
+            text: '=',
+            toggleExpandText: '@',
+            limit: '@'
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.$watch('text', updateText);
+            scope.$watch('limit', updateText);
+
+            function updateText() {
+                if (  angular.isDefined(scope.text) &&
+                      angular.isDefined(scope.limit)  ) {
+                    var result =
+                        KexUtil.truncateToWordBoundary(scope.text, scope.limit);
+                    scope.output = result.str;
+                    scope.truncated = result.truncated;
+                }
+            }
+
+            scope.expand = function() {
+                scope.output = scope.text;
+                scope.truncated = false;
+            }
+        },
+        templateUrl: 'template/kex/truncate-with-toggle.html'
     };
 });
 
