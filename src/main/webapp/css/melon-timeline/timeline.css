@@ -306,6 +306,7 @@ div.timeline.center div.column_center div.timeline_element:after {
     }
 }
 
+
 div.timeline_element div.header {
     position: relative;
     padding: 20px 20px 10px 20px;
@@ -313,17 +314,87 @@ div.timeline_element div.header {
 div.timeline_element.new-event div.header {
     padding: 10px;
 }
-div.timeline_element div.header div.org-name {
-    text-transform: uppercase;
-    font-size: 11px;
+
+div.timeline_element div.header h4 {
+    margin: 0;
 }
+
+
+div.timeline_element div.header div.title-and-thumbnail-col {
+    float: left;
+}
+/* This is not perfect but it works for big screens. */
 @media(min-width:768px) {
-    div.timeline_element div.header div.title-and-thumbnail {
-        max-width: 210px;
+    div.timeline_element div.header div.title-and-thumbnail-col {
+        max-width: 192px;
     }
-    div.timeline_element div.header div.org-name {
-        max-width: 160px;
-    }
+}
+
+div.timeline_element div.thumbnail-row {
+    margin-top: 3px;
+}
+
+div.timeline_element div.thumbnail-row div.thumbnail-img {
+    float: left;
+
+    margin-top: 1px;
+    margin-right: 8px;
+    margin-bottom: 5px;
+    margin-left: 1px;
+    border-radius: 4px;
+    overflow: hidden;
+
+    width: 32px;
+}
+
+div.timeline_element div.thumbnail-row div.thumbnail-img img {
+    height: 32px;
+    width: 32px;
+}
+
+div.timeline_element div.thumbnail-row div.thumbnail-org-and-date {
+    padding-top: 3px; /* TODO(avaliani): understand why margin-top doesn't work. */
+}
+
+div.timeline_element div.thumbnail-row div.thumbnail-org-and-date {
+    margin-left: 41px; /* 32px (img) + 1px (left-margin) + 8px (right-margin) */
+}
+
+div.timeline_element div.thumbnail-row div.thumbnail-org-and-date div.event-date {
+    font-size: 85%;
+}
+
+div.timeline_element div.thumbnail-row div.thumbnail-org-and-date div.org-name {
+    text-transform: uppercase;
+    font-size: 10px;
+}
+
+
+
+div.timeline_element div.header div.karma-hour-col {
+    float: right;
+    width: 166px;
+    padding-left: 20px;
+}
+
+div.timeline_element div.karma-hour-col div.karma-hour,
+div.timeline_element div.karma-hour-col div.registration-info,
+div.timeline_element div.karma-hour-col div.event-rating {
+    float: right;
+    clear: right;
+}
+
+div.timeline_element div.karma-hour-col div.registration-info {
+    margin-bottom: 5px;
+}
+
+div.timeline_element div.header div.impact-summary {
+    clear: both;
+
+    line-height: 1.38;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #999;
 }
 
 div.timeline_element div.info {
@@ -333,29 +404,13 @@ div.timeline_element div.info {
 div.timeline_element div.footer {
     position: relative;
     min-height: 10px;
+    clear: both;
 /*    font-size: 10px;
     overflow: hidden;
     margin: 10px;
     text-transform: uppercase;*/
 }
 
-div.timeline_element div.karma-hour {
-    padding-left: 20px;
-}
-
-div.timeline_element div.post-thumbnail img {
-    height: 32px;
-    width: 32px;
-}
-
-div.timeline_element div.post-thumbnail {
-    margin-top: 1px;
-    margin-right: 8px;
-    margin-bottom: 5px;
-    margin-left: 1px;
-    border-radius: 4px;
-    overflow: hidden;
-}
 
 /*
 div.timeline_element div.header span.label {
@@ -373,6 +428,7 @@ div.timeline_element div.header span.date {
 */
 div.timeline_element div.img_container {
     position: relative;
+    clear: both;
 }
 div.timeline_element div.img_overlay {
     position: absolute;
@@ -485,10 +541,6 @@ div.timeline_element.iframe.notitle div.content iframe {
 div.timeline_element.blog_post div.content {
     font-size: 13px;
     padding: 0px 10px 10px 10px;
-}
-div.timeline_element.blog_post div.impact-summary {
-    line-height: 1.38;
-    margin-top: 10px;
 }
 
 div.timeline_element.blog_post div.img_container {

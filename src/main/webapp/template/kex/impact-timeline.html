@@ -105,123 +105,106 @@
             <div class="timeline_element blog_post animated" ng-class="{'first': ($first && !selfProfileView), 'last': $last}" ng-show="($index % 3) != 2">
 
                 <div class="header" ng-show="!event.managedEvent">
-                    <div class="row info">
-                        <div class="col-md-12">
 
-                            <div class="pull-left title-and-thumbnail">
-                                <h4 class="margin-0">
-                                    <strong>
-                                        <strong>{{event.title}} </strong>
-                                    </strong>
-                                </h4>
+                    <div class="cf">
 
-                                <div>
-                                    <div class="pull-left post-thumbnail">
-                                        <img ng-src="{{KexUtil.strConcat(user.profileImage.url,'?type=square')}}">
-                                    </div>
-                                    <div class="pull-left">
-                                        <div><small>{{event.startTime | date:'mediumDate'}}</small></div>
+                        <div class="title-and-thumbnail-col">
+                            <h4>
+                                <strong>
+                                    <strong>{{event.title}} </strong>
+                                </strong>
+                            </h4>
+
+                            <div class="thumbnail-row">
+                                <div class="thumbnail-img">
+                                    <img ng-src="{{KexUtil.strConcat(user.profileImage.url,'?type=square')}}">
+                                </div>
+                                <div class="thumbnail-org-and-date">
+                                    <div class="event-date">
+                                        {{event.startTime | date:'mediumDate'}}
                                     </div>
                                 </div>
-
                             </div>
 
+                        </div>
 
-                            <div class="pull-right karma-hour" ng-show="event.karmaPoints != 0">
-                                <h4 class="margin-0">
+                        <div class="karma-hour-col cf" ng-show="event.karmaPoints != 0">
+                            <div class="karma-hour">
+                                <h4>
                                     <karma-hours karma-points="event.karmaPoints"></karma-hours>
                                 </h4>
                             </div>
-
                         </div>
+
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="border-top-1">
-                            </div>
-                            <div>
-                                <div class="impact-summary" ng-bind-html-unsafe="event.description | textToHtml">
-                                </div>
-                            </div>
-                        </div>
+
+                    <div class="impact-summary" ng-bind-html-unsafe="event.description | textToHtml">
                     </div>
 
                 </div>
 
                 <div class="header" ng-show="event.managedEvent">
 
-                    <div class="row info">
-                        <div class="col-md-12">
+                    <div class="cf">
 
-                            <div class="pull-left title-and-thumbnail">
-                                <h4 class="margin-0">
-                                    <strong>
-                                        <a href="#!/event/{{event.key}}"><strong>{{event.title}} </strong></a>
-                                    </strong>
-                                </h4>
 
-                                <div>
-                                    <div class="pull-left post-thumbnail">
+                        <div class="title-and-thumbnail-col">
+                            <h4>
+                                <strong>
+                                    <a href="#!/event/{{event.key}}"><strong>{{event.title}} </strong></a>
+                                </strong>
+                            </h4>
+
+                            <div class="thumbnail-row">
+                                <div class="thumbnail-img">
+                                    <a href="#!/org/{{event.organization.key}}">
+                                        <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}">
+                                    </a>
+                                </div>
+                                <div class="thumbnail-org-and-date">
+                                    <div class="org-name">
                                         <a href="#!/org/{{event.organization.key}}">
-                                            <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}">
+                                            {{event.organizationDetails.orgName}}
                                         </a>
                                     </div>
-                                    <div class="pull-left">
-                                        <div class="org-name">
-                                            <a href="#!/org/{{event.organization.key}}">
-                                                {{event.organizationDetails.orgName}}
-                                            </a>
-                                        </div>
-                                        <div><small>{{event.startTime | date:'mediumDate'}}</small></div>
-                                    </div>
-                                </div>
-
-                            </div>
-
-                            <div class="pull-right">
-                                <div class="karma-hour">
-                                    <h4 class="pull-right margin-0">
-                                        <karma-hours karma-points="event.karmaPoints"></karma-hours>
-                                    </h4>
-                                </div>
-                                <div>
-                                    <div class="pull-right">
-                                        <event-registration-info
-                                            registration-info="event.registrationInfo"
-                                            user-registration-info="event.userEventSearchInfo.registrationInfo"
-                                            type="{USER:'USER-PAST', ORG:'ORG-PAST'}[timelineType]">
-                                        </event-registration-info>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div ng-show="selfProfileView && EventUtil.canWriteReview(event)" class="pull-right">
-                                        <event-user-rating
-                                            user-rating="event.currentUserRating"
-                                            event-key="event.key">
-                                        </event-user-rating>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div ng-hide="selfProfileView && EventUtil.canWriteReview(event)" class="pull-right">
-                                        <aggregate-rating value="event.rating">
-                                        </aggregate-rating>
+                                    <div class="event-date">
+                                        {{event.startTime | date:'mediumDate'}}
                                     </div>
                                 </div>
                             </div>
 
                         </div>
+
+                        <div class="karma-hour-col cf">
+                            <div class="karma-hour">
+                                <h4>
+                                    <karma-hours karma-points="event.karmaPoints"></karma-hours>
+                                </h4>
+                            </div>
+                            <div class="registration-info">
+                                <event-registration-info
+                                    registration-info="event.registrationInfo"
+                                    user-registration-info="event.userEventSearchInfo.registrationInfo"
+                                    type="{USER:'USER-PAST', ORG:'ORG-PAST'}[timelineType]">
+                                </event-registration-info>
+                            </div>
+                            <div class="event-rating" ng-show="selfProfileView && EventUtil.canWriteReview(event)">
+                                <event-user-rating
+                                    user-rating="event.currentUserRating"
+                                    event-key="event.key">
+                                </event-user-rating>
+                            </div>
+                            <div class="event-rating" ng-hide="selfProfileView && EventUtil.canWriteReview(event)">
+                                <aggregate-rating value="event.rating">
+                                </aggregate-rating>
+                            </div>
+                        </div>
+
                     </div>
 
-                    <div class="row" ng-show="event.impactSummary">
-                        <div class="col-md-12">
-                            <div class="border-top-1">
-                            </div>
-                            <div>
-                                <div class="impact-summary" ng-bind-html-unsafe="event.impactSummary | textToHtml">
-                                </div>
-                            </div>
-                        </div>
+
+                    <div class="impact-summary" ng-show="event.impactSummary" ng-bind-html-unsafe="event.impactSummary | textToHtml">
                     </div>
 
                 </div>
