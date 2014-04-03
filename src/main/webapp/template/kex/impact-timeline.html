@@ -104,6 +104,10 @@
 
             <div class="timeline_element blog_post animated" ng-class="{'first': ($first && !selfProfileView), 'last': $last}" ng-show="($index % 3) != 2">
 
+                <div class="upcoming-label" ng-show="isUpcomingEvent(event)">
+                    Upcoming
+                </div>
+
                 <div class="header" ng-show="!event.managedEvent">
 
                     <div class="cf">
@@ -138,8 +142,9 @@
 
                     </div>
 
-
-                    <div class="impact-summary" ng-bind-html-unsafe="event.description | textToHtml">
+                    <div class="impact-summary">
+                        <truncate-with-toggle text="event.description" limit="500" toggle-expand-text="(more)">
+                        </truncate-with-toggle>
                     </div>
 
                 </div>
@@ -204,7 +209,9 @@
                     </div>
 
 
-                    <div class="impact-summary" ng-show="event.impactSummary" ng-bind-html-unsafe="event.impactSummary | textToHtml">
+                    <div class="impact-summary" ng-show="event.impactSummary">
+                        <truncate-with-toggle text="event.impactSummary" limit="500" toggle-expand-text="(more)">
+                        </truncate-with-toggle>
                     </div>
 
                 </div>
