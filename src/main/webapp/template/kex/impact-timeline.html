@@ -108,6 +108,10 @@
                     Upcoming
                 </div>
 
+                <div class="delete-icon" ng-show="!event.managedEvent" ng-click="delete(event)">
+                    <i class="icon-remove"></i>
+                </div>
+
                 <div class="header" ng-show="!event.managedEvent">
 
                     <div class="cf">

@@ -343,7 +343,7 @@ kexApp.factory('RecyclablePromiseFactory', function($q) {
     };
 });
 
-kexApp.factory('KexUtil', function($location) {
+kexApp.factory('KexUtil', function($location, $modal) {
     return {
         getBaseUrl: function() {
             return window.location.protocol + '//' + window.location.host;
@@ -359,6 +359,16 @@ kexApp.factory('KexUtil', function($location) {
         },
         stripHashbang: function(url) {
             return (url.indexOf('#!') === 0) ? url.substring(2) : url;
+        },
+        getSavedResourceKey: function(getResponseHeaderCb) {
+            var locationHdr = getResponseHeaderCb('location');
+            if (angular.isDefined(locationHdr)) {
+                var idx = locationHdr.lastIndexOf('/');
+                if ((idx != -1) && ((idx + 1) < locationHdr.length)) {
+                    return locationHdr.slice(idx + 1, locationHdr.length);
+                }
+            }
+            return undefined;
         },
         getSEOUrl: function(){
             return window.location.protocol + '//' + window.location.host + "?_escaped_fragment_=" + window.location.hash.replace('#!','');
@@ -396,6 +406,10 @@ kexApp.factory('KexUtil', function($location) {
         },
 
         truncateToWordBoundary: function(str, lim) {
+            if (!str) {
+                return { str: str, tuncated: false };
+            }
+
             var truncSuffix = "...";
             lim = Math.max(lim, truncSuffix.length);
             var tooLong = str.length > lim;
@@ -412,6 +426,23 @@ kexApp.factory('KexUtil', function($location) {
 
         setLocation: function (path) {
             $location.path(this.stripHashbang(path));
+        },
+
+        createConfirmationModal: function(modalText) {
+            var modalInstance = $modal.open({
+                backdrop: false,
+                templateUrl: 'template/kex/confirmation-modal.html',
+                controller: 'ConfirmationModalInstanceCtrl',
+                resolve:
+                    {
+                        modalText: function () {
+                            return modalText;
+                        }
+                    }
+            });
+
+            return modalInstance.result;
+
         }
     };
 });
@@ -1286,19 +1317,46 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
                     var userManagedEventUpdatePromise =
                         UserManagedEvents.save(
                             { userId : scope.user.key },
-                            processedEvent );
+                            processedEvent,
+                            getProcessSaveCb(processedEvent));
 
                     scope.timelineUpdateTracker.track(userManagedEventUpdatePromise);
-                    userManagedEventUpdatePromise.then(function() {
-                        addEventToTimeline(processedEvent);
-
-                        // On success the timeline will be updated. We should reset
-                        // the form.
-                        scope.newEventSubmitted = false;
-                        scope.newEvent = {};
-                        scope.expandNewEventForm=false;
-                    });
                 }
+            }
+
+            function getProcessSaveCb(processedEvent) {
+                return function (value, getResponseHeaderCb) {
+                    processedEvent.key = KexUtil.getSavedResourceKey(getResponseHeaderCb);
+                    addEventToTimeline(processedEvent);
+
+                    // On success the timeline will be updated. We should reset
+                    // the form.
+                    scope.newEventSubmitted = false;
+                    scope.newEvent = {};
+                    scope.expandNewEventForm=false;
+                }
+            }
+
+
+            scope.delete = function(event) {
+                KexUtil.createConfirmationModal("Are you sure you want to delete this post?")
+                    .then( function() {
+                        var evtIdx = scope.combinedEvents.findIndexExt( function(element) {
+                            return element.key === event.key;
+                        });
+                        if (evtIdx != -1) {
+                            UserManagedEvents.delete(
+                                {
+                                    userId : scope.user.key,
+                                    userManagedEventId : event.key
+                                });
+
+                            /* Assume the delete will be succesful and immediately delete the event. */
+                            scope.combinedEvents.splice(evtIdx, 1);
+                            scope.processedEvents =
+                                processKarmaTimelineEvents(scope.combinedEvents);
+                        }
+                    });
             }
 
             function processNewEvent(formEvent) {
@@ -2921,6 +2979,22 @@ kexApp.controller('NavbarController',
 
     $scope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
 }]);
+
+kexApp.controller(
+    'ConfirmationModalInstanceCtrl',
+    [
+        '$scope', '$modalInstance', 'modalText',
+        function($scope, $modalInstance, modalText) {
+            $scope.modalText = modalText;
+            $scope.confirm = function () {
+                $modalInstance.close();
+            };
+
+            $scope.cancel = function () {
+                $modalInstance.dismiss();
+            };
+        }
+    ]);
 
 var EventModalInstanceCtrl = function ($scope, $modalInstance, event, header, $rootScope) {
     $scope.event = event;
