@@ -16,6 +16,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EnumSet;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +55,7 @@ import org.karmaexchange.dao.Rating;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.SuitableForType;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.UserManagedEvent;
 import org.karmaexchange.dao.UserUsage;
 import org.karmaexchange.dao.Waiver;
 import org.karmaexchange.provider.FacebookSocialNetworkProvider;
@@ -370,6 +372,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     for (PendingReview pendingReview : createEventsResult.getPendingReviews()) {
       pendingReview.persistReview();
     }
+
+    statusWriter.println("About to persist user managed test events...");
+    persistUserManagedEvents();
 
     statusWriter.println("About to award badges...");
     awardBadges(createEventsResult.getEvents());
@@ -773,6 +778,62 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
           });
       }
     }
+  }
+
+  private static void persistUserManagedEvents() {
+    TestUser[] users = {AMIR, HARISH, POONUM};
+    Date now = new Date();
+
+    Location galaLocation = new Location(
+      "Northbrae Community Church",
+      null,
+      new Address(
+        "941 The Alameda",
+        "Berkeley",
+        "CA",
+        "USA",
+        "94707",
+        GeoPtWrapper.create(new GeoPt(37.89059f, -122.27611f))));
+    String galaDescription =
+        "Please help sponsor this wonderful event by BOSS (http://www.self-sufficiency.org/index.php/events) by purchasing tickets online: https://donatenow.networkforgood.org/1439064\n\n"+
+        "Details: Celebrate 20 youth who are making positive strides against serious life challenges - homelessness, domestic violence, mental illness or substance abuse in the family. We will honor their achievements at a gala with food, music, awards, and inspiration - please join us!";
+    Date galaDate = new GregorianCalendar(2014, GregorianCalendar.JUNE, 5, 18, 0).getTime();
+
+    for (TestUser user : users) {
+      UserManagedEvent galaEvent =
+          createUserManagedEvent(user.getKey(), "1st Annual Rising Stars Youth Leadership Gala",
+            galaDescription, galaLocation, galaDate, 2);
+      BaseDao.upsert(galaEvent);
+    }
+
+    String bfhpDescription =
+        "Be part of homeless solutions in Berkeley. Volunteer with the Berkeley Food and Housing Project: http://bfhp.org/get-involved/volunteer/\n\n" +
+        "Find out more about volunteering: call our volunteer coordinator at (510) 809-8506 or email mwood@bfhp.org\n\n" +
+        "Offer Your Talents\n\n" +
+        "Do you have a special talent or skill you could offer our clients? Don't hesitate to call. We have volunteers offer enrichment classes such as yoga, resume reviews and job coaching, and after-school tutoring.\n\n" +
+        "Host a Drive\n\n" +
+        "BFHP programs and clients are always in need of in-kind donations necessary to maintain proper nutrition, personal hygiene and well-being. Individuals or groups who are interested in organizing collection drives for these items, please consult our Wish List and contact Terrie Light , Executive Director at (510) 809-8507.\n\n" +
+        "Bring Your Company or Organization\n\n" +
+        "Volunteering with your company provides an opportunity to build morale and demonstrate your company's commitment to the local community. Bring your colleagues or employees into a different environment than usual so they can develop relationships with each other and with the community. Group opportunities include cooking and serving a meal or performing a special facilities project." +
+        "Local congregations and community groups form the backbone of our meal service. Sign up for a regular shift with your congregation to cook and serve dinner once a month at our Men's Housing Project. Contact our volunteer coordinator at (510) 809-8506 for more information about volunteering as a group.\n\n";
+    for (TestUser user : users) {
+      UserManagedEvent bfhpEvent =
+          createUserManagedEvent(user.getKey(), "Help the Homeless in Berkeley",
+            bfhpDescription, null, computeEventDate(now, -10, 6), 2);
+      BaseDao.upsert(bfhpEvent);
+    }
+  }
+
+  private static UserManagedEvent createUserManagedEvent(Key<User> userKey, String title,
+      String description, @Nullable Location location, Date startTime, int numHours) {
+    UserManagedEvent event = new UserManagedEvent();
+    event.setOwner(userKey.getString());
+    event.setTitle(title);
+    event.setDescription(description);
+    event.setLocation(location);
+    event.setStartTime(startTime);
+    event.setEndTime(DateUtils.addHours(startTime, numHours));
+    return event;
   }
 
   public Organization createOrganization(TestOrganization testOrg) {
