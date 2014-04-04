@@ -311,19 +311,37 @@ div.timeline_element .upcoming-label {
     position: absolute;
     top: 0;
     left: 0;
+    padding: 0px 10px;
 
-    text-transform: uppercase;
     color: white;
     background-color: #4FAFC2;
+    border-top-left-radius: 5px;
+    border-bottom-right-radius: 5px;
 
+    text-transform: uppercase;
     font-weight: 600;
     font-size: 11px;
     font-family: 'Open Sans', sans-serif;
+}
 
-    padding: 0px 10px;
 
-    border-top-left-radius: 5px;
-    border-bottom-right-radius: 5px;
+div.timeline_element .delete-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 2px 6px 0px;
+
+    font-size: 11px;
+    z-index: 100;
+}
+
+div.timeline_element .delete-icon i {
+    color: lightgray;
+}
+
+div.timeline_element .delete-icon i:hover {
+    cursor: pointer;
+    color: darkgray;
 }
 
 

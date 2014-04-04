@@ -1354,6 +1354,15 @@ img {
 
 /***** END ABOUT US *****/
 
+/***** CONFIRMATION MODAL *****/
+
+.confirmation-modal .modal-body {
+  margin: 20px 10px;
+  text-align: center;
+}
+
+/***** END CONFIRMATION MODAL *****/
+
 /***** MICRO CLEARFIX *****/
 
 /**
