@@ -343,6 +343,150 @@ kexApp.factory('RecyclablePromiseFactory', function($q) {
     };
 });
 
+kexApp.factory('ElementSourceFactory', function($q, $http) {
+
+    function PagedElementSource(resultPromise, processResultCb) {
+        this._cachedResults = [];
+        this._nextUrl = null;
+        this._processResultCb = processResultCb;
+
+        this._processFetchResultBound =
+            angular.bind(this, this._processFetchResult);
+        this._processFetchErrBound =
+            angular.bind(this, this._processFetchErr);
+
+        this._fetchResultDef = $q.defer();
+        resultPromise.then(
+            this._processFetchResultBound,
+            this._processFetchErrBound);
+    }
+
+    PagedElementSource.prototype._processFetchResult = function(result) {
+        this._fetchResultDef.resolve();
+        this._nextUrl =
+            angular.isDefined(result.paging) ? result.paging.next : null;
+        for (var elIdx = 0; elIdx < result.data.length; elIdx++) {
+            var el = result.data[elIdx];
+            var processedEl = this._processResultCb ?
+                this._processResultCb(el) : el;
+            this._cachedResults.push(processedEl);
+        }
+    }
+
+    PagedElementSource.prototype._processFetchErr = function() {
+        this._fetchResultDef.resolve();
+        this._nextUrl = null;
+    }
+
+
+    PagedElementSource.prototype.peek = function() {
+        return this._fetchResultDef.promise.then( angular.bind(this, function() {
+            if (this._cachedResults.length > 0) {
+                return this._cachedResults[0];
+            } else if (this._nextUrl) {
+                this._fetchResultDef = $q.defer();
+                $http( { method : 'GET', url : this._nextUrl } )
+                    .success(this._processFetchResultBound)
+                    .error(this._processFetchErrBound);
+
+                return this.peek();
+            } else {
+                return null;
+            }
+        }));
+    }
+
+    PagedElementSource.prototype.pop = function() {
+        return this.peek().then( angular.bind(this, function (result) {
+            if (result == null) {
+                return null;
+            } else {
+                return this._cachedResults.shift();
+            }
+        }));
+    }
+
+    function CompositeElementSource(elementSource1, elementSource2, resultOrderCb) {
+        this._elementSource1 = elementSource1;
+        this._elementSource2 = elementSource2;
+        this._resultOrderCb = resultOrderCb;
+    }
+
+    CompositeElementSource.prototype._action = function(action) {
+        var es1Result;
+
+        return this._elementSource1.peek()
+            .then(
+                angular.bind(this, function(result) {
+                    es1Result = result;
+                    return this._elementSource2.peek();
+                }))
+            .then(
+                angular.bind(this, function(result) {
+                    var es2Result = result;
+
+                    if ((es1Result != null) && (es2Result != null)) {
+                        if (this._resultOrderCb(es1Result, es2Result) <= 0) {
+                            return this._elementSource1[action]();
+                        } else {
+                            return this._elementSource2[action]();
+                        }
+                    } else if (es1Result != null) {
+                        return this._elementSource1[action]();
+                    } else {
+                        return this._elementSource2[action]();
+                    }
+                }));
+    }
+
+    CompositeElementSource.prototype.peek = function() {
+        return this._action('peek');
+    }
+
+    CompositeElementSource.prototype.pop = function() {
+        return this._action('pop');
+    }
+
+    function SortedArrayElementSource(orderCb) {
+        this._elements = [];
+        this._orderCb = orderCb;
+    }
+
+    SortedArrayElementSource.prototype.peek = function() {
+        return toPromise(
+            (this._elements.length == 0) ? null : this._elements[0]);
+    }
+
+    SortedArrayElementSource.prototype.pop = function() {
+        return toPromise(
+            (this._elements.length == 0) ? null : this._elements.shift());
+    }
+
+    SortedArrayElementSource.prototype.push = function(element) {
+        this._elements.orderedInsertExt(element, this._orderCb);
+    }
+
+    function toPromise(result) {
+        var def = $q.defer();
+        def.resolve(result);
+        return def.promise;
+    }
+
+    return {
+        createPagedElementSource: function(resultPromise, processResultCb) {
+            return new PagedElementSource(resultPromise, processResultCb);
+        },
+
+        createCompositeElementSource: function(elementSource1, elementSource2, resultOrderCb) {
+            return new CompositeElementSource(elementSource1, elementSource2, resultOrderCb);
+        },
+
+        createSortedArrayElementSource: function(orderCb) {
+            return new SortedArrayElementSource(orderCb);
+        }
+    };
+});
+
 kexApp.factory('KexUtil', function($location, $modal) {
     return {
         getBaseUrl: function() {
@@ -1233,7 +1377,7 @@ kexApp.directive('kexFbComments', function($facebook, $rootScope) {
 });
 
 kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
-        Events, UserManagedEvents, KexUtil, $q) {
+        Events, UserManagedEvents, KexUtil, ElementSourceFactory, $q) {
     return {
         restrict: 'E',
         scope: {
@@ -1248,6 +1392,8 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
             scope.EventUtil = EventUtil;
             scope.KexUtil = KexUtil;
 
+            var PAGE_LIMIT = 10;
+
             var setupDef = $q.defer();
             scope.timelineSetupTracker = new PromiseTracker(setupDef.promise);
 
@@ -1256,58 +1402,179 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
             scope.$watch('user', loadTimeline);
             scope.$watch('org', loadTimeline);
 
-            scope.combinedEvents = [];
+            var displayLimit = PAGE_LIMIT; // The current number of visible timeline elements.
+
+            var displayableEvents = []; // All the displayable events.
+            var displayableEventsMap = {}; // A map containing every displayed elment.
+
+            // Processed events. This is different from the displayable events because
+            // in order for the html to be correct we need filler / blank events (couldn't
+            // figure out a way around this).
             scope.processedEvents = [];
+            scope.lastProcessedEvent = undefined;
+            var now = new Date().getTime();
+
+            scope.hasMoreEvents = false;
+            scope.hasMoreEventsProcessing = true;
+
+            var userCreatedEventsSource =
+                ElementSourceFactory.createSortedArrayElementSource(eventDisplayOrderCmp);
 
             function loadTimeline() {
                 if (!loaded && scope.visible && (scope.user || scope.org)) {
                     loaded = true;
                     setupDef.resolve();
 
-                    var pastEventsPromise;
                     if (scope.user) {
-                        pastEventsPromise =
-                            User.get( { id : scope.user.key, resource : 'event', type : 'PAST'});
                         scope.timelineType = 'USER';
                         scope.selfProfileView = (scope.user.permission === 'ALL');
 
-                        scope.timelineSetupTracker.track(
-                            UserManagedEvents.get(
-                                { userId : scope.user.key, type: 'DESCENDING' },
-                                processUserManagedEventsFetch));
+                        var pastEventsPromise =
+                            User.get(
+                                {
+                                    id : scope.user.key,
+                                    resource : 'event',
+                                    type : 'PAST',
+                                    limit: PAGE_LIMIT + 1
+                                });
+
+                        var pr1 = ElementSourceFactory.createPagedElementSource(
+                            pastEventsPromise, processPastEvent);
+
+                        var userManagedEventsPromise = UserManagedEvents.get(
+                                {
+                                    userId : scope.user.key,
+                                    type: 'DESCENDING',
+                                    limit: PAGE_LIMIT + 1
+                                });
+
+                        var pr2 = ElementSourceFactory.createPagedElementSource(
+                            userManagedEventsPromise, null);
+
+                        // Combine the two event sources.
+                        scope.pagedResult = ElementSourceFactory.createCompositeElementSource(
+                            pr1, pr2, eventDisplayOrderCmp);
+
+                        scope.timelineSetupTracker.track(pastEventsPromise);
+                        scope.timelineSetupTracker.track(userManagedEventsPromise);
                     } else {
-                        pastEventsPromise =
-                            Events.get( { type : "PAST", keywords : "org:" + scope.org.searchTokenSuffix });
                         scope.timelineType = 'ORG';
+
+                        var pastEventsPromise =
+                            Events.get(
+                                {
+                                    type : "PAST",
+                                    keywords : "org:" + scope.org.searchTokenSuffix,
+                                    limit: PAGE_LIMIT + 1
+                                });
+
+                        scope.pagedResult = ElementSourceFactory.createPagedElementSource(
+                            pastEventsPromise, processPastEvent);
+
+                        scope.timelineSetupTracker.track(pastEventsPromise);
                     }
 
-                    pastEventsPromise.then(processPastEventsFetch);
+                    // Merge any dynamicly created events to the paged input queue. We use
+                    // this to ensure that events don't show up between other events when
+                    // someone clicks "see more".
+                    scope.pagedResult = ElementSourceFactory.createCompositeElementSource(
+                        scope.pagedResult, userCreatedEventsSource, eventDisplayOrderCmp);
 
-                    scope.timelineSetupTracker.track(pastEventsPromise);
+                    updateDisplayableEvents();
                 }
             }
 
-            function processPastEventsFetch(fetchResult) {
-                scope.pastEventsPaging = fetchResult.paging;
+            function processPastEvent(evt) {
+                evt.managedEvent = true;
+                if (evt.album) {
+                    evt.album.coverPhotoUrl = FbUtil.getAlbumCoverUrl(evt.album.id);
+                }
+                if (!evt.currentUserRating) {
+                    evt.currentUserRating = { value: undefined };
+                }
+                return evt;
+            }
 
-                var pastEvents = fetchResult.data;
-                for (var evtIdx = 0; evtIdx < pastEvents.length; evtIdx++) {
-                    var evt = pastEvents[evtIdx];
-                    evt.managedEvent = true;
-                    if (evt.album) {
-                        evt.album.coverPhotoUrl = FbUtil.getAlbumCoverUrl(evt.album.id);
+            function eventDisplayOrderCmp(ev1, ev2) {
+                // if ev1 has a greater start time return a negative value
+                return ev2.startTime - ev1.startTime;
+            }
+
+            function updateDisplayableEvents() {
+                if (displayableEvents.length < displayLimit) {
+                    scope.pagedResult.pop().then( function(event) {
+                        if (event == null) {
+                            updateHasMoreEvents();
+                        } else {
+                            // Prevent duplicate events from showing up. This can
+                            // happen since to avoid doing a full timeline refresh we
+                            // add dynamic events immediately to the timeline on save
+                            // confirmation.
+                            if (!displayableEventsMap[event.key]) {
+                                appendEventToKarmaTimeline(event);
+                            }
+
+                            // Recurse to display the next element.
+                            updateDisplayableEvents();
+                        }
+                    });
+                } else {
+                    updateHasMoreEvents();
+                }
+            }
+
+            function updateHasMoreEvents() {
+                scope.pagedResult.peek().then( function(event) {
+                    scope.hasMoreEventsProcessing = false;
+                    scope.hasMoreEvents = (event != null);
+                });
+            }
+
+            scope.fetchMoreEvents = function() {
+                displayLimit += PAGE_LIMIT;
+                scope.hasMoreEventsProcessing = true;
+                updateDisplayableEvents();
+            }
+
+
+            function appendEventToKarmaTimeline(event) {
+                displayableEvents.push(event);
+                displayableEventsMap[event.key] = true;
+
+                var idx = displayableEvents.length - 1;
+                scope.processedEvents.push(event);
+                scope.lastProcessedEvent = event;
+                if ((idx % 2) == 1) {
+                    // Spacer event.
+                    scope.processedEvents.push({});
+                }
+            }
+
+            function refreshKarmaTimelineEvents() {
+                // At the time new events are added old events may no
+                // longer be upcoming.
+                now = new Date().getTime();
+
+                scope.processedEvents = [];
+                scope.lastProcessedEvent = undefined;
+                for (var idx = 0; idx < displayableEvents.length; idx++) {
+                    var event = displayableEvents[idx];
+                    scope.processedEvents.push(event);
+                    scope.lastProcessedEvent = event;
+                    if ((idx % 2) == 1) {
+                        // Spacer event.
+                        scope.processedEvents.push({});
                     }
                 }
-                addNewEvents(pastEvents);
             }
 
-            function processUserManagedEventsFetch(fetchResult) {
-                scope.userManagedEventsPaging = fetchResult.paging;
-                addNewEvents(fetchResult.data);
+            scope.isUpcomingEvent = function(event) {
+                return angular.isDefined(event.startTime) && (event.startTime > now);
             }
+
 
             scope.timelineUpdateTracker = new PromiseTracker();
-            scope.expandNewEventForm=false;
+            scope.expandNewEventForm = false;
             scope.newEvent = {};
 
             scope.post = function() {
@@ -1318,45 +1585,10 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
                         UserManagedEvents.save(
                             { userId : scope.user.key },
                             processedEvent,
-                            getProcessSaveCb(processedEvent));
+                            getProcessNewEventSaveCb(processedEvent));
 
                     scope.timelineUpdateTracker.track(userManagedEventUpdatePromise);
                 }
-            }
-
-            function getProcessSaveCb(processedEvent) {
-                return function (value, getResponseHeaderCb) {
-                    processedEvent.key = KexUtil.getSavedResourceKey(getResponseHeaderCb);
-                    addEventToTimeline(processedEvent);
-
-                    // On success the timeline will be updated. We should reset
-                    // the form.
-                    scope.newEventSubmitted = false;
-                    scope.newEvent = {};
-                    scope.expandNewEventForm=false;
-                }
-            }
-
-
-            scope.delete = function(event) {
-                KexUtil.createConfirmationModal("Are you sure you want to delete this post?")
-                    .then( function() {
-                        var evtIdx = scope.combinedEvents.findIndexExt( function(element) {
-                            return element.key === event.key;
-                        });
-                        if (evtIdx != -1) {
-                            UserManagedEvents.delete(
-                                {
-                                    userId : scope.user.key,
-                                    userManagedEventId : event.key
-                                });
-
-                            /* Assume the delete will be succesful and immediately delete the event. */
-                            scope.combinedEvents.splice(evtIdx, 1);
-                            scope.processedEvents =
-                                processKarmaTimelineEvents(scope.combinedEvents);
-                        }
-                    });
             }
 
             function processNewEvent(formEvent) {
@@ -1386,59 +1618,67 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
                 return dbEvent;
             }
 
-            function addEventToTimeline(processedEvent) {
-                var timelineEvent = angular.copy(processedEvent);
-                addNewEvents([timelineEvent]);
+            function getProcessNewEventSaveCb(processedEvent) {
+                return function (value, getResponseHeaderCb) {
+                    processedEvent.key = KexUtil.getSavedResourceKey(getResponseHeaderCb);
+                    addNewEventToTimeline(processedEvent);
+
+                    // On success the timeline will be updated. We should reset
+                    // the form.
+                    scope.newEventSubmitted = false;
+                    scope.newEvent = {};
+                    scope.expandNewEventForm=false;
+                }
             }
 
-            function addNewEvents(newEvents) {
-                scope.now = new Date().getTime();
-                scope.combinedEvents =
-                    mergeEventArrays(scope.combinedEvents, newEvents);
-                scope.processedEvents =
-                    processKarmaTimelineEvents(scope.combinedEvents);
-            }
+            function addNewEventToTimeline(newEvent) {
+                var eventAdded = false;
+                if (displayableEvents.length > 0) {
+                    var lastEl = displayableEvents[displayableEvents.length - 1];
+                    if (eventDisplayOrderCmp(newEvent, lastEl) <= 0) {
+                        eventAdded = true;
 
-            function processKarmaTimelineEvents(events) {
-                var eventsProcessed = [];
-                for (var idx = 0; idx < events.length; idx++) {
-                    var event = events[idx];
-                    if (!event.currentUserRating) {
-                        event.currentUserRating = { value: undefined };
-                    }
+                        displayableEvents.orderedInsertExt(newEvent, eventDisplayOrderCmp);
+                        displayableEventsMap[event.key] = true;
 
-                    eventsProcessed.push(event);
-                    if ((idx % 2) == 1) {
-                        // Spacer event.
-                        eventsProcessed.push({});
+                        displayLimit++;
+                        refreshKarmaTimelineEvents();
                     }
                 }
-                return eventsProcessed;
-            }
 
-            function mergeEventArrays(evts1, evts2) {
-                var mergedArray = [];
-                var evts1Idx = 0;
-                var evts2Idx = 0;
-                while ((evts1Idx < evts1.length) && (evts2Idx < evts2.length)) {
-                    var evt1 = evts1[evts1Idx];
-                    var evt2 = evts2[evts2Idx];
-                    if (evt1.startTime > evt2.startTime) {
-                        mergedArray.push(evt1);
-                        evts1Idx++;
-                    } else {
-                        mergedArray.push(evt2);
-                        evts2Idx++;
-                    }
+                if (!eventAdded) {
+                    userCreatedEventsSource.push(newEvent);
+                    // At the very least update the has more button. Additionally
+                    // however if the users page limit hasn't been reached then the
+                    // new element can be immediately displayed.
+                    updateDisplayableEvents();
                 }
-                mergedArray = mergedArray.concat(evts1.slice(evts1Idx));
-                mergedArray = mergedArray.concat(evts2.slice(evts2Idx));
-                return mergedArray;
             }
 
-            scope.isUpcomingEvent = function(event) {
-                return angular.isDefined(event.startTime) && (event.startTime > scope.now);
+            scope.delete = function(event) {
+                KexUtil.createConfirmationModal("Are you sure you want to delete this post?")
+                    .then( function() {
+                        var evtIdx = displayableEvents.findIndexExt( function(element) {
+                            return element.key === event.key;
+                        });
+                        if (evtIdx != -1) {
+                            UserManagedEvents.delete(
+                                {
+                                    userId : scope.user.key,
+                                    userManagedEventId : event.key
+                                });
+
+                            /* Assume the delete will be succesful and immediately delete the event. */
+                            displayableEvents.splice(evtIdx, 1);
+                            delete displayableEventsMap[event.key];
+                            // Prevent excessive fetches by reducing the display limit. Never fetch
+                            // more than PAGE_LIMIT per source.
+                            displayLimit--;
+                            refreshKarmaTimelineEvents();
+                        }
+                    });
             }
+
         },
         templateUrl: 'template/kex/impact-timeline.html'
     };

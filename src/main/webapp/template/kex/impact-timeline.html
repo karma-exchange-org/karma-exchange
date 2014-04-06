@@ -102,7 +102,9 @@
         <div ng-class="{'column column_left': ($index % 3 == 0), 'column column_right': ($index % 3 == 1), 'row_separator': ($index % 3 == 2) }"
              ng-repeat="event in processedEvents">
 
-            <div class="timeline_element blog_post animated" ng-class="{'first': ($first && !selfProfileView), 'last': $last}" ng-show="($index % 3) != 2">
+            <div class="timeline_element blog_post animated"
+                 ng-class="{'first': ($first && !selfProfileView), 'last': (lastProcessedEvent.key == event.key) }"
+                 ng-show="($index % 3) != 2">
 
                 <div class="upcoming-label" ng-show="isUpcomingEvent(event)">
                     Upcoming
@@ -231,6 +233,13 @@
             </div>
 
         </div>
+    </div>
+
+    <div class="timeline-show-more" ng-show="!timelineSetupTracker.isPending() && hasMoreEvents">
+        <button class="btn btn-primary btn-sm"
+                btn-loading="hasMoreEventsProcessing"
+                data-loading-text="Processing..."
+                ng-click="fetchMoreEvents()">See more</button>
     </div>
 
 </div>

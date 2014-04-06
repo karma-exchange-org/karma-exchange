@@ -1361,6 +1361,10 @@ img {
   text-align: center;
 }
 
+.confirmation-modal .modal-body h4 {
+  font-size: 16px;
+}
+
 /***** END CONFIRMATION MODAL *****/
 
 /***** MICRO CLEARFIX *****/
