@@ -845,3 +845,12 @@ div.timeline .new-event-form .input-error-msg {
 }
 
 /****** END NEW TIMELINE EVENT FORM *****/
+
+/****** TIMELINE MORE BUTTON *****/
+
+.timeline-show-more {
+    padding: 10px;
+    text-align: center;
+}
+
+/****** END TIMELINE MORE BUTTON *****/
