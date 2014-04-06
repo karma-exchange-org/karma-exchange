@@ -1531,9 +1531,11 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
             }
 
             scope.fetchMoreEvents = function() {
-                displayLimit += PAGE_LIMIT;
-                scope.hasMoreEventsProcessing = true;
-                updateDisplayableEvents();
+                if (!scope.hasMoreEventsProcessing) {
+                    displayLimit += PAGE_LIMIT;
+                    scope.hasMoreEventsProcessing = true;
+                    updateDisplayableEvents();
+                }
             }
 
 
