@@ -12,11 +12,32 @@
 
 <div class="container event-search">
 
-        <div class="input-group">
-                <input class="form-control" type="text" ng-model="query" placeholder="Search for karma opportunities...">
-                <span class="input-group-addon">
-                        <i class="icon-search"></i>
-                </span>
+        <div class="search-box row">
+            <div class="keyword-search col-sm-6">
+                <div class="input-group">
+                        <input class="form-control" type="text" ng-model="query" placeholder="Search for karma opportunities...">
+                        <span class="input-group-addon">
+                                <i class="icon-search"></i>
+                        </span>
+                </div>
+            </div>
+            <div class="location-search col-sm-6">
+                within
+                <div class="dropdown">
+                  <a class="dropdown-toggle">
+                    {{ locationSearch.distanceToDisplayString(locationSearch.selectedDistance) }}
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li ng-repeat="distance in locationSearch.distanceChoices">
+                        <a ng-class="{ 'selected' : (distance == locationSearch.selectedDistance)}"
+                           ng-click="updateDistance(distance)">
+                            {{ locationSearch.distanceToDisplayString(distance) }}
+                        </a>
+                    </li>
+                  </ul>
+                </div>
+                of San Francisco, CA
+            </div>
         </div>
         <!--
             Commenting this out until it becomes functional
@@ -39,7 +60,7 @@
                  </div>
 
         </div>
-        <div ng-hide="isMap" class="vertical-panel-padding">
+        <div ng-hide="isMap" class="results-div">
 
             <div ng-show="eventSearchTracker.isPending()">
                 <loading-message msg="karma opportunities"></loading-message>

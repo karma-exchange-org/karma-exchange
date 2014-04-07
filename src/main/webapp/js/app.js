@@ -2439,8 +2439,9 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         Events.get(
             {
                 keywords: ($scope.query ? $scope.query : ""),
-                lat: $scope.center.latitude,
-                long:$scope.center.longitude
+                distance: $scope.locationSearch.selectedDistance,
+                lat: $scope.locationSearch.selectedLocation.latitude,
+                lng: $scope.locationSearch.selectedLocation.longitude
             },
             function(value) {
                 processEvents(value);
@@ -2615,6 +2616,38 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
             }
         }
         return null;
+    }
+
+    function LocationSearch() {
+        this.selectedDistance = 50;
+        this.distanceChoices = [
+            5,
+            10,
+            50
+        ];
+
+        this.selectedLocation =
+            { text: "San Francisco, CA", latitude: 37.774929, longitude: -122.419416 };
+
+        this.distanceToDisplayString = function (distance) {
+            return distance + " miles";
+        }
+
+        this.updateDistance = function (newDistance) {
+            if (newDistance != this.selectedDistance) {
+                this.selectedDistance = newDistance;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    $scope.locationSearch = new LocationSearch();
+    $scope.updateDistance = function (selectedDistance) {
+        if ($scope.locationSearch.updateDistance(selectedDistance)) {
+            $scope.reset();
+        }
     }
 
     $scope.reset();
