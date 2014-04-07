@@ -364,7 +364,7 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
     PagedElementSource.prototype._processFetchResult = function(result) {
         this._fetchResultDef.resolve();
         this._nextUrl =
-            angular.isDefined(result.paging) ? result.paging.next : null;
+            result.paging ? result.paging.next : null;
         for (var elIdx = 0; elIdx < result.data.length; elIdx++) {
             var el = result.data[elIdx];
             var processedEl = this._processResultCb ?
@@ -385,7 +385,7 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
                 return this._cachedResults[0];
             } else if (this._nextUrl) {
                 this._fetchResultDef = $q.defer();
-                $http( { method : 'GET', url : this._nextUrl } )
+                $http.get( this._nextUrl )
                     .success(this._processFetchResultBound)
                     .error(this._processFetchErrBound);
 
@@ -453,23 +453,17 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
     }
 
     SortedArrayElementSource.prototype.peek = function() {
-        return toPromise(
+        return $q.when(
             (this._elements.length == 0) ? null : this._elements[0]);
     }
 
     SortedArrayElementSource.prototype.pop = function() {
-        return toPromise(
+        return $q.when(
             (this._elements.length == 0) ? null : this._elements.shift());
     }
 
     SortedArrayElementSource.prototype.push = function(element) {
         this._elements.orderedInsertExt(element, this._orderCb);
-    }
-
-    function toPromise(result) {
-        var def = $q.defer();
-        def.resolve(result);
-        return def.promise;
     }
 
     return {
@@ -2736,7 +2730,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
         {
             if( type === 'REGISTERED' )
             {
-                $http( { method : 'GET', url : $scope.eventRegistered.paging.next } ).success( function( data ) {
+                $http.get( $scope.eventRegistered.paging.next ).success( function( data ) {
                         for( var i = 0; i < data.data.length; i ++ )
                         {
                             $scope.eventRegistered.data.push( data.data [ i ] );
@@ -2746,7 +2740,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
             }
             else if( type === 'ORGANIZER' )
             {
-                $http( { method : 'GET', url : $scope.eventOrganizers.paging.next } ).success( function( data ) {
+                $http.get( $scope.eventOrganizers.paging.next ).success( function( data ) {
                         for( var i = 0; i < data.data.length; i ++ )
                         {
                             $scope.eventOrganizers.data.push( data.data [ i ] );
@@ -2756,7 +2750,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
             }
             else if( type === 'WAIT_LISTED' )
             {
-                $http( { method : 'GET', url : $scope.eventWaitListed.paging.next } ).success( function( data ) {
+                $http.get( $scope.eventWaitListed.paging.next ).success( function( data ) {
                         for( var i = 0; i < data.data.length; i ++ )
                         {
                             $scope.eventWaitListed.data.push( data.data [ i ] );
@@ -2885,7 +2879,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
                         if( $scope.event.album )
                         {
                             // TODO(avaliani): switch to using $facebook.
-                            $http( { method : 'GET', url : FbUtil.GRAPH_API_URL + "/" + $scope.event.album.id + "/photos" } ).success( function( data ) {
+                            $http.get( FbUtil.GRAPH_API_URL + "/" + $scope.event.album.id + "/photos" ).success( function( data ) {
                                     $scope.fbAlbum = data.data;
                                     $scope.myInterval = 5000;
                             } );
@@ -3064,35 +3058,29 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
 
     $scope.getMore = function(type) {
         if (type === 'REGISTERED') {
-            $http({
-                method: 'GET',
-                url: $scope.eventRegistered.paging.next
-            }).success(function(data) {
-                for (var i = 0; i < data.data.length; i++) {
-                    $scope.eventRegistered.data.push(data.data[i]);
-                }
-                $scope.eventRegistered.paging.next = data.paging ? data.paging.next : null;
-            });
+            $http.get( $scope.eventRegistered.paging.next )
+                .success(function(data) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        $scope.eventRegistered.data.push(data.data[i]);
+                    }
+                    $scope.eventRegistered.paging.next = data.paging ? data.paging.next : null;
+                });
         } else if (type === 'ORGANIZER') {
-            $http({
-                method: 'GET',
-                url: $scope.eventOrganizers.paging.next
-            }).success(function(data) {
-                for (var i = 0; i < data.data.length; i++) {
-                    $scope.eventOrganizers.data.push(data.data[i]);
-                }
-                $scope.eventOrganizers.paging.next = data.paging ? data.paging.next : null;
-            });
+            $http.get( $scope.eventOrganizers.paging.next )
+                .success(function(data) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        $scope.eventOrganizers.data.push(data.data[i]);
+                    }
+                    $scope.eventOrganizers.paging.next = data.paging ? data.paging.next : null;
+                });
         } else if (type === 'WAIT_LISTED') {
-            $http({
-                method: 'GET',
-                url: $scope.eventWaitListed.paging.next
-            }).success(function(data) {
-                for (var i = 0; i < data.data.length; i++) {
-                    $scope.eventWaitListed.data.push(data.data[i]);
-                }
-                $scope.eventWaitListed.paging.next = data.paging ? data.paging.next : null;
-            });
+            $http.get( $scope.eventWaitListed.paging.next )
+                .success(function(data) {
+                    for (var i = 0; i < data.data.length; i++) {
+                        $scope.eventWaitListed.data.push(data.data[i]);
+                    }
+                    $scope.eventWaitListed.paging.next = data.paging ? data.paging.next : null;
+                });
         }
     };
 
