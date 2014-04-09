@@ -22,7 +22,10 @@
                 </div>
             </div>
             <div class="location-search col-sm-6">
-                within
+                <span class="text">
+                    within
+                </span>
+
                 <div class="dropdown">
                   <a class="dropdown-toggle">
                     {{ locationSearch.distanceToDisplayString(locationSearch.selectedDistance) }}
@@ -36,31 +39,20 @@
                     </li>
                   </ul>
                 </div>
-                of San Francisco, CA
-            </div>
-        </div>
-        <!--
-            Commenting this out until it becomes functional
-            <div class="btn-group">
-                <button class="btn btn-default" ng-click="showList()"><i class="icon-list"></i> List</button>
-                <button class="btn btn-default" ng-click="showMap()"><i class="icon-globe"></i> Map</button>
-            </div>
-        -->
-        <div ng-show="isMap" class="row col-md-12 vertical-panel-padding">
-                <div  class="google-map"
-                        refresh="!isMapElementHidden"
-                        center="center"
-                        zoom="zoom"
-                        markers="markers"
-                        latitude="latitude"
-                        longitude="longitude"
-                        mark-click="false"
-                        draggable="true"
-                        style="height: 600px; width: 100%">
-                 </div>
 
+                <span class="text">
+                    of
+                </span>
+
+                <dropdown-input class="city-name"
+                    paceholder="City or postal code"
+                    input-display-value="locationSearch.selectedLocation.text"
+                    input-submit="getGeocoding(value)">
+                </dropdown-input>
+            </div>
         </div>
-        <div ng-hide="isMap" class="results-div">
+
+        <div class="results-div">
 
             <div ng-show="eventSearchTracker.isPending()">
                 <loading-message msg="karma opportunities"></loading-message>

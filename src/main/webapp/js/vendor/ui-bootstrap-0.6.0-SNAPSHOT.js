@@ -1288,7 +1288,7 @@ function ($compile, $parse, $document, $position, dateFilter, datepickerPopupCon
    </li>
  */
 
-angular.module('ui.bootstrap.dropdownToggle', []).directive('dropdownToggle', ['$document', '$location', function ($document, $location) {
+angular.module('ui.bootstrap.dropdownToggle', []).directive('dropdownToggle', ['$document', '$location', '$rootScope', function ($document, $location, $rootScope) {
   var openElement = null,
       closeMenu   = angular.noop;
   return {
@@ -1309,6 +1309,9 @@ angular.module('ui.bootstrap.dropdownToggle', []).directive('dropdownToggle', ['
 
         if (!elementWasOpen) {
           element.parent().addClass('open');
+          // Temporary hack to watch open / close class change.
+          if (!$rootScope.$$phase) { $rootScope.$apply(); }
+
           openElement = element;
           closeMenu = function (event) {
             if (event) {
@@ -1316,7 +1319,11 @@ angular.module('ui.bootstrap.dropdownToggle', []).directive('dropdownToggle', ['
               event.stopPropagation();
             }
             $document.unbind('click', closeMenu);
+
             element.parent().removeClass('open');
+            // Temporary hack to watch open / close class change.
+            if (!$rootScope.$$phase) { $rootScope.$apply(); }
+
             closeMenu = angular.noop;
             openElement = null;
           };

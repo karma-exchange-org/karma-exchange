@@ -1,0 +1,27 @@
+<div class="dropdown dropdown-input">
+    <a class="dropdown-toggle">
+        {{ inputDisplayValue }}
+    </a>
+    <ul class="dropdown-menu">
+        <li>
+            <div class="input-group">
+                <input class="form-control"
+                       type="text"
+                       ng-model="inputValue"
+                       placeholder="{{ paceholder }}"
+                       ng-disabled="inputParseTracker.isPending()">
+            </div>
+            <div class="processing" ng-show="inputParseTracker.isPending()">
+                <div>
+                    <img src="/img/loading.gif">
+                </div>
+                <div class="msg">
+                    Processing ...
+                </div>
+            </div>
+            <div class="error-msg" ng-show="errorMsg && !inputParseTracker.isPending()">
+                {{ errorMsg }}
+            </div>
+        </li>
+    </ul>
+</div>
