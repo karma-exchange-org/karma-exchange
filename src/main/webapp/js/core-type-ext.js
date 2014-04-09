@@ -29,6 +29,7 @@ if (!Array.prototype.findIndexExt) {
   });
 }
 
+// TODO(avaliani): move this.
 // My own addition
 if (!Array.prototype.orderedInsertExt) {
   Object.defineProperty(Array.prototype, 'orderedInsertExt', {

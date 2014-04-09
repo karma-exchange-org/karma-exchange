@@ -49,8 +49,8 @@ angular.module('HashBangURLs', []).config(['$locationProvider', function($locati
 }]);
 
 kexApp = angular.module( "kexApp",
-    ["ngResource", "ngCookies", "google-maps", "ui.bootstrap", "ui.bootstrap.ex", "ngFacebook",
-     "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs"] )
+    ["ngResource", "ngCookies", "ui.bootstrap", "ui.bootstrap.ex", "ngFacebook",
+     "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs", "geocoder"] )
 
 .filter( 'textToHtml', function() {
     var options = {
@@ -1076,6 +1076,81 @@ kexApp.directive('stopClickPropagation', function () {
                 e.stopPropagation();
             });
         }
+    };
+ });
+
+kexApp.directive('dropdownInput', function ($q, $rootScope) {
+    return {
+        restrict: 'E',
+        scope: {
+            paceholder: '@',
+            inputDisplayValue: '=',
+            inputSubmit: '&'
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attr) {
+            scope.inputParseTracker = new PromiseTracker();
+
+            var dropdownInputElement = element.find("input").first();
+            var dropdownToggleElement = element.find(".dropdown-toggle").first();
+
+            dropdownInputElement.bind('click', function (e) {
+                e.stopPropagation();
+            })
+
+            dropdownInputElement.bind('keydown', enterKeyBind);
+            function enterKeyBind(evt) {
+                if (( evt.which === 13 ) && scope.inputValue) {
+                    var submitResult = scope.inputSubmit({value: scope.inputValue});
+                    scope.inputParseTracker = new PromiseTracker(submitResult);
+                    submitResult.then(
+                        function() {
+                            closeDropdown();
+                        },
+                        function(errorMsg) {
+                            scope.errorMsg = errorMsg;
+                            // TODO(avaliani): input element is disabled so can't set focus.
+                            // dropdownInputElement.focus();
+                        })
+
+                    // Enter event is not an angular event.
+                    if (!$rootScope.$$phase) { $rootScope.$apply(); }
+                }
+            };
+
+            scope.$watch(
+                function() {return element.attr('class'); },
+                function(newValue, oldValue) {
+                    if (angular.isDefined(newValue) &&
+                        isToggleOpen(newValue) &&
+                        ( !angular.isDefined(oldValue) ||
+                          !isToggleOpen(oldValue))) {
+
+                        dropdownInputElement.focus();
+
+                    }
+                });
+            function isToggleOpen(classStr) {
+                var classes = classStr.split(/\s+/);
+                for (var wIdx = 0; wIdx < classes.length; wIdx++) {
+                    if (classes[wIdx] === 'open') {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            function closeDropdown() {
+                if (dropdownToggleElement.css('display') !='none') {
+                    scope.inputValue = "";
+                    scope.errorMsg = "";
+                    dropdownToggleElement.trigger( "click" );
+                }
+            }
+
+        },
+        templateUrl: 'template/kex/dropdown-input.html'
     };
  });
 
@@ -2400,7 +2475,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
     };
 };
 var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, KexUtil,
-        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q ) {
+        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q, Geocoder, $log ) {
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
 
@@ -2408,31 +2483,7 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     var eventSearchRecyclablePromise = RecyclablePromiseFactory.create();
 
     $scope.modelOpen = false;
-    angular.extend( $scope, {
-            /** the initial center of the map */
-            center : {
-                latitude : $rootScope.getGeoLocation().latitude,
-                longitude : $rootScope.getGeoLocation().longitude
-            },
-            /** the initial zoom level of the map */
-            zoom : 4,
-            /** list of markers to put in the map */
-            markers : [{}]
 
-    } );
-
-    $scope.isMap=false;
-    $scope.showMap = function()
-    {
-        $scope.isMap=true;
-        angular.forEach($scope.events.data, function(event){
-                $scope.addMarker(event.location.address.geoPt.latitude,event.location.address.geoPt.longitude);
-        });
-        $scope.zoom = 10;
-    };
-    $scope.showList = function(){
-        $scope.isMap=false;
-    };
     $scope.reset = function( ) {
         var eventSearchDef = eventSearchRecyclablePromise.recycle();
         $scope.eventSearchTracker.reset(eventSearchDef.promise);
@@ -2641,6 +2692,24 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
                 return false;
             }
         }
+
+        this.updateLocation = function (newLocation) {
+            if ( (this.selectedLocation.latitude != newLocation.lat) ||
+                 (this.selectedLocation.longitude != newLocation.lng) ) {
+
+                this.selectedLocation.latitude = newLocation.lat;
+                this.selectedLocation.longitude = newLocation.lng;
+                if (newLocation.city && newLocation.state) {
+                    this.selectedLocation.text = newLocation.city + ", " + newLocation.state;
+                } else {
+                    this.selectedLocation.text = newLocation.formattedAddress;
+                }
+                return true;
+
+            } else {
+                return false;
+            }
+        }
     }
 
     $scope.locationSearch = new LocationSearch();
@@ -2648,6 +2717,32 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         if ($scope.locationSearch.updateDistance(selectedDistance)) {
             $scope.reset();
         }
+    }
+    $scope.getGeocoding = function (value) {
+        var geocodingDef = $q.defer();
+
+        Geocoder.geocodeAddress(value).then(
+            function (result) {
+                if ($scope.locationSearch.updateLocation(result)) {
+                    $scope.reset();
+                }
+                geocodingDef.resolve();
+            },
+            function (err) {
+                var errMsg;
+                if (err.type === 'zero') {
+                    errMsg = "Unable to find address";
+                } else if (err.type === 'busy') {
+                    errMsg = "Server busy, please try again";
+                } else {
+                    errMsg = "Error processing request, please try again";
+                    $log.log("geocoding error: %s, %s", err.type, err.message);
+                }
+                geocodingDef.reject(errMsg);
+            });
+
+
+        return geocodingDef.promise;
     }
 
     $scope.reset();

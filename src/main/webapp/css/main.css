@@ -316,7 +316,10 @@ table>tbody>tr>td.table-cell-align-middle {
   }
 }
 
+
 .event-search .search-box {
+  position: relative;
+  z-index: 1;
   margin-left: 15px;
   margin-right: 15px;
   background-color: #4FAFC2;
@@ -328,11 +331,15 @@ table>tbody>tr>td.table-cell-align-middle {
 }
 
 .event-search .search-box .location-search {
-  color: #FFF;
+  padding: 4px 0px 0px 10px;
   font-size: 19px;
   font-family: 'Open Sans', sans-serif;
+}
+
+.event-search .search-box .location-search > .text,
+.event-search .search-box .location-search a.dropdown-toggle {
+  color: #FFF;
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
-  padding: 4px 0px 0px 10px;
 }
 
 .event-search .search-box .location-search div.dropdown {
@@ -350,9 +357,6 @@ table>tbody>tr>td.table-cell-align-middle {
   text-decoration: none;
 }
 
-.event-search .search-box .location-search a.dropdown-toggle {
-  color: #FFF;
-}
 .event-search .search-box .location-search a.dropdown-toggle:hover,
 .event-search .search-box .location-search div.dropdown.open a.dropdown-toggle {
   color: #F0F0F0;
@@ -364,6 +368,10 @@ table>tbody>tr>td.table-cell-align-middle {
 
 .event-search .search-box .location-search a.selected {
   font-weight: bold;
+}
+
+.event-search .search-box .location-search .dropdown.city-name input {
+  width: 200px;
 }
 
 .event-search .results-div {
@@ -1118,9 +1126,7 @@ img {
 }
 
 #intro-banner {
-  position: relative;
   margin-top: -41px;
-  z-index: -1;
 }
 
 #intro-banner #hero {
@@ -1426,6 +1432,45 @@ img {
 }
 
 /***** END CONFIRMATION MODAL *****/
+
+/***** DROPDOWN INPUT *****/
+
+.dropdown-input .dropdown-menu {
+  padding: 10px;
+}
+
+.dropdown-input .error-msg {
+  padding-left: 5px;
+  padding-top: 5px;
+  color: #b94a48;
+  font-style: italic;
+}
+
+.dropdown-input .processing {
+  padding-left: 5px;
+  padding-top: 5px;
+}
+
+.dropdown-input .processing .msg {
+  font-size: 14px;
+  font-style: italic;
+}
+
+.dropdown-input .processing div {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.dropdown-input .processing .msg {
+  padding-left: 10px;
+}
+
+.dropdown-input .processing img {
+  height: 20px;
+  width: 20px;
+}
+
+/***** END DROPDOWN INPUT *****/
 
 /***** MICRO CLEARFIX *****/
 
