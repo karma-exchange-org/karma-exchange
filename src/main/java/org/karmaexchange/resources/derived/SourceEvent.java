@@ -11,8 +11,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.SourceEventInfo;
 import org.karmaexchange.dao.Location;
@@ -22,8 +24,10 @@ import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
+import org.karmaexchange.util.GeocodingService;
 import org.karmaexchange.util.HtmlUtil;
 
+import com.google.appengine.api.datastore.GeoPt;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 
@@ -58,6 +62,15 @@ public class SourceEvent {
       }
       if (loc.getDescription() != null) {
         loc.setDescription(HtmlUtil.toPlainText(loc.getDescription()).trim());
+      }
+      Address addr = loc.getAddress();
+      if ((addr != null) && (addr.getGeoPt() == null)) {
+        String geocodeableAddr = addr.toGeocodeableString();
+        // Do a synchronous API call to the Google geocoding service.
+        GeoPt geoPt = GeocodingService.getGeoPt(geocodeableAddr);
+        if (geoPt != null) {
+          addr.setGeoPt(GeoPtWrapper.create(geoPt));
+        }
       }
     }
     event.setOwner(SourceEventNamespaceDao.createKey(orgKey, sourceKey).getString());

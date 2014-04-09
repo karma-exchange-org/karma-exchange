@@ -49,7 +49,11 @@ public class SourceEventResource {
       SourceEvent sourceEvent) {
     Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
     validateOrgSecret(orgKey, orgSecret);
-    UpsertAdminSubtask upsertTask = new UpsertAdminSubtask(sourceEvent, orgKey);
+
+    // Do this outside of the transaction since it can be slow due to dynamic geocoding.
+    Event event = sourceEvent.toEvent(orgKey);
+
+    UpsertAdminSubtask upsertTask = new UpsertAdminSubtask(event);
     AdminUtil.executeSubtaskAsAdmin(
       AdminTaskType.SOURCE_EVENT_UPDATE, upsertTask);
     return upsertTask.response;
@@ -58,18 +62,11 @@ public class SourceEventResource {
   @Data
   private class UpsertAdminSubtask implements AdminSubtask {
 
-    private final SourceEvent sourceEvent;
-    private final Key<Organization> orgKey;
+    private final Event event;
     private Response response;
-
-    public UpsertAdminSubtask(SourceEvent sourceEvent, Key<Organization> orgKey) {
-      this.sourceEvent = sourceEvent;
-      this.orgKey = orgKey;
-    }
 
     @Override
     public void execute() {
-      Event event = sourceEvent.toEvent(orgKey);
       // TODO(avaliani): fix return key. Currently it contains derived in the path.
       response = getEventResource().upsertResource(new EventView(event, false));
     }
