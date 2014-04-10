@@ -4,23 +4,32 @@
     </a>
     <ul class="dropdown-menu">
         <li>
-            <div class="input-group">
-                <input class="form-control"
-                       type="text"
-                       ng-model="inputValue"
-                       placeholder="{{ paceholder }}"
-                       ng-disabled="inputParseTracker.isPending()">
-            </div>
-            <div class="processing" ng-show="inputParseTracker.isPending()">
-                <div>
-                    <img src="/img/loading.gif">
+            <div class="input-and-status" stop-click-propagation>
+                <div class="input-group">
+                    <input class="form-control"
+                           type="text"
+                           ng-model="inputValue"
+                           placeholder="{{ paceholder }}"
+                           ng-disabled="inputParseTracker.isPending()">
                 </div>
-                <div class="msg">
-                    Processing ...
+                <div class="error-msg" ng-show="!inputParseTracker.isPending() && errorMsg">
+                    {{ errorMsg }}
                 </div>
-            </div>
-            <div class="error-msg" ng-show="errorMsg && !inputParseTracker.isPending()">
-                {{ errorMsg }}
+                <div class="processing" ng-show="inputParseTracker.isPending() && !isMobileDeviceOrTablet">
+                    <div>
+                        <img src="/img/loading.gif">
+                    </div>
+                    <div class="msg">
+                        Processing ...
+                    </div>
+                </div>
+                <button ng-show="isMobileDeviceOrTablet"
+                        class="btn btn-primary btn-sm"
+                        ng-click="submit()"
+                        btn-loading="inputParseTracker.isPending()"
+                        data-loading-text="Processing...">
+                    Set location
+                </button>
             </div>
         </li>
     </ul>

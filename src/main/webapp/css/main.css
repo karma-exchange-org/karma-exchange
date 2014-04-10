@@ -1435,8 +1435,9 @@ img {
 
 /***** DROPDOWN INPUT *****/
 
-.dropdown-input .dropdown-menu {
-  padding: 10px;
+.dropdown-input .input-and-status {
+  padding: 5px 10px;
+  text-align: center;
 }
 
 .dropdown-input .error-msg {
@@ -1468,6 +1469,10 @@ img {
 .dropdown-input .processing img {
   height: 20px;
   width: 20px;
+}
+
+.dropdown-input .input-and-status button {
+  margin-top: 5px;
 }
 
 /***** END DROPDOWN INPUT *****/
