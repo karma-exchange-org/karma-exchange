@@ -159,7 +159,12 @@
         </script>
 
 
-        <nav id="mainHeader" class="navbar navbar-fixed-top navbar-default" role="navigation" ng-controller="NavbarController">
+        <div class="navbar-fixed-top-padding" ng-show="!isMobileDeviceOrTablet"></div>
+        <nav id="mainHeader"
+             class="navbar navbar-default"
+             role="navigation"
+             ng-class="{ 'navbar-fixed-top': !isMobileDeviceOrTablet, 'navbar-static-top': isMobileDeviceOrTablet }"
+             ng-controller="NavbarController">
             <!-- Keep the navbar content at container width. The navbar background extends across the screen. -->
             <div class="container">
 
