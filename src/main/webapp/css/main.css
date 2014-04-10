@@ -86,22 +86,27 @@ h1.margin-top-0, h2.margin-top-0, h3.margin-top-0, h4.margin-top-0, h5.margin-to
   max-width: inherit !important;
 }
 
-body {
+.navbar-fixed-top-padding {
   padding-top: 99px;
-  padding-bottom: 40px;
-  /* background: url(../img/bg.gif);*/
 }
 /*
 @media(min-width:450px) and (max-width:767px) {
-  body {
+  .navbar-fixed-top-padding {
     padding-top: 84px;
   }
 }
 */
 @media(max-width:767px) {
-  body {
+  .navbar-fixed-top-padding {
     padding-top: 65px;
   }
+}
+
+
+body {
+  padding-top: 0;
+  padding-bottom: 40px;
+  /* background: url(../img/bg.gif);*/
 }
 
 .navbar-nav > li > a.welcome {
