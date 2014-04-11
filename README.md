@@ -4,11 +4,20 @@ Copyright (C) 2013 Karma Exchange
 
 ### Building and Running
 
-Requires [Apache Maven](http://maven.apache.org) 3.1 and JDK 7 in order to run.
+Requires 
+* [Apache Maven](http://maven.apache.org) 3.1
+* JDK 7 in order to run.
 
-To start the app, use the [App Engine Maven Plugin](http://code.google.com/p/appengine-maven-plugin/)
+You must also specify the facebook app id and secret key in **src/main/webapp/WEB-INF/app-private.properties**. This file is not on github for security reasons. File format:
+
+    [app-domain]-facebook-app-id = [faceboo-app-id]
+    [app-domain]-facebook-app-secret = [facebook-app-secret]
+
+To run the app locally, use the [App Engine Maven Plugin](http://code.google.com/p/appengine-maven-plugin/)
 
     mvn appengine:devserver
+
+To create test content go to **[app-domain:app-port]/bootstrap**, login as an admin, click "delete all resources", and then click "Bootstrap Test Resources". Wait for both to complete.
 
 To generate javadocs, run
 
