@@ -252,6 +252,12 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         TestOrgMembership.of(USER2, null, Organization.Role.MEMBER),
         TestOrgMembership.of(USER3, null, Organization.Role.ADMIN))),
 
+    BFHP("BerkeleyFoodandHousingProject",
+      "http://bfhp.org/donate/",
+      POONUM,
+      asList(
+        TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null))),
+
     UNITED_WAY("UnitedWay",
       "https://give.liveunited.org/page/contribute/support-us",
       AMIR,
@@ -446,6 +452,18 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
         "USA",
         "95126",
         GeoPtWrapper.create(new GeoPt(37.316094f,-121.912575f))));
+    Location bfhpMensShelter = new Location(
+      "Men’s Overnight Shelter",
+      null,
+      new Address(
+        "1931 Center Street",
+        "Berkeley",
+        "CA",
+        "USA",
+        "94704",
+        GeoPtWrapper.create(new GeoPt( 37.8699523f, -122.27185150000003f ))));
+    String bfhpCookAndServeDescription =
+        "Meal Makers is a volunteer program that helps us provide meals in our shelters. Volunteers sign up to prepare a hot or cold meal off-site and deliver it to our shelters. Meal Makers can prepare a meal on a one-time or monthly basis.";
 
     List<Key<User>> organizers = asList(USER2.getKey());
     List<Key<User>> registeredUsers = asList(USER1.getKey(), USER4.getKey());
@@ -465,6 +483,15 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     event = createEvent("Youth Soccer Clinic", BGCSF_COLUMBIA_PARK, soccerField,
       computeEventDate(now, 2, 4), 1, organizers, registeredUsers,
       waitListedUsers, 100, "502904489789649", columbiaParkSoccerWaiverKey);
+    event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
+    events.add(event);
+
+    organizers = asList(USER1.getKey());
+    registeredUsers = asList(USER2.getKey(), USER4.getKey(), USER5.getKey());
+    waitListedUsers = asList();
+    event = createEvent("Cook and Serve Dinner", BFHP, bfhpMensShelter,
+      computeEventDate(now, 2, 6), 2, organizers, registeredUsers,
+      waitListedUsers, 6, "620667924679971", null, bfhpCookAndServeDescription);
     event.setSuitableForTypes(Lists.newArrayList(EnumSet.allOf(SuitableForType.class)));
     events.add(event);
 
@@ -574,6 +601,17 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     pendingReviews.add(PendingReview.create(event, USER7.getKey(), null, 4));
     eventNoShowInfo.add(new EventNoShowInfo(event, asList(USER2.getKey())));
 
+    organizers = asList(USER1.getKey());
+    registeredUsers = asList(USER2.getKey(), USER5.getKey(), HARISH.getKey(), POONUM.getKey(),
+      AMIR.getKey());
+    waitListedUsers = asList();
+    event = createEvent("Cook and Serve Dinner", BFHP, bfhpMensShelter,
+      computeEventDate(now, -20, 1), 2, organizers, registeredUsers, waitListedUsers, 6,
+      "620667558013341");
+    event.setImpactSummary(
+        "We successfully prepared and served 76 meals for the homeless in berkeley! Everyone really enjoyed the chicken teryaki and the potstickers. :)");
+    events.add(event);
+
     organizers = asList(USER1.getKey(), HARISH.getKey(), POONUM.getKey());
     registeredUsers = asList(USER2.getKey(), USER5.getKey());
     waitListedUsers = asList();
@@ -635,25 +673,38 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       Date startTime, int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
       List<Key<User>> waitListedUsers, int maxRegistrations, @Nullable String albumId,
       @Nullable Key<Waiver> waiverKey) {
+    return createEvent(title, testOrg, location, startTime, numHours, organizers, registeredUsers,
+      waitListedUsers, maxRegistrations, albumId, waiverKey, null);
+  }
+
+  private static Event createEvent(String title, TestOrganization testOrg, Location location,
+      Date startTime, int numHours, List<Key<User>> organizers, List<Key<User>> registeredUsers,
+      List<Key<User>> waitListedUsers, int maxRegistrations, @Nullable String albumId,
+      @Nullable Key<Waiver> waiverKey, @Nullable String description) {
     eventNum++;
     Event event = new Event();
     event.setTitle(title);
     event.setOrganization(KeyWrapper.create(testOrg.getKey()));
-    String eventDescriptionIntro =
-        "This is a fabricated event for our online demo. Feel free to register, wait list, etc." +
-        " Example event description: ";
-    if (eventNum % 2 == 0) {
-      event.setDescription(
-        eventDescriptionIntro +
-        "The Eastmont Garden of Hope receives and distributes donated clothing, hygiene products, household items, canned goods, and other necessities to Social Services Agency clients in urgent need year-round. This program serves as many as 400 households monthly. Whether providing food for a struggling family, a warm coat for a shivering child, or diapers for a desperate mother’s newborn, the Eastmont Garden of Hope seeks to ensure that those in greatest need are served expeditiously and with utmost compassion. Volunteers play a vital role in the program's operations by managing donations and keeping the service area open and available to customers in need throughout the week.\n\n" +
-        "Volunteers are requested to participate for at least one shift (3-4 hours) per week, for at least 3 months. Scheduling is flexible, Monday-Friday, between the hours of 9:00am-12:00pm and 1:00-5:00pm.");
-      event.setSpecialInstructions("A mandatory Orientation is scheduled for Saturday, June 29, 2013 from 10:00-12:00 at the San Lorenzo Public Library (community meeting room): 395 Paseo Grande, San Lorenzo. Please contact Axxxx Wxxx, coordinator at XXX-XXX-XXXX or xxx@xxx.org to inquire about availability of this position and confirm attendance at orientation.");
-      event.setCauses(asList(CauseType.SENIORS));
+
+    if (description == null) {
+      String eventDescriptionIntro =
+          "This is a fabricated event for our online demo. Feel free to register, wait list, etc." +
+          " Example event description: ";
+      if (eventNum % 2 == 0) {
+        event.setDescription(
+          eventDescriptionIntro +
+          "The Eastmont Garden of Hope receives and distributes donated clothing, hygiene products, household items, canned goods, and other necessities to Social Services Agency clients in urgent need year-round. This program serves as many as 400 households monthly. Whether providing food for a struggling family, a warm coat for a shivering child, or diapers for a desperate mother’s newborn, the Eastmont Garden of Hope seeks to ensure that those in greatest need are served expeditiously and with utmost compassion. Volunteers play a vital role in the program's operations by managing donations and keeping the service area open and available to customers in need throughout the week.\n\n" +
+          "Volunteers are requested to participate for at least one shift (3-4 hours) per week, for at least 3 months. Scheduling is flexible, Monday-Friday, between the hours of 9:00am-12:00pm and 1:00-5:00pm.");
+        event.setSpecialInstructions("A mandatory Orientation is scheduled for Saturday, June 29, 2013 from 10:00-12:00 at the San Lorenzo Public Library (community meeting room): 395 Paseo Grande, San Lorenzo. Please contact Axxxx Wxxx, coordinator at XXX-XXX-XXXX or xxx@xxx.org to inquire about availability of this position and confirm attendance at orientation.");
+        event.setCauses(asList(CauseType.SENIORS));
+      } else {
+        event.setDescription(
+          eventDescriptionIntro +
+          "We are seeking volunteers willing to provide in-home respite care for people with terminally ill companion animals. Ancillary services would involve providing some comfort care for the pets themselves as well as pet loss counseling for those who have lost a pet. Risk management and liability issues are still being explored vis-a-vis a possible partnership with our local Humane Society of the North Bay, but we hope to begin training sessions for volunteers in 2014. In the meantime, volunteers will undergo initial screening through The NHFP. Please be patient if you do not hear from us right away. We are generally inundated with requests for emergency pet hospice care as well as involved with training seminars or our biennial symposium. We would appreciate a telephone call from you if you have not heard back from us within four weeks. Please call (XXX) XXX-XXXX and/or leave a message explaining you are a potential volunteer.");
+        event.setCauses(asList(CauseType.ANIMALS));
+      }
     } else {
-      event.setDescription(
-        eventDescriptionIntro +
-        "We are seeking volunteers willing to provide in-home respite care for people with terminally ill companion animals. Ancillary services would involve providing some comfort care for the pets themselves as well as pet loss counseling for those who have lost a pet. Risk management and liability issues are still being explored vis-a-vis a possible partnership with our local Humane Society of the North Bay, but we hope to begin training sessions for volunteers in 2014. In the meantime, volunteers will undergo initial screening through The NHFP. Please be patient if you do not hear from us right away. We are generally inundated with requests for emergency pet hospice care as well as involved with training seminars or our biennial symposium. We would appreciate a telephone call from you if you have not heard back from us within four weeks. Please call (XXX) XXX-XXXX and/or leave a message explaining you are a potential volunteer.");
-      event.setCauses(asList(CauseType.ANIMALS));
+      event.setDescription(description);
     }
     event.setLocation(location);
     event.setStartTime(startTime);
