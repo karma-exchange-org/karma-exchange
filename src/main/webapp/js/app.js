@@ -3499,7 +3499,7 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
     else if (document.location.hostname === "karmademo.dyndns.dk" ) {
         fbAppId = '1381630838720301';
     }
-    else if (document.location.hostname === "kex-latest.appspot.com" ) {
+    else if ( /^kex-latest[-\w]*.appspot.com$/.test(document.location.hostname) ) {
         fbAppId = '166052360247234';
     }
     else {

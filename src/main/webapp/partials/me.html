@@ -3,18 +3,16 @@
 
   <div class="row">
 
-    <div class="col-md-3 col-sm-4">
+    <div class="photo-details-col col-md-3 col-sm-4">
 
-        <div class="photo-details panel panel-default panel-seperated-vertical" ng-show="me.firstName">
+        <div class="panel panel-default panel-seperated-vertical" ng-show="me.firstName">
             <div class="panel-body">
 
-                <h3 class="panel-body-header">{{me.firstName}}</h3>
+                <img ng-src="{{KexUtil.strConcat(me.profileImage.url,'?type=large')}}">
 
-                <img ng-src="{{KexUtil.strConcat(me.profileImage.url,'?type=large')}}" class="img-responsive center">
+                <h3 class="name">{{me.firstName}}</h3>
 
-                <div class="text-center">
-                    <h4><karma-hours karma-points="me.karmaPoints"></karma-hours></h4>
-                </div>
+                <h4><karma-hours karma-points="me.karmaPoints"></karma-hours></h4>
 
             </div>
         </div>
