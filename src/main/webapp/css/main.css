@@ -774,8 +774,44 @@ img.kex-thumbnail-user-mini {
  * User profile
  */
 
-.user-profile .panel.photo-details {
-  max-width: 262px;
+.user-profile .photo-details-col {
+  max-width: 240px;
+}
+
+.user-profile .photo-details-col .panel {
+  overflow: hidden;
+}
+
+.user-profile .photo-details-col .panel-body {
+  padding: 0;
+  padding-bottom: 10px;
+  text-align: center;
+}
+
+.user-profile .photo-details-col .panel-body img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-bottom: 1px solid lightgray;
+}
+
+.user-profile .photo-details-col .panel-body .name {
+  position:relative;
+  padding-top: 10px;
+  padding-bottom: 20px;
+  margin: 0;
+}
+
+.user-profile .photo-details-col .panel-body .name:after {
+  display:block;
+  height:1px;
+  width:100px;
+  content:'';
+  bottom:10px;
+  position:absolute;
+  margin-left:-50px;
+  left:50%;
+  background-color: #4FAFC2;
 }
 
 .user-profile .panel.details {
