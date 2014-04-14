@@ -48,28 +48,22 @@
             <h4><em>No <span ng-show="query.length > 0">matching </span> organizations found</em></h4>
         </div>
 
-        <div class="row" ng-show="!orgQueryTracker.isPending()">
-            <div class="col-sm-6 col-md-4" ng-repeat="org in orgs.data">
-
-                <div class="org-summary panel panel-default panel-seperated-vertical panel-clickable"
-                     ng-click="setLocation('#!/org/' + org.key)">
-
-                    <div class="panel-heading">
-                        <div class="thumbnail">
-                            <img ng-src="{{fbUtil.getImageUrl(org.page.name, 'square')}}">
-                        </div>
-                        <div class="title">
-                            <h3 class="panel-title">
-                                {{org.orgName}}
-                            </h3>
-                        </div>
-                    </div>
-                    <div class="panel-body">
-                        {{org.mission}}
-                    </div>
-
+        <div class="display-default-and-larger-only" ng-show="!orgQueryTracker.isPending()">
+            <div class="row" ng-repeat="orgGroup in orgsGroupSize3">
+                <div class="col-md-4" ng-repeat="org in orgGroup">
+                    <org-summary-panel org="org">
+                    </org-summary-panel>
                 </div>
+            </div>
+        </div>
 
+        <!-- Hack to workaround bootstrap grid layout issue: http://stackoverflow.com/questions/22527674/bootstrap-3-responsive-panel-layout-with-varying-heights -->
+        <div class="display-portrait-and-smaller" ng-show="!orgQueryTracker.isPending()">
+            <div class="row" ng-repeat="orgGroup in orgsGroupSize2">
+                <div class="col-sm-6" ng-repeat="org in orgGroup">
+                    <org-summary-panel org="org">
+                    </org-summary-panel>
+                </div>
             </div>
         </div>
 

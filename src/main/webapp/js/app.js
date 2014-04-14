@@ -543,6 +543,20 @@ kexApp.factory('KexUtil', function($location, $modal) {
             return moment(date).add('months', 1).toDate();
         },
 
+        group: function(els, groupSize) {
+            var groupedEls = [];
+            if (angular.isDefined(els)) {
+                for (var idx = 0; idx < els.length; idx += groupSize) {
+                    if ((idx + groupSize) > els.length) {
+                        groupedEls.push(els.slice(idx));
+                    } else {
+                        groupedEls.push(els.slice(idx, idx + groupSize));
+                    }
+                }
+            }
+            return groupedEls;
+        },
+
         truncateToWordBoundary: function(str, lim) {
             if (!str) {
                 return { str: str, tuncated: false };
@@ -1819,6 +1833,22 @@ kexApp.directive('orgEventSummary', function(FbUtil) {
     };
 });
 
+kexApp.directive('orgSummaryPanel', function(FbUtil, $rootScope) {
+    return {
+        restrict: 'E',
+        scope: {
+            org: '='
+        },
+        replace: true,
+        transclude: false,
+        link: function (scope, element, attrs) {
+            scope.FbUtil = FbUtil;
+            scope.setLocation = $rootScope.setLocation;
+        },
+        templateUrl: 'template/kex/org-summary-panel.html'
+    };
+});
+
 kexApp.directive('eventParticipantSummary', function(KexUtil) {
     return {
         restrict: 'E',
@@ -2460,7 +2490,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     }
 };
 
-var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) {
+var orgCtrl = function( $scope, $location, $routeParams, $modal, Org, KexUtil ) {
     $scope.query = "";
     $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
     $scope.orgQueryTracker = new PromiseTracker();
@@ -2470,6 +2500,8 @@ var orgCtrl = function( $scope, $location, $routeParams, $modal, Org ) {
                 { name_prefix : $scope.query },
                 function(result) {
                     $scope.orgs = result;
+                    $scope.orgsGroupSize2 = KexUtil.group(result.data, 2);
+                    $scope.orgsGroupSize3 = KexUtil.group(result.data, 3);
                 }));
     };
     $scope.join = function( ) {

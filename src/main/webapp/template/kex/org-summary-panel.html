@@ -1,0 +1,18 @@
+<div class="org-summary panel panel-default panel-seperated-vertical panel-clickable"
+     ng-click="setLocation('#!/org/' + org.key)">
+
+    <div class="panel-heading">
+        <div class="thumbnail">
+            <img ng-src="{{FbUtil.getImageUrl(org.page.name, 'square')}}">
+        </div>
+        <div class="title">
+            <h3 class="panel-title">
+                {{org.orgName}}
+            </h3>
+        </div>
+    </div>
+    <div class="panel-body">
+        {{org.mission}}
+    </div>
+
+</div>
