@@ -4,12 +4,22 @@
 
 /***** DISPLAY *****/
 
+@media (min-width: 980px) {
+  .display-portrait-and-smaller {
+    display: none !important;
+  }
+}
+@media (max-width: 979px) {
+  .display-default-and-larger-only {
+    display: none !important;
+  }
+}
+
 @media (min-width: 1200px) {
   .display-default-and-smaller {
     display: none !important;
   }
 }
-
 @media (max-width: 1199px) {
   .display-large-only {
     display: none !important;
