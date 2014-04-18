@@ -35,7 +35,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         </init-param>
         <init-param>
             <param-name>loggingLevel</param-name>
-            <param-value>INFO</param-value>
+            <param-value>WARNING</param-value>
+        </init-param>
+        <init-param>
+            <param-name>forwardRequestsUsingLocalPort</param-name>
+            <param-value>true</param-value>
         </init-param>
     </filter>
     <filter-mapping>
