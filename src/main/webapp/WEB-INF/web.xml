@@ -17,6 +17,42 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </filter-mapping>
  -->
 
+    <!-- Pre-rendering filter must come before all other filters. -->
+    <filter>
+        <filter-name>SeoFilter</filter-name>
+        <filter-class>com.github.avaliani.snapshot.SeoFilter</filter-class>
+        <init-param>
+            <param-name>snapshotService</param-name>
+            <param-value>com.github.avaliani.snapshot.AjaxSnapshotsSnapshotService</param-value>
+        </init-param>
+        <init-param>
+            <param-name>snapshotServiceTokenProvider</param-name>
+            <param-value>org.karmaexchange.snapshot.AjaxSnapshotsServiceTokenProvider</param-value>
+        </init-param>
+        <init-param>
+            <param-name>snapshotServiceOptions</param-name>
+            <param-value>X-AJS-SNAP-TIME=2000</param-value>
+        </init-param>
+        <init-param>
+            <param-name>loggingLevel</param-name>
+            <param-value>INFO</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>SeoFilter</filter-name>
+        <url-pattern>/</url-pattern>
+    </filter-mapping>
+
+    <!-- This filter renders a static page. Put it before all other filters.  -->
+    <filter>
+        <filter-name>RootPageFilter</filter-name>
+        <filter-class>org.karmaexchange.task.RootPageFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>RootPageFilter</filter-name>
+        <url-pattern>/</url-pattern>
+    </filter-mapping>
+
     <!-- Must be the first filter to get invoked. Since objectify state has to be cleaned up by
          this filter and the OAuthFilter updates objectify entities. -->
     <filter>
@@ -234,7 +270,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </security-constraint>
 
     <welcome-file-list>
-        <welcome-file>index.html</welcome-file>
     </welcome-file-list>
 
 </web-app>

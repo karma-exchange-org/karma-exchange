@@ -55,8 +55,7 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
         throw ErrorResponseMsg.createException("signed request missing",
           ErrorInfo.Type.BAD_REQUEST);
       }
-      String appSecret = Properties.get(getServletContext(), getRequestUri(req),
-        FACEBOOK_APP_SECRET);
+      String appSecret = Properties.get(getRequestUri(req), FACEBOOK_APP_SECRET);
 
       SignedRegistrationRequest registrationReq;
       try {
