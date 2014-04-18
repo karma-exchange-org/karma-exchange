@@ -180,8 +180,8 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
   }
 
   public static OAuthCredential getAppCredential(ServletContext servletCtx, URI requestUri) {
-    String appId = Properties.get(servletCtx, requestUri, FACEBOOK_APP_ID);
-    String appSecret = Properties.get(servletCtx, requestUri, FACEBOOK_APP_SECRET);
+    String appId = Properties.get(requestUri, FACEBOOK_APP_ID);
+    String appSecret = Properties.get(requestUri, FACEBOOK_APP_SECRET);
     AccessToken accessToken =
         new DefaultFacebookClient().obtainAppAccessToken(appId, appSecret);
     return new AppOAuthCredential(SocialNetworkProviderType.FACEBOOK, accessToken.getAccessToken());

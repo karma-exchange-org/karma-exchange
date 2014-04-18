@@ -169,8 +169,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
     private static void initUser(ServletContext servletCtx, URI baseUri, String fbId,
         User user) {
-      String appId = Properties.get(servletCtx, baseUri, FACEBOOK_APP_ID);
-      String appSecret = Properties.get(servletCtx, baseUri, FACEBOOK_APP_SECRET);
+      String appId = Properties.get(baseUri, FACEBOOK_APP_ID);
+      String appSecret = Properties.get(baseUri, FACEBOOK_APP_SECRET);
       AccessToken accessToken =
           new DefaultFacebookClient().obtainAppAccessToken(appId, appSecret);
       DefaultFacebookClient fbClient = new DefaultFacebookClient(accessToken.getAccessToken());
