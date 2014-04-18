@@ -508,12 +508,6 @@ kexApp.factory('KexUtil', function($location, $modal) {
             }
             return undefined;
         },
-        getSEOUrl: function(){
-            return window.location.protocol + '//' + window.location.host + "?_escaped_fragment_=" + window.location.hash.replace('#!','');
-        },
-        getOGMetaTagUrl: function(ogtype, ogtitle, ogimage){
-            return window.location.protocol + '//' + window.location.host + "?metaonly=true&ogtype="+ogtype+"&ogtitle="+encodeURIComponent(ogtitle)+"&ogimage="+encodeURIComponent(ogimage)+"&ogurl="+encodeURIComponent(window.location.href);
-        },
 
         toHours: function(karmaPoints, dec) {
             return this.round(karmaPoints / 60, dec);
@@ -1310,7 +1304,7 @@ kexApp.directive('shareButtons', function(KexUtil) {
             template:
                 '<div>' +
                     '<ul ng-social-buttons ' +
-                            'url="KexUtil.getOGMetaTagUrl(type,title,image)" ' +
+                            'url="KexUtil.getLocation()" ' +
                             'title="title" ' +
                             'description="description" ' +
                             'image="image">' +
