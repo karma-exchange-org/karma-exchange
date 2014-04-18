@@ -12,6 +12,8 @@ You must also specify the facebook app id and secret key in **src/main/webapp/WE
 
     [app-domain]-facebook-app-id = [faceboo-app-id]
     [app-domain]-facebook-app-secret = [facebook-app-secret]
+    ajax-snapshots-snapshot-service-token = [token]
+    prerender-snapshot-service-token = [token]
 
 To run the app locally, use the [App Engine Maven Plugin](http://code.google.com/p/appengine-maven-plugin/)
 
