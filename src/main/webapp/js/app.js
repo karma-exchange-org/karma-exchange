@@ -1330,7 +1330,7 @@ kexApp.directive('eventParticipantImgsMini', function(KexUtil) {
         template:
             '<ul class="list-inline">' +
                 '<li ng-repeat="userImage in event.cachedParticipantImages">' +
-                    '<a href="#!/user/{{userImage.participant.key}}" stop-click-propagation>' +
+                    '<a href="#!/user/{{userImage.participant.key}}" stop-click-propagation class="thumbnail-rounded-corners">' +
                         '<img ng-src="{{KexUtil.strConcat(userImage.imageUrl,\'?type=square\')}}"' +
                         '   class="kex-thumbnail-user-mini">' +
                     '</a>' +

@@ -1,22 +1,21 @@
-<div class="container">
+<div class="container org-detail">
     <div class="row">
 
-        <div class="col-md-6" ng-show="fbPage.name">
-            <div class="panel panel-default panel-seperated-vertical">
+        <div class="col-sm-6" ng-show="fbPage.name">
+            <div class="photo-details panel panel-default panel-seperated-vertical">
                 <div class="panel-body">
 
-
-                    <h3 class="panel-body-header">
+                    <h3 class="name">
                         {{fbPage.name}}
                     </h3>
-                    <img ng-src="{{fbPage.cover.source}}" class="img-responsive">
+                    <img ng-src="{{fbPage.cover.source}}">
 
                 </div>
             </div>
 
         </div>
 
-        <div class="col-md-6">
+        <div class="col-sm-6">
 
             <div class="panel panel-default panel-seperated-vertical" ng-show="org.key">
                 <div class="panel-body org-info-panel">
@@ -91,7 +90,7 @@
                     <div class="panel-grid-el-2-col">
                         <div class="well well-sm well-no-margin">
                             <div class="img-text-div-img-small">
-                                <a href="#!/org/{{parentOrg.key}}">
+                                <a href="#!/org/{{parentOrg.key}}" class="thumbnail-rounded-corners">
                                     <img ng-src="{{FbUtil.getImageUrl(parentOrg.page.name, 'square')}}" class="kex-thumbnail-org-small">
                                 </a>
                             </div>
@@ -121,7 +120,7 @@
                     <div class="panel-grid-el-2-col" ng-repeat="org in childOrgs.data">
                         <div class="well well-sm well-no-margin">
                             <div class="img-text-div-img-small">
-                                <a href="#!/org/{{org.key}}">
+                                <a href="#!/org/{{org.key}}" class="thumbnail-rounded-corners">
                                     <img ng-src="{{FbUtil.getImageUrl(org.page.name, 'square')}}" class="kex-thumbnail-org-small">
                                 </a>
                             </div>

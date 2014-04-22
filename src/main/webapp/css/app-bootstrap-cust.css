@@ -40,3 +40,13 @@
 .dropdown-menu {
   min-width: 100px;
 }
+
+/*
+ * For some "overflow: hidden" + "display: block" adds a padding of 4px below the images. Might be related
+ * to this: http://stackoverflow.com/questions/9273016/why-is-this-inline-block-element-pushed-downward
+ */
+.thumbnail-rounded-corners {
+  border-radius: 4px;
+  overflow: hidden;
+  display: block;
+}
