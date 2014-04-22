@@ -30,10 +30,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
             <param-value>org.karmaexchange.snapshot.AjaxSnapshotsServiceTokenProvider</param-value>
         </init-param>
         <init-param>
-            <param-name>snapshotServiceHeaders</param-name>
-            <param-value>X-AJS-SNAP-TIME=2000</param-value>
-        </init-param>
-        <init-param>
             <param-name>loggingLevel</param-name>
             <param-value>WARNING</param-value>
         </init-param>

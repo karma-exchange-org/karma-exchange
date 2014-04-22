@@ -481,6 +481,78 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
     };
 });
 
+kexApp.factory('SnapshotServiceHandshake', function($timeout) {
+    var DEFAULT_SNAPSHOT_TIMEOUT = 1000;
+    var RENDER_DELAY = 100; /* time to wait for angular to render results. */
+
+    var snapshotOnTimeout = true;
+    var snapshotTaken = false;
+
+    var prerenderIoSnapshotService = {
+        init: function() {
+            window.prerenderReady = false;
+        },
+        snapshot: function() {
+            window.prerenderReady = true;
+        }
+    };
+
+    var ajaxSnapshotsSnapshotService = {
+        init: function() {
+        },
+        snapshot: function() {
+            if (window._AJS) {
+                window._AJS.takeSnapshot();
+            }
+        }
+    };
+
+    var snapshotServices = [
+        prerenderIoSnapshotService,
+        ajaxSnapshotsSnapshotService
+    ];
+
+    init();
+
+    function init() {
+        angular.forEach(snapshotServices, function(snapshotService) {
+            snapshotService.init();
+        });
+
+        $timeout(snapshotOnTimeoutCb, DEFAULT_SNAPSHOT_TIMEOUT);
+    }
+
+    function snapshotOnTimeoutCb() {
+        if (snapshotOnTimeout) {
+            snapshot();
+        }
+    }
+
+    function snapshot() {
+        if (!snapshotTaken) {
+            snapshotTaken = true;
+            angular.forEach(snapshotServices, function(snapshotService) {
+                snapshotService.snapshot();
+            });
+        }
+    }
+
+    function snapshotWithRenderDelay() {
+        if (!snapshotTaken) {
+            $timeout(snapshot, RENDER_DELAY);
+        }
+    }
+
+    return {
+        disableSnapshotOnTimeout: function() {
+            snapshotOnTimeout = false;
+        },
+        snapshot: function() {
+            snapshotWithRenderDelay();
+        }
+    }
+});
+
 kexApp.factory('KexUtil', function($location, $modal) {
     return {
         getBaseUrl: function() {
@@ -2534,7 +2606,8 @@ var createOrgCtrl = function ($scope, $modalInstance) {
     };
 };
 var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, KexUtil,
-        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q, Geocoder, $log ) {
+        EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q, Geocoder, $log,
+        SnapshotServiceHandshake ) {
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
 
@@ -2542,6 +2615,11 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     var eventSearchRecyclablePromise = RecyclablePromiseFactory.create();
 
     $scope.modelOpen = false;
+
+    SnapshotServiceHandshake.disableSnapshotOnTimeout();
+    eventSearchRecyclablePromise.promise.then( function() {
+        SnapshotServiceHandshake.snapshot();
+    });
 
     $scope.reset = function( ) {
         var eventSearchDef = eventSearchRecyclablePromise.recycle();
@@ -3157,7 +3235,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
 
 var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location,
         Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook,
-        RecyclablePromiseFactory, $q) {
+        RecyclablePromiseFactory, $q, SnapshotServiceHandshake) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.currentUserRating = {
@@ -3173,6 +3251,12 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     var eventDetailsRecyclablePromise = RecyclablePromiseFactory.create();
     $scope.$on("FbAuthDepResource.userChanged", function (event, response) {
         refreshEvent(true);
+    });
+
+    var pageLoadedDef = $q.defer();
+    SnapshotServiceHandshake.disableSnapshotOnTimeout();
+    pageLoadedDef.promise.then( function () {
+        SnapshotServiceHandshake.snapshot();
     });
 
     $scope.unregister = function() {
@@ -3288,6 +3372,8 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                         // Change the current tab if no tab has been explicitly selected.
                         tabManager.markTabActive('impact');
                     }
+                } else {
+                    pageLoadedDef.resolve();
                 }
                 eventDetailsDef.resolve();
             },
@@ -3352,7 +3438,11 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                     for (var imgIdx = 0; imgIdx < fbImgs.length; imgIdx++) {
                         $scope.impactImgs.push({active: imgIdx == 0, src: fbImgs[imgIdx].source});
                     }
+
+                    pageLoadedDef.resolve();
                 });
+            } else {
+                pageLoadedDef.resolve();
             }
 
             if (EventUtil.canWriteReview($scope.event)) {
@@ -3539,12 +3629,12 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
 
 })
 
-// Force service instantiation to handle angular lazy instantation for the
-// following services:
+// Prevent angular lazy instantation for the following services:
 //   - MeUtil
 //   - FbAuthDepResource
+//   - SnapshotServiceHandshake
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource, KexUtil ) {
+        FbAuthDepResource, KexUtil, SnapshotServiceHandshake ) {
 
     $rootScope.fbUtil = FbUtil;
     $rootScope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);
