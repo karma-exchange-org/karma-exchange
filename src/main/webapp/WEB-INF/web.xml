@@ -30,7 +30,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
             <param-value>org.karmaexchange.snapshot.AjaxSnapshotsServiceTokenProvider</param-value>
         </init-param>
         <init-param>
-            <param-name>snapshotServiceOptions</param-name>
+            <param-name>snapshotServiceHeaders</param-name>
             <param-value>X-AJS-SNAP-TIME=2000</param-value>
         </init-param>
         <init-param>
@@ -274,6 +274,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </security-constraint>
 
     <welcome-file-list>
+        <welcome-file>index.html</welcome-file>
     </welcome-file-list>
 
 </web-app>

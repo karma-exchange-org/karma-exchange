@@ -428,7 +428,7 @@ div.timeline_element div.karma-hour-col div.registration-info {
 div.timeline_element div.header div.impact-summary {
     clear: both;
 
-    line-height: 1.38;
+    /*line-height: 1.38;*/
     margin-top: 10px;
     padding-top: 10px;
     border-top: 1px solid #999;
