@@ -3,13 +3,17 @@
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!-->
-<html ng-app="kexApp" class="no-js">
+<html ng-app="kexApp" class="no-js" ng-controller="RootController">
     <!--<![endif]-->
     <head>
+        <title ng-bind="pageTitle">Karma Exchange</title>
+        <meta ng-repeat='(name, content) in PageProperties.getMetaNameTags()'
+            name="{{name}}" content="{{content}}" />
+        <meta ng-repeat='(property, content) in PageProperties.getMetaPropertyTags()'
+            property="{{property}}" content="{{content}}" />
+
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Karma Exchange</title>
-        <meta name="description" content>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="fragment" content="!">
 
@@ -58,7 +62,7 @@
 
         <link rel="stylesheet" href="css/main.css">
         <style>
-            .ng-cloak { display: none; }
+            .ng-cloak { display: none !important; }
         </style>
         <!--[if lt IE 9]>
             <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
@@ -174,13 +178,13 @@
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#!/event"><img src="/img/logo.png" alt="Karma Exchange"></a>
+                    <a class="navbar-brand" href="#!/"><img src="/img/logo.png" alt="Karma Exchange"></a>
                 </div>
 
                 <div class="navbar-collapse collapse navbar-responsive-collapse" ng-click="collapseNavbar()">
                     <ul class="nav navbar-nav">
-                        <li ng-class="{ active: isActive('#!/event') }">
-                            <a href="#!/event">Find Events</a>
+                        <li ng-class="{ active: isActive('#!/') }">
+                            <a href="#!/">Find Events</a>
                         </li>
                         <li ng-show="me" ng-class="{ active: isActive('#!/me') }">
                             <a href="#!/me">My Profile</a>
