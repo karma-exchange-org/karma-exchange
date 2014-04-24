@@ -17,7 +17,18 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </filter-mapping>
  -->
 
-    <!-- Pre-rendering filter must come before all other filters. -->
+    <!-- Must be the first filter to get invoked. Since objectify state has to be cleaned up by
+         this filter and both the OAuthFilter and the SeoFilter update objectify entities. -->
+    <filter>
+        <filter-name>ObjectifyFilter</filter-name>
+        <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ObjectifyFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+        <url-pattern>/_ah/warmup/*</url-pattern>
+    </filter-mapping>
+
     <filter>
         <filter-name>SeoFilter</filter-name>
         <filter-class>com.github.avaliani.snapshot.SeoFilter</filter-class>
@@ -28,6 +39,10 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <init-param>
             <param-name>snapshotServiceTokenProvider</param-name>
             <param-value>org.karmaexchange.snapshot.AjaxSnapshotsServiceTokenProvider</param-value>
+        </init-param>
+        <init-param>
+            <param-name>seoFilterEventHandler</param-name>
+            <param-value>org.karmaexchange.snapshot.SeoFilterEventHandlerImpl</param-value>
         </init-param>
         <init-param>
             <param-name>loggingLevel</param-name>
@@ -43,7 +58,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <url-pattern>/</url-pattern>
     </filter-mapping>
 
-    <!-- This filter renders a static page. Put it before all other filters.  -->
+    <!-- This filter renders a static page. -->
     <filter>
         <filter-name>RootPageFilter</filter-name>
         <filter-class>org.karmaexchange.task.RootPageFilter</filter-class>
@@ -51,18 +66,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     <filter-mapping>
         <filter-name>RootPageFilter</filter-name>
         <url-pattern>/</url-pattern>
-    </filter-mapping>
-
-    <!-- Must be the first filter to get invoked. Since objectify state has to be cleaned up by
-         this filter and the OAuthFilter updates objectify entities. -->
-    <filter>
-        <filter-name>ObjectifyFilter</filter-name>
-        <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>ObjectifyFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-        <url-pattern>/_ah/warmup/*</url-pattern>
     </filter-mapping>
 
     <filter>
@@ -205,6 +208,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     <servlet-mapping>
         <servlet-name>BootstrapFacebookRegistrationServlet</servlet-name>
         <url-pattern>/bootstrap/provider/fb/register</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DeleteWebPageSnapshotsServlet</servlet-name>
+        <servlet-class>org.karmaexchange.bootstrap.DeleteWebPageSnapshotsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteWebPageSnapshotsServlet</servlet-name>
+        <url-pattern>/bootstrap/delete_snapshots</url-pattern>
     </servlet-mapping>
 
     <servlet>
