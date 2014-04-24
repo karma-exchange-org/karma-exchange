@@ -52,17 +52,19 @@ kexApp = angular.module( "kexApp",
     ["ngResource", "ngCookies", "ui.bootstrap", "ui.bootstrap.ex", "ngFacebook",
      "globalErrors" ,"ui.calendar", "ngSocial","HashBangURLs", "geocoder"] )
 
+.constant('PAGE_TITLE_SUFFIX', ' - Karma Exchange')
+
 .filter( 'textToHtml', function() {
     var options = {
         callback: function( text, href ) {
             if ( href ) {
                 var trimmedText = trimLinkText(text);
-                var hrefEscaped = escapeHtml(href);
+                var hrefEscaped = _.escape(href);
                 var hrefText = '<a href="' + hrefEscaped +
-                    '" title="' + hrefEscaped + '">' + escapeHtml(trimmedText) + '</a>';
+                    '" title="' + hrefEscaped + '">' + _.escape(trimmedText) + '</a>';
                 return hrefText;
             } else {
-                var noHtmlText = escapeHtml(text);
+                var noHtmlText = _.escape(text);
                 // preserve newlines
                 return noHtmlText.replace( /\n/g, '<br/>' );
             }
@@ -70,10 +72,6 @@ kexApp = angular.module( "kexApp",
         },
         punct_regexp: /(?:[!?.,:;'"]|(?:&|&amp;)(?:lt|gt|quot|apos|raquo|laquo|rsaquo|lsaquo);)$/
     };
-
-    function escapeHtml(str) {
-        return str.replace( /&/g, '&amp;' ).replace( />/g, '&gt;' ).replace( /</g, '&lt;' );
-    }
 
     function trimLinkText(str) {
         var MAX_LINK_TEXT_LEN = 30;
@@ -553,9 +551,100 @@ kexApp.factory('SnapshotServiceHandshake', function($timeout) {
     }
 });
 
+kexApp.provider('PageProperties', function() {
+    var fbAppId;
+
+    this.setFbAppId = function(appId) {
+      fbAppId = appId;
+      return this;
+    };
+
+    this.$get = [
+        '$rootScope', 'KexUtil', 'PAGE_TITLE_SUFFIX',
+        function($rootScope, KexUtil, PAGE_TITLE_SUFFIX) {
+
+            var DEFAULT_PAGE_TITLE = "Karma Exchange";
+            var DEFAULT_PAGE_DESCRIPTION =
+                "Karma Exchange is a community of connected, inspired, and engaged volunteers." +
+                " Join us and make earning and sharing karma part of your daily routine.";
+            var metaPropertyTags, metaNameTags;
+
+            $rootScope.$on('$routeChangeSuccess', function (event, current, previous) {
+                reset();
+                if (current.$$route && current.$$route.title) {
+                    setTitle(current.$$route.title, false);
+                }
+            });
+
+            reset();
+
+            function reset() {
+                metaPropertyTags = {
+                    "og:site_name" : "Karma Exchange",
+                    "fb:app_id" : fbAppId
+                    // Skipping
+                    // - og:url - canonical url
+                    // - og:type - website is not preferred. Article seems wrong.
+                    //      maybe we need a custom type
+                    //      https://developers.facebook.com/docs/reference/opengraph/
+                    // - twitter:site - need to reserve KarmaExchange on twitter
+                };
+                metaNameTags =  {};
+                setTitle(DEFAULT_PAGE_TITLE, false);
+                setPageImage(KexUtil.getBaseUrl() + "/img/kex-logo-1024.png");
+                setDescription(DEFAULT_PAGE_DESCRIPTION);
+            }
+
+            function setTitle(contentTitle, addSuffixToPageTitle) {
+                $rootScope.pageTitle = contentTitle;
+                if (addSuffixToPageTitle) {
+                    $rootScope.pageTitle += PAGE_TITLE_SUFFIX;
+                }
+                metaNameTags["twitter:title"] = contentTitle;
+                metaPropertyTags["og:title"] = contentTitle;
+            }
+
+            function setPageImage(url) {
+                metaPropertyTags["og:image"] = url;
+                metaNameTags["twitter:image"] = url;
+            }
+
+            function setDescription(description) {
+                var descrip155 =
+                    KexUtil.truncateToWordBoundary(description, 155).str;
+                var descrip500 =
+                    KexUtil.truncateToWordBoundary(description, 500).str;
+                metaNameTags["description"] = descrip155;
+                metaNameTags["twitter:card"] = descrip500;
+                metaPropertyTags["og:description"] = descrip500;
+            }
+
+            return {
+                setContentTitle : function(contentTitle) {
+                    setTitle(contentTitle, true);
+                },
+                setPageImage : function(imgUrl, isRelative) {
+                    var imgUrlExpanded =
+                        isRelative ? (KexUtil.getBaseUrl() + imgUrl) : imgUrl;
+                    setPageImage(imgUrlExpanded);
+                },
+                setDescription: setDescription,
+
+                getMetaPropertyTags : function() {
+                    return metaPropertyTags;
+                },
+                getMetaNameTags : function() {
+                    return metaNameTags;
+                }
+            };
+
+        }];
+});
+
 kexApp.factory('KexUtil', function($location, $modal) {
     return {
         getBaseUrl: function() {
+            // window.location.host includes the port #.
             return window.location.protocol + '//' + window.location.host;
         },
         getLocation: function() {
@@ -570,6 +659,7 @@ kexApp.factory('KexUtil', function($location, $modal) {
         stripHashbang: function(url) {
             return (url.indexOf('#!') === 0) ? url.substring(2) : url;
         },
+
         getSavedResourceKey: function(getResponseHeaderCb) {
             var locationHdr = getResponseHeaderCb('location');
             if (angular.isDefined(locationHdr)) {
@@ -2199,7 +2289,7 @@ kexApp.directive('truncateWithToggle', function($rootScope, KexUtil) {
 
 var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
         $modal, EventUtil, KexUtil, urlTabsetUtil, KarmaGoalUtil, MeUtil,
-        UserManagedEvents) {
+        UserManagedEvents, PageProperties, $q) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
 
@@ -2210,6 +2300,15 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     $scope.tabs = tabManager.tabs;
 
     $scope.upcomingEventsFetchTracker = new PromiseTracker();
+
+    var profileLoadedDef = $q.defer();
+
+    profileLoadedDef.promise.then( function(user) {
+        PageProperties.setContentTitle(user.firstName + " " + user.lastName);
+        if (user.profileImage && user.profileImage.url) {
+            PageProperties.setPageImage(user.profileImage.url + "?type=large");
+        }
+    })
 
     function load() {
         if ($location.path() == "/me") {
@@ -2223,8 +2322,10 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
 
                 // Tab information depends on the user being fetched first.
                 $scope.meLoaded = true;
+                profileLoadedDef.resolve($scope.me);
                 tabManager.reloadActiveTab();
                 postUserKeyResolutionCbs();
+
             });
         } else {
             $scope.userKey = $routeParams.userId;
@@ -2242,6 +2343,7 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
 
                     // Tab information depends on the user being fetched first.
                     $scope.meLoaded = true;
+                    profileLoadedDef.resolve($scope.me);
                     tabManager.reloadActiveTab();
                 });
             postUserKeyResolutionCbs();
@@ -2383,7 +2485,7 @@ var meEditCtrl = function($scope, Me, $rootScope, MeUtil) {
 };
 
 var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http, Org,
-        Events, FbUtil, KexUtil, EventUtil, urlTabsetUtil, $facebook) {
+        Events, FbUtil, KexUtil, EventUtil, urlTabsetUtil, $facebook, PageProperties) {
     $scope.FbUtil = FbUtil;
     $scope.KexUtil = KexUtil;
 
@@ -2417,6 +2519,9 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
             $scope.orgLoaded = true;
             $facebook.api("/" + $scope.org.page.name).then(function(response) {
                 $scope.fbPage = response;
+                if ($scope.fbPage.cover && $scope.fbPage.cover.source) {
+                    PageProperties.setPageImage($scope.fbPage.cover.source);
+                }
             });
 
             if ($scope.org.parentOrg) {
@@ -2435,6 +2540,8 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                     tabName: 'manageOrg',
                 });
             }
+
+            PageProperties.setContentTitle($scope.org.orgName);
 
             tabManager.reloadActiveTab();
         });
@@ -3235,7 +3342,7 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
 
 var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location,
         Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook,
-        RecyclablePromiseFactory, $q, SnapshotServiceHandshake) {
+        RecyclablePromiseFactory, $q, SnapshotServiceHandshake, PageProperties) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.currentUserRating = {
@@ -3255,8 +3362,17 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
 
     var pageLoadedDef = $q.defer();
     SnapshotServiceHandshake.disableSnapshotOnTimeout();
-    pageLoadedDef.promise.then( function () {
+    pageLoadedDef.promise.then( function (ctx) {
         SnapshotServiceHandshake.snapshot();
+        if (ctx && ctx.pageImageUrl) {
+            PageProperties.setPageImage(ctx.pageImageUrl);
+        }
+    });
+
+    eventDetailsRecyclablePromise.promise.then( function() {
+        PageProperties.setContentTitle($scope.event.title +
+            " on " + moment($scope.event.startTime).format('l'));
+        PageProperties.setDescription($scope.event.description);
     });
 
     $scope.unregister = function() {
@@ -3371,6 +3487,8 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                     } else if (!tabManager.tabSelectedByUrl) {
                         // Change the current tab if no tab has been explicitly selected.
                         tabManager.markTabActive('impact');
+                    } else {
+                        pageLoadedDef.resolve();
                     }
                 } else {
                     pageLoadedDef.resolve();
@@ -3431,16 +3549,21 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             $scope.impactTabLoaded = true;
 
             if ($scope.event.album) {
-                $facebook.cachedApi("/" + $scope.event.album.id + "/photos").then(function (response) {
-                    // TODO(avaliani): Bug. For now only fetch the first few images.
-                    $scope.impactImgs = [];
-                    var fbImgs = response.data;
-                    for (var imgIdx = 0; imgIdx < fbImgs.length; imgIdx++) {
-                        $scope.impactImgs.push({active: imgIdx == 0, src: fbImgs[imgIdx].source});
-                    }
+                $facebook.cachedApi("/" + $scope.event.album.id + "/photos").then(
+                    function (response) {
+                        // TODO(avaliani): Bug. For now only fetch the first few images.
+                        $scope.impactImgs = [];
+                        var fbImgs = response.data;
+                        for (var imgIdx = 0; imgIdx < fbImgs.length; imgIdx++) {
+                            $scope.impactImgs.push({active: imgIdx == 0, src: fbImgs[imgIdx].source});
+                        }
 
-                    pageLoadedDef.resolve();
-                });
+                        pageLoadedDef.resolve(
+                            { pageImageUrl: angular.isDefined(fbImgs[0]) ? fbImgs[0].source : undefined }
+                        );
+                    }, function() {
+                        pageLoadedDef.resolve();
+                    });
             } else {
                 pageLoadedDef.resolve();
             }
@@ -3486,6 +3609,14 @@ kexApp.controller('NavbarController',
 
     $scope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
 }]);
+
+kexApp.controller('RootController',
+    [
+        '$scope', 'PageProperties',
+        function($scope, PageProperties) {
+            $scope.PageProperties = PageProperties;
+        }
+    ]);
 
 kexApp.controller(
     'ConfirmationModalInstanceCtrl',
@@ -3586,24 +3717,113 @@ PromiseTracker.prototype.track = function(promise) {
  * App config and run methods
  */
 
-kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
+kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider,
+        PagePropertiesProvider, PAGE_TITLE_SUFFIX ) {
+
     $routeProvider
         // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
         // .when( '/home', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
-        .when( '/me', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
-        .when( '/about', { templateUrl : 'partials/about.html', reloadOnSearch: false } )
-        .when( '/tour', { controller : tourCtrl, templateUrl : 'partials/tour.html', reloadOnSearch: false } )
-        .when( '/awards', { templateUrl : 'partials/awards.html', reloadOnSearch: false } )
-        .when( '/contact', { templateUrl : 'partials/contact.html', reloadOnSearch: false } )
-        .when( '/user/:userId', { controller : meViewCtrl, templateUrl : 'partials/me.html', reloadOnSearch: false } )
-        .when( '/mysettings', { controller : meEditCtrl, templateUrl : 'partials/mysettings.html', reloadOnSearch: false } )
-        .when( '/event', { controller : eventsCtrl, templateUrl : 'partials/events.html', reloadOnSearch: false } )
-        .when( '/event/add', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
-        .when( '/event/:eventId/edit', { controller : addEditEventsCtrl, templateUrl : 'partials/addEditevent.html', reloadOnSearch: false } )
-        .when( '/event/:eventId', { controller : viewEventCtrl, templateUrl : 'partials/viewEvent.html', reloadOnSearch: false } )
-        .when( '/org', { controller : orgCtrl, templateUrl : 'partials/organization.html', reloadOnSearch: false } )
-        .when( '/org/:orgId', { controller : orgDetailCtrl, templateUrl : 'partials/organizationDetail.html', reloadOnSearch: false } )
-        .otherwise( { redirectTo : '/event' } );
+        .when(
+            '/me',
+            {
+                controller : meViewCtrl,
+                templateUrl : 'partials/me.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/about',
+            {
+                title : "About" + PAGE_TITLE_SUFFIX,
+                templateUrl : 'partials/about.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/tour',
+            {
+                title : "Tour" + PAGE_TITLE_SUFFIX,
+                controller : tourCtrl,
+                templateUrl : 'partials/tour.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/awards',
+            {
+                title : "Karma Awards" + PAGE_TITLE_SUFFIX,
+                templateUrl : 'partials/awards.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/contact',
+            {
+                title : "Contact" + PAGE_TITLE_SUFFIX,
+                templateUrl :
+                'partials/contact.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/user/:userId',
+            {
+                controller : meViewCtrl,
+                templateUrl : 'partials/me.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/mysettings',
+            {
+                title : "User Settings" + PAGE_TITLE_SUFFIX,
+                controller : meEditCtrl,
+                templateUrl : 'partials/mysettings.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/',
+            {
+                controller : eventsCtrl,
+                templateUrl : 'partials/events.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/event/add',
+            {
+                title : "Add/Edit Event" + PAGE_TITLE_SUFFIX,
+                controller : addEditEventsCtrl,
+                templateUrl : 'partials/addEditevent.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/event/:eventId/edit',
+            {
+                title : "Add/Edit Event" + PAGE_TITLE_SUFFIX,
+                controller : addEditEventsCtrl,
+                templateUrl : 'partials/addEditevent.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/event/:eventId',
+            {
+                controller : viewEventCtrl,
+                templateUrl : 'partials/viewEvent.html',
+                reloadOnSearch: false
+             })
+        .when(
+            '/org',
+            {
+                title : "Volunteer Organizations" + PAGE_TITLE_SUFFIX,
+                controller : orgCtrl,
+                templateUrl : 'partials/organization.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/org/:orgId',
+            {
+                controller : orgDetailCtrl,
+                templateUrl : 'partials/organizationDetail.html',
+                reloadOnSearch: false
+            })
+        // NOTE: If you're adding a new when you need to either add
+        //       a fixed page title, or you need to modify the controller
+        //       to invoke PageProperties.setContentTitle().
+        .otherwise( { redirectTo : '/' } );
     delete $httpProvider.defaults.headers.common[ 'X-Requested-With' ];
     //$httpProvider.defaults.headers.common['X-'] = 'X';
 
@@ -3621,6 +3841,9 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
     else {
         fbAppId = '571265879564450';
     }
+
+    PagePropertiesProvider.setFbAppId(fbAppId);
+
     $facebookProvider.setAppId(fbAppId);
     $facebookProvider.setCustomInit({
         status : true,
@@ -3633,8 +3856,9 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
 //   - MeUtil
 //   - FbAuthDepResource
 //   - SnapshotServiceHandshake
+//   - PageProperties
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource, KexUtil, SnapshotServiceHandshake ) {
+        FbAuthDepResource, KexUtil, SnapshotServiceHandshake, PageProperties) {
 
     $rootScope.fbUtil = FbUtil;
     $rootScope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);
@@ -3645,6 +3869,7 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider ) {
             $rootScope.alerts = [ ];
             $rootScope.locationURL = window.location.href;
     } );
+
     $rootScope.addAlert = function( message ) {
         if( ! $rootScope.alerts )
         {
