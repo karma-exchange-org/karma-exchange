@@ -2,13 +2,6 @@ package org.karmaexchange.bootstrap;
 
 import static org.karmaexchange.util.OfyService.ofy;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
@@ -18,29 +11,19 @@ import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.UserManagedEvent;
 import org.karmaexchange.dao.Waiver;
 import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
+import org.karmaexchange.snapshot.WebPageSnapshot;
 
 import com.googlecode.objectify.Key;
 
 @SuppressWarnings("serial")
-public class PurgeAllResourcesServlet extends HttpServlet {
-
-  @Override
-  public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    resp.setContentType("text/plain");
-    PrintWriter statusWriter = resp.getWriter();
-    purgeAllResources(statusWriter);
-  }
-
-  @Override
-  public void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-    doGet(req, resp);
-  }
+public class PurgeAllResourcesServlet extends BootstrapServlet {
 
   /*
    * The current implementation only works for small dbs. Map-reduce is the right thing for
    * large dbs.
    */
-  private void purgeAllResources(PrintWriter statusWriter) {
+  @Override
+  public void execute() {
     statusWriter.println("About to delete all resources...");
 
     Iterable<Key<Event>> eventKeys = ofy().load().type(Event.class).keys().iterable();
@@ -55,6 +38,8 @@ public class PurgeAllResourcesServlet extends HttpServlet {
         ofy().load().type(SourceEventGeneratorInfo.class).keys().iterable();
     Iterable<Key<UserManagedEvent>> userManagedEventKeys =
         ofy().load().type(UserManagedEvent.class).keys().iterable();
+    Iterable<Key<WebPageSnapshot>> persistedSnapshotKeys =
+        ofy().load().type(WebPageSnapshot.class).keys().iterable();
     // Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     ofy().delete().keys(eventKeys);
@@ -66,6 +51,7 @@ public class PurgeAllResourcesServlet extends HttpServlet {
     ofy().delete().keys(waiverKeys);
     ofy().delete().keys(generatorInfoKeys);
     ofy().delete().keys(userManagedEventKeys);
+    ofy().delete().keys(persistedSnapshotKeys);
     // Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     statusWriter.println("Deleted all resources.");

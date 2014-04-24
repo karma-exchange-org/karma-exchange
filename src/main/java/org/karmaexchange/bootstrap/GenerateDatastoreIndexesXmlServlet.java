@@ -2,8 +2,6 @@ package org.karmaexchange.bootstrap;
 
 import static org.karmaexchange.util.OfyService.ofy;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -22,8 +20,6 @@ import org.karmaexchange.resources.EventResource;
 import org.karmaexchange.resources.EventResource.EventSearchType;
 import org.karmaexchange.resources.OrganizationResource;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
-import org.karmaexchange.util.AdminTaskServlet;
-import org.karmaexchange.util.AdminUtil;
 
 import com.googlecode.objectify.Key;
 import com.sun.jersey.api.client.Client;
@@ -33,21 +29,12 @@ import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
 
 @SuppressWarnings("serial")
-public class GenerateDatastoreIndexesXmlServlet extends AdminTaskServlet {
+public class GenerateDatastoreIndexesXmlServlet extends BootstrapServlet {
   private static final Logger logger =
       Logger.getLogger(GenerateDatastoreIndexesXmlServlet.class.getName());
 
-  private PrintWriter statusWriter;
-
-  public GenerateDatastoreIndexesXmlServlet() {
-    super(AdminUtil.AdminTaskType.BOOTSTRAP);
-  }
-
   @Override
-  public void execute() throws IOException {
-    resp.setContentType("text/plain");
-    statusWriter = resp.getWriter();
-
+  public void execute() {
     ClientConfig config = new DefaultClientConfig();
     Client client = Client.create(config);
     WebResource service = client.resource(getBaseUri());
