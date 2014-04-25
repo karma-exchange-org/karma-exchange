@@ -8,12 +8,10 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Index;
 import com.googlecode.objectify.condition.PojoIf;
 
 @Data
-@Embed
 @NoArgsConstructor
 public class Rating {
   public static final double MIN_RATING = 1;

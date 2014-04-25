@@ -4,9 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import com.google.appengine.api.datastore.GeoPt;
-import com.googlecode.objectify.annotation.Embed;
 
-@Embed
 @ToString
 @EqualsAndHashCode
 public class GeoPtWrapper {

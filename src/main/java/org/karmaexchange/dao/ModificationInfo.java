@@ -4,12 +4,9 @@ import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.Date;
 
-import com.googlecode.objectify.annotation.Embed;
-
 import lombok.Data;
 
 @Data
-@Embed
 public final class ModificationInfo {
 
   private KeyWrapper<User> creationUser;

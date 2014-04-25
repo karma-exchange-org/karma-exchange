@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Embed;
 
 /**
  * This class wraps Objectify keys to enable keys to be converted by JAXB.
@@ -16,7 +15,6 @@ import com.googlecode.objectify.annotation.Embed;
  * @author Amir Valiani (first.last@gmail.com)
  */
 @Data
-@Embed
 @NoArgsConstructor
 public class KeyWrapper<T> implements Comparable<KeyWrapper<T>> {
 

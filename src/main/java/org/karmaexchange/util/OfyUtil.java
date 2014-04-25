@@ -20,6 +20,6 @@ public class OfyUtil {
   }
 
   public static String getKind(Class<?> cls) {
-    return ofy().getFactory().getMetadata(cls).getKeyMetadata().getKind();
+    return ofy().factory().getMetadata(cls).getKeyMetadata().getKind();
   }
 }

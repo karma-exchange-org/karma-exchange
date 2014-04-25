@@ -6,9 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Embed;
 
-@Embed
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)

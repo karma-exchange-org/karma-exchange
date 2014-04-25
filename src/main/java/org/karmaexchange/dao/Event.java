@@ -40,7 +40,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
-import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
@@ -849,7 +848,6 @@ public final class Event extends BaseEvent<Event> {
     }
   }
 
-  @Embed
   @Data
   @NoArgsConstructor
   public static final class EventParticipant {
@@ -952,7 +950,6 @@ public final class Event extends BaseEvent<Event> {
    * Note that all methods in this class should be invoked from within the context of a transaction.
    */
   @Data
-  @Embed
   @NoArgsConstructor
   public static class DerivedRatingTracker {
 
@@ -1064,7 +1061,6 @@ public final class Event extends BaseEvent<Event> {
      * polymorphic.
      */
     @Data
-    @Embed
     @NoArgsConstructor
     private static class DerivedRatingWrapper implements DerivedRating {
 
@@ -1098,7 +1094,6 @@ public final class Event extends BaseEvent<Event> {
     }
 
     @Data
-    @Embed
     @NoArgsConstructor
     public static class OrganizerDerivedRating implements DerivedRating {
       NullableKeyWrapper<User> organizer = NullableKeyWrapper.create();
@@ -1144,7 +1139,6 @@ public final class Event extends BaseEvent<Event> {
     }
 
     @Data
-    @Embed
     @NoArgsConstructor
     public static class OrganizationDerivedRating implements DerivedRating {
       NullableKeyWrapper<Organization> organization = NullableKeyWrapper.create();
@@ -1211,7 +1205,6 @@ public final class Event extends BaseEvent<Event> {
   }
 
   @Data
-  @Embed
   @NoArgsConstructor
   public static class CompletionTaskTracker {
 
@@ -1325,7 +1318,6 @@ public final class Event extends BaseEvent<Event> {
      * polymorphic.
      */
     @Data
-    @Embed
     @NoArgsConstructor
     @VisibleForTesting
     static class CompletionTaskWrapper implements CompletionTask {
@@ -1360,7 +1352,6 @@ public final class Event extends BaseEvent<Event> {
     }
 
     @Data
-    @Embed
     @NoArgsConstructor
     @VisibleForTesting
     static class ParticipantCompletionTask implements CompletionTask {
@@ -1418,7 +1409,6 @@ public final class Event extends BaseEvent<Event> {
     }
 
     @Data
-    @Embed
     @NoArgsConstructor
     @VisibleForTesting
     static class OrganizationCompletionTask implements CompletionTask {
@@ -1490,7 +1480,6 @@ public final class Event extends BaseEvent<Event> {
     }
   }
 
-  @Embed
   @Data
   @NoArgsConstructor
   public static final class SourceEventInfo {

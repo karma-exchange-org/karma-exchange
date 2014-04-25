@@ -3,9 +3,6 @@ package org.karmaexchange.dao;
 import lombok.Data;
 
 
-import com.googlecode.objectify.annotation.Embed;
-
-@Embed
 @Data
 public class ImageUrlView {
   private String url;

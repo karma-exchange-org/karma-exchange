@@ -40,7 +40,6 @@ import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
 import com.googlecode.objectify.annotation.Cache;
-import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
@@ -358,7 +357,6 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
     }
   }
 
-  @Embed
   @Data
   @NoArgsConstructor
   public static final class OrganizationMembership {
@@ -508,7 +506,6 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
     }
   }
 
-  @Embed
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
@@ -565,7 +562,6 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
     return this;
   }
 
-  @Embed
   @Data
   public static class KarmaGoal {
     private static final long DEFAULT_MONTHLY_GOAL = 1 * 60;

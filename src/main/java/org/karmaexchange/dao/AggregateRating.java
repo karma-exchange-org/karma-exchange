@@ -6,10 +6,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-import com.googlecode.objectify.annotation.Embed;
-
 @Data
-@Embed
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
 public class AggregateRating extends Rating {
