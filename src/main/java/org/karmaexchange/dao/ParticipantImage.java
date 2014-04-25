@@ -4,11 +4,8 @@ import javax.annotation.Nullable;
 
 import lombok.Data;
 
-
 import com.google.common.base.Predicate;
-import com.googlecode.objectify.annotation.Embed;
 
-@Embed
 @Data
 public class ParticipantImage {
   private KeyWrapper<User> participant;

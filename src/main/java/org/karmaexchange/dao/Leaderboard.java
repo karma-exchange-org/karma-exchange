@@ -17,7 +17,6 @@ import lombok.ToString;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cache;
-import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
 
 @XmlRootElement
@@ -65,7 +64,6 @@ public class Leaderboard extends NameBaseDao<Leaderboard> {
     return Permission.READ;
   }
 
-  @Embed
   @Data
   @NoArgsConstructor
   private static class LeaderboardScoreAndUserInfo {

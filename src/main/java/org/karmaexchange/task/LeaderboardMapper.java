@@ -22,6 +22,7 @@ import lombok.Data;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.mapreduce.Mapper;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.OnLoad;
 
 public class LeaderboardMapper extends Mapper<Entity, Key<Organization>, UserKarmaRecord> {
 
@@ -38,10 +39,12 @@ public class LeaderboardMapper extends Mapper<Entity, Key<Organization>, UserKar
   }
 
   private void mapAsAdmin(Entity dsEvent) {
-    Event event = ofy().toPojo(dsEvent);
-    // It appears that Objectify does not invoke the @OnLoad callbacks when toPojo is
-    // invoked (bug?). Therefore invoke the callbacks explicitly.
-    event.processLoad();
+    Event event = ofy().load().fromEntity(dsEvent);
+
+    // fromEntity() should invoke @OnLoad annotations
+    // event.processLoad();
+    // TODO(avaliani): verify
+
     if (event.getStatus() != Status.COMPLETED) {
       return;
     }

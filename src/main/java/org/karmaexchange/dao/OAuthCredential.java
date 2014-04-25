@@ -9,10 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import com.google.common.base.Predicate;
-import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Index;
 
-@Embed
 @EqualsAndHashCode
 @NoArgsConstructor
 public class OAuthCredential {

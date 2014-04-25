@@ -10,10 +10,8 @@ import lombok.NoArgsConstructor;
 
 import com.google.common.base.Predicate;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Embed;
 
 @Data
-@Embed
 @NoArgsConstructor
 public class AttendanceRecord {
   private KeyWrapper<Event> event;

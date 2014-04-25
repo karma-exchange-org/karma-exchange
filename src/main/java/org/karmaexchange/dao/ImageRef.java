@@ -2,16 +2,13 @@ package org.karmaexchange.dao;
 
 import javax.annotation.Nullable;
 
-
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Index;
 
 @Data
-@Embed
 @NoArgsConstructor
 public class ImageRef {
   @Index

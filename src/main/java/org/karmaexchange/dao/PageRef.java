@@ -5,8 +5,6 @@ import lombok.NoArgsConstructor;
 
 import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 
-import com.googlecode.objectify.annotation.Embed;
-
 /**
  * This class provides a reference to a social network provider page.
  *
@@ -14,7 +12,6 @@ import com.googlecode.objectify.annotation.Embed;
  */
 @Data
 @NoArgsConstructor
-@Embed
 public class PageRef {
   private String name;
   private String url;

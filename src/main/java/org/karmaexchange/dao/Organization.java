@@ -37,7 +37,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
-import com.googlecode.objectify.annotation.Embed;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Ignore;
 import com.googlecode.objectify.annotation.Index;
@@ -306,7 +305,6 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
    * This class represents the roles that can be granted automatically based upon user email
    * domain based membership.
    */
-  @Embed
   @Data
   @NoArgsConstructor
   @AllArgsConstructor

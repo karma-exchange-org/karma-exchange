@@ -7,6 +7,6 @@ public final class DatastoreTestUtil {
   public static <T> void dumpEntity(T object) {
     // DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     // Entity e = datastore.get(KeyFactory.stringToKey(Key.<T>create(object).getString()));
-    System.out.println(ofy().toEntity(object));
+    System.out.println(ofy().save().toEntity(object));
   }
 }
