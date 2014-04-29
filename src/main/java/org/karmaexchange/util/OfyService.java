@@ -1,6 +1,8 @@
 package org.karmaexchange.util;
 
 
+import org.karmaexchange.auth.GlobalUidMapping;
+import org.karmaexchange.auth.Session;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
@@ -9,7 +11,6 @@ import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.UserManagedEvent;
 import org.karmaexchange.dao.UserUsage;
-import org.karmaexchange.dao.UserUsage.UserAccess;
 import org.karmaexchange.dao.Waiver;
 import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
 import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
@@ -33,11 +34,12 @@ public class OfyService {
     ObjectifyService.register(Leaderboard.class);
     ObjectifyService.register(Waiver.class);
     ObjectifyService.register(UserUsage.class);
-    ObjectifyService.register(UserAccess.class);
     ObjectifyService.register(SourceEventNamespaceDao.class); // does not need to be purged. Never peristed.
     ObjectifyService.register(SourceEventGeneratorInfo.class);
     ObjectifyService.register(UserManagedEvent.class);
     ObjectifyService.register(WebPageSnapshot.class);
+    ObjectifyService.register(GlobalUidMapping.class);
+    ObjectifyService.register(Session.class);
     // Make sure to update PurgeAllResourcesServlet if a new class is added.
   }
 

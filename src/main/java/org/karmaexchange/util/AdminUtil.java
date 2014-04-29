@@ -4,9 +4,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
-import org.karmaexchange.dao.OAuthCredential;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.util.UserService.ReservedKeyType;
 
@@ -41,31 +38,27 @@ public class AdminUtil {
   }
 
   public static void setCurrentUser(AdminTaskType type) {
-    UserService.setCurrentUser(null, type.getKey());
+    UserService.setCurrentUser(type.getKey());
   }
 
   public static void executeSubtaskAsAdmin(AdminTaskType taskType, AdminSubtask subtask) {
     Key<User> prevKey = UserService.getCurrentUserKey();
-    OAuthCredential prevCredential = UserService.getCurrentUserCredential();
     setCurrentUser(taskType);
     try {
       subtask.execute();
     } finally {
-      UserService.setCurrentUser(prevCredential, prevKey);
+      UserService.setCurrentUser(prevKey);
     }
   }
 
-  public static void executeSubtaskAsUser(Key<User> userKey, @Nullable OAuthCredential credential,
-      AdminSubtask subtask) {
+  public static void executeSubtaskAsUser(Key<User> userKey, AdminSubtask subtask) {
     Key<User> prevAdminKey = UserService.getCurrentUserKey();
-    // PrevCredential is currently null for admin tasks by default.
-    OAuthCredential prevCredential = UserService.getCurrentUserCredential();
     checkState(isAdminKey(prevAdminKey));
-    UserService.setCurrentUser(credential, userKey);
+    UserService.setCurrentUser(userKey);
     try {
       subtask.execute();
     } finally {
-      UserService.setCurrentUser(prevCredential, prevAdminKey);
+      UserService.setCurrentUser(prevAdminKey);
     }
   }
 

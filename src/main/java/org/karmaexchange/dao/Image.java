@@ -7,7 +7,6 @@ import java.util.Date;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.task.DeleteBlobServlet;
 
 import lombok.Data;
@@ -48,10 +47,8 @@ public class Image extends IdBaseDao<Image> {
     return image;
   }
 
-  public static Image createAndPersist(Key<?> owner, String url,
-      SocialNetworkProviderType socialNetworkUrlProvider) {
-    ImageProviderType imageProviderType =
-        ImageProviderType.toImageProviderType(socialNetworkUrlProvider);
+  public static Image createAndPersist(Key<?> owner, ImageProviderType imageProviderType,
+      String url) {
     Image image = new Image(owner, url, imageProviderType);
     BaseDao.upsert(image);
     return image;

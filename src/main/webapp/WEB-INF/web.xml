@@ -18,7 +18,7 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
  -->
 
     <!-- Must be the first filter to get invoked. Since objectify state has to be cleaned up by
-         this filter and both the OAuthFilter and the SeoFilter update objectify entities. -->
+         this filter and both the AuthFilter and the SeoFilter update objectify entities. -->
     <filter>
         <filter-name>ObjectifyFilter</filter-name>
         <filter-class>com.googlecode.objectify.ObjectifyFilter</filter-class>
@@ -27,6 +27,15 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
         <filter-name>ObjectifyFilter</filter-name>
         <url-pattern>/*</url-pattern>
         <url-pattern>/_ah/warmup/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>InitPropertiesFilter</filter-name>
+        <filter-class>org.karmaexchange.util.InitPropertiesFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>InitPropertiesFilter</filter-name>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
 
     <filter>
@@ -69,11 +78,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </filter-mapping>
 
     <filter>
-        <filter-name>OAuthFilter</filter-name>
-        <filter-class>org.karmaexchange.security.OAuthFilter</filter-class>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>org.karmaexchange.auth.AuthFilter</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>OAuthFilter</filter-name>
+        <filter-name>AuthFilter</filter-name>
         <url-pattern>/api/*</url-pattern>
     </filter-mapping>
 
@@ -199,15 +208,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     <servlet-mapping>
         <servlet-name>FacebookRegistrationServlet</servlet-name>
         <url-pattern>/provider/fb/register</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
-        <servlet-name>BootstrapFacebookRegistrationServlet</servlet-name>
-        <servlet-class>org.karmaexchange.provider.BootstrapFacebookRegistrationServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>BootstrapFacebookRegistrationServlet</servlet-name>
-        <url-pattern>/bootstrap/provider/fb/register</url-pattern>
     </servlet-mapping>
 
     <servlet>

@@ -16,9 +16,11 @@ import javax.ws.rs.core.UriInfo;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.dao.User;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
 import org.karmaexchange.resources.msg.OrganizationMembershipView;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.OfyUtil;
 import org.karmaexchange.util.PaginatedQuery;
 import org.karmaexchange.util.PaginatedQuery.ConditionFilter;
@@ -35,7 +37,8 @@ public class UserResource extends ViewlessBaseDaoResource<User> {
   @Override
   protected void preProcessUpsert(User user) {
     if (!user.isKeyComplete()) {
-      user.initKey();
+      throw ErrorResponseMsg.createException("Key must be specified for user upsert",
+        ErrorInfo.Type.BAD_REQUEST);
     }
   }
 

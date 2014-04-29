@@ -11,7 +11,6 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
@@ -20,7 +19,6 @@ import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.User;
-import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventSearchView;
 import org.karmaexchange.resources.msg.ListResponseMsg;
@@ -58,7 +56,8 @@ public class MeResource {
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response updateResource(User updatedUser) {
     if (!updatedUser.isKeyComplete()) {
-      updatedUser.initKey();
+      throw ErrorResponseMsg.createException("Key must be specified for update",
+        ErrorInfo.Type.BAD_REQUEST);
     }
     if (!getCurrentUserKey().getString().equals(updatedUser.getKey())) {
       throw ErrorResponseMsg.createException(
@@ -94,18 +93,13 @@ public class MeResource {
   @Consumes({MediaType.MULTIPART_FORM_DATA})
   @Produces({MediaType.APPLICATION_JSON})
   public Response updateProfileImage(
-      @QueryParam("provider") SocialNetworkProviderType providerType,
       @Context HttpServletRequest servletRequest) {
-    if (providerType == null) {
-      BlobKey blobKey = ImageUploadUtil.persistImage(servletRequest);
-      try {
-        User.updateProfileImage(getCurrentUserKey(), blobKey);
-      } catch (RuntimeException e) {
-        BlobstoreServiceFactory.getBlobstoreService().delete(blobKey);
-        throw e;
-      }
-    } else {
-      User.updateProfileImage(getCurrentUserKey(), providerType);
+    BlobKey blobKey = ImageUploadUtil.persistImage(servletRequest);
+    try {
+      User.updateProfileImage(getCurrentUserKey(), blobKey);
+    } catch (RuntimeException e) {
+      BlobstoreServiceFactory.getBlobstoreService().delete(blobKey);
+      throw e;
     }
     return Response.ok().build();
   }

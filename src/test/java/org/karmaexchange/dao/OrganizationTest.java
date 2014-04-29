@@ -26,9 +26,9 @@ public class OrganizationTest extends PersistenceTestHelper {
     org.setCauses(asList(CauseType.HOMELESSNESS, CauseType.MENTORSHIP));
 
     User u1 = new User();
-    u1.setName("fake name1");
+    u1.setId(Long.valueOf(101));
     User u2 = new User();
-    u2.setName("fake name2");
+    u2.setId(Long.valueOf(101));
   }
 
   @Test

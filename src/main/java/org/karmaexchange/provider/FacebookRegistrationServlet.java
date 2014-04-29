@@ -1,8 +1,8 @@
 package org.karmaexchange.provider;
 
 import static java.lang.String.format;
+import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_SECRET;
-import static org.karmaexchange.util.ServletUtil.getRequestUri;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -13,11 +13,14 @@ import javax.ws.rs.core.Response;
 
 import lombok.Data;
 
+import org.karmaexchange.auth.AuthProviderType;
+import org.karmaexchange.auth.GlobalUid;
+import org.karmaexchange.auth.GlobalUidMapping;
+import org.karmaexchange.auth.AuthProvider.UserInfo;
 import org.karmaexchange.dao.Address;
-import org.karmaexchange.dao.OAuthCredential;
+import org.karmaexchange.dao.ImageProviderType;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.User.RegisteredEmail;
-import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.AdminTaskServlet;
@@ -25,6 +28,7 @@ import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.Properties;
 import org.karmaexchange.util.ServletUtil;
 
+import com.googlecode.objectify.Key;
 import com.restfb.DefaultFacebookClient;
 import com.restfb.Facebook;
 import com.restfb.exception.FacebookException;
@@ -55,7 +59,7 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
         throw ErrorResponseMsg.createException("signed request missing",
           ErrorInfo.Type.BAD_REQUEST);
       }
-      String appSecret = Properties.get(getRequestUri(req), FACEBOOK_APP_SECRET);
+      String appSecret = Properties.get(FACEBOOK_APP_SECRET);
 
       SignedRegistrationRequest registrationReq;
       try {
@@ -66,8 +70,13 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
       }
       registrationReq.validate();
 
-      User.persistNewUser(
-        registrationReq.createUser());
+      UserInfo userInfo = registrationReq.createUser();
+      User.persistNewUser(userInfo);
+
+      GlobalUidMapping mapping = new GlobalUidMapping(
+        GlobalUid.create(AuthProviderType.FACEBOOK, registrationReq.getUserId()),
+        Key.create(userInfo.getUser()));
+      ofy().save().entity(mapping);  // Asynchronously save the new mapping
 
       resp.sendRedirect("/");
     } catch (WebApplicationException e) {
@@ -123,19 +132,16 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
       }
     }
 
-    private User createUser() {
-      OAuthCredential credential = OAuthCredential.create(
-        SocialNetworkProviderType.FACEBOOK.getOAuthProviderName(), userId, oAuthToken);
-      FacebookSocialNetworkProvider.verifyCredential(credential);
-
-      User user = User.create(credential);
+    private UserInfo createUser() {
+      User user = User.create();
       user.setFirstName(registrationInfo.firstName);
       user.setLastName(registrationInfo.lastName);
       if (registrationInfo.email != null) {
         user.getRegisteredEmails().add(new RegisteredEmail(registrationInfo.email, true));
       }
       user.setAddress(parseCity());
-      return user;
+      return new UserInfo(user, ImageProviderType.FACEBOOK,
+        FacebookSocialNetworkProvider.getProfileImageUrl(userId));
     }
 
     private Address parseCity() {

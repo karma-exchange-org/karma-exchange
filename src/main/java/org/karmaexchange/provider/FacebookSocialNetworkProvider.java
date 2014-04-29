@@ -1,26 +1,24 @@
 package org.karmaexchange.provider;
 
-import static java.lang.String.format;
-import static org.karmaexchange.security.OAuthFilter.OAUTH_LOG_LEVEL;
 import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_ID;
 import static org.karmaexchange.util.Properties.Property.FACEBOOK_APP_SECRET;
 
-import java.net.URI;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
-import javax.servlet.ServletContext;
 
 import lombok.Data;
 import lombok.Getter;
 
+import org.karmaexchange.auth.AuthProviderCredentials;
+import org.karmaexchange.auth.AuthProviderType;
+import org.karmaexchange.auth.GlobalUid;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AgeRange;
-import org.karmaexchange.dao.AppOAuthCredential;
 import org.karmaexchange.dao.Gender;
 import org.karmaexchange.dao.GeoPtWrapper;
-import org.karmaexchange.dao.OAuthCredential;
+import org.karmaexchange.dao.ImageProviderType;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.PageRef;
 import org.karmaexchange.dao.User;
@@ -40,7 +38,7 @@ import com.restfb.exception.FacebookOAuthException;
 import com.restfb.types.Location;
 import com.restfb.types.Page;
 
-public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
+public final class FacebookSocialNetworkProvider implements SocialNetworkProvider {
 
   private static final Logger logger =
       Logger.getLogger(FacebookSocialNetworkProvider.class.getName());
@@ -48,41 +46,21 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
   private static final String PROFILE_IMAGE_URL_FMT = "https://graph.facebook.com/%s/picture";
   public static final String PAGE_BASE_URL = "https://www.facebook.com/";
 
-  public FacebookSocialNetworkProvider(OAuthCredential credential,
-      SocialNetworkProviderType providerType) {
-    super(credential, providerType);
-  }
-
   @Override
-  public boolean verifyCredential() {
-    return verifyCredential(credential);
-  }
-
-  public static boolean verifyCredential(OAuthCredential credential) {
-    DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
+  public GlobalUid verifyUserCredentials(AuthProviderCredentials userCredentials) {
+    DefaultFacebookClient fbClient = new DefaultFacebookClient(userCredentials.getToken());
     com.restfb.types.User fbUser =
         fetchObject(fbClient, "me", com.restfb.types.User.class, Parameter.with("fields", "id"));
-    if (fbUser.getId().equals(credential.getUid())) {
-      return true;
-    } else {
-      logger.log(OAUTH_LOG_LEVEL,
-        format("Uid of user=[%s] does not match credential uid=[%s]",
-          fbUser.getId(), credential.getUid()));
-      return false;
-    }
+    return GlobalUid.create(AuthProviderType.FACEBOOK, fbUser.getId());
   }
 
   @Override
-  public User createUser() {
-    return createUser(credential);
-  }
-
-  public static User createUser(OAuthCredential credential) {
-    DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
+  public UserInfo createUser(AuthProviderCredentials userCredentials) {
+    DefaultFacebookClient fbClient = new DefaultFacebookClient(userCredentials.getToken());
     // Getting age_range unfortunately requires explicitly specifiying the fields.
     ExtFbUser fbUser = fetchObject(fbClient, "me", ExtFbUser.class,
       Parameter.with("fields", "id, first_name, last_name, email, location, age_range, gender"));
-    User user = User.create(credential);
+    User user = User.create();
     user.setFirstName(fbUser.getFirstName());
     user.setLastName(fbUser.getLastName());
     if (fbUser.getEmail() != null) {
@@ -91,7 +69,8 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     user.setAddress(parseCity(fbUser));
     user.setGender(parseGender(fbUser));
     user.setAgeRange(parseAgeRange(fbUser));
-    return user;
+    return new UserInfo(user, ImageProviderType.FACEBOOK,
+      getProfileImageUrl(fbUser.getId()));
   }
 
   private static Address parseCity(com.restfb.types.User fbUser) {
@@ -129,21 +108,21 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     return new AgeRange(fbAgeRange.min, fbAgeRange.max);
   }
 
-  @Override
-  public String getProfileImageUrl() {
-    return String.format(PROFILE_IMAGE_URL_FMT, credential.getUid());
+  public static String getProfileImageUrl(String fbUserId) {
+    return String.format(PROFILE_IMAGE_URL_FMT, fbUserId);
   }
 
   @Override
   public Organization createOrganization(String fbPageName) {
-    DefaultFacebookClient fbClient = new DefaultFacebookClient(credential.getToken());
+    DefaultFacebookClient fbClient = new DefaultFacebookClient(getAppCredentials().getToken());
     // Getting age_range unfortunately requires explicitly specifiying the fields.
     Page fbPage = fetchObject(fbClient, fbPageName, Page.class);
 
     Organization org = new Organization();
     org.setName(fbPageName);
     org.setOrgName(fbPage.getName());
-    org.setPage(PageRef.create(fbPageName, PAGE_BASE_URL + fbPageName, providerType));
+    org.setPage(PageRef.create(fbPageName, PAGE_BASE_URL + fbPageName,
+      SocialNetworkProviderType.FACEBOOK));
     org.setMission(fbPage.getMission());
     org.setAddress(getAddress(fbPage.getLocation()));
     return org;
@@ -179,15 +158,15 @@ public final class FacebookSocialNetworkProvider extends SocialNetworkProvider {
     }
   }
 
-  public static OAuthCredential getAppCredential(ServletContext servletCtx, URI requestUri) {
-    String appId = Properties.get(requestUri, FACEBOOK_APP_ID);
-    String appSecret = Properties.get(requestUri, FACEBOOK_APP_SECRET);
+  private static AuthProviderCredentials getAppCredentials() {
+    String appId = Properties.get(FACEBOOK_APP_ID);
+    String appSecret = Properties.get(FACEBOOK_APP_SECRET);
     AccessToken accessToken =
         new DefaultFacebookClient().obtainAppAccessToken(appId, appSecret);
-    return new AppOAuthCredential(SocialNetworkProviderType.FACEBOOK, accessToken.getAccessToken());
+    return new AuthProviderCredentials(accessToken.getAccessToken());
   }
 
-  public static class ExtFbUser extends com.restfb.types.User {
+  private static class ExtFbUser extends com.restfb.types.User {
 
     private static final long serialVersionUID = 1L;
 

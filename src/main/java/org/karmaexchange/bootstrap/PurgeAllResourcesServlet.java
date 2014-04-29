@@ -2,6 +2,8 @@ package org.karmaexchange.bootstrap;
 
 import static org.karmaexchange.util.OfyService.ofy;
 
+import org.karmaexchange.auth.GlobalUidMapping;
+import org.karmaexchange.auth.Session;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
@@ -40,6 +42,10 @@ public class PurgeAllResourcesServlet extends BootstrapServlet {
         ofy().load().type(UserManagedEvent.class).keys().iterable();
     Iterable<Key<WebPageSnapshot>> persistedSnapshotKeys =
         ofy().load().type(WebPageSnapshot.class).keys().iterable();
+    Iterable<Key<GlobalUidMapping>> globalUidMappings =
+        ofy().load().type(GlobalUidMapping.class).keys().iterable();
+    Iterable<Key<Session>> sessions =
+        ofy().load().type(Session.class).keys().iterable();
     // Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     ofy().delete().keys(eventKeys);
@@ -52,6 +58,8 @@ public class PurgeAllResourcesServlet extends BootstrapServlet {
     ofy().delete().keys(generatorInfoKeys);
     ofy().delete().keys(userManagedEventKeys);
     ofy().delete().keys(persistedSnapshotKeys);
+    ofy().delete().keys(globalUidMappings);
+    ofy().delete().keys(sessions);
     // Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     statusWriter.println("Deleted all resources.");

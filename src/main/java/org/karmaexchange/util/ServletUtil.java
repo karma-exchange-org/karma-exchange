@@ -9,6 +9,7 @@ import java.net.URISyntaxException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
@@ -68,5 +69,17 @@ public class ServletUtil {
     URI requestUri = getRequestUri(req);
     String portString = requestUri.getPort() == -1 ? "" : ":" + requestUri.getPort();
     return requestUri.getScheme() + "://" + requestUri.getHost() + portString;
+  }
+
+  public static Cookie getCookie(HttpServletRequest req, String cookieName) {
+    Cookie[] cookies = req.getCookies();
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if (cookie.getName().equalsIgnoreCase(cookieName)) {
+          return cookie;
+        }
+      }
+    }
+    return null;
   }
 }

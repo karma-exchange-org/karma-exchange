@@ -43,7 +43,7 @@ public class EventTest extends PersistenceTestHelper {
     // Validate that we don't hit the objectify bug of embedded lists.
     CompletionTaskTracker completionTasks = new CompletionTaskTracker();
     User fakeUser = new User();
-    fakeUser.setName("fakeUser");
+    fakeUser.setId(Long.valueOf(100));
     Key<User> fakeUserKey = Key.create(fakeUser);
     Organization fakeOrg = new Organization();
     fakeOrg.setName("fakeOrg");
