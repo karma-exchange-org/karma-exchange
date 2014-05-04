@@ -11,7 +11,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public class InitPropertiesFilter implements Filter {
+public class BootstrapPropertiesFilter implements Filter {
   /*
    * This filter bootstraps the Properties class so that it doesn't require the request
    * object whenever it is invoked.

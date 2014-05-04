@@ -30,11 +30,11 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     </filter-mapping>
 
     <filter>
-        <filter-name>InitPropertiesFilter</filter-name>
-        <filter-class>org.karmaexchange.util.InitPropertiesFilter</filter-class>
+        <filter-name>BootstrapPropertiesFilter</filter-name>
+        <filter-class>org.karmaexchange.util.BootstrapPropertiesFilter</filter-class>
     </filter>
     <filter-mapping>
-        <filter-name>InitPropertiesFilter</filter-name>
+        <filter-name>BootstrapPropertiesFilter</filter-name>
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
