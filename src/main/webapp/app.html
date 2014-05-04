@@ -212,12 +212,7 @@
                         </li>
                     </ul>
                     <ul class="nav navbar-nav navbar-right">
-                        <!--
-                            <li ng-hide="me">
-                                    <fb:login-button scope="{{fbUtil.LOGIN_SCOPE}}" width="200" max-rows="1">
-                                    </fb:login-button>
-                            </li>
-                        -->
+
                         <li ng-show="goalInfo.msg">
 
                             <div class="progressIcon"
@@ -245,7 +240,7 @@
                                     </a>
                                 </li>
                                 <li>
-                                    <a href="/#" ng-click="fbUtil.logout()">
+                                    <a href="/#" ng-click="SessionManager.logout()">
                                         <div class="nav-icon"><i class="icon-off"></i></div>
                                         Logout
                                     </a>
@@ -253,7 +248,7 @@
                             </ul>
                         </li>
                         <li ng-hide="isLoggedIn">
-                            <button type="button" ng-click="fbUtil.login()" class="btn btn-default btn-sm navbar-btn">
+                            <button type="button" ng-click="SessionManager.login()" class="btn btn-default btn-sm navbar-btn">
                                 Login
                             </button>
                         </li>

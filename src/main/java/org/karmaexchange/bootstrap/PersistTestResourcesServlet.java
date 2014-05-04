@@ -5,7 +5,7 @@ public class PersistTestResourcesServlet extends BootstrapTaskServlet {
 
   @Override
   public BootstrapTask createTask() {
-    return new TestResourcesBootstrapTask(req, getServletContext(), statusWriter);
+    return new TestResourcesBootstrapTask(statusWriter);
   }
 
 }

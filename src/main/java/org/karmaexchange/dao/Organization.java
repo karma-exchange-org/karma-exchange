@@ -6,17 +6,16 @@ import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 import static org.karmaexchange.util.UserService.isCurrentUserAdmin;
 
-import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nullable;
-import javax.servlet.ServletContext;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.karmaexchange.provider.SocialNetworkProvider;
+import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.BaseDaoView;
 import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
@@ -136,17 +135,20 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
     return ReservedToken.parseTokenSuffix(name);
   }
 
-  public void initFromPage(ServletContext servletCtx, URI requestUri) {
+  public void initFromPage() {
     owner = null;
     if (!pageIsInitialized()) {
       throw ValidationErrorInfo.createException(ImmutableList.of(
         new ResourceValidationError(this,
           ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "page")));
     }
-    OAuthCredential appCredential = page.getUrlProvider().getAppCredential(servletCtx, requestUri);
-    SocialNetworkProvider provider = page.getUrlProvider().getProvider(appCredential);
-    Organization providerGeneratedOrg;
-    providerGeneratedOrg = provider.createOrganization(page.getName());
+
+    // Right now we only support facebook.
+    SocialNetworkProvider provider =
+        SocialNetworkProviderType.FACEBOOK.getProvider();
+    Organization providerGeneratedOrg =
+        provider.createOrganization(page.getName());
+
     name = getNameFromPageName(page.getName());
     if (orgName == null) {
       orgName = providerGeneratedOrg.getOrgName();

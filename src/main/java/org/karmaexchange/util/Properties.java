@@ -7,11 +7,12 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
-import java.net.URI;
+import java.net.MalformedURLException;
+import java.net.URL;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
+import javax.servlet.http.HttpServletRequest;
 
 import lombok.Getter;
 
@@ -26,6 +27,8 @@ public class Properties {
   private static final String CONFIG_FILE_PATH = "WEB-INF/app-private.properties";
 
   private static final String DOMAIN_PREFIX_SEPERATOR = "-";
+
+  private static final ThreadLocal<String> host = new ThreadLocal<String>();
 
   @GuardedBy("Properties.class")
   private static PropertiesConfiguration config;
@@ -73,16 +76,15 @@ public class Properties {
   }
 
   public static String get(Property property) {
-    return get(null, property);
-  }
-
-  public static String get(@Nullable URI requestUri, Property property) {
     PropertiesConfiguration propConfig = getConfig();
     String value;
     if (property.isDomainDependent()) {
-      value = propConfig.getString(getDomainPropertyName(property, requestUri));
+      if (host.get() == null) {
+        throw new RuntimeException("Initialization error: init must be invoked");
+      }
+      value = propConfig.getString(getDomainPropertyName(property));
       checkState(value != null,
-        format("unable to find property '%s' in '%s'", getDomainPropertyName(property, requestUri),
+        format("unable to find property '%s' in '%s'", getDomainPropertyName(property),
           CONFIG_FILE_PATH));
       return value;
     } else {
@@ -94,7 +96,26 @@ public class Properties {
     }
   }
 
-  private static String getDomainPropertyName(Property property, URI requestUri) {
-    return requestUri.getHost() + DOMAIN_PREFIX_SEPERATOR + property.getPropertyName();
+  private static String getDomainPropertyName(Property property) {
+    return host.get() + DOMAIN_PREFIX_SEPERATOR + property.getPropertyName();
+  }
+
+  /**
+   * Must be invoked prior to invoking any code that fetches properties.
+   */
+  static void requestStart(HttpServletRequest req) {
+    try {
+      host.set(
+        new URL(req.getRequestURL().toString()).getHost());
+    } catch (MalformedURLException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  /**
+   * Invoked to cleanup state from {@link #requestStart}.
+   */
+  static void requestEnd() {
+    host.set(null);
   }
 }

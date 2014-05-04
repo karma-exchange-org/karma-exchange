@@ -1,8 +1,6 @@
 package org.karmaexchange.dao;
 
 import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
-import static org.karmaexchange.provider.SocialNetworkProviderFactory.getProviderType;
 import static org.karmaexchange.util.OfyService.ofy;
 import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
@@ -14,10 +12,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.validator.routines.EmailValidator;
+import org.karmaexchange.auth.AuthProvider.UserInfo;
 import org.karmaexchange.dao.Organization.Role;
-import org.karmaexchange.provider.SocialNetworkProvider;
-import org.karmaexchange.provider.SocialNetworkProviderFactory;
-import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.AuthorizationErrorInfo;
 import org.karmaexchange.resources.msg.BaseDaoView;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
@@ -25,7 +21,6 @@ import org.karmaexchange.resources.msg.ValidationErrorInfo;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
-import org.karmaexchange.util.AdminUtil;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -52,12 +47,9 @@ import com.googlecode.objectify.annotation.Index;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
+public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
 
   private static final int MAX_ATTENDANCE_HISTORY = 10;
-
-  private static final SocialNetworkProviderType USER_KEY_PROVIDER =
-      SocialNetworkProviderType.FACEBOOK;
 
   @Index
   private String firstName;
@@ -100,10 +92,6 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
 
   private EventSearch lastEventSearch;
 
-  // TODO(avaliani): jackson doesn't like oAuth. It converts it to "oauth".
-  // NOTE: Embedded list is safe since OAuthCredential has no embedded objects.
-  private List<OAuthCredential> oauthCredentials = Lists.newArrayList();
-
   // TODO(avaliani): profileSecurityPrefs
 
   // NOTE: Embedded list is safe since OrganizationMembership has been modified to avoid
@@ -113,41 +101,16 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
   // TODO(avaliani): cleanup post demo.
   private List<BadgeSummary> badges = Lists.newArrayList();
 
-  public static User create(OAuthCredential credential) {
-    return new User(credential);
-  }
-
-  private User(OAuthCredential credential) {
-    oauthCredentials.add(credential);
-    initKey();
-    setModificationInfo(ModificationInfo.create());
-  }
-
-  public void initKey() {
-    owner = null;
-    name = getKeyProviderCredential().getGlobalUid();
-  }
-
-  private OAuthCredential getKeyProviderCredential() {
-    for (OAuthCredential credential : oauthCredentials) {
-      if (getProviderType(credential) == USER_KEY_PROVIDER) {
-        return credential;
-      }
-    }
-    throw ErrorResponseMsg.createException(
-      format("%s oauth provider credential required for user object", USER_KEY_PROVIDER),
-      ErrorInfo.Type.BAD_REQUEST);
+  public static User create() {
+    User user = new User();
+    user.setModificationInfo(ModificationInfo.create());
+    return user;
   }
 
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();
     initSearchableFullName();
-    if (AdminUtil.isAdminKey(Key.create(this))) {
-      throw ErrorResponseMsg.createException(
-        "can not use reserved admin key as user object key: " + Key.create(this),
-        ErrorInfo.Type.BAD_REQUEST);
-    }
 
     // TODO(avaliani): ProfileImage is valuable for testing. Eventually null
     // this out.
@@ -166,7 +129,6 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
   @Override
   protected void postProcessInsert() {
     super.postProcessInsert();
-    UserUsage.trackUser(this);
   }
 
   @Override
@@ -178,7 +140,6 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
     // Some fields are explicitly updated.
     profileImage = oldUser.profileImage;
     eventOrganizerRating = oldUser.eventOrganizerRating;
-    oauthCredentials = Lists.newArrayList(oldUser.oauthCredentials);
     karmaPoints = oldUser.karmaPoints;
     eventAttendanceHistory = oldUser.eventAttendanceHistory;
     organizationMemberships = oldUser.organizationMemberships;
@@ -248,59 +209,43 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
     }
   }
 
-  public static User persistNewUser(User user) {
-    PersistNewUserTxn persistNewUserTxn = new PersistNewUserTxn(user);
-    ofy().transact(persistNewUserTxn);
-    return persistNewUserTxn.user;
-  }
+  public static Key<User> persistNewUser(UserInfo userInfo) {
+    User user = userInfo.getUser();
+    checkState(!user.isKeyComplete(), "new user can not have complete key");
+    BaseDao.upsert(user);
+    // TODO(avaliani): users should be in an orphaned state until they are attached
 
-  @Data
-  @EqualsAndHashCode(callSuper=false)
-  @AllArgsConstructor
-  private static class PersistNewUserTxn extends VoidWork {
-    private User user;
-
-    public void vrun() {
-      User existingUser = ofy().load().key(Key.create(user)).now();
-      // Don't wipe out an existing user object. State like karma points, etc. should be
-      // retained.
-      if (existingUser == null) {
-        User.bootstrapProfileImage(user);
-        BaseDao.upsert(user);
-      } else {
-        user = existingUser;
-      }
+    if (userInfo.getProfileImageUrl() != null) {
+      updateProfileImage(Key.create(user), userInfo.getProfileImageProvider(),
+        userInfo.getProfileImageUrl());
     }
+
+    return Key.create(user);
   }
 
   private void updateProfileImage(@Nullable Image profileImage) {
     this.profileImage = (profileImage == null) ? null : ImageRef.create(profileImage);
   }
 
-  public static Key<User> getKey(OAuthCredential credential) {
-    checkState(getProviderType(credential) == USER_KEY_PROVIDER,
-        format("provider[%s] does not match user key provider[%s]",
-          getProviderType(credential), USER_KEY_PROVIDER));
-    return Key.create(User.class, credential.getGlobalUid());
-  }
-
   public static void updateProfileImage(Key<User> userKey, BlobKey blobKey) {
-    ofy().transact(new UpdateProfileImageTxn(userKey, null, blobKey));
+    ofy().transact(new UpdateProfileImageTxn(userKey, ImageProviderType.BLOBSTORE, null, blobKey));
   }
 
-  public static void updateProfileImage(Key<User> userKey, SocialNetworkProviderType providerType) {
-    ofy().transact(new UpdateProfileImageTxn(userKey, providerType, null));
+  public static void updateProfileImage(Key<User> userKey, ImageProviderType imageProviderType,
+      String imageUrl) {
+    ofy().transact(new UpdateProfileImageTxn(userKey, imageProviderType, imageUrl, null));
   }
 
   public static void deleteProfileImage(Key<User> userKey) {
-    ofy().transact(new UpdateProfileImageTxn(userKey, null, null));
+    ofy().transact(new UpdateProfileImageTxn(userKey, null, null, null));
   }
 
   @Data
   @EqualsAndHashCode(callSuper=false)
   private static class UpdateProfileImageTxn extends VoidWork {
     private final Key<User> userKey;
-    private final SocialNetworkProviderType imageProviderType;
+    private final ImageProviderType imageProviderType;
+    private final String imageUrl;
     private final BlobKey blobKey;
 
     public void vrun() {
@@ -312,19 +257,14 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
         throw ErrorResponseMsg.createException(
           "insufficient privileges to edit user", ErrorInfo.Type.BAD_REQUEST);
       }
-      setProfileImage(user, imageProviderType, blobKey);
+      setProfileImage(user, imageProviderType, imageUrl, blobKey);
       BaseDao.partialUpdate(user);
     }
 
   }
 
-  // Must be called from within a transaction.
-  public static void bootstrapProfileImage(User user) {
-    setProfileImage(user, USER_KEY_PROVIDER, null);
-  }
-
-  private static void setProfileImage(User user, SocialNetworkProviderType imageProviderType,
-      BlobKey blobKey) {
+  private static void setProfileImage(User user, ImageProviderType imageProviderType,
+      String imageUrl, BlobKey blobKey) {
     Key<User> userKey = Key.create(user);
     Key<Image> existingImageKey = null;
     if (user.profileImage != null) {
@@ -333,18 +273,9 @@ public final class User extends NameBaseDao<User> implements BaseDaoView<User> {
     }
 
     Image newProfileImage;
-    if (imageProviderType != null) {
-      OAuthCredential credential = Iterables.tryFind(
-        user.oauthCredentials, OAuthCredential.providerPredicate(imageProviderType)).orNull();
-      if (credential == null) {
-        throw ErrorResponseMsg.createException(
-          "no credentials for provider type: " + imageProviderType,
-          ErrorInfo.Type.BAD_REQUEST);
-      }
-      SocialNetworkProvider imageProvider = SocialNetworkProviderFactory.getProvider(credential);
-      newProfileImage = Image.createAndPersist(userKey, imageProvider.getProfileImageUrl(),
-        imageProvider.getProviderType());
-    } else if (blobKey != null) {
+    if (imageProviderType == ImageProviderType.FACEBOOK) {
+      newProfileImage = Image.createAndPersist(userKey, imageProviderType, imageUrl);
+    } else if (imageProviderType == ImageProviderType.BLOBSTORE) {
       newProfileImage = Image.createAndPersist(userKey, blobKey, null);
     } else {
       newProfileImage = null;

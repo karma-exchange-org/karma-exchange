@@ -56,7 +56,7 @@ public class OrganizationResource extends ViewlessBaseDaoResource<Organization> 
   @Override
   protected void preProcessUpsert(Organization org) {
     if (!org.isKeyComplete()) {
-      org.initFromPage(servletContext, uriInfo.getRequestUri());
+      org.initFromPage();
     }
   }
 

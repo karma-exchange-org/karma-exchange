@@ -76,6 +76,7 @@ public class ErrorResponseMsg {
     }
 
     public enum Type {
+      SESSION_EXPIRED,
       AUTHENTICATION,
       LOGIN_REQUIRED,
       UNREGISTERED_USER,

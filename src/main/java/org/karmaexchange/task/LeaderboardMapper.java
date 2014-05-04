@@ -22,7 +22,6 @@ import lombok.Data;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.tools.mapreduce.Mapper;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.OnLoad;
 
 public class LeaderboardMapper extends Mapper<Entity, Key<Organization>, UserKarmaRecord> {
 
