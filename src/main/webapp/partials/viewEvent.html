@@ -285,47 +285,6 @@
             </div>
         </div>
 
-<!--
-        <div class="row" ng-show="event.status=='COMPLETED'" name="past-events-album">
-            <img ng-src="{{KexUtil.urlStripProtocol(image.picture)}}" max-height="500">
-            <carousel interval="myInterval">
-                <slide ng-repeat="image in fbAlbum" active="slide.active">
-                    <div class="col-md-12 pagination-centered">
-                        <img ng-src="{{image.picture}}" max-height="500">
-                    </div>
-                    <div ng-show="image.name" class="carousel-caption">
-                        <p>
-                        </p>
-                        <p>
-                            {{image.name}}
-                        </p>
-                    </div>
-                </slide>
-            </carousel>
-            <div class="fileupload fileupload-new" provides="fileupload">
-                <div ng-show="isImageModelOpen" class="fileupload-preview thumbnail" style="width: 200px; height: 150px;">
-                </div>
-                <form name="fbPhotoUpload" action="https://graph.facebook.com/{{event.album.id}}/photos?access_token={{fbUtil.getAccessToken()}}"
-                enctype="multipart/form-data" method="POST">
-                    <span ng-hide="isImageModelOpen" class="btn btn-file" ng-click="openImageUpload()">
-                        <span class="fileupload-new">
-                            <i class="icon-plus">
-                            </i>
-                            Add a photo
-                        </span>
-                        <input class="form-control" id="source" type="file" />
-                    </span>
-                    <span ng-show="isImageModelOpen" class="fileupload-exists">
-                        <input class="col-md-12 form-control" type="text" id="message" placeholder="Description">
-                    </span>
-                    <input type="submit" value="Upload" ng-show="isImageModelOpen" dismiss="fileupload" class="btn btn-primary fileupload-exists form-control"
-                    onclick="document.fbPhotoUpload.submit()">
-                    <a href="" class="btn fileupload-exists" dismiss="fileupload" ng-click="closeImageUpload()">Cancel</a>
-                </form>
-            </div>
-        </div>
- -->
-
     </div>
 
     <div class="col-md-3 col-sm-12">

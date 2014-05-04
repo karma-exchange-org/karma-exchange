@@ -15,7 +15,7 @@ public class AdminUtil {
   public enum AdminTaskType {
     TEST,
     BOOTSTRAP,
-    OAUTH_FILTER,
+    AUTH_RESOURCE,
     TASK_QUEUE,
     MAP_REDUCE,
     REGISTRATION,

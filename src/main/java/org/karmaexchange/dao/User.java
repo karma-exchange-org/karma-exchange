@@ -209,7 +209,7 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
     }
   }
 
-  public static void persistNewUser(UserInfo userInfo) {
+  public static Key<User> persistNewUser(UserInfo userInfo) {
     User user = userInfo.getUser();
     checkState(!user.isKeyComplete(), "new user can not have complete key");
     BaseDao.upsert(user);
@@ -219,6 +219,8 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
       updateProfileImage(Key.create(user), userInfo.getProfileImageProvider(),
         userInfo.getProfileImageUrl());
     }
+
+    return Key.create(user);
   }
 
   private void updateProfileImage(@Nullable Image profileImage) {

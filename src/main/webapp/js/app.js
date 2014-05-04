@@ -1,12 +1,6 @@
 angular.module('globalErrors', []).config(function($provide, $httpProvider, $compileProvider) {
     $httpProvider.defaults.headers.post["Content-Type"] = "application/json;charset=UTF-8";
     $httpProvider.defaults.transformRequest.push(function(data, headersGetter) {
-        // console.log(angular.toJson(headersGetter()));
-        // Check if it is a post request. Mutations require authentication.
-        // if ((headersGetter()["Content-Type"] !== null) && !isLoggedIn()) {
-        //     // Temporarily disabling until this functionality is completed to allow for login.
-        //     // alert("login required");
-        // }
         return data;
     });
     $httpProvider.responseInterceptors.push(function($rootScope, $q) {
@@ -17,26 +11,11 @@ angular.module('globalErrors', []).config(function($provide, $httpProvider, $com
                 // }
                 return successResponse;
             }, function(errorResponse) {
-                if (!isExternal(errorResponse.config.url)) {
-                    switch (errorResponse.status) {
-                    case 400:
-                        $rootScope.showAlert(errorResponse.data.error.message, "danger");
-                        break;
-                    case 401:
-                        $rootScope.showAlert('Wrong usename or password', "danger");
-                        break;
-                    case 403:
-                        $rootScope.showAlert('Permission denied', "danger");
-                        break;
-                    case 404:
-                        $rootScope.showAlert('Failed to find resource: ' + errorResponse.data, "danger");
-                        break;
-                    case 500:
-                        $rootScope.showAlert('Server internal error: ' + errorResponse.data, "danger");
-                        break;
-                    default:
-                        $rootScope.showAlert('Error ' + errorResponse.status + ': ' + errorResponse.data, "danger");
-                    }
+                if (  !isExternal(errorResponse.config.url) &&
+                      !angular.isDefined(errorResponse.config.noAlertOnError) ) {
+
+                    $rootScope.displayHttpRequestFailure(errorResponse);
+
                 }
                 return $q.reject(errorResponse);
             });
@@ -163,45 +142,265 @@ kexApp = angular.module( "kexApp",
 
 
 /*
- * Webservice factories
+ * Session management
  */
-
-kexApp.factory( 'Events', function( FbAuthDepResource ) {
-    return FbAuthDepResource.create( '/api/event/:id/:registerCtlr/:regType',
-        { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' });
-} );
-kexApp.factory( 'UserManagedEvents', function( FbAuthDepResource ) {
-    return FbAuthDepResource.create( '/api/user/:userId/user_managed_event/:userManagedEventId',
-        { userId: '@userId', userManagedEventId : '@userManagedEventId' });
-} );
-kexApp.factory( 'User', function( FbAuthDepResource ) {
-    return FbAuthDepResource.create( '/api/user/:id/:resource/:filter',
-        { id : '@id', resource : '@resource', filter : '@filter' } );
-} );
-kexApp.factory( 'Me', function( FbAuthDepResource ) {
-    return FbAuthDepResource.create( '/api/me/:resource/:filter',
-        { resource : '@resource', filter : '@filter' } );
-} );
-kexApp.factory( 'Org', function( FbAuthDepResource ) {
-    return FbAuthDepResource.create( '/api/org/:id/:resource/:filter',
-        { id : '@id', resource : '@resource', filter : '@filter' } );
+kexApp.factory( 'AuthResource', function( $resource ) {
+    return $resource('/api/auth/:action',
+        { action: '@action' },
+        {
+            login: { method:'POST', params: { action: 'login' } },
+            logout: { method:'POST', params: { action: 'logout' } },
+        });
 } );
 
-kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) {
-    var wrappedMethods = ['get', 'save', 'query', 'remove', 'delete'];
+kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resource,
+        $window, $modal, AuthResource) {
 
-    var authRespDef = $q.defer();
+    $rootScope.isLoggedIn = false;
+
+    var isInitializedDef = $q.defer();
+    isInitializedDef.promise.then(function (user) {
+        $rootScope.$broadcast("SessionManager.initialized", user);
+    });
+
+    var fbFirstAuthRespDef = $q.defer();
     var isFirstAuthResp = true;
     $rootScope.$on("fbUtil.userChanged", function (event, response) {
         if ( isFirstAuthResp ) {
             isFirstAuthResp = false;
-            authRespDef.resolve();
-        } else {
-            // If any resource depends on handling user changes after the
-            // first auth response this event must be listened to in order
-            // to update the resource.
-            $rootScope.$broadcast("FbAuthDepResource.userChanged", response);
+            fbFirstAuthRespDef.resolve(response);
         }
+    });
+
+    initSession();
+
+    function initSession() {
+
+        console.log("initSession invoked...");
+
+        if ($.cookie('session')) {
+
+            console.log("session cookie found: " + $.cookie('session'));
+
+            // Using $http directly since AuthDepResource depends on session
+            // establishment.
+            $http( {
+                method: 'GET',
+                url: '/api/me',
+                noAlertOnError: true
+            }).then(
+                function (response) {
+                    console.log("SUCCESS /api/me: %o", response.data);
+
+                    $rootScope.isLoggedIn = true;
+                    isInitializedDef.resolve(response.data);
+                },
+                function (response) {
+                    if (  (response.status == 400) &&
+                          angular.isDefined(response.data) &&
+                          angular.isDefined(response.data.error) &&
+                          (response.data.error.type == 'SESSION_EXPIRED') ) {
+
+                        console.log("FAILURE /api/me: SESSION_EXPIRED");
+                        console.log("Deleting cookie and re-initializing...");
+
+                        $.removeCookie('session');
+                        initSession();
+
+                    } else {
+                        console.log("FAILURE /api/me: %o", response);
+
+                        $rootScope.displayHttpRequestFailure(response);
+
+                        // Keep state as logged out.
+                        isInitializedDef.resolve();
+                    }
+                });
+
+        } else {
+
+            // Check if we are auto logged in with facebook.
+            // Mozilla does not have an auto login capability.
+
+            fbFirstAuthRespDef.promise.then( function(response) {
+                var loginRequest = FbUtil.toLoginRequest(response);
+                if (loginRequest) {
+                    // Attempt to login using the fb auth.
+
+                    console.log("logged in via facebook + app authorized. Attempting to authenticate");
+
+                    AuthResource.login(null, loginRequest,
+                        function (value, responseHeaders) {
+                            console.log("SUCCESS /api/auth/login: %o", value);
+
+                            $rootScope.isLoggedIn = true;
+                            isInitializedDef.resolve(value);
+                        },
+                        function (response) {
+                            console.log("FAILURE /api/auth/login: %o", response);
+
+                            // Error is already displayed.
+                            isInitializedDef.resolve();
+                        });
+                } else {
+                    console.log("not logged in via facebook. defaulting to not logged in");
+
+                    isInitializedDef.resolve();
+                }
+            });
+        }
+
+    }
+
+
+    var SessionManager = {
+        login: function() {
+            var modalInstance = $modal.open({
+                backdrop: "static",
+                templateUrl: 'template/kex/login-modal.html',
+                controller: 'LoginModalInstanceCtrl'
+            });
+            return modalInstance.result.then( function(user) {
+                $rootScope.isLoggedIn = true;
+                $rootScope.$broadcast("SessionManager.userChanged", user);
+            });
+        },
+
+        loginRequired: function(showAlert) {
+
+            if ( $rootScope.isLoggedIn ) {
+                return $q.when();
+            } else {
+                return SessionManager.login().then(
+                    function() { /* nothing extra to do on success.*/ },
+                    function() {
+                        if (!angular.isDefined(showAlert) || showAlert) {
+                            $rootScope.showAlert('Login required', "danger");
+                        }
+                        return $q.reject();
+                    });
+            }
+        },
+
+        logout: function() {
+
+            var sessionLoggedOutDef = $q.defer();
+            AuthResource.logout(null, null,
+                function (value, responseHeaders) {
+                    console.log("SUCCESS /api/auth/logout");
+                    sessionLoggedOutDef.resolve();
+                },
+                function () {
+                    sessionLoggedOutDef.reject();
+                });
+
+            $q.all([FbUtil.logout(), sessionLoggedOutDef.promise])
+                .then(completeLogout, completeLogout);
+
+            function completeLogout(result) {
+                console.log("logged out: %o", result);
+
+                // Dealing with in flight ajax requests is tricky. Keep things
+                // simple and just reload the page.
+                $window.location.href = "/";
+            }
+
+        }
+    };
+
+    return SessionManager;
+});
+
+kexApp.controller(
+    'LoginModalInstanceCtrl',
+    [
+        '$scope', '$modalInstance', '$facebook', 'AuthResource', 'FbUtil', '$q',
+        function($scope, $modalInstance, $facebook, AuthResource, FbUtil, $q) {
+
+            var fbLoginTracker = new PromiseTracker();
+
+            $scope.fbLogin = function() {
+                if (!fbLoginTracker.isPending()) {
+                    // Need to call this directly since pop-up can
+                    // only be spawned on click events.
+                    var fbLoginProm = $facebook.login();
+                    fbLoginTracker = new PromiseTracker(fbLoginProm);
+
+                    fbLoginProm.then( function(response) {
+                        console.log("Facebook login modal returned: %o", response);
+
+                        var loginRequest = FbUtil.toLoginRequest(response);
+                        if (loginRequest) {
+                            var loginRequestDef = $q.defer();
+                            fbLoginTracker = new PromiseTracker(loginRequestDef.promise);
+
+                            console.log("Facebook login successful, converted to credentials");
+
+                            AuthResource.login(null, loginRequest,
+                                function (value, responseHeaders) {
+                                    console.log("SUCCESS /api/auth/login: %o", value);
+
+                                    loginRequestDef.resolve();
+                                    loginComplete(value);
+                                },
+                                function (response) {
+                                    console.log("FAILURE /api/auth/login: %o", response);
+
+                                    // Failed to create a new session. Close the modal
+                                    loginRequestDef.reject();
+                                    cancelLogin();
+                                });
+
+                        }
+
+                    });
+                }
+
+            }
+
+            $scope.cancel = cancelLogin;
+
+            function cancelLogin() {
+                $modalInstance.dismiss();
+            }
+
+            function loginComplete(user) {
+                $modalInstance.close(user);
+            }
+        }
+    ]);
+
+/*
+ * Webservice factories
+ */
+
+kexApp.factory( 'Events', function( AuthDepResource ) {
+    return AuthDepResource.create( '/api/event/:id/:registerCtlr/:regType',
+        { id : '@id', registerCtlr : '@registerCtlr', regType : '@regType' });
+} );
+kexApp.factory( 'UserManagedEvents', function( AuthDepResource ) {
+    return AuthDepResource.create( '/api/user/:userId/user_managed_event/:userManagedEventId',
+        { userId: '@userId', userManagedEventId : '@userManagedEventId' });
+} );
+kexApp.factory( 'User', function( AuthDepResource ) {
+    return AuthDepResource.create( '/api/user/:id/:resource/:filter',
+        { id : '@id', resource : '@resource', filter : '@filter' } );
+} );
+kexApp.factory( 'Me', function( AuthDepResource ) {
+    return AuthDepResource.create( '/api/me/:resource/:filter',
+        { resource : '@resource', filter : '@filter' } );
+} );
+kexApp.factory( 'Org', function( AuthDepResource ) {
+    return AuthDepResource.create( '/api/org/:id/:resource/:filter',
+        { id : '@id', resource : '@resource', filter : '@filter' } );
+} );
+
+kexApp.factory('AuthDepResource', function($resource, $q, $rootScope) {
+    var wrappedMethods = ['get', 'save', 'query', 'remove', 'delete'];
+
+    var sessionInitializedDef = $q.defer();
+    $rootScope.$on("SessionManager.initialized", function (event, response) {
+        sessionInitializedDef.resolve();
     });
 
     return {
@@ -221,20 +420,9 @@ kexApp.factory('FbAuthDepResource', function($resource, FbUtil, $q, $rootScope) 
                 return function() {
                     var wrappedMethodArgs = wrapMethodArgs(arguments);
 
-                    authRespDef.promise.then( function() {
-
-                        if (FbUtil.authTokenRefreshRequired()) {
-                            FbUtil.refreshAuthToken().then(
-                                invokeMethod, invokeMethod);
-                        } else {
-                            invokeMethod();
-                        }
-
-                        function invokeMethod() {
-                            wrappedRsrc._rsrc[m].apply(
-                                wrappedRsrc._rsrc, wrappedMethodArgs.args);
-                        }
-
+                    sessionInitializedDef.promise.then( function() {
+                        wrappedRsrc._rsrc[m].apply(
+                            wrappedRsrc._rsrc, wrappedMethodArgs.args);
                     });
 
                     return wrappedMethodArgs.promise;
@@ -790,16 +978,20 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, Re
 
     var meRecyclablePromise = RecyclablePromiseFactory.create();
     var goalInfoRecyclablePromise = RecyclablePromiseFactory.create();
+    var MeUtil;
 
-    $rootScope.$on("fbUtil.userChanged", function (event, response) {
-        if ( response.status === 'connected' ) {
-            MeUtil.updateMe();
+    $rootScope.$on("SessionManager.initialized", processUserChange);
+    $rootScope.$on("SessionManager.userChanged", processUserChange);
+
+    function processUserChange(event, user) {
+        if (user) {
+            MeUtil.updateMe(user);
         } else {
             MeUtil.clearMe();
         }
-    });
+    }
 
-    var MeUtil = {
+    MeUtil = {
         // Get the promise corresponding to me
         me: function() {
             return meRecyclablePromise.promise;
@@ -809,19 +1001,14 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, Re
             return goalInfoRecyclablePromise.promise;
         },
 
-        updateMe: function() {
+        updateMe: function(user) {
             var meDef = meRecyclablePromise.recycle();
             var goalInfoDef = goalInfoRecyclablePromise.recycle();
-            Me.get(
-                angular.bind(this, function(value) {
-                    $rootScope.me = value;
-                    meDef.resolve($rootScope.me);
-                    updateIsOrganizer();
-                    updateKarmaGoal(goalInfoDef);
-                }),
-                angular.bind(this, function(httpResponse) {
-                    this._clearMe(meDef, goalInfoDef);
-                }));
+
+            $rootScope.me = user;
+            meDef.resolve($rootScope.me);
+            updateIsOrganizer();
+            updateKarmaGoal(goalInfoDef);
 
             function updateIsOrganizer() {
                 for (var idx = 0; idx < $rootScope.me.organizationMemberships.length; idx++) {
@@ -841,18 +1028,12 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, Re
         },
 
         clearMe: function() {
-            this._clearMe(
-                meRecyclablePromise.recycle(),
-                goalInfoRecyclablePromise.recycle());
-        },
-
-        _clearMe: function(meDef, goalInfoDef) {
-            meDef.reject();
-            goalInfoDef.reject();
+            meRecyclablePromise.recycle().reject();
+            goalInfoRecyclablePromise.recycle().reject();
             $rootScope.me = undefined;
             $rootScope.isOrganizer = false;
             $rootScope.goalInfo = {};
-        }
+        },
     };
 
     return MeUtil;
@@ -989,7 +1170,7 @@ kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
     };
 });
 
-kexApp.factory('ApiCache', function($rootScope) {
+kexApp.factory('FbApiCache', function($rootScope) {
     var cache = {};
     var firstUserChange = true;
 
@@ -1024,28 +1205,23 @@ kexApp.factory('ApiCache', function($rootScope) {
 });
 
 kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
-        $window, ApiCache, $q) {
+        $window, FbApiCache, $q) {
     var firstAuthResponse = true;
-    var authTokenRefreshTime;
-    var authTokenRefreshPromise;
-    var authTokenIsBeingRefreshed = false;
+    var fbUserId;
 
     $rootScope.$on("fb.auth.authResponseChange", function ( event, response ) {
         if ( response.status === 'connected' ) {
-            setCookies(response.authResponse);
-
-            var updateUser = $rootScope.fbUserId != response.authResponse.userID;
-            $rootScope.fbUserId = response.authResponse.userID;
+            var updateUser = fbUserId != response.authResponse.userID;
+            fbUserId = response.authResponse.userID;
 
             if ( updateUser ) {
                 processUserChange(response);
             }
         } else {
-            removeCookies();
             var userLoggedOut = false;
-            if ( $rootScope.fbUserId ) {
+            if ( fbUserId ) {
                 userLoggedOut = true;
-                $rootScope.fbUserId = undefined;
+                fbUserId = undefined;
             }
             if ( userLoggedOut || firstAuthResponse ) {
                 processUserChange(response);
@@ -1069,103 +1245,44 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         $rootScope.$broadcast("fbUtil.userChanged", response);
     }
 
-    function setCookies(authResponse) {
-        $.cookie( "facebook-uid", authResponse.userID );
-        $.cookie( "facebook-token", authResponse.accessToken );
-        $.cookie( "login", "facebook" );
-        $rootScope.isLoggedIn = true;
-        // Force a refresh of the token if it will expire in under 60 seconds.
-        authTokenRefreshTime = moment().add('seconds', authResponse.expiresIn - 60);
-    }
-
-    function removeCookies() {
-        $.removeCookie( "facebook-uid" );
-        $.removeCookie( "facebook-token" );
-        $.removeCookie( "login" );
-        $rootScope.isLoggedIn = false;
-        authTokenRefreshTime = undefined;
+    function isLoggedIn() {
+        return !!fbUserId;
     }
 
     return {
         GRAPH_API_URL: "//graph.facebook.com",
-        LOGIN_SCOPE: "email,user_location",
 
         getImageUrl: function (id, type) {
             return angular.isDefined(id) ? ("//graph.facebook.com/" + id + "/picture?type=" + type) : undefined;
         },
 
-        login: function () {
-            return $facebook.login();
-        },
-
-        loginRequired: function(showAlert) {
-            var def = $q.defer();
-
-            if ( isLoggedIn() ) {
-                def.resolve();
+        // Sometimes response.error is passed to this function.
+        toLoginRequest: function(response) {
+            if (  angular.isDefined(response.status) &&
+                  (response.status === 'connected') &&
+                  response.authResponse) {
+                return {
+                    providerType: 'FACEBOOK',
+                    credentials: {
+                        token: response.authResponse.accessToken
+                    }
+                };
             } else {
-                this.login().then(
-                    function() {
-                        if (isLoggedIn()) {
-                            def.resolve();
-                        } else {
-                            def.reject();
-                            if (!angular.isDefined(showAlert) || showAlert) {
-                                $rootScope.showAlert('Login required', "danger");
-                            }
-                        }
-                    },
-                    function() {
-                        def.reject();
-                        if (!angular.isDefined(showAlert) || showAlert) {
-                            $rootScope.showAlert('Login required', "danger");
-                        }
-                    });
+                return null;
             }
-
-            return def.promise;
         },
 
         logout: function () {
-            $facebook.logout().then( function(response) {
-                // $window.location.href = "/";
-                // $rootScope.$apply();
-                $location.path("/");
-                // window.location.reload(true);
-                // Make a call to the backend to wipe out any cached user state.
-            });
-        },
-
-        authTokenRefreshRequired: function () {
-            return angular.isDefined(authTokenRefreshTime) &&
-                (authTokenRefreshTime.diff(moment()) < 0);
-        },
-
-        refreshAuthToken: function () {
-            if (authTokenIsBeingRefreshed) {
-                return authTokenRefreshPromise;
+            if (isLoggedIn()) {
+                return $facebook.logout();
+            } else {
+                return $q.when();
             }
-
-            authTokenIsBeingRefreshed = true;
-            authTokenRefreshPromise = $facebook.getLoginStatus(true).then(
-                function (response) {
-                    authTokenIsBeingRefreshed = false;
-                    if (response.status === 'connected') {
-                        // This ensures that there is no ordering issue between when the
-                        // facebook auth response event fires and the login status promise
-                        // is resolved.
-                        setCookies(response.authResponse);
-                    }
-                },
-                function (err) {
-                    authTokenIsBeingRefreshed = false;
-                });
-            return authTokenRefreshPromise;
         },
 
         getAlbumCoverUrl: function (albumId) {
-            var cacheKey = ApiCache.key("getAlbumCoverUrl", albumId);
-            var promise = ApiCache.lookup(cacheKey);
+            var cacheKey = FbApiCache.key("getAlbumCoverUrl", albumId);
+            var promise = FbApiCache.lookup(cacheKey);
             if (promise !== undefined) {
                 return promise;
             }
@@ -1176,13 +1293,13 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
                 return response.source;
             });
 
-            ApiCache.update(cacheKey, promise);
+            FbApiCache.update(cacheKey, promise);
             return promise;
         }
     };
 });
 
-kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, FbUtil, KarmaGoalUtil, MeUtil) {
+kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, KarmaGoalUtil, MeUtil) {
     return {
         postRegistrationTasks: function(event, participantType) {
             this._postRegistrationTasks(event, participantType, true);
@@ -2714,9 +2831,10 @@ var createOrgCtrl = function ($scope, $modalInstance) {
 };
 var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, KexUtil,
         EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q, Geocoder, $log,
-        SnapshotServiceHandshake ) {
+        SnapshotServiceHandshake, SessionManager ) {
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
+    $scope.SessionManager = SessionManager;
 
     $scope.eventSearchTracker = new PromiseTracker();
     var eventSearchRecyclablePromise = RecyclablePromiseFactory.create();
@@ -2771,7 +2889,7 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         }
     });
 
-    $scope.$on("FbAuthDepResource.userChanged", function (event, response) {
+    $scope.$on("SessionManager.userChanged", function (event, response) {
         // Only dependency is the cookie identifying the user.
         $scope.reset();
     });
@@ -2788,7 +2906,7 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         var registrationActionDef = $q.defer();
         event.registrationActionTracker = new PromiseTracker(registrationActionDef.promise);
 
-        FbUtil.loginRequired()
+        SessionManager.loginRequired()
             .then(
                 function () {
                     // The events array refreshes once a user logs in. Make sure the
@@ -3341,8 +3459,8 @@ var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $l
 };
 
 var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, $location,
-        Events, $http, FbUtil, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook,
-        RecyclablePromiseFactory, $q, SnapshotServiceHandshake, PageProperties) {
+        Events, $http, EventUtil, KexUtil, $modal, urlTabsetUtil, $facebook,
+        RecyclablePromiseFactory, $q, SnapshotServiceHandshake, PageProperties, SessionManager) {
     $scope.KexUtil = KexUtil;
     $scope.EventUtil = EventUtil;
     $scope.currentUserRating = {
@@ -3356,7 +3474,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     var tabs = $scope.tabs = tabManager.tabs;
 
     var eventDetailsRecyclablePromise = RecyclablePromiseFactory.create();
-    $scope.$on("FbAuthDepResource.userChanged", function (event, response) {
+    $scope.$on("SessionManager.userChanged", function (event, response) {
         refreshEvent(true);
     });
 
@@ -3405,7 +3523,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
         var registrationActionDef = $q.defer();
         $scope.registrationActionTracker = new PromiseTracker(registrationActionDef.promise);
 
-        FbUtil.loginRequired()
+        SessionManager.loginRequired()
             .then(
                 function () {
                     // Login can cause the event to refresh.
@@ -3585,17 +3703,20 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
     refreshEvent(false);
 };
 
-var tourCtrl = function($scope, FbUtil, $location) {
+var tourCtrl = function($scope, $location, SessionManager) {
     $scope.login = function () {
-        FbUtil.loginRequired(false).then( function () {
+        SessionManager.loginRequired(false).then( function () {
             $location.path("/");
         });
     }
 };
 
 kexApp.controller('NavbarController',
-        [ '$scope', '$location', 'KarmaGoalUtil', 'KexUtil',
-          function($scope, $location, KarmaGoalUtil, KexUtil) {
+        [ '$scope', '$location', 'KarmaGoalUtil', 'KexUtil', 'SessionManager',
+          function($scope, $location, KarmaGoalUtil, KexUtil, SessionManager) {
+
+    $scope.SessionManager = SessionManager;
+    $scope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
 
     $scope.isActive = function (url) {
         return $location.path() === KexUtil.stripHashbang(url);
@@ -3607,7 +3728,6 @@ kexApp.controller('NavbarController',
         }
     }
 
-    $scope.completionIconStyle = KarmaGoalUtil.completionIconStyle;
 }]);
 
 kexApp.controller('RootController',
@@ -3641,15 +3761,6 @@ var EventModalInstanceCtrl = function ($scope, $modalInstance, event, header, $r
         $modalInstance.close();
     };
 };
-
-// TODO(avaliani): refactor this dependency
-function isLoggedIn() {
-    if( $.cookie( "facebook-token" ) ) {
-        return true;
-    } else {
-        return false;
-    }
-}
 
 function isExternal(url) {
     var match = url.match(/^([^:\/?#]+:)?(?:\/\/([^\/?#]*))?([^?#]+)?(\?[^#]*)?(#.*)?/);
@@ -3854,11 +3965,13 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider,
 
 // Prevent angular lazy instantation for the following services:
 //   - MeUtil
-//   - FbAuthDepResource
+//   - AuthDepResource
 //   - SnapshotServiceHandshake
 //   - PageProperties
+//   - SessionManager
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
-        FbAuthDepResource, KexUtil, SnapshotServiceHandshake, PageProperties) {
+        AuthDepResource, KexUtil, SnapshotServiceHandshake, PageProperties,
+        SessionManager) {
 
     $rootScope.fbUtil = FbUtil;
     $rootScope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);
@@ -3884,6 +3997,30 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider,
     $rootScope.closeAlert = function( index ) {
         $rootScope.alerts.splice( index, 1 );
     };
+
+    $rootScope.displayHttpRequestFailure = function (response) {
+        switch (response.status) {
+        case 400:
+            $rootScope.showAlert(response.data.error.message, "danger");
+            break;
+        case 401:
+            $rootScope.showAlert('Wrong usename or password', "danger");
+            break;
+        case 403:
+            $rootScope.showAlert('Permission denied', "danger");
+            break;
+        case 404:
+            $rootScope.showAlert('Failed to find resource: ' + response.data, "danger");
+            break;
+        case 500:
+            $rootScope.showAlert('Server internal error: ' + response.data, "danger");
+            break;
+        default:
+            $rootScope.showAlert('Error ' + response.status + ': ' + response.data, "danger");
+            break;
+        }
+    }
+
     $rootScope.isMessageOpen = false;
     $rootScope.showMessage = function( ) {
         $rootScope.isMessageOpen = true;

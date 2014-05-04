@@ -46,6 +46,7 @@ public class Session {
   public Session(Key<User> userKey) {
     id = UUID.randomUUID().toString();
     expiresOn = DateUtils.addHours(new Date(), SESSION_EXPIRATION_HOURS);
+    this.userKey = userKey;
   }
 
   public NewCookie getCookie() {
@@ -54,16 +55,32 @@ public class Session {
     return new NewCookie(SESSION_COOKIE_NAME, id, "/", null, null, -1, false);
   }
 
+  /**
+   * @return the current session. If the session has expired a {@link WebApplicationException}
+   *     is thrown with error type {@link ErrorInfo#Type.SESSION_EXPIRED}.
+   */
   @Nullable
   public static Session getCurrentSession(HttpServletRequest req) {
-    Cookie cookie = ServletUtil.getCookie(req, SESSION_COOKIE_NAME);
-    if (cookie != null) {
-      Session session = ofy().load().key(getKey(cookie)).now();
+    Key<Session> sessionKey = getCurrentSessionKey(req);
+    if (sessionKey != null) {
+      Session session = ofy().load().key(sessionKey).now();
       if ((session == null) || session.isExpired()) {
         throw ErrorResponseMsg.createException("Session has expired",
-          ErrorInfo.Type.AUTHENTICATION);
+          ErrorInfo.Type.SESSION_EXPIRED);
       }
       return session;
+    }
+    return null;
+  }
+
+  /**
+   * @return a key to the current session.
+   */
+  @Nullable
+  public static Key<Session> getCurrentSessionKey(HttpServletRequest req) {
+    Cookie cookie = ServletUtil.getCookie(req, SESSION_COOKIE_NAME);
+    if (cookie != null) {
+      return getKey(cookie);
     }
     return null;
   }
