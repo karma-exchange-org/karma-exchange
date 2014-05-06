@@ -18,7 +18,7 @@ import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
-import org.karmaexchange.dao.ParticipantImage;
+import org.karmaexchange.dao.CachedEventParticipant;
 import org.karmaexchange.dao.Permission;
 import org.karmaexchange.dao.AggregateRating;
 import org.karmaexchange.dao.Rating;
@@ -56,7 +56,7 @@ public class EventSearchView {
   private RegistrationInfo registrationInfo;
   private UserEventSearchInfo userEventSearchInfo;
 
-  private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
+  private List<CachedEventParticipant> cachedParticipants = Lists.newArrayList();
 
   private int numAttending;
   private int numRegistered;
@@ -123,7 +123,7 @@ public class EventSearchView {
     album = event.getAlbum();
     karmaPoints = event.getKarmaPoints();
     impactSummary = event.getImpactSummary();
-    cachedParticipantImages = event.getCachedParticipantImages();
+    cachedParticipants = event.getCachedParticipants();
     numAttending = event.getNumAttending();
     numRegistered = event.getRegisteredUsers().size();
     maxRegistrations = event.getMaxRegistrations();

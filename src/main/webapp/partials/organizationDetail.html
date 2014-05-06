@@ -221,53 +221,6 @@
                     </div>
                 </div>
             </tab>
-            <!-- <tab> -->
-            <!-- <tab-heading><i class="icon-picture"></i> Albums</tab-heading> -->
-            <!-- <div id="fbgallery" fbgallery userid="{{fbPage.id}}" type="facebook"> -->
-            <!-- </div>  -->
-            <!-- </tab>  -->
-            <!--
-                Commenting out this segment of code since the members tab requires some work in order to be useful.
-
-                <tab>
-                    <tab-heading>
-                        <i class="icon-group">
-                        </i>
-                        Members
-                    </tab-heading>
-                    <div class="row">
-                        <div class="col-md-12" ng-hide="orgOwners.data.length==0">
-                            <h4>
-                                Admins
-                            </h4>
-                            <hr>
-                            <ul class="list-inline">
-                                <li ng-repeat="user in orgOwners.data">
-                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong></a>
-                                    <p>
-                                    </p>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12" ng-hide="orgOrgnaizers.data.length==0">
-                            <h4>
-                                Organizers
-                            </h4>
-                            <hr>
-                            <ul class="list-inline">
-                                <li ng-repeat="user in orgOrgnaizers.data">
-                                    <a href="#!/user/{{user.key}}"><img ng-src="{{user.profileImage.url}}?type=square" class="kex-thumbnail-with-label kex-thumbnail-user"><strong>{{user.firstName}} </strong></a>
-                                    <p>
-                                    </p>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                </tab>
-            -->
 
             <!-- Switch to using ng-if once we upgrade to angular 1.2 -->
             <tab active="tabs[tab.tabName].active" select="tabManager.select(tab.tabName)" ng-repeat="tab in dynamicTabs">
