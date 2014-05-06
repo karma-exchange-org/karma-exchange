@@ -160,8 +160,10 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
       userMap.put(fbId, user);
 
-      return new UserInfo(user, ImageProviderType.FACEBOOK,
-        FacebookSocialNetworkProvider.getProfileImageUrl(fbId));
+      return new UserInfo(user,
+        new UserInfo.ProfileImage(
+          ImageProviderType.FACEBOOK,
+          FacebookSocialNetworkProvider.getProfileImageUrl(fbId)) );
     }
 
     private static void initUser(String fbId, User user) {

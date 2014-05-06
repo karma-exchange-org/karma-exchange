@@ -140,8 +140,10 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
         user.getRegisteredEmails().add(new RegisteredEmail(registrationInfo.email, true));
       }
       user.setAddress(parseCity());
-      return new UserInfo(user, ImageProviderType.FACEBOOK,
-        FacebookSocialNetworkProvider.getProfileImageUrl(userId));
+      return new UserInfo(user,
+        new UserInfo.ProfileImage(
+          ImageProviderType.FACEBOOK,
+          FacebookSocialNetworkProvider.getProfileImageUrl(userId)) );
     }
 
     private Address parseCity() {

@@ -154,13 +154,15 @@ kexApp.factory( 'AuthResource', function( $resource ) {
 } );
 
 kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resource,
-        $window, $modal, AuthResource) {
+        $window, $modal, AuthResource, PersonaUtil) {
 
     $rootScope.isLoggedIn = false;
 
     var isInitializedDef = $q.defer();
+    var isInitialized = false;
     isInitializedDef.promise.then(function (user) {
         $rootScope.$broadcast("SessionManager.initialized", user);
+        isInitialized = true;
     });
 
     var fbFirstAuthRespDef = $q.defer();
@@ -170,6 +172,12 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
             isFirstAuthResp = false;
             fbFirstAuthRespDef.resolve(response);
         }
+    });
+
+    var personaInitializedDef = $q.defer();
+    $rootScope.$on("PersonaUtil.initialized", function (event, response) {
+        console.log("Persona initialized: loginRequest=%o", PersonaUtil.getLoginRequest());
+        personaInitializedDef.resolve(response);
     });
 
     initSession();
@@ -219,33 +227,29 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 
         } else {
 
-            // Check if we are auto logged in with facebook.
-            // Mozilla does not have an auto login capability.
-
+            // Check if we are auto logged in with facebook first.
             fbFirstAuthRespDef.promise.then( function(response) {
                 var loginRequest = FbUtil.toLoginRequest(response);
                 if (loginRequest) {
-                    // Attempt to login using the fb auth.
-
                     console.log("logged in via facebook + app authorized. Attempting to authenticate");
-
-                    AuthResource.login(null, loginRequest,
-                        function (value, responseHeaders) {
-                            console.log("SUCCESS /api/auth/login: %o", value);
-
-                            $rootScope.isLoggedIn = true;
-                            isInitializedDef.resolve(value);
-                        },
-                        function (response) {
-                            console.log("FAILURE /api/auth/login: %o", response);
-
-                            // Error is already displayed.
-                            isInitializedDef.resolve();
-                        });
+                    processInitialLoginRequest(loginRequest);
                 } else {
-                    console.log("not logged in via facebook. defaulting to not logged in");
-
-                    isInitializedDef.resolve();
+                    console.log("not logged in via facebook. checking mozilla");
+                    personaInitializedDef.promise.then( function() {
+                        loginRequest = PersonaUtil.getLoginRequest();
+                        if (loginRequest) {
+                            console.log("logged in via mozilla. Attempting to authenticate");
+                            processInitialLoginRequest(loginRequest).then(
+                                function() {},
+                                function() {
+                                    // On failure reset any persona state.
+                                    PersonaUtil.logout();
+                                });
+                        } else {
+                            console.log("not logged in via fb or mozilla. Defaulting to logged out.");
+                            isInitializedDef.resolve();
+                        }
+                    });
                 }
             });
         }
@@ -253,7 +257,42 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
     }
 
 
+    function processInitialLoginRequest(loginRequest) {
+        return processLoginRequest(loginRequest).then(
+            function(value) {
+                $rootScope.isLoggedIn = true;
+                isInitializedDef.resolve(value);
+            },
+            function() {
+                isInitializedDef.resolve();
+                $q.reject();
+            });
+    }
+
+    function processLoginRequest(loginRequest) {
+        var loginRequestDef = $q.defer();
+
+        AuthResource.login(null, loginRequest,
+            function (value, responseHeaders) {
+                console.log("SUCCESS /api/auth/login: %o", value);
+
+                loginRequestDef.resolve(value);
+            },
+            function (response) {
+                console.log("FAILURE /api/auth/login: %o", response);
+
+                loginRequestDef.reject(response);
+            });
+
+        return loginRequestDef.promise;
+    }
+
+
     var SessionManager = {
+        isInitialized: function() {
+            return isInitialized;
+        },
+
         login: function() {
             var modalInstance = $modal.open({
                 backdrop: "static",
@@ -294,7 +333,11 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
                     sessionLoggedOutDef.reject();
                 });
 
-            $q.all([FbUtil.logout(), sessionLoggedOutDef.promise])
+            var fbLogoutPromise = FbUtil.logout();
+
+            PersonaUtil.logout();
+
+            $q.all([fbLogoutPromise, sessionLoggedOutDef.promise])
                 .then(completeLogout, completeLogout);
 
             function completeLogout(result) {
@@ -305,7 +348,9 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
                 $window.location.href = "/";
             }
 
-        }
+        },
+
+        processLoginRequest: processLoginRequest
     };
 
     return SessionManager;
@@ -314,51 +359,82 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 kexApp.controller(
     'LoginModalInstanceCtrl',
     [
-        '$scope', '$modalInstance', '$facebook', 'AuthResource', 'FbUtil', '$q',
-        function($scope, $modalInstance, $facebook, AuthResource, FbUtil, $q) {
+        '$scope', '$modalInstance', '$facebook', 'SessionManager', 'FbUtil', '$q', 'PersonaUtil', '$rootScope',
+        function($scope, $modalInstance, $facebook, SessionManager, FbUtil, $q, PersonaUtil, $rootScope) {
 
-            var fbLoginTracker = new PromiseTracker();
+            $scope.cancel = cancelLogin;
+            var loginTracker = new PromiseTracker();
+
+            var personaAuthChangeUnsubscribe = $rootScope.$on("PersonaUtil.authChanged", function ( event, response ) {
+                if (!loginTracker.isPending()) {
+                    consumePendingPersonaLoginRequest();
+                }
+            });
+
+            $scope.$on('$destroy', function() {
+                personaAuthChangeUnsubscribe();
+            });
 
             $scope.fbLogin = function() {
-                if (!fbLoginTracker.isPending()) {
+                if (!loginTracker.isPending()) {
                     // Need to call this directly since pop-up can
                     // only be spawned on click events.
                     var fbLoginProm = $facebook.login();
-                    fbLoginTracker = new PromiseTracker(fbLoginProm);
+                    loginTracker = new PromiseTracker(fbLoginProm);
 
-                    fbLoginProm.then( function(response) {
-                        console.log("Facebook login modal returned: %o", response);
+                    fbLoginProm.then(
+                        function(response) {
+                            console.log("Facebook login modal returned: %o", response);
 
-                        var loginRequest = FbUtil.toLoginRequest(response);
-                        if (loginRequest) {
-                            var loginRequestDef = $q.defer();
-                            fbLoginTracker = new PromiseTracker(loginRequestDef.promise);
-
-                            console.log("Facebook login successful, converted to credentials");
-
-                            AuthResource.login(null, loginRequest,
-                                function (value, responseHeaders) {
-                                    console.log("SUCCESS /api/auth/login: %o", value);
-
-                                    loginRequestDef.resolve();
-                                    loginComplete(value);
-                                },
-                                function (response) {
-                                    console.log("FAILURE /api/auth/login: %o", response);
-
-                                    // Failed to create a new session. Close the modal
-                                    loginRequestDef.reject();
-                                    cancelLogin();
-                                });
-
-                        }
-
-                    });
+                            var loginRequest = FbUtil.toLoginRequest(response);
+                            if (loginRequest) {
+                                console.log("Facebook login successful, converted to credentials");
+                                processLoginRequest(loginRequest);
+                            } else {
+                                consumePendingPersonaLoginRequest();
+                            }
+                        },
+                        function(err) {
+                            consumePendingPersonaLoginRequest();
+                        });
                 }
 
             }
 
-            $scope.cancel = cancelLogin;
+            $scope.personaLogin = function() {
+                if (!loginTracker.isPending()) {
+                    if (!consumePendingPersonaLoginRequest()) {
+                        PersonaUtil.login();
+                    }
+                }
+            }
+
+            function consumePendingPersonaLoginRequest() {
+                var loginRequest = PersonaUtil.getLoginRequest();
+                if (loginRequest) {
+                    console.log("Processing persona login...");
+                    processLoginRequest(loginRequest, PersonaUtil.logout);
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            function processLoginRequest(loginRequest, cleanupCallback) {
+                var loginRequestPromise = SessionManager.processLoginRequest(loginRequest);
+                loginTracker = new PromiseTracker(loginRequestPromise);
+                loginRequestPromise.then(
+                    function(value) {
+                        loginComplete(value);
+                    },
+                    function() {
+                        if (cleanupCallback) {
+                            cleanupCallback();
+                        }
+                        // Close the modal. Error should already be displayed.
+                        cancelLogin();
+                    });
+            }
 
             function cancelLogin() {
                 $modalInstance.dismiss();
@@ -1298,6 +1374,75 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         }
     };
 });
+
+
+kexApp.factory('PersonaUtil', function($q, $rootScope) {
+
+    var loginAssertion;
+
+    navigator.id.watch({
+        loggedInUser: undefined,
+        onlogin: function(assertion) {
+            var authChanged = assertion != loginAssertion;
+            loginAssertion = assertion;
+
+            if (authChanged) {
+                $rootScope.$broadcast("PersonaUtil.authChanged");
+                // Persona events are not angular events.
+                if (!$rootScope.$$phase) { $rootScope.$apply(); }
+            }
+        },
+        onlogout: function() {
+            var authChanged = !!loginAssertion;
+            loginAssertion = undefined;
+            // Our session is independent from the personna session.
+            // So we don't log out when persona is logged out.
+
+            if (authChanged) {
+                $rootScope.$broadcast("PersonaUtil.authChanged");
+                // Persona events are not angular events.
+                if (!$rootScope.$$phase) { $rootScope.$apply(); }
+            }
+        },
+        onready: function() {
+            $rootScope.$broadcast("PersonaUtil.initialized");
+            // Persona events are not angular events.
+            if (!$rootScope.$$phase) { $rootScope.$apply(); }
+        }
+    });
+
+    var PersonaUtil = {
+        // Must be called on a click event
+        login: function() {
+            navigator.id.request({
+                siteName: 'Karma Exchange',
+                siteLogo: '/img/kex-logo-1024.png'
+            });
+        },
+
+        logout: function() {
+            if (loginAssertion) {
+                console.log("Calling persona logout: navigator.id.logout()");
+                navigator.id.logout();
+            }
+        },
+
+        getLoginRequest: function() {
+            if (  loginAssertion ) {
+                return {
+                    providerType: 'MOZILLA_PERSONA',
+                    credentials: {
+                        token: loginAssertion
+                    }
+                };
+            } else {
+                return null;
+            }
+        }
+    };
+    return PersonaUtil;
+});
+
 
 kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, KarmaGoalUtil, MeUtil) {
     return {
@@ -3497,6 +3642,8 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
         var unregistrationActionDef = $q.defer();
         $scope.unregistrationActionTracker = new PromiseTracker(unregistrationActionDef.promise);
 
+        var initialRegistrationInfo = $scope.event.registrationInfo;
+
         Events.delete(
                 {
                     id: $scope.event.key,
@@ -3511,7 +3658,7 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                 function() {
                     unregistrationActionDef.resolve();
                     EventUtil.postUnRegistrationTasks(
-                        $scope.event, $scope.event.registrationInfo);
+                        $scope.event, initialRegistrationInfo);
                 },
                 function () {
                     unregistrationActionDef.reject();
@@ -3969,9 +4116,10 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider,
 //   - SnapshotServiceHandshake
 //   - PageProperties
 //   - SessionManager
+//   - PersonaUtil
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
         AuthDepResource, KexUtil, SnapshotServiceHandshake, PageProperties,
-        SessionManager) {
+        SessionManager, PersonaUtil) {
 
     $rootScope.fbUtil = FbUtil;
     $rootScope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);

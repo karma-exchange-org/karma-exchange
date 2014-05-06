@@ -169,6 +169,7 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
         primaryEmailFound = true;
       }
     }
+
     if (!registeredEmails.isEmpty() && !primaryEmailFound) {
       // Emails registered but no primary email.
       validationErrors.add(new ResourceValidationError(
@@ -182,10 +183,12 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
   }
 
   private void initSearchableFullName() {
-    if (searchableFullName == null) {
+    if ((searchableFullName == null) && (firstName != null) && (lastName != null)) {
       searchableFullName = firstName + " " + lastName;
     }
-    searchableFullName = searchableFullName.toLowerCase();
+    if (searchableFullName != null) {
+      searchableFullName = searchableFullName.toLowerCase();
+    }
   }
 
   @Override
@@ -215,9 +218,9 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
     BaseDao.upsert(user);
     // TODO(avaliani): users should be in an orphaned state until they are attached
 
-    if (userInfo.getProfileImageUrl() != null) {
-      updateProfileImage(Key.create(user), userInfo.getProfileImageProvider(),
-        userInfo.getProfileImageUrl());
+    if (userInfo.getProfileImage() != null) {
+      updateProfileImage(Key.create(user), userInfo.getProfileImage().getProvider(),
+        userInfo.getProfileImage().getUrl());
     }
 
     return Key.create(user);
