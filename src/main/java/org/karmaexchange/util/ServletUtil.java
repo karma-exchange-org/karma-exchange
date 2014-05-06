@@ -15,6 +15,8 @@ import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.httpclient.HttpURL;
+import org.apache.commons.httpclient.HttpsURL;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -66,9 +68,26 @@ public class ServletUtil {
   }
 
   public static String getBaseUri(HttpServletRequest req) {
+    return getBaseUri(req, false);
+  }
+
+  public static String getBaseUriWithPort(HttpServletRequest req) {
+    return getBaseUri(req, true);
+  }
+
+  private static String getBaseUri(HttpServletRequest req, boolean alwaysSpecifyPort) {
     URI requestUri = getRequestUri(req);
-    String portString = requestUri.getPort() == -1 ? "" : ":" + requestUri.getPort();
-    return requestUri.getScheme() + "://" + requestUri.getHost() + portString;
+    int port = requestUri.getPort();
+    String scheme = requestUri.getScheme();
+    if ((port == -1) && alwaysSpecifyPort) {
+      if (scheme.equalsIgnoreCase(new String(HttpURL.DEFAULT_SCHEME))) {
+        port = HttpURL.DEFAULT_PORT;
+      } else if (scheme.equalsIgnoreCase(new String(HttpsURL.DEFAULT_SCHEME))) {
+        port = HttpsURL.DEFAULT_PORT;
+      }
+    }
+    String portString = port == -1 ? "" : ":" + port;
+    return scheme + "://" + requestUri.getHost() + portString;
   }
 
   public static Cookie getCookie(HttpServletRequest req, String cookieName) {

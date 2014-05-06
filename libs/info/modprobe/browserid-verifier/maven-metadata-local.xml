@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>info.modprobe</groupId>
+  <artifactId>browserid-verifier</artifactId>
+  <versioning>
+    <release>0.2-APPENGINE</release>
+    <versions>
+      <version>0.2-APPENGINE</version>
+    </versions>
+    <lastUpdated>20140505222338</lastUpdated>
+  </versioning>
+</metadata>

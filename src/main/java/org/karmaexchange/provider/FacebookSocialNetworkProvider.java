@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.annotation.Nullable;
+import javax.servlet.http.HttpServletRequest;
 
 import lombok.Data;
 import lombok.Getter;
@@ -47,16 +48,21 @@ public final class FacebookSocialNetworkProvider implements SocialNetworkProvide
   public static final String PAGE_BASE_URL = "https://www.facebook.com/";
 
   @Override
-  public GlobalUid verifyUserCredentials(AuthProviderCredentials userCredentials) {
+  public CredentialVerificationResult verifyUserCredentials(AuthProviderCredentials userCredentials,
+      HttpServletRequest req) {
     DefaultFacebookClient fbClient = new DefaultFacebookClient(userCredentials.getToken());
     com.restfb.types.User fbUser =
         fetchObject(fbClient, "me", com.restfb.types.User.class, Parameter.with("fields", "id"));
-    return GlobalUid.create(AuthProviderType.FACEBOOK, fbUser.getId());
+    return new CredentialVerificationResult(
+      GlobalUid.create(AuthProviderType.FACEBOOK, fbUser.getId()),
+      new FacebookCredentialVerificationCtx(userCredentials.getToken()));
   }
 
   @Override
-  public UserInfo createUser(AuthProviderCredentials userCredentials) {
-    DefaultFacebookClient fbClient = new DefaultFacebookClient(userCredentials.getToken());
+  public UserInfo createUser(CredentialVerificationResult verificationResult) {
+    FacebookCredentialVerificationCtx ctx =
+        (FacebookCredentialVerificationCtx) verificationResult.getVerificationCtx();
+    DefaultFacebookClient fbClient = new DefaultFacebookClient(ctx.getAuthToken());
     // Getting age_range unfortunately requires explicitly specifiying the fields.
     ExtFbUser fbUser = fetchObject(fbClient, "me", ExtFbUser.class,
       Parameter.with("fields", "id, first_name, last_name, email, location, age_range, gender"));
@@ -69,8 +75,10 @@ public final class FacebookSocialNetworkProvider implements SocialNetworkProvide
     user.setAddress(parseCity(fbUser));
     user.setGender(parseGender(fbUser));
     user.setAgeRange(parseAgeRange(fbUser));
-    return new UserInfo(user, ImageProviderType.FACEBOOK,
-      getProfileImageUrl(fbUser.getId()));
+    return new UserInfo(user,
+      new UserInfo.ProfileImage(
+        ImageProviderType.FACEBOOK,
+        getProfileImageUrl(fbUser.getId())) );
   }
 
   private static Address parseCity(com.restfb.types.User fbUser) {
@@ -164,6 +172,11 @@ public final class FacebookSocialNetworkProvider implements SocialNetworkProvide
     AccessToken accessToken =
         new DefaultFacebookClient().obtainAppAccessToken(appId, appSecret);
     return new AuthProviderCredentials(accessToken.getAccessToken());
+  }
+
+  @Data
+  private static class FacebookCredentialVerificationCtx implements CredentialVerificationCtx {
+    private final String authToken;
   }
 
   private static class ExtFbUser extends com.restfb.types.User {

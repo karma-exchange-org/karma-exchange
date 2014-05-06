@@ -13,10 +13,10 @@ import javax.ws.rs.core.Response;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.auth.AuthProvider;
+import org.karmaexchange.auth.AuthProvider.CredentialVerificationResult;
 import org.karmaexchange.auth.AuthProvider.UserInfo;
 import org.karmaexchange.auth.AuthProviderCredentials;
 import org.karmaexchange.auth.AuthProviderType;
-import org.karmaexchange.auth.GlobalUid;
 import org.karmaexchange.auth.GlobalUidMapping;
 import org.karmaexchange.auth.Session;
 import org.karmaexchange.dao.User;
@@ -42,21 +42,23 @@ public class AuthResource {
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response login(LoginRequest loginRequest) {
+  public Response login(LoginRequest loginRequest,
+      @Context HttpServletRequest req) {
     // 1. Verify the credentials
     AuthProvider authProvider =
         loginRequest.getProviderType().getProvider();
-    GlobalUid globalUid =
-        authProvider.verifyUserCredentials(loginRequest.getCredentials());
+    CredentialVerificationResult verificationResult =
+        authProvider.verifyUserCredentials(loginRequest.getCredentials(), req);
 
     // 2. Lookup the user based on the credentials.
-    Key<GlobalUidMapping> userMappingKey = GlobalUidMapping.getKey(globalUid);
+    Key<GlobalUidMapping> userMappingKey =
+        GlobalUidMapping.getKey(verificationResult.getGlobalUid());
     GlobalUidMapping userMapping =
         ofy().load().key(userMappingKey).now();
     User user;
     if (userMapping == null) {
       // If a user doesn't exist create one.
-      user = createUserAndMapping(authProvider, loginRequest.getCredentials(), globalUid);
+      user = createUserAndMapping(authProvider, verificationResult);
     } else {
       user = ofy().load().key(userMapping.getUserKey()).now();
     }
@@ -89,9 +91,9 @@ public class AuthResource {
         .build();
   }
 
-  private User createUserAndMapping(AuthProvider authProvider, AuthProviderCredentials credentials,
-      GlobalUid globalUid) {
-    UserInfo userInfo = authProvider.createUser(credentials);
+  private User createUserAndMapping(AuthProvider authProvider,
+      CredentialVerificationResult verificationResult) {
+    UserInfo userInfo = authProvider.createUser(verificationResult);
     Key<User> userKey = User.persistNewUser(userInfo);
 
     // Now that the user has been persisted, get the persisted version of the user.
@@ -100,7 +102,8 @@ public class AuthResource {
     // TODO(avaliani): handle orphaned user objects. Until there is a mapping to the user
     //   the user object is not retrievable.
 
-    GlobalUidMapping mapping = new GlobalUidMapping(globalUid, Key.create(user));
+    GlobalUidMapping mapping =
+        new GlobalUidMapping(verificationResult.getGlobalUid(), Key.create(user));
     ofy().save().entity(mapping);  // Asynchronously save the new mapping
 
     return user;

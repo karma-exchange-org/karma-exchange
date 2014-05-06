@@ -1,6 +1,7 @@
 package org.karmaexchange.auth;
 
 import org.karmaexchange.provider.FacebookSocialNetworkProvider;
+import org.karmaexchange.provider.MozillaPersonaAuthProvider;
 
 public enum AuthProviderType {
   FACEBOOK {
@@ -9,11 +10,10 @@ public enum AuthProviderType {
       return new FacebookSocialNetworkProvider();
     }
   },
-  MOZILLA {
+  MOZILLA_PERSONA {
     @Override
     public AuthProvider getProvider() {
-      // TODO(avaliani): fill this in
-      return null;
+      return new MozillaPersonaAuthProvider();
     }
   };
 
