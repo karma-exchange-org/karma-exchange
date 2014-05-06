@@ -63,7 +63,7 @@ public final class Event extends BaseEvent<Event> {
    * 99% usage scenario.
    */
 
-  public static final int MAX_CACHED_PARTICIPANT_IMAGES = 10;
+  public static final int MAX_CACHED_PARTICIPANTS = 10;
 
   /* Each event search token results in an index write. Put a reasonable limit on it. */
   public static final int MAX_SEARCH_TOKENS = 100;
@@ -126,9 +126,7 @@ public final class Event extends BaseEvent<Event> {
 
   // Can not be set. Automatically managed. Only includes organizers and registered users. Wait
   // listed users images are skipped.
-  // NOTE: Embedded list is safe since ParticipantImage has embedded objects that are always
-  //       non-null.
-  private List<ParticipantImage> cachedParticipantImages = Lists.newArrayList();
+  private List<CachedEventParticipant> cachedParticipants = Lists.newArrayList();
 
   private IndexedAggregateRating rating;
   private DerivedRatingTracker derivedRatings;
@@ -200,7 +198,7 @@ public final class Event extends BaseEvent<Event> {
   public void setWaitListedUsers(List<KeyWrapper<User>> ignored) {
     // No-op it.
   }
-  public void setCachedParticipantImages(List<ParticipantImage> ignored) {
+  public void setCachedParticipantImages(List<CachedEventParticipant> ignored) {
     // No-op it.
   }
   public void setRegistrationInfo(RegistrationInfo ignored) {
@@ -568,31 +566,31 @@ public final class Event extends BaseEvent<Event> {
 
   private void updateCachedParticipantImages() {
     // Prune any deleted or wait listed participants.
-    Iterator<ParticipantImage> cachedImageIter = cachedParticipantImages.iterator();
-    while (cachedImageIter.hasNext()) {
-      ParticipantImage cachedImage = cachedImageIter.next();
-      Key<User> userKey = KeyWrapper.toKey(cachedImage.getParticipant());
+    Iterator<CachedEventParticipant> cachedParticipantsIter = cachedParticipants.iterator();
+    while (cachedParticipantsIter.hasNext()) {
+      CachedEventParticipant cachedParticipant = cachedParticipantsIter.next();
+      Key<User> userKey = KeyWrapper.toKey(cachedParticipant);
       EventParticipant participant = tryFindParticipant(userKey);
       if ((participant == null) ||
           ((participant.getType() != ParticipantType.ORGANIZER) &&
            (participant.getType() != ParticipantType.REGISTERED))) {
-        cachedImageIter.remove();
+        cachedParticipantsIter.remove();
       }
     }
 
     // Add images if there is room.
-    int numParticipantImagesToCache = getNumAttending() - cachedParticipantImages.size();
-    numParticipantImagesToCache = Math.min(numParticipantImagesToCache,
-      MAX_CACHED_PARTICIPANT_IMAGES - cachedParticipantImages.size());
-    if (numParticipantImagesToCache > 0) {
+    int numParticipantsToCache = getNumAttending() - cachedParticipants.size();
+    numParticipantsToCache = Math.min(numParticipantsToCache,
+      MAX_CACHED_PARTICIPANTS - cachedParticipants.size());
+    if (numParticipantsToCache > 0) {
       List<Key<User>> usersToFetch = Lists.newArrayList();
       for (KeyWrapper<User> participantKey :
-           getAttendingParticipants(MAX_CACHED_PARTICIPANT_IMAGES)) {
-        if (!Iterables.any(cachedParticipantImages,
-            ParticipantImage.userPredicate(participantKey))) {
+           getAttendingParticipants(MAX_CACHED_PARTICIPANTS)) {
+        if (!Iterables.any(cachedParticipants,
+            CachedEventParticipant.userPredicate(participantKey))) {
           usersToFetch.add(KeyWrapper.toKey(participantKey));
-          numParticipantImagesToCache--;
-          if (numParticipantImagesToCache == 0) {
+          numParticipantsToCache--;
+          if (numParticipantsToCache == 0) {
             break;
           }
         }
@@ -601,7 +599,7 @@ public final class Event extends BaseEvent<Event> {
           ofy().transactionless().load().keys(usersToFetch).values();
       for (User participantToCache : participantsToCache) {
         if (participantToCache != null) {
-          cachedParticipantImages.add(ParticipantImage.create(participantToCache));
+          cachedParticipants.add(new CachedEventParticipant(participantToCache));
         }
       }
     }

@@ -906,6 +906,8 @@ kexApp.provider('PageProperties', function() {
 });
 
 kexApp.factory('KexUtil', function($location, $modal) {
+    var ANON_USER_IMAGE_URL = "/img/anon_user_256_pd_color.png";
+
     return {
         getBaseUrl: function() {
             // window.location.host includes the port #.
@@ -916,9 +918,6 @@ kexApp.factory('KexUtil', function($location, $modal) {
         },
         urlStripProtocol: function(url) {
             return url ? url.replace(/^http:/,'') : url;
-        },
-        strConcat: function(str1, str2) {
-            return (angular.isDefined(str1) && angular.isDefined(str2)) ? (str1 + str2) : undefined;
         },
         stripHashbang: function(url) {
             return (url.indexOf('#!') === 0) ? url.substring(2) : url;
@@ -1045,6 +1044,25 @@ kexApp.factory('KexUtil', function($location, $modal) {
             })(navigator.userAgent||navigator.vendor||window.opera);
 
             return result;
+        },
+
+        getUserImageUrl: function(user, imageType) {
+            if (!angular.isDefined(user)) {
+                return undefined;
+            }
+
+            if (user.profileImage) {
+                if (imageType != 'large') {
+                    imageType = 'square';
+                }
+
+                // Currently we only support facebook.
+                var urlSuffix = '?type=' + imageType;
+
+                return user.profileImage.url + urlSuffix;
+            } else {
+                return ANON_USER_IMAGE_URL;
+            }
         }
 
     };
@@ -1753,9 +1771,9 @@ kexApp.directive('eventParticipantImgsMini', function(KexUtil) {
         },
         template:
             '<ul class="list-inline">' +
-                '<li ng-repeat="userImage in event.cachedParticipantImages">' +
-                    '<a href="#!/user/{{userImage.participant.key}}" stop-click-propagation class="thumbnail-rounded-corners">' +
-                        '<img ng-src="{{KexUtil.strConcat(userImage.imageUrl,\'?type=square\')}}"' +
+                '<li ng-repeat="cachedParticipant in event.cachedParticipants">' +
+                    '<a href="#!/user/{{cachedParticipant.key}}" stop-click-propagation class="thumbnail-rounded-corners">' +
+                        '<img ng-src="{{KexUtil.getUserImageUrl(cachedParticipant, \'mini\')}}"' +
                         '   class="kex-thumbnail-user-mini">' +
                     '</a>' +
                 '</li>' +
@@ -3102,12 +3120,9 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
                     if (type === 'REGISTERED') {
                         //$rootScope.showAlert("Your registration is successful!","success");
                         event.expandedEvent.numRegistered++;
-                        event.cachedParticipantImages.push({
-                            "participant": {
-                                "key": $rootScope.me.key
-                            },
-                            "imageUrl": $rootScope.me.profileImage.url,
-                            "imageUrlProvider": "FACEBOOK"
+                        event.cachedParticipants.push({
+                            "key": $rootScope.me.key,
+                            profileImage : $rootScope.me.profileImage
                         });
                     } else if (type === 'WAIT_LISTED') {
                         //$rootScope.addAlert("You are added to waitlist!","success");

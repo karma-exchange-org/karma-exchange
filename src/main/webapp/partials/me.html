@@ -8,7 +8,7 @@
         <div class="panel panel-default panel-seperated-vertical" ng-show="me.firstName">
             <div class="panel-body">
 
-                <img ng-src="{{KexUtil.strConcat(me.profileImage.url,'?type=large')}}">
+                <img ng-src="{{KexUtil.getUserImageUrl(me, 'large')}}">
 
                 <h3 class="name">{{me.firstName}}</h3>
 
