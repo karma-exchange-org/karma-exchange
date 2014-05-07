@@ -1,0 +1,60 @@
+<div class="init-mandatory-user-fields-modal">
+    <div class="modal-header">
+        <h4 class="modal-title">Complete your user profile</h4>
+    </div>
+    <div class="modal-body">
+
+        <form novalidate class="form-horizontal form-no-margin" role="form" name="mandatoryFieldsForm">
+            <div class="form-header">
+                Welcome to Karma Exchange! Before you get started, we'd like to know a bit more about you:
+            </div>
+
+            <div class="form-group">
+                <label>First name</label>
+                <input type="text"
+                    name="firstNameInput"
+                    class="form-control"
+                    ng-model="user.firstName"
+                    ng-pattern="/\s*\S+\s*/"/
+                    required>
+            </div>
+            <div class="input-error-msg" ng-show="formSubmittedOnce && (mandatoryFieldsForm.firstNameInput.$error.pattern || mandatoryFieldsForm.firstNameInput.$error.required)">
+                Please fill in your first name
+            </div>
+
+            <div class="form-group">
+                <label>Last name</label>
+                <input type="text"
+                    name="lastNameInput"
+                    class="form-control"
+                    ng-model="user.lastName"
+                    ng-pattern="/\s*\S+\s*/"
+                    required/>
+            </div>
+            <div class="input-error-msg" ng-show="formSubmittedOnce && (mandatoryFieldsForm.lastNameInput.$error.pattern ||
+            mandatoryFieldsForm.lastNameInput.$error.required)">
+                Please fill in your last name
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="text"
+                    name="emailInput"
+                    class="form-control"
+                    ng-model="primaryEmailInfo.email"
+                    ng-pattern="/\s*\S+@\S+\.\S+\s*/"
+                    required/>
+            </div>
+            <div class="input-error-msg" ng-show="formSubmittedOnce && (mandatoryFieldsForm.emailInput.$error.pattern || mandatoryFieldsForm.emailInput.$error.required)">
+                Please fill in your email address. We will never spam you or share your email with others.
+            </div>
+
+        </form>
+
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-primary btn-sm"
+                ng-click="done(mandatoryFieldsForm)"
+                ng-disabled="formSubmittedOnce && mandatoryFieldsForm.$invalid">Continue</button>
+    </div>
+</div>

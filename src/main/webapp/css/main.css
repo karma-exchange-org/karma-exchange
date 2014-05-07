@@ -480,6 +480,17 @@ img.kex-thumbnail-user-mini {
   margin-bottom: 0;
 }
 
+/*** FORM CLASS HELPERS ***/
+
+.input-error-msg {
+    color: #b94a48;
+    font-style: italic;
+    margin-top: -5px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+}
+
+/*** END FORM CLASS HELPERS ***/
 
 /*** FLOATING ALERT / WARNINGS ***/
 
@@ -1406,11 +1417,20 @@ p {
 /***** LOGIN MODAL *****/
 
 .login-modal .modal-body .login-button {
-  margin: 20px 0px;
   text-align: center;
+  margin-top: 5px;
 }
 
 /***** END LOGIN MODAL *****/
+
+/***** INIT MANDATORY USER FIELDS MODAL *****/
+
+.init-mandatory-user-fields-modal .modal-body .form-header {
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+/***** END INIT MANDATORY USER FIELDS MODAL *****/
 
 /***** LOGIN BUTTONS *****/
 
