@@ -154,13 +154,16 @@ kexApp.factory( 'AuthResource', function( $resource ) {
 } );
 
 kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resource,
-        $window, $modal, AuthResource, PersonaUtil) {
+        $window, $modal, AuthResource, PersonaUtil, MeUtil) {
 
     $rootScope.isLoggedIn = false;
 
     var isInitializedDef = $q.defer();
     var isInitialized = false;
     isInitializedDef.promise.then(function (user) {
+        if (user) {
+            $rootScope.isLoggedIn = true;
+        }
         $rootScope.$broadcast("SessionManager.initialized", user);
         isInitialized = true;
     });
@@ -200,8 +203,9 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
                 function (response) {
                     console.log("SUCCESS /api/me: %o", response.data);
 
-                    $rootScope.isLoggedIn = true;
-                    isInitializedDef.resolve(response.data);
+                    MeUtil.initMandatoryFields(response.data).then( function(user) {
+                        isInitializedDef.resolve(user);
+                    });
                 },
                 function (response) {
                     if (  (response.status == 400) &&
@@ -256,17 +260,20 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 
     }
 
-
     function processInitialLoginRequest(loginRequest) {
-        return processLoginRequest(loginRequest).then(
-            function(value) {
-                $rootScope.isLoggedIn = true;
-                isInitializedDef.resolve(value);
-            },
-            function() {
-                isInitializedDef.resolve();
-                $q.reject();
-            });
+        return processLoginRequest(loginRequest)
+            .then(
+                function(user) {
+                    return MeUtil.initMandatoryFields(user);
+                })
+            .then(
+                function(user) {
+                    isInitializedDef.resolve(user);
+                },
+                function() {
+                    isInitializedDef.resolve();
+                    $q.reject();
+                });
     }
 
     function processLoginRequest(loginRequest) {
@@ -287,7 +294,6 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
         return loginRequestDef.promise;
     }
 
-
     var SessionManager = {
         isInitialized: function() {
             return isInitialized;
@@ -299,20 +305,35 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
                 templateUrl: 'template/kex/login-modal.html',
                 controller: 'LoginModalInstanceCtrl'
             });
-            return modalInstance.result.then( function(user) {
-                $rootScope.isLoggedIn = true;
-                $rootScope.$broadcast("SessionManager.userChanged", user);
-            });
+            return modalInstance.result
+                .then( function(user) {
+                    return MeUtil.initMandatoryFields(user);
+                })
+                .then( function(user) {
+                    $rootScope.isLoggedIn = true;
+                    $rootScope.$broadcast("SessionManager.userChanged", user);
+                });
         },
 
         loginRequired: function(showAlert) {
-
             if ( $rootScope.isLoggedIn ) {
                 return $q.when();
             } else {
+                var userChangeProcessedDef = $q.defer();
+                var userChangeNotifCleanup =
+                    $rootScope.$on("SessionManager.userChanged", function (event, response) {
+                        userChangeProcessedDef.resolve();
+                        userChangeNotifCleanup();
+                    });
+
+
                 return SessionManager.login().then(
-                    function() { /* nothing extra to do on success.*/ },
                     function() {
+                        // Ensure that the user change event has been processed.
+                        return userChangeProcessedDef.promise;
+                    },
+                    function() {
+                        userChangeNotifCleanup();
                         if (!angular.isDefined(showAlert) || showAlert) {
                             $rootScope.showAlert('Login required', "danger");
                         }
@@ -1068,7 +1089,8 @@ kexApp.factory('KexUtil', function($location, $modal) {
     };
 });
 
-kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, RecyclablePromiseFactory) {
+kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil,
+        RecyclablePromiseFactory, $modal, $resource) {
 
     var meRecyclablePromise = RecyclablePromiseFactory.create();
     var goalInfoRecyclablePromise = RecyclablePromiseFactory.create();
@@ -1083,6 +1105,13 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, Re
         } else {
             MeUtil.clearMe();
         }
+    }
+
+    function mandatoryFieldsInitialized(user) {
+        var primaryEmailInfo = MeUtil.getPrimaryEmailInfo(user);
+        return user.firstName && user.firstName.trim() &&
+            user.lastName && user.lastName.trim() &&
+            (primaryEmailInfo != null) && primaryEmailInfo.email && primaryEmailInfo.email.trim();
     }
 
     MeUtil = {
@@ -1128,11 +1157,99 @@ kexApp.factory('MeUtil', function($rootScope, $q, Me, KarmaGoalUtil, KexUtil, Re
             $rootScope.isOrganizer = false;
             $rootScope.goalInfo = {};
         },
+
+        initMandatoryFields: function(user) {
+            if (mandatoryFieldsInitialized(user)) {
+                return $q.when(user);
+            } else {
+                var modalInstance = $modal.open({
+                    backdrop: "static",
+                    templateUrl: 'template/kex/init-mandatory-user-fields-modal.html',
+                    controller: 'InitMandatoryUserFieldsCtrl',
+                    keyboard: false,
+                    resolve:
+                    {
+                        user: function () {
+                            return angular.extend({}, user);
+                        }
+                    }
+                });
+                return modalInstance.result
+                    .then(
+                        function(updatedUser) {
+                            var updateDef = $q.defer();
+                            // Save the updated user. We directly invoke the api
+                            // vs. using the auth dependent Me since we are in the
+                            // middle of auth while this is being processed.
+                            var MeDirect = $resource('/api/me');
+                            MeDirect.save(
+                                null,
+                                updatedUser,
+                                function() {
+                                    updateDef.resolve(updatedUser);
+                                },
+                                function() {
+                                    // If the update fails just return the initial user object.
+                                    updateDef.resolve(user);
+                                } );
+
+                            return updateDef.promise;
+                        });
+            }
+        },
+
+        getPrimaryEmailInfo: function(user) {
+            for (var idx = 0; idx < user.registeredEmails.length; idx++) {
+                var emailInfo = user.registeredEmails[idx];
+                if (emailInfo.primary) {
+                    return emailInfo;
+                }
+            }
+            return null;
+        }
     };
 
     return MeUtil;
 });
 
+
+kexApp.controller(
+    'InitMandatoryUserFieldsCtrl',
+    [
+        '$scope', '$modalInstance', 'user', 'MeUtil',
+        function($scope, $modalInstance, user, MeUtil) {
+
+            initUser();
+
+            $scope.done = function (mandatoryFieldsForm) {
+                $scope.formSubmittedOnce = true;
+                if ( !mandatoryFieldsForm.$invalid ) {
+                    trimInputFields();
+                    $modalInstance.close(user);
+                }
+            };
+
+            function initUser() {
+                $scope.user = user;
+                var emailInfo = MeUtil.getPrimaryEmailInfo(user);
+                if (emailInfo === null) {
+                    emailInfo = {
+                        email: undefined,
+                        isPrimary: true
+                    };
+                    user.registeredEmails.push(emailInfo);
+                }
+                $scope.primaryEmailInfo = emailInfo;
+            }
+
+            function trimInputFields() {
+                user.firstName = user.firstName.trim();
+                user.lastName = user.lastName.trim();
+                $scope.primaryEmailInfo.email =
+                    $scope.primaryEmailInfo.email.trim();
+            }
+        }
+    ]);
 
 kexApp.factory('KarmaGoalUtil', function($rootScope, $q, User, KexUtil) {
     return {

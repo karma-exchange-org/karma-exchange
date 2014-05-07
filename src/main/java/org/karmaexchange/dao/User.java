@@ -159,7 +159,7 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
     boolean primaryEmailFound = false;
     for (RegisteredEmail registeredEmail : registeredEmails) {
       validationErrors.addAll(registeredEmail.validate(this));
-      if (registeredEmail.isPrimary) {
+      if (registeredEmail.isPrimary()) {
         if (primaryEmailFound) {
           // Multiple primary emails.
           validationErrors.add(new ResourceValidationError(
@@ -445,7 +445,7 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
   @AllArgsConstructor
   public static class RegisteredEmail {
     private String email;
-    private boolean isPrimary;
+    private boolean primary;
     // TODO(avaliani): private boolean verified
 
     public List<ValidationError> validate(User user) {

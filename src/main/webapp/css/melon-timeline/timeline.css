@@ -836,14 +836,6 @@ div.timeline .new-event-form .post {
     text-align: right;
 }
 
-div.timeline .new-event-form .input-error-msg {
-    color: #b94a48;
-    font-style: italic;
-    margin-top: -5px;
-    margin-bottom: 10px;
-    margin-left: 10px;
-}
-
 /****** END NEW TIMELINE EVENT FORM *****/
 
 /****** TIMELINE MORE BUTTON *****/
