@@ -193,34 +193,30 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 
             console.log("session cookie found: " + $.cookie('session'));
 
-            // Using $http directly since AuthDepResource depends on session
-            // establishment.
+            // Have to use $http to pass a custom config.
             $http( {
-                method: 'GET',
-                url: '/api/me',
+                method: 'POST',
+                url: '/api/auth/renew',
                 noAlertOnError: true
             }).then(
                 function (response) {
-                    console.log("SUCCESS /api/me: %o", response.data);
+                    console.log("SUCCESS /api/auth/renew: %o", response.data);
+                    console.log("session cookie updated: " + $.cookie('session'));
 
                     MeUtil.initMandatoryFields(response.data).then( function(user) {
                         isInitializedDef.resolve(user);
                     });
                 },
                 function (response) {
-                    if (  (response.status == 400) &&
-                          angular.isDefined(response.data) &&
-                          angular.isDefined(response.data.error) &&
-                          (response.data.error.type == 'SESSION_EXPIRED') ) {
-
-                        console.log("FAILURE /api/me: SESSION_EXPIRED");
+                    if (  isSessionExpiredRequestFailure(response) ) {
+                        console.log("FAILURE /api/auth/renew: SESSION_EXPIRED");
                         console.log("Deleting cookie and re-initializing...");
 
                         $.removeCookie('session');
                         initSession();
 
                     } else {
-                        console.log("FAILURE /api/me: %o", response);
+                        console.log("FAILURE /api/auth/renew: %o", response);
 
                         $rootScope.displayHttpRequestFailure(response);
 
@@ -258,6 +254,13 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
             });
         }
 
+    }
+
+    function isSessionExpiredRequestFailure(response) {
+        return (response.status == 400) &&
+            angular.isDefined(response.data) &&
+            angular.isDefined(response.data.error) &&
+            (response.data.error.type == 'SESSION_EXPIRED');
     }
 
     function processInitialLoginRequest(loginRequest) {

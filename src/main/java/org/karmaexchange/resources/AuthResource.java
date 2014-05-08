@@ -21,6 +21,8 @@ import org.karmaexchange.auth.GlobalUidMapping;
 import org.karmaexchange.auth.Session;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.UserUsage;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
 import com.googlecode.objectify.Key;
 
@@ -61,6 +63,10 @@ public class AuthResource {
       user = createUserAndMapping(authProvider, verificationResult);
     } else {
       user = ofy().load().key(userMapping.getUserKey()).now();
+      if (user == null) {
+        // It's possible that the user has been deleted. If so, create a new user.
+        user = createUserAndMapping(authProvider, verificationResult);
+      }
     }
 
     // 3. Create a new session for the user.
@@ -76,9 +82,47 @@ public class AuthResource {
         .build();
   }
 
+  /*
+   * Extends an existing non-expired session by creating a new session with the default
+   * number of hours before it expires.
+   *
+   * Renew is a quick workaround to implementing the full session expiration logic. Sessions
+   * are renewed the first time the app is loaded. App load time is an easy time to renew because
+   * there is no concern about in-flight requests. The app still has to handle sessions that
+   * are expired when the app is loaded.
+   */
+  @Path("renew")
+  @POST
+  @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+  public Response renew(@Context HttpServletRequest req) {
+    Session oldSession = Session.getCurrentSession(req);
+    // Handle the case where there is no cookie.
+    if (oldSession == null) {
+      throw ErrorResponseMsg.createException("Session has expired",
+        ErrorInfo.Type.SESSION_EXPIRED);
+    }
+
+    User user = ofy().load().key(oldSession.getUserKey()).now();
+    if (user == null) {
+      throw ErrorResponseMsg.createException("User no longer exists for session",
+        ErrorInfo.Type.SESSION_EXPIRED);
+    }
+
+    // Create the new session
+    Session newSession = new Session(oldSession.getUserKey());
+    ofy().save().entity(newSession);  // Asynchronously save the session.
+
+    // Delete the old session
+    ofy().delete().entity(oldSession);
+
+    return Response.ok(user)
+        .cookie(newSession.getCookie())
+        .build();
+  }
+
+
   @Path("logout")
   @POST
-  @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response logout(@Context HttpServletRequest req) {
     // Delete the key so it can not be used by anyone else.
     Key<Session> sessionKey = Session.getCurrentSessionKey(req);
