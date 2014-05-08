@@ -2895,8 +2895,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     $scope.tabs = tabManager.tabs;
     $scope.dynamicTabs = [];
 
-    var calendarEvents = [];
-    $scope.calendarEventSources = [ calendarEvents ];
+    $scope.calendarEventSources = [];
     $scope.calendarUiConfig = {
         calendar: {
             height: 450,
@@ -2993,6 +2992,8 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                 },
                 function(result) {
                     $scope.upcomingEvents = result;
+
+                    var calendarEvents = [];
                     angular.forEach($scope.upcomingEvents.data, function(event) {
                         calendarEvents.push({
                             title: event.title,
@@ -3002,6 +3003,8 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                             url: "/#!/event/" + event.key
                         });
                     });
+                    $scope.calendarEventSources.push(calendarEvents);
+
                     if (action) {
                         action();
                     }

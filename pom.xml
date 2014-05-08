@@ -150,6 +150,11 @@
             <artifactId>browserid-verifier</artifactId>
             <version>0.2-APPENGINE</version>
         </dependency>
+        <dependency>
+            <groupId>com.google.appengine.tools</groupId>
+            <artifactId>appengine-gcs-client</artifactId>
+            <version>RELEASE</version>
+        </dependency>
 
         <!-- Test Dependencies -->
         <dependency>
