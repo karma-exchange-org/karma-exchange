@@ -154,7 +154,7 @@ kexApp.factory( 'AuthResource', function( $resource ) {
 } );
 
 kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resource,
-        $window, $modal, AuthResource, PersonaUtil, MeUtil) {
+        $window, $modal, AuthResource, PersonaUtil, MeUtil, $log) {
 
     $rootScope.isLoggedIn = false;
 
@@ -179,7 +179,7 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 
     var personaInitializedDef = $q.defer();
     $rootScope.$on("PersonaUtil.initialized", function (event, response) {
-        console.log("Persona initialized: loginRequest=%o", PersonaUtil.getLoginRequest());
+        $log.log("Persona initialized: loginRequest=%o", PersonaUtil.getLoginRequest());
         personaInitializedDef.resolve(response);
     });
 
@@ -187,11 +187,11 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 
     function initSession() {
 
-        console.log("initSession invoked...");
+        $log.log("initSession invoked...");
 
         if ($.cookie('session')) {
 
-            console.log("session cookie found: " + $.cookie('session'));
+            $log.log("session cookie found: " + $.cookie('session'));
 
             // Have to use $http to pass a custom config.
             $http( {
@@ -200,8 +200,8 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
                 noAlertOnError: true
             }).then(
                 function (response) {
-                    console.log("SUCCESS /api/auth/renew: %o", response.data);
-                    console.log("session cookie updated: " + $.cookie('session'));
+                    $log.log("SUCCESS /api/auth/renew: %o", response.data);
+                    $log.log("session cookie updated: " + $.cookie('session'));
 
                     MeUtil.initMandatoryFields(response.data).then( function(user) {
                         isInitializedDef.resolve(user);
@@ -209,14 +209,14 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
                 },
                 function (response) {
                     if (  isSessionExpiredRequestFailure(response) ) {
-                        console.log("FAILURE /api/auth/renew: SESSION_EXPIRED");
-                        console.log("Deleting cookie and re-initializing...");
+                        $log.log("FAILURE /api/auth/renew: SESSION_EXPIRED");
+                        $log.log("Deleting cookie and re-initializing...");
 
                         $.removeCookie('session');
                         initSession();
 
                     } else {
-                        console.log("FAILURE /api/auth/renew: %o", response);
+                        $log.log("FAILURE /api/auth/renew: %o", response);
 
                         $rootScope.displayHttpRequestFailure(response);
 
@@ -231,14 +231,14 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
             fbFirstAuthRespDef.promise.then( function(response) {
                 var loginRequest = FbUtil.toLoginRequest(response);
                 if (loginRequest) {
-                    console.log("logged in via facebook + app authorized. Attempting to authenticate");
+                    $log.log("logged in via facebook + app authorized. Attempting to authenticate");
                     processInitialLoginRequest(loginRequest);
                 } else {
-                    console.log("not logged in via facebook. checking mozilla");
+                    $log.log("not logged in via facebook. checking mozilla");
                     personaInitializedDef.promise.then( function() {
                         loginRequest = PersonaUtil.getLoginRequest();
                         if (loginRequest) {
-                            console.log("logged in via mozilla. Attempting to authenticate");
+                            $log.log("logged in via mozilla. Attempting to authenticate");
                             processInitialLoginRequest(loginRequest).then(
                                 function() {},
                                 function() {
@@ -246,7 +246,7 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
                                     PersonaUtil.logout();
                                 });
                         } else {
-                            console.log("not logged in via fb or mozilla. Defaulting to logged out.");
+                            $log.log("not logged in via fb or mozilla. Defaulting to logged out.");
                             isInitializedDef.resolve();
                         }
                     });
@@ -284,12 +284,12 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 
         AuthResource.login(null, loginRequest,
             function (value, responseHeaders) {
-                console.log("SUCCESS /api/auth/login: %o", value);
+                $log.log("SUCCESS /api/auth/login: %o", value);
 
                 loginRequestDef.resolve(value);
             },
             function (response) {
-                console.log("FAILURE /api/auth/login: %o", response);
+                $log.log("FAILURE /api/auth/login: %o", response);
 
                 loginRequestDef.reject(response);
             });
@@ -350,7 +350,7 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
             var sessionLoggedOutDef = $q.defer();
             AuthResource.logout(null, null,
                 function (value, responseHeaders) {
-                    console.log("SUCCESS /api/auth/logout");
+                    $log.log("SUCCESS /api/auth/logout");
                     sessionLoggedOutDef.resolve();
                 },
                 function () {
@@ -365,7 +365,7 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
                 .then(completeLogout, completeLogout);
 
             function completeLogout(result) {
-                console.log("logged out: %o", result);
+                $log.log("logged out: %o", result);
 
                 // Dealing with in flight ajax requests is tricky. Keep things
                 // simple and just reload the page.
@@ -383,8 +383,8 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 kexApp.controller(
     'LoginModalInstanceCtrl',
     [
-        '$scope', '$modalInstance', '$facebook', 'SessionManager', 'FbUtil', '$q', 'PersonaUtil', '$rootScope',
-        function($scope, $modalInstance, $facebook, SessionManager, FbUtil, $q, PersonaUtil, $rootScope) {
+        '$scope', '$modalInstance', '$facebook', 'SessionManager', 'FbUtil', '$q', 'PersonaUtil', '$rootScope', '$log',
+        function($scope, $modalInstance, $facebook, SessionManager, FbUtil, $q, PersonaUtil, $rootScope, $log) {
 
             $scope.cancel = cancelLogin;
             var loginTracker = new PromiseTracker();
@@ -408,11 +408,11 @@ kexApp.controller(
 
                     fbLoginProm.then(
                         function(response) {
-                            console.log("Facebook login modal returned: %o", response);
+                            $log.log("Facebook login modal returned: %o", response);
 
                             var loginRequest = FbUtil.toLoginRequest(response);
                             if (loginRequest) {
-                                console.log("Facebook login successful, converted to credentials");
+                                $log.log("Facebook login successful, converted to credentials");
                                 processLoginRequest(loginRequest);
                             } else {
                                 consumePendingPersonaLoginRequest();
@@ -436,7 +436,7 @@ kexApp.controller(
             function consumePendingPersonaLoginRequest() {
                 var loginRequest = PersonaUtil.getLoginRequest();
                 if (loginRequest) {
-                    console.log("Processing persona login...");
+                    $log.log("Processing persona login...");
                     processLoginRequest(loginRequest, PersonaUtil.logout);
                     return true;
                 } else {
@@ -1419,7 +1419,7 @@ kexApp.factory('FbApiCache', function($rootScope) {
 });
 
 kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
-        $window, FbApiCache, $q) {
+        $window, FbApiCache, $q, $log) {
     var firstAuthResponse = true;
     var fbUserId;
 
@@ -1449,7 +1449,7 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
             // getLoginStatus sometimes results in a dialog box that just hangs.
             // Need to dig into this more.
             $rootScope.showAlert('Error connecting to facebook: ' + response.error, "danger");
-            console.log("Error connecting to facebook: %o", response.error);
+            $log.warn("Error connecting to facebook: %o", response.error);
         }
     });
 
@@ -1560,7 +1560,6 @@ kexApp.factory('PersonaUtil', function($q, $rootScope) {
 
         logout: function() {
             if (loginAssertion) {
-                console.log("Calling persona logout: navigator.id.logout()");
                 navigator.id.logout();
             }
         },
@@ -3381,7 +3380,7 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
                     errMsg = "Server busy, please try again";
                 } else {
                     errMsg = "Error processing request, please try again";
-                    $log.log("geocoding error: %s, %s", err.type, err.message);
+                    $log.warn("geocoding error: %s, %s", err.type, err.message);
                 }
                 geocodingDef.reject(errMsg);
             });
@@ -4113,8 +4112,10 @@ PromiseTracker.prototype.track = function(promise) {
  * App config and run methods
  */
 
-kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider,
+kexApp.config( function( $provide, $routeProvider, $httpProvider, $facebookProvider,
         PagePropertiesProvider, PAGE_TITLE_SUFFIX ) {
+
+    initConditionalLogging();
 
     $routeProvider
         // .when( '/', { controller : homeCtrl, templateUrl : 'partials/home.html' } )
@@ -4246,6 +4247,38 @@ kexApp.config( function( $routeProvider, $httpProvider, $facebookProvider,
         cookie : true,
         xfbml : false });
 
+
+    function initConditionalLogging() {
+        var LOG_LEVEL_MAP = {
+            // Debug is not available in angular 1.0.8
+            // debug: 0,
+            log: 1,
+            info: 2,
+            warn: 3,
+            error: 4,
+        }
+        // This is the current logging level.
+        var loggingLevel = LOG_LEVEL_MAP['warn'];
+
+        $provide.decorator('$log', function($delegate, $sniffer) {
+            var defaultLog = {};
+
+            angular.forEach(LOG_LEVEL_MAP, function(level, logMethod) {
+                defaultLog[logMethod] = $delegate[logMethod];
+                $delegate[logMethod] = getConditionalLoggingMethod(logMethod);
+            });
+
+            function getConditionalLoggingMethod(logMethod) {
+                return function() {
+                    if (LOG_LEVEL_MAP[logMethod] >= loggingLevel) {
+                        defaultLog[logMethod].apply(defaultLog, arguments);
+                    }
+                }
+            }
+
+            return $delegate;
+        });
+    }
 })
 
 // Prevent angular lazy instantation for the following services:
