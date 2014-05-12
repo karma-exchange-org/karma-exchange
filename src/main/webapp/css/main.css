@@ -1399,6 +1399,14 @@ p {
   max-width: 330px;
 }
 
+.team-profile h3 {
+  margin-top: 14px;
+}
+
+.team-profile p {
+  margin-bottom: 0;
+}
+
 /***** END ABOUT US *****/
 
 /***** CONFIRMATION MODAL *****/
