@@ -55,7 +55,7 @@ public final class UserService {
 
   // Objectify caches this in the session cache.
   public static User getCurrentUser() {
-    if (isNotLoggedInUser() || isCurrentUserAdmin()) {
+    if (!isCurrentUserLoggedIn()) {
       throw ErrorResponseMsg.createException("Login required", ErrorInfo.Type.LOGIN_REQUIRED);
     }
     User user = ofy().load().key(getCurrentUserKey()).now();
@@ -71,6 +71,10 @@ public final class UserService {
 
   public static void clearCurrentUser() {
     currentUserKey.set(null);
+  }
+
+  public static boolean isCurrentUserLoggedIn() {
+    return !(isNotLoggedInUser() || isCurrentUserAdmin());
   }
 
   public static boolean isCurrentUserAdmin() {

@@ -83,6 +83,7 @@ public class SourceEventSyncUtil {
       connection.setRequestMethod("POST");
       connection.setRequestProperty("Accept", "application/json");
       connection.setRequestProperty("Content-type", "application/json");
+      connection.setReadTimeout(0);
 
       ObjectMapper mapper = new ObjectMapper();
       RegistrationReq registrationReq = new RegistrationReq(

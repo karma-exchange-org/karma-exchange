@@ -29,6 +29,7 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.karmaexchange.auth.AuthProviderType;
 import org.karmaexchange.auth.GlobalUid;
 import org.karmaexchange.auth.GlobalUidMapping;
+import org.karmaexchange.auth.GlobalUidType;
 import org.karmaexchange.auth.AuthProvider.UserInfo;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AlbumRef;
@@ -83,25 +84,25 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
   private Map<String, User> testUserMap = Maps.newHashMap();
 
   public enum TestUser {
-    USER1("100006074376957", "Katie", "Hilary", null,
+    USER1("100006074376957", "Katie", "Hilary", "Katie.Hilary@KarmaExchange.org",
       Long.valueOf(6 * 60), false),
     USER2("100006058506752", "Alan", "Franjo", "alan.franjo@KidsClub.org"),
     USER3("100006051787601", "Kenneth", "Gilbert", "kenneth.gilbert@kidsclub.org"),
-    USER4("100006076592978", "Eddie", "Kenelm"),
-    USER5("100006052237443", "Will", "Lorne"),
-    USER6("100006093303024", "Courtney", "Arden"),
-    USER7("100006045731576", "Leslie", "Lavern"),
-    USER8("100006080162988", "Darryl", "Teo"),
+    USER4("100006076592978", "Eddie", "Kenelm", "Eddie@karmaexchange.org"),
+    USER5("100006052237443", "Will", "Lorne", "Will@karmaexchange.org"),
+    USER6("100006093303024", "Courtney", "Arden", "Courtney@karmaexchange.org"),
+    USER7("100006045731576", "Leslie", "Lavern", "Leslie@karmaexchange.org"),
+    USER8("100006080162988", "Darryl", "Teo", "Darryl@karmaexchange.org"),
     USER9("100006054577389", "Johnny", "Lev", "lev@fakekidsclub.org"),
-    USER10("100006053377578", "Cassidy", "Sadie"),
+    USER10("100006053377578", "Cassidy", "Sadie", "cas@karmaexchange.org"),
     USER11("100006084302920", "Michelle", "Dailey", "michelle.daileyl@kidsclub.org"),
-    USER12("100006069696646", "Erica", "Wade"),
-    USER13("100006083973038", "Todd", "Angelos"),
-    AMIR("1111368160", "Amir", "Valiani", null,
+    USER12("100006069696646", "Erica", "Wade", "erica@karmaexchange.org"),
+    USER13("100006083973038", "Todd", "Angelos", "todd@karmaexchange.org"),
+    AMIR("1111368160", "Amir", "Valiani", "amir@karmaexchange.org",
       Long.valueOf(8 * 60), true),
-    HARISH("537854733", "Harish", "Balijepalli", null,
+    HARISH("537854733", "Harish", "Balijepalli", "harish@karmaexchange.org",
       Long.valueOf(4 * 60), true),
-    POONUM("3205292", "Poonum", "Kaberwal", null,
+    POONUM("3205292", "Poonum", "Kaberwal", "poonum@karmaexchange.org",
       Long.valueOf(4 * 60), true);
 
     @Getter
@@ -111,16 +112,11 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     @Getter
     private final String lastName;
     @Getter
-    @Nullable
     private final String email;
     @Getter
     private final Long monthlyKarmaPtsGoal;
     @Getter
     private final boolean realUser;
-
-    private TestUser(String fbId, String firstName, String lastName) {
-      this(fbId, firstName, lastName, null);
-    }
 
     private TestUser(String fbId, String firstName, String lastName, @Nullable String email) {
       this(fbId, firstName, lastName, email, null, false);
@@ -144,9 +140,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
           ((Long.valueOf(fbId) % 2) != 0)) {
         user.setAbout("I'm looking forward to making a difference!");
       }
-      if (email != null) {
-        user.getRegisteredEmails().add(new RegisteredEmail(email, true));
-      }
+      user.getRegisteredEmails().add(new RegisteredEmail(email, true));
       if (monthlyKarmaPtsGoal != null) {
         KarmaGoal goal = new KarmaGoal();
         user.setKarmaGoal(goal);
@@ -335,19 +329,19 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     // Users must be persisted first to ensure that keys are available for each user.
     statusWriter.println("About to persist test users...");
     for (TestUser testUser : TestUser.values()) {
-      GlobalUid globalUid = GlobalUid.create(AuthProviderType.FACEBOOK, testUser.getFbId());
-      GlobalUidMapping userMapping =
-          ofy().load().key(GlobalUidMapping.getKey(globalUid)).now();
+      GlobalUid globalUid =
+          new GlobalUid(GlobalUidType.toGlobalUidType(AuthProviderType.FACEBOOK), testUser.getFbId());
+      GlobalUidMapping userMapping = GlobalUidMapping.load(globalUid);
 
       if (userMapping != null) {
         throw new RuntimeException("DB has not been purged");
       }
 
       UserInfo userInfo = testUser.createUser(testUserMap);
-      User.persistNewUser(userInfo);
+      Key<User> persistedUserKey = User.upsertNewUser(userInfo);
 
       userMapping =
-          new GlobalUidMapping(globalUid, Key.create(userInfo.getUser()));
+          new GlobalUidMapping(globalUid, persistedUserKey);
       ofy().save().entity(userMapping);  // Asynchronously save the new mapping
     }
 

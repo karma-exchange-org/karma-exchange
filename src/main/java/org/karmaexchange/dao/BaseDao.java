@@ -189,7 +189,7 @@ public abstract class BaseDao<T extends BaseDao<T>> {
   protected final void updatePermission() {
     if (UserService.isCurrentUserAdmin()) {
       permission = Permission.ALL;
-    } else if (UserService.isNotLoggedInUser()) {
+    } else if (!UserService.isCurrentUserLoggedIn()) {
       permission = Permission.READ;
     } else {
       permission = evalPermission();

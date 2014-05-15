@@ -65,6 +65,11 @@ public class ErrorResponseMsg {
       if (e != null) {
         this.stackTrace = Throwables.getStackTraceAsString(e);
       }
+
+//      // debug
+//      if (e == null) {
+//        this.stackTrace = Throwables.getStackTraceAsString(new Exception());
+//      }
     }
 
     public ErrorInfo(String message, Type type) {

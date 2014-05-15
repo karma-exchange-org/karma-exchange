@@ -50,10 +50,7 @@ public class SourceEventResource {
     Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
     validateOrgSecret(orgKey, orgSecret);
 
-    // Do this outside of the transaction since it can be slow due to dynamic geocoding.
-    Event event = sourceEvent.toEvent(orgKey);
-
-    UpsertAdminSubtask upsertTask = new UpsertAdminSubtask(event);
+    UpsertAdminSubtask upsertTask = new UpsertAdminSubtask(sourceEvent, orgKey);
     AdminUtil.executeSubtaskAsAdmin(
       AdminTaskType.SOURCE_EVENT_UPDATE, upsertTask);
     return upsertTask.response;
@@ -62,11 +59,17 @@ public class SourceEventResource {
   @Data
   private class UpsertAdminSubtask implements AdminSubtask {
 
-    private final Event event;
+    private final SourceEvent sourceEvent;
+    private final Key<Organization> orgKey;
     private Response response;
 
     @Override
     public void execute() {
+      // Note that converting an event may result in user objects being created for some of
+      // the participants. The users need to be persisted ahead of time to enable keys to the users
+      // to be stored in the event.
+      Event event = sourceEvent.toEvent(orgKey);
+
       // TODO(avaliani): fix return key. Currently it contains derived in the path.
       response = getEventResource().upsertResource(new EventView(event, false));
     }

@@ -38,12 +38,14 @@
 
             <div class="form-group">
                 <label>Email</label>
+
                 <input type="text"
                     name="emailInput"
                     class="form-control"
                     ng-model="primaryEmailInfo.email"
-                    ng-pattern="/\s*\S+@\S+\.\S+\s*/"
-                    required/>
+                    disabled/>
+                <!-- ng-pattern="/\s*\S+@\S+\.\S+\s*/" -->
+
             </div>
             <div class="input-error-msg" ng-show="formSubmittedOnce && (mandatoryFieldsForm.emailInput.$error.pattern || mandatoryFieldsForm.emailInput.$error.required)">
                 Please fill in your email address. We will never spam you or share your email with others.

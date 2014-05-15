@@ -2854,32 +2854,37 @@ var KarmaGoalModalInstanceCtrl = function ($scope, $modalInstance, $rootScope,
 };
 
 var meEditCtrl = function($scope, Me, $rootScope, MeUtil) {
-    $scope.newMail = {
-        email: null,
-        primary: null
-    };
+
     $scope.load = function() {
         $scope.who = 'My';
         MeUtil.me().then(function(meObj) {
             $scope.me = meObj;
             $scope.origAboutMe = $scope.me.about;
+            var primaryEmailInfo = MeUtil.getPrimaryEmailInfo(meObj);
+            $scope.primaryEmail = primaryEmailInfo.email;
         });
     };
     $scope.save = function() {
         Me.save($scope.me);
     };
-    $scope.addEmail = function() {
-        //TO-DO check if the new one is marked primary and unmark the current primary one
-        $scope.me.registeredEmails.push($scope.newMail);
-        $scope.save();
-    };
-    $scope.removeEmail = function() {
-        $scope.me.registeredEmails.splice(this.$index, 1);
-        $scope.save();
-    };
-    $scope.mailPrimaryIndex = {
-        index: 0
-    };
+
+
+    // $scope.newMail = {
+    //     email: null,
+    //     primary: null
+    // };
+    // $scope.addEmail = function() {
+    //     //TO-DO check if the new one is marked primary and unmark the current primary one
+    //     $scope.me.registeredEmails.push($scope.newMail);
+    //     $scope.save();
+    // };
+    // $scope.removeEmail = function() {
+    //     $scope.me.registeredEmails.splice(this.$index, 1);
+    //     $scope.save();
+    // };
+    // $scope.mailPrimaryIndex = {
+    //     index: 0
+    // };
     $scope.load();
 };
 
@@ -4246,6 +4251,7 @@ kexApp.config( function( $provide, $routeProvider, $httpProvider, $facebookProvi
         status : true,
         cookie : true,
         xfbml : false });
+    $facebookProvider.setPermissions('public_profile,email,user_friends');
 
 
     function initConditionalLogging() {
