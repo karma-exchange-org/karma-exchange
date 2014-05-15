@@ -7,6 +7,7 @@ import java.util.Date;
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import org.karmaexchange.auth.GlobalUid;
 import org.karmaexchange.auth.GlobalUidMapping;
 
 import lombok.AllArgsConstructor;
@@ -37,6 +38,8 @@ public class UserUsage {
   @Id
   private String name = NAME_FIELD_VALUE;
 
+  private GlobalUid globalUid;
+
   private String firstName;
   private String lastName;
   private Date lastVisited;
@@ -51,10 +54,11 @@ public class UserUsage {
     return (owner == null) ? null : owner.getString();
   }
 
-  public static void trackAccess(Key<GlobalUidMapping> globalMappingKey, User user) {
+  public static void trackAccess(GlobalUid globalUid, User user) {
     UserUsage usage = new UserUsage(
-      globalMappingKey,
+      GlobalUidMapping.getKey(globalUid),
       NAME_FIELD_VALUE,
+      globalUid,
       user.getFirstName(),
       user.getLastName(),
       new Date(),

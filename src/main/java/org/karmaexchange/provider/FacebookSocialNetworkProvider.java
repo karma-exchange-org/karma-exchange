@@ -15,6 +15,7 @@ import lombok.Getter;
 import org.karmaexchange.auth.AuthProviderCredentials;
 import org.karmaexchange.auth.AuthProviderType;
 import org.karmaexchange.auth.GlobalUid;
+import org.karmaexchange.auth.GlobalUidType;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AgeRange;
 import org.karmaexchange.dao.Gender;
@@ -54,7 +55,7 @@ public final class FacebookSocialNetworkProvider implements SocialNetworkProvide
     com.restfb.types.User fbUser =
         fetchObject(fbClient, "me", com.restfb.types.User.class, Parameter.with("fields", "id"));
     return new CredentialVerificationResult(
-      GlobalUid.create(AuthProviderType.FACEBOOK, fbUser.getId()),
+      new GlobalUid(GlobalUidType.toGlobalUidType(AuthProviderType.FACEBOOK), fbUser.getId()),
       new FacebookCredentialVerificationCtx(userCredentials.getToken()));
   }
 

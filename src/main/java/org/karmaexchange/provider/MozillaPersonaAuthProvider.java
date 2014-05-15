@@ -13,6 +13,7 @@ import org.karmaexchange.auth.AuthProvider;
 import org.karmaexchange.auth.AuthProviderCredentials;
 import org.karmaexchange.auth.AuthProviderType;
 import org.karmaexchange.auth.GlobalUid;
+import org.karmaexchange.auth.GlobalUidType;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
@@ -36,7 +37,9 @@ public class MozillaPersonaAuthProvider implements AuthProvider {
     Status status = loginResponse.getStatus();
     if (status == Status.OK) {
       return new CredentialVerificationResult(
-        GlobalUid.create(AuthProviderType.MOZILLA_PERSONA, loginResponse.getEmail()),
+        new GlobalUid(
+          GlobalUidType.toGlobalUidType(AuthProviderType.MOZILLA_PERSONA),
+          loginResponse.getEmail()),
         new MozillaPersonaCredentialVerificationCtx(loginResponse.getEmail()));
     } else {
       throw ErrorResponseMsg.createException(loginResponse.getReason(),

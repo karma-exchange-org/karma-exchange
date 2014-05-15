@@ -12,6 +12,9 @@ import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
 import org.apache.commons.validator.routines.EmailValidator;
+import org.karmaexchange.auth.GlobalUid;
+import org.karmaexchange.auth.GlobalUidMapping;
+import org.karmaexchange.auth.GlobalUidType;
 import org.karmaexchange.auth.AuthProvider.UserInfo;
 import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.resources.msg.AuthorizationErrorInfo;
@@ -144,6 +147,10 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
     eventAttendanceHistory = oldUser.eventAttendanceHistory;
     organizationMemberships = oldUser.organizationMemberships;
 
+    // Temporarily prevent the user email field from being updated. We want to ensure
+    // all emails are verified.
+    registeredEmails = oldUser.registeredEmails;
+
     validateUser();
   }
 
@@ -212,18 +219,110 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
     }
   }
 
-  public static Key<User> persistNewUser(UserInfo userInfo) {
+  public static Key<User> upsertNewUser(UserInfo userInfo) {
     User user = userInfo.getUser();
     checkState(!user.isKeyComplete(), "new user can not have complete key");
-    BaseDao.upsert(user);
-    // TODO(avaliani): users should be in an orphaned state until they are attached
 
-    if (userInfo.getProfileImage() != null) {
-      updateProfileImage(Key.create(user), userInfo.getProfileImage().getProvider(),
-        userInfo.getProfileImage().getUrl());
+    // Lookup the user by email to see if one already exists.
+    Key<User> existingUserKey = findUser(getNewUserEmail(user));
+    Key<User> newUserKey = null;
+
+    if (existingUserKey == null) {
+
+      BaseDao.upsert(user);
+      // TODO(avaliani): users should be in an orphaned state until they are attached
+
+      if (userInfo.getProfileImage() != null) {
+        updateProfileImage(Key.create(user), userInfo.getProfileImage().getProvider(),
+          userInfo.getProfileImage().getUrl());
+      }
+
+      // Attempt to create an email to user mapping for the new user
+      CreateEmailMappingForNewUserTxn createEmailMappingTxn =
+          new CreateEmailMappingForNewUserTxn(user);
+      ofy().transact(createEmailMappingTxn);
+      if (createEmailMappingTxn.getExistingUser() == null) {
+        newUserKey = Key.create(user);
+      } else {
+        // Another user may have been created in parallel. Delete the user we just persisted.
+        BaseDao.delete(Key.create(user));
+        existingUserKey = createEmailMappingTxn.getExistingUser();
+      }
+
     }
 
-    return Key.create(user);
+    if (newUserKey == null) {
+      ofy().transact(new UpdateUnitializedFieldsTxn(existingUserKey, user));
+      return existingUserKey;
+    } else {
+      return newUserKey;
+    }
+  }
+
+  private static String getNewUserEmail(User user) {
+    // Handling multiple emails complicates the email to user lookup. It's something we
+    // don't have to deal with now since every new user is only associated with one email
+    // address.
+    checkState(user.getRegisteredEmails().size() == 1,
+        "new user num emails (" + user.getRegisteredEmails().size() + ") != 1");
+    return user.getRegisteredEmails().get(0).getEmail();
+  }
+
+  private static Key<User> findUser(String email) {
+    GlobalUid guid =
+        new GlobalUid(GlobalUidType.EMAIL, email);
+    GlobalUidMapping mapping =
+        GlobalUidMapping.load(guid);
+    return (mapping != null) ? mapping.getUserKey() : null;
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  private static class CreateEmailMappingForNewUserTxn extends VoidWork {
+    private final User newUser;
+    private Key<User> existingUser;
+
+    public void vrun() {
+      GlobalUid guid = new GlobalUid(GlobalUidType.EMAIL, getNewUserEmail(newUser));
+      GlobalUidMapping mapping = GlobalUidMapping.load(guid);
+      if (mapping == null) {
+        mapping = new GlobalUidMapping(guid, Key.create(newUser));
+        ofy().save().entity(mapping).now();
+      } else {
+        existingUser = mapping.getUserKey();
+      }
+    }
+  }
+
+  @Data
+  @EqualsAndHashCode(callSuper=false)
+  private static class UpdateUnitializedFieldsTxn extends VoidWork {
+    private final Key<User> existingUserKey;
+    private final User newUser;
+
+    public void vrun() {
+      User user = ofy().load().key(existingUserKey).now();
+      if (user == null) {
+        throw ErrorResponseMsg.createException("existing user not found",
+          ErrorInfo.Type.BACKEND_SERVICE_FAILURE);
+      }
+      if (user.firstName == null) {
+        user.firstName = newUser.firstName;
+      }
+      if (user.lastName == null) {
+        user.lastName = newUser.lastName;
+      }
+      if (user.address == null) {
+        user.address = newUser.address;
+      }
+      if (user.gender == null) {
+        user.gender = newUser.gender;
+      }
+      if (user.ageRange == null) {
+        user.ageRange = newUser.ageRange;
+      }
+      BaseDao.partialUpdate(user);
+    }
   }
 
   private void updateProfileImage(@Nullable Image profileImage) {

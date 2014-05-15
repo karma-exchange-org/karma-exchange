@@ -53,10 +53,7 @@ public class AuthResource {
         authProvider.verifyUserCredentials(loginRequest.getCredentials(), req);
 
     // 2. Lookup the user based on the credentials.
-    Key<GlobalUidMapping> userMappingKey =
-        GlobalUidMapping.getKey(verificationResult.getGlobalUid());
-    GlobalUidMapping userMapping =
-        ofy().load().key(userMappingKey).now();
+    GlobalUidMapping userMapping = GlobalUidMapping.load(verificationResult.getGlobalUid());
     User user;
     if (userMapping == null) {
       // If a user doesn't exist create one.
@@ -74,7 +71,7 @@ public class AuthResource {
     ofy().save().entity(session);  // Asynchronously save the session.
 
     // 4. Track access.
-    UserUsage.trackAccess(userMappingKey, user);
+    UserUsage.trackAccess(verificationResult.getGlobalUid(), user);
 
     // 5. Return the login response.
     return Response.ok(user)
@@ -138,7 +135,7 @@ public class AuthResource {
   private User createUserAndMapping(AuthProvider authProvider,
       CredentialVerificationResult verificationResult) {
     UserInfo userInfo = authProvider.createUser(verificationResult);
-    Key<User> userKey = User.persistNewUser(userInfo);
+    Key<User> userKey = User.upsertNewUser(userInfo);
 
     // Now that the user has been persisted, get the persisted version of the user.
     User user = ofy().load().key(userKey).now();

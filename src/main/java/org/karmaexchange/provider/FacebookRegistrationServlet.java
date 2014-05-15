@@ -16,6 +16,7 @@ import lombok.Data;
 import org.karmaexchange.auth.AuthProviderType;
 import org.karmaexchange.auth.GlobalUid;
 import org.karmaexchange.auth.GlobalUidMapping;
+import org.karmaexchange.auth.GlobalUidType;
 import org.karmaexchange.auth.AuthProvider.UserInfo;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.ImageProviderType;
@@ -71,11 +72,11 @@ public class FacebookRegistrationServlet extends AdminTaskServlet {
       registrationReq.validate();
 
       UserInfo userInfo = registrationReq.createUser();
-      User.persistNewUser(userInfo);
+      Key<User> persistedUserKey = User.upsertNewUser(userInfo);
 
       GlobalUidMapping mapping = new GlobalUidMapping(
-        GlobalUid.create(AuthProviderType.FACEBOOK, registrationReq.getUserId()),
-        Key.create(userInfo.getUser()));
+        new GlobalUid(GlobalUidType.toGlobalUidType(AuthProviderType.FACEBOOK), registrationReq.getUserId()),
+        persistedUserKey);
       ofy().save().entity(mapping);  // Asynchronously save the new mapping
 
       resp.sendRedirect("/");

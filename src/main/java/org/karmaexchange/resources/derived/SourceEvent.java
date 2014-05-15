@@ -1,6 +1,12 @@
 package org.karmaexchange.resources.derived;
 
+import static java.lang.String.format;
+import static org.karmaexchange.util.OfyService.ofy;
+
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -11,13 +17,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.karmaexchange.auth.AuthProvider.UserInfo;
+import org.karmaexchange.auth.GlobalUid;
+import org.karmaexchange.auth.GlobalUidMapping;
+import org.karmaexchange.auth.GlobalUidType;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.Event.SourceEventInfo;
 import org.karmaexchange.dao.Location;
+import org.karmaexchange.dao.User;
+import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
@@ -36,6 +49,8 @@ import com.googlecode.objectify.Key;
 public class SourceEvent {
 
   private static long EVENT_ID = 1; // There is a 1-1 mapping between SourceEvent and Event.
+
+  private static final Logger log = Logger.getLogger(SourceEvent.class.getName());
 
   private String sourceKey;
 
@@ -76,8 +91,37 @@ public class SourceEvent {
     event.setOwner(SourceEventNamespaceDao.createKey(orgKey, sourceKey).getString());
     event.setId(EVENT_ID);
     event.setSourceEventInfo(new SourceEventInfo(sourceKey));
+    mapSourceParticipants();
     // TODO(avaliani): map source participants
     return event;
+  }
+
+  private void mapSourceParticipants() {
+    List<Key<GlobalUidMapping>> sourceParticipantMappingsKeys =
+        Lists.newArrayList();
+    for (SourceEventParticipant sourceParticipant : sourceParticipants) {
+      sourceParticipantMappingsKeys.add(
+        sourceParticipant.getGlobalUidMappingKey());
+    }
+
+    Map<Key<GlobalUidMapping>, GlobalUidMapping> sourceParticipantMappings =
+        ofy().load().keys(sourceParticipantMappingsKeys);
+    List<EventParticipant> participants =
+        Lists.newArrayList();
+    for (SourceEventParticipant sourceParticipant : sourceParticipants) {
+      GlobalUidMapping mapping =
+          sourceParticipantMappings.get(sourceParticipant.getGlobalUidMappingKey());
+      Key<User> userKey;
+      if (mapping == null) {
+        userKey = User.upsertNewUser(
+          sourceParticipant.createUser());
+      } else {
+        userKey = mapping.getUserKey();
+      }
+      participants.add(sourceParticipant.toEventParticipant(userKey));
+    }
+
+    event.setParticipants(participants);
   }
 
   public static Key<Event> createKey(Key<Organization> orgKey, String sourceKey) {
@@ -102,21 +146,63 @@ public class SourceEvent {
         "organization field does not match specified organization",
         ErrorInfo.Type.BAD_REQUEST);
     }
+
+    if (!event.getParticipants().isEmpty()) {
+      throw ErrorResponseMsg.createException(
+        "only sourceParticipants can be specified for derived events",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+
+    Iterator<SourceEventParticipant>  sourceParticipantsIter = sourceParticipants.iterator();
+    while (sourceParticipantsIter.hasNext()) {
+      SourceEventParticipant sourceParticipant =
+          sourceParticipantsIter.next();
+      SourceUser sourceUser = sourceParticipant.user;
+      if (sourceUser == null) {
+        throw ErrorResponseMsg.createException(
+          "required field 'user' is null for sourceParticipant",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
+      if (sourceUser.email == null) {
+        sourceParticipantsIter.remove();
+        log.warning(
+          format("required field 'email' missing: " +
+              "skipping user(%s,%s) for source event(%s, org=%s)",
+            sourceUser.firstName, sourceUser.lastName, sourceKey,
+            orgKey.toString()));
+      }
+    }
   }
 
   @Data
   @NoArgsConstructor
   public static final class SourceEventParticipant {
-    private SourceKeyWrapper user;
+    private SourceUser user;
     private ParticipantType type;
+
+    public Key<GlobalUidMapping> getGlobalUidMappingKey() {
+      return GlobalUidMapping.getKey(
+        new GlobalUid(GlobalUidType.EMAIL, user.email));
+    }
+
+    public EventParticipant toEventParticipant(Key<User> userKey) {
+      return EventParticipant.create(userKey, type);
+    }
+
+    public UserInfo createUser() {
+      User newUser = User.create();
+      newUser.setFirstName(user.firstName);
+      newUser.setLastName(user.lastName);
+      newUser.getRegisteredEmails().add(new RegisteredEmail(user.email, true));
+      return new UserInfo(newUser);
+    }
   }
 
-  /*
-   * This class provides an identical structure to KeyWrapper however it doesn't
-   * force translate the key into a datastore key.
-   */
   @Data
-  public static final class SourceKeyWrapper {
-    private String key;
+  @NoArgsConstructor
+  public static final class SourceUser {
+    private String firstName;
+    private String lastName;
+    private String email;
   }
 }

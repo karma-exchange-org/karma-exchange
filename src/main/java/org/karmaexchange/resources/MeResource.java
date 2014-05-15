@@ -39,7 +39,7 @@ public class MeResource {
   private Request request;
 
   public MeResource() {
-    if (UserService.isNotLoggedInUser()) {
+    if (!UserService.isCurrentUserLoggedIn()) {
       throw ErrorResponseMsg.createException("Login required", ErrorInfo.Type.LOGIN_REQUIRED);
     }
     // Make sure the current user is created any time the me resource is accessed;

@@ -26,6 +26,7 @@ import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 import org.karmaexchange.task.ProcessRatingsServlet;
 import org.karmaexchange.util.BoundedHashSet;
 import org.karmaexchange.util.SearchUtil;
+import org.karmaexchange.util.UserService;
 import org.karmaexchange.util.derived.SourceEventSyncUtil;
 
 import lombok.Data;
@@ -224,7 +225,7 @@ public final class Event extends BaseEvent<Event> {
     }
     initParticipantLists();
     // Add the current user as an organizer if there are no organizers registered.
-    if (organizers.isEmpty()) {
+    if (organizers.isEmpty() && UserService.isCurrentUserLoggedIn()) {
       Iterables.removeIf(participants, EventParticipant.userPredicate(getCurrentUserKey()));
       participants.add(EventParticipant.create(getCurrentUserKey(), ParticipantType.ORGANIZER));
       initParticipantLists();

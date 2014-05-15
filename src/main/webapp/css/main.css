@@ -833,6 +833,14 @@ img.kex-thumbnail-user-mini {
   max-width: 409px;
 }
 
+.edit-profile legend {
+  margin-top: 10px;
+}
+
+.edit-profile .form-actions {
+  margin-top: 20px;
+}
+
 /*
  * Goal tracking
  */
