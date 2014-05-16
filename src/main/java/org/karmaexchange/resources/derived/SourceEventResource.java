@@ -2,18 +2,19 @@ package org.karmaexchange.resources.derived;
 
 import static org.karmaexchange.util.OfyService.ofy;
 
+import java.util.List;
+
+import javax.annotation.Nullable;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.Data;
 
@@ -43,57 +44,38 @@ public class SourceEventResource {
 
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
-  public Response upsertResource(
+  public void syncEvents(
       @QueryParam("org_key") String orgKeyStr,
       @QueryParam("org_secret") String orgSecret,
-      SourceEvent sourceEvent) {
+      List<EventSyncRequest> syncRequests) {
     Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
-    validateOrgSecret(orgKey, orgSecret);
-
-    UpsertAdminSubtask upsertTask = new UpsertAdminSubtask(sourceEvent, orgKey);
-    AdminUtil.executeSubtaskAsAdmin(
-      AdminTaskType.SOURCE_EVENT_UPDATE, upsertTask);
-    return upsertTask.response;
-  }
-
-  @Data
-  private class UpsertAdminSubtask implements AdminSubtask {
-
-    private final SourceEvent sourceEvent;
-    private final Key<Organization> orgKey;
-    private Response response;
-
-    @Override
-    public void execute() {
-      // Note that converting an event may result in user objects being created for some of
-      // the participants. The users need to be persisted ahead of time to enable keys to the users
-      // to be stored in the event.
-      Event event = sourceEvent.toEvent(orgKey);
-
-      // TODO(avaliani): fix return key. Currently it contains derived in the path.
-      response = getEventResource().upsertResource(new EventView(event, false));
-    }
-  }
-
-  @Path("{source_key}")
-  @DELETE
-  public void deleteResource(
-      final @PathParam("source_key") String sourceKey,
-      @QueryParam("org_key") String orgKeyStr,
-      @QueryParam("org_secret") String orgSecret) {
-    final Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
     validateOrgSecret(orgKey, orgSecret);
 
     AdminUtil.executeSubtaskAsAdmin(
       AdminTaskType.SOURCE_EVENT_UPDATE,
-      new AdminSubtask() {
+      new SyncEventsAdminSubtask(syncRequests, orgKey));
+  }
 
-        @Override
-        public void execute() {
-          getEventResource().deleteResource(SourceEvent.createKey(orgKey, sourceKey));
-        }
+  @Data
+  private class SyncEventsAdminSubtask implements AdminSubtask {
 
-      });
+    private final List<EventSyncRequest> syncRequests;
+    private final Key<Organization> orgKey;
+
+    @Override
+    public void execute() {
+      // TODO(avaliani): Optimize this by doing a batch upsert / delete.
+      for (EventSyncRequest syncRequest : syncRequests) {
+          if (syncRequest.action == EventSyncRequest.Action.UPSERT) {
+            Event event = syncRequest.sourceEvent.toEvent(orgKey);
+            getEventResource().upsertResource(
+              new EventView(event, false));
+          } else {
+            getEventResource().deleteResource(
+              SourceEvent.createKey(orgKey, syncRequest.sourceKey));
+          }
+      }
+    }
   }
 
   private static void validateOrgSecret(Key<Organization> orgKey, String orgSecret) {
@@ -112,5 +94,31 @@ public class SourceEventResource {
 
   private EventResource getEventResource() {
     return new EventResource(uriInfo, request, servletContext);
+  }
+
+  @XmlRootElement
+  @Data
+  public static class EventSyncRequest {
+    public enum Action {
+      UPSERT,
+      DELETE
+    }
+
+    private Action action;
+
+    /**
+     * Source db key of the event being synchronized. Non-null for the DELETE action.
+     */
+    @Nullable
+    private String sourceKey;
+
+    /**
+     * Source db event of being synchronized. Non-null for the UPSERT action.
+     */
+    @Nullable
+    private SourceEvent sourceEvent;
+
+    public void execute(Key<Organization> orgKey) {
+    }
   }
 }
