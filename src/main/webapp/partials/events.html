@@ -54,16 +54,16 @@
 
         <div class="results-div">
 
-            <div ng-show="eventSearchTracker.isPending()">
+            <div ng-hide="pagedEvents.firstPageProcessed">
                 <loading-message msg="karma opportunities"></loading-message>
             </div>
 
-            <div ng-show="(events.data.length == 0) && !eventSearchTracker.isPending()">
+            <div ng-show="(pagedEvents.elements.length == 0) && pagedEvents.firstPageProcessed">
                 <h4><em>No <span ng-show="query.length > 0">matching </span> upcoming events</em></h4>
             </div>
 
-            <ul class="list-unstyled results upcoming-events" ng-hide="eventSearchTracker.isPending()">
-                <li ng-repeat="event in events.data" id="event_{{event.key}}">
+            <ul class="list-unstyled results upcoming-events" ng-show="(pagedEvents.elements.length > 0) && pagedEvents.firstPageProcessed">
+                <li ng-repeat="event in pagedEvents.elements" id="event_{{event.key}}">
 
                     <div>
                         <h4 ng-show="event.showHeader" class="date">
@@ -216,6 +216,15 @@
 
                 </li>
             </ul>
+
+
+            <div class="show-more" ng-show="pagedEvents.firstPageProcessed && pagedEvents.hasMore">
+                <button class="btn btn-default btn-sm"
+                    btn-loading="pagedEvents.isProcessing"
+                    data-loading-text="Processing..."
+                    ng-click="pagedEvents.fetchNextPage()">See more
+                </button>
+            </div>
 
         </div>
 
