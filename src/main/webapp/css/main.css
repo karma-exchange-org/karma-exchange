@@ -367,6 +367,11 @@ table>tbody>tr>td.table-cell-align-middle {
   padding-right: 15px;
 }
 
+.event-search .show-more {
+  padding: 10px;
+  text-align: center;
+}
+
 .upcoming-events .panel-body .collapse-upwards-tab {
   margin-bottom: -15px;
 }

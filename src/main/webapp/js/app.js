@@ -752,9 +752,59 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
         this._elements.orderedInsertExt(element, this._orderCb);
     }
 
+    function PagedElementView(resultPromise, processElementCb, pageLimit) {
+        this._elementSource =
+            new PagedElementSource(resultPromise, processElementCb);
+        this.pageLimit = pageLimit;
+        this._displayLimit = pageLimit;
+        this.elements = [];
+        this.hasMore = false;
+        this.firstPageProcessed = false;
+        this.isProcessing = true;
+        this._updateView();
+    }
+
+    PagedElementView.prototype._updateView = function() {
+        if (this.elements.length < this._displayLimit) {
+            this._elementSource.pop().then(
+                angular.bind(this, function(element) {
+                    if (element == null) {
+                        this._updateHasMore();
+                    } else {
+                        this.elements.push(element);
+                        // Recurse to display the next element.
+                        return this._updateView();
+                    }
+                }));
+        } else {
+            this._updateHasMore();
+        }
+    }
+
+    PagedElementView.prototype._updateHasMore = function() {
+        this._elementSource.peek().then(
+            angular.bind(this, function(element) {
+                this.isProcessing = false;
+                this.firstPageProcessed = true;
+                this.hasMore = (element != null);
+            }));
+    }
+
+    PagedElementView.prototype.fetchNextPage = function() {
+        if (!this.isProcessing) {
+            this._displayLimit += this.pageLimit;
+            this.isProcessing = true;
+            this._updateView();
+        }
+    }
+
     return {
         createPagedElementSource: function(resultPromise, processResultCb) {
             return new PagedElementSource(resultPromise, processResultCb);
+        },
+
+        createPagedElementView: function(resultPromise, processElementCb, pageLimit) {
+            return new PagedElementView(resultPromise, processElementCb, pageLimit);
         },
 
         createCompositeElementSource: function(elementSource1, elementSource2, resultOrderCb) {
@@ -2186,7 +2236,7 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
                             }
 
                             // Recurse to display the next element.
-                            updateDisplayableEvents();
+                            return updateDisplayableEvents();
                         }
                     });
                 } else {
@@ -3121,7 +3171,8 @@ var createOrgCtrl = function ($scope, $modalInstance) {
 };
 var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, KexUtil,
         EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q, Geocoder, $log,
-        SnapshotServiceHandshake, SessionManager ) {
+        SnapshotServiceHandshake, SessionManager, ElementSourceFactory ) {
+    var EVENTS_PER_PAGE = 20;
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
     $scope.SessionManager = SessionManager;
@@ -3136,7 +3187,12 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         SnapshotServiceHandshake.snapshot();
     });
 
+    var now, prevEventDate;
+
     $scope.reset = function( ) {
+        now = new Date();
+        prevEventDate = new Date( 1001, 1, 1, 1, 1, 1, 0 );
+
         var eventSearchDef = eventSearchRecyclablePromise.recycle();
         $scope.eventSearchTracker.reset(eventSearchDef.promise);
         Events.get(
@@ -3144,32 +3200,34 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
                 keywords: ($scope.query ? $scope.query : ""),
                 distance: $scope.locationSearch.selectedDistance,
                 lat: $scope.locationSearch.selectedLocation.latitude,
-                lng: $scope.locationSearch.selectedLocation.longitude
+                lng: $scope.locationSearch.selectedLocation.longitude,
+                limit: EVENTS_PER_PAGE + 1
             },
             function(value) {
-                processEvents(value);
-                eventSearchDef.resolve();
+                eventSearchDef.resolve(value);
             },
             function() {
                 eventSearchDef.reject();
             });
+        $scope.pagedEvents = ElementSourceFactory.createPagedElementView(
+            eventSearchDef.promise, processEvent, EVENTS_PER_PAGE);
     };
-    function processEvents(value) {
-        $scope.events = value;
-        var now = new Date();
-        var currentDate = new Date( 1001, 1, 1, 1, 1, 1, 0 );
-        for (var idx = 0; idx < $scope.events.data.length; idx++) {
-            var event = $scope.events.data[idx];
-            var dateVal = new Date(event.startTime);
-            var showHeader = (dateVal.getDate() != currentDate.getDate()) ||
-                (dateVal.getMonth() != currentDate.getMonth()) ||
-                (dateVal.getFullYear() != currentDate.getFullYear());
-            currentDate = dateVal;
-            event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
-            event.showHeader = showHeader;
-            event.isCollapsed = true;
+
+    function processEvent(event) {
+        var dateVal = new Date(event.startTime);
+        var showHeader = (dateVal.getDate() != prevEventDate.getDate()) ||
+            (dateVal.getMonth() != prevEventDate.getMonth()) ||
+            (dateVal.getFullYear() != prevEventDate.getFullYear());
+        prevEventDate = dateVal;
+        event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
+        event.showHeader = showHeader;
+        event.isCollapsed = true;
+
+        if (event.key == getRouteExpandedEventKey()) {
+            toggleEvent(event);
         }
-        expandEventOnReset();
+
+        return event;
     }
 
     var query = undefined;
@@ -3268,25 +3326,21 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     };
     $scope.expandEvent = function() {
         if (this.event.isCollapsed) {
-            toggleEventByKey(this.event.key);
+            toggleEvent(this.event);
         }
     };
     $scope.collapseEvent = function($event) {
         if (!this.event.isCollapsed) {
             $event.stopPropagation();
-            toggleEventByKey(this.event.key);
+            toggleEvent(this.event);
         }
     };
 
-    function expandEventOnReset() {
-        if ($routeParams.expand) {
-            toggleEventByKey($routeParams.expand);
-        }
+    function getRouteExpandedEventKey() {
+        return $routeParams.expand;
     }
 
-    function toggleEventByKey(eventKey) {
-        var event = findEventByKey(eventKey);
-
+    function toggleEvent(event) {
         if (event) {
             event.isCollapsed = !event.isCollapsed;
 
@@ -3309,8 +3363,9 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     }
 
     function findEventByKey(eventKey) {
-        for (var idx = 0; idx < $scope.events.data.length; idx++) {
-            var eventAtIdx = $scope.events.data[idx];
+        var events = $scope.pagedEvents.elements;
+        for (var idx = 0; idx < events.length; idx++) {
+            var eventAtIdx = events[idx];
             if (eventAtIdx.key === eventKey) {
                 return eventAtIdx;
             }
