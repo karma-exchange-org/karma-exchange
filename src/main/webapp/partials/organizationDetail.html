@@ -163,16 +163,10 @@
                     Upcoming Events
                 </tab-heading>
 
-                <div ng-show="upcomingEventsFetchTracker.isPending()">
-                    <loading-message msg="upcoming events" class="in-tab"></loading-message>
-                </div>
-
-                <div ng-show="!upcomingEventsFetchTracker.isPending()">
-                    <upcoming-events
-                        events="upcomingEvents"
-                        search-type="'ORG'">
-                    </upcoming-events>
-                </div>
+                <upcoming-events
+                    visible="loadUpcomingEventsTab"
+                    org="org">
+                </upcoming-events>
 
             </tab>
             <tab active="tabs.calendar.active" select="tabManager.select('calendar')">
@@ -182,11 +176,11 @@
                     Calendar
                 </tab-heading>
 
-                <div ng-show="upcomingEventsFetchTracker.isPending()">
+                <div ng-show="calendarEventsFetchTracker.isPending()">
                     <loading-message msg="event calendar" class="in-tab"></loading-message>
                 </div>
 
-                <div ng-show="!upcomingEventsFetchTracker.isPending()">
+                <div ng-show="!calendarEventsFetchTracker.isPending()">
                     <!-- <div full-calendar events="events"></div> -->
                     <div class="calendar"
                         ng-model="calendarEventSources"
