@@ -219,16 +219,10 @@
                     Upcoming Events
                 </tab-heading>
 
-                <div ng-show="upcomingEventsFetchTracker.isPending()">
-                    <loading-message msg="upcoming events" class="in-tab"></loading-message>
-                </div>
-
-                <div ng-show="!upcomingEventsFetchTracker.isPending()">
-                    <upcoming-events
-                        events="events"
-                        search-type="'USER'">
-                    </upcoming-events>
-                </div>
+                <upcoming-events
+                    visible="loadUpcomingEventsTab"
+                    user="me">
+                </upcoming-events>
 
             </tab>
         </tabset>

@@ -367,7 +367,8 @@ table>tbody>tr>td.table-cell-align-middle {
   padding-right: 15px;
 }
 
-.event-search .show-more {
+.event-search .show-more,
+.upcoming-events .show-more {
   padding: 10px;
   text-align: center;
 }

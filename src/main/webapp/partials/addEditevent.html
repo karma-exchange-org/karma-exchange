@@ -485,7 +485,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
                     </li>
                     <li></li>
                 </ul>
-                <button class="btn btn-link" ng-show="event.eventOrganizers.length-eventOrganizers.data.length>0" ng-click="getMore('ORGANIZER');">See more ({{event.eventOrganizers.length-eventOrganizers.data.length}})</button>
+                <button class="btn btn-link" ng-show="event.eventOrganizers.length-eventOrganizers.data.length>0" ng-click="getMore('ORGANIZER');">Show more ({{event.eventOrganizers.length-eventOrganizers.data.length}})</button>
                 </p>
 
 
@@ -506,7 +506,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
                             <li></li>
 
                         </ul>
-                        <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button>
+                        <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">Show more ({{event.registeredUsers.length-eventRegistered.data.length}})</button>
                 </p>
 
 
@@ -525,7 +525,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
                             <li></li>
 
                         </ul>
-                        <button class="btn btn-link" ng-show="event.waitListedUsers.length-eventWaitListed.data.length>0" ng-click="getMore('WAIT_LISTED');">See more ({{event.waitListedUsers.length-eventWaitListed.data.length}})</button>
+                        <button class="btn btn-link" ng-show="event.waitListedUsers.length-eventWaitListed.data.length>0" ng-click="getMore('WAIT_LISTED');">Show more ({{event.waitListedUsers.length-eventWaitListed.data.length}})</button>
                 </p>
 
 
@@ -549,7 +549,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
             <li></li>
 
         </ul>
-        <!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
+        <!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED');">Show more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
     </div>
     <div class="col-md-3" ng-hide="eventNoShow.data.length==0"><h4>No-show ({{eventNoShow.data.length}})</h4>
         <hr>
@@ -568,7 +568,7 @@ Date.prototype.format=function(format){var returnStr='';var replace=Date.replace
             <li></li>
 
         </ul>
-        <!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED_NO_SHOW');">See more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
+        <!-- <button class="btn btn-link" ng-show="event.registeredUsers.length-eventRegistered.data.length>0" ng-click="getMore('REGISTERED_NO_SHOW');">Show more ({{event.registeredUsers.length-eventRegistered.data.length}})</button> -->
     </div>
     </tab>
 </tabset>

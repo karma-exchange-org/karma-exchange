@@ -2113,7 +2113,7 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
             scope.EventUtil = EventUtil;
             scope.KexUtil = KexUtil;
 
-            var PAGE_LIMIT = 10;
+            var PAGE_LIMIT = 20;
 
             var setupDef = $q.defer();
             scope.timelineSetupTracker = new PromiseTracker(setupDef.promise);
@@ -2197,7 +2197,7 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
 
                     // Merge any dynamicly created events to the paged input queue. We use
                     // this to ensure that events don't show up between other events when
-                    // someone clicks "see more".
+                    // someone clicks "show more".
                     scope.pagedResult = ElementSourceFactory.createCompositeElementSource(
                         scope.pagedResult, userCreatedEventsSource, eventDisplayOrderCmp);
 
@@ -2506,19 +2506,72 @@ kexApp.directive('leaderboardTable', function() {
     };
 });
 
-kexApp.directive('upcomingEvents', function(KexUtil) {
+kexApp.directive('upcomingEvents', function(KexUtil, ElementSourceFactory, $q, User, Events) {
     return {
         restrict: 'E',
         scope: {
-            events: '=',
-            searchType: '='
+            org: '=',
+            user: '=',
+            visible: '='
         },
         replace: true,
         transclude: false,
+        templateUrl: 'template/kex/upcoming-events.html',
         link: function (scope, element, attrs) {
             scope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);
-        },
-        templateUrl: 'template/kex/upcoming-events.html'
+
+            var EVENTS_PER_PAGE = 20;
+
+            var setupDef = $q.defer();
+
+            var loaded = false;
+            scope.$watch('visible', fetchUpcomingEvents);
+            scope.$watch('user', fetchUpcomingEvents);
+            scope.$watch('org', fetchUpcomingEvents);
+
+            var now = new Date();
+            var prevEventDate = new Date( 1001, 1, 1, 1, 1, 1, 0 );
+
+            function fetchUpcomingEvents() {
+                if (!loaded && scope.visible && (scope.user || scope.org)) {
+                    loaded = true;
+                    setupDef.resolve();
+
+                    var eventsPromise;
+                    if (scope.user) {
+                        scope.searchType = 'USER';
+                        eventsPromise = User.get(
+                            {
+                                type: "UPCOMING",
+                                id: scope.user.key,
+                                resource: 'event',
+                                limit: EVENTS_PER_PAGE + 1
+                            });
+                    } else {
+                        scope.searchType = 'ORG';
+                        eventsPromise = Events.get(
+                            {
+                                type: "UPCOMING",
+                                keywords: "org:" + scope.org.searchTokenSuffix,
+                                limit: EVENTS_PER_PAGE + 1
+                            });
+                    }
+                    scope.pagedEvents = ElementSourceFactory.createPagedElementView(
+                        eventsPromise, processEvent, EVENTS_PER_PAGE);
+                }
+            }
+
+            function processEvent(event) {
+                var dateVal = new Date(event.startTime);
+                var showHeader = (dateVal.getDate() != prevEventDate.getDate()) ||
+                    (dateVal.getMonth() != prevEventDate.getMonth()) ||
+                    (dateVal.getFullYear() != prevEventDate.getFullYear());
+                prevEventDate = dateVal;
+                event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
+                event.showHeader = showHeader;
+                return event;
+            }
+        }
     };
 });
 
@@ -2748,8 +2801,6 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     tabManager.init();
     $scope.tabs = tabManager.tabs;
 
-    $scope.upcomingEventsFetchTracker = new PromiseTracker();
-
     var profileLoadedDef = $q.defer();
 
     profileLoadedDef.promise.then( function(user) {
@@ -2762,7 +2813,6 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     function load() {
         if ($location.path() == "/me") {
             $scope.who = 'My';
-            $scope.upcomingEventsFetchTracker.track(MeUtil.me());
             MeUtil.me().then(function(meObj) {
                 $scope.me = meObj;
                 $scope.userKey = $scope.me.key;
@@ -2833,17 +2883,8 @@ var meViewCtrl = function($scope, $location, User, Me, $rootScope, $routeParams,
     }
 
     function loadUpcomingTab() {
-        if (!$scope.upcomingTabLoaded && $scope.userKey) {
-            $scope.upcomingTabLoaded = true;
-            var upcomingEventsPromise = User.get(
-                {
-                    id: $scope.userKey,
-                    resource: 'event'
-                },
-                function(result) {
-                    $scope.events = result;
-                });
-            $scope.upcomingEventsFetchTracker.track(upcomingEventsPromise);
+        if (!$scope.loadUpcomingEventsTab && $scope.meLoaded) {
+            $scope.loadUpcomingEventsTab = true;
         }
     }
 
@@ -2999,7 +3040,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
             tabManager.reloadActiveTab();
         });
 
-    $scope.upcomingEventsFetchTracker = new PromiseTracker(orgPromise);
+    $scope.calendarEventsFetchTracker = new PromiseTracker(orgPromise);
     $scope.topVolunteersFetchTracker = new PromiseTracker(orgPromise);
 
     Org.get(
@@ -3018,7 +3059,9 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     }
 
     function loadUpcomingTab() {
-        loadUpcomingEvents();
+        if (!$scope.loadUpcomingEventsTab && $scope.orgLoaded) {
+            $scope.loadUpcomingEventsTab = true;
+        }
     }
 
     function loadCalendarTab() {
@@ -3031,27 +3074,28 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
             // calendar directive to execute.
             $scope.eventCalendar.fullCalendar('render');
         }
-        if ($scope.upcomingEventsLoaded) {
+        if ($scope.calendarEventsLoaded) {
             renderCalendar();
         } else {
             // TODO(avaliani): investigate why deep watch doesn't auto render.
-            loadUpcomingEvents(renderCalendar);
+            loadCalendarEvents(renderCalendar);
         }
     }
 
-    function loadUpcomingEvents(action) {
-        if (!$scope.upcomingEventsLoaded && $scope.orgLoaded) {
-            $scope.upcomingEventsLoaded = true;
-            var upcomingEventsPromise = Events.get(
+    function loadCalendarEvents(action) {
+        if (!$scope.calendarEventsLoaded && $scope.orgLoaded) {
+            $scope.calendarEventsLoaded = true;
+            // TODO(avaliani): technically calendar events should be fetched
+            //   for the entire month being displayed. Past and future. So
+            //   this code needs to be revisited.
+            var calendarEventsPromise = Events.get(
                 {
                     type: "UPCOMING",
                     keywords: "org:" + $scope.org.searchTokenSuffix
                 },
                 function(result) {
-                    $scope.upcomingEvents = result;
-
                     var calendarEvents = [];
-                    angular.forEach($scope.upcomingEvents.data, function(event) {
+                    angular.forEach(result.data, function(event) {
                         calendarEvents.push({
                             title: event.title,
                             start: (new Date(event.startTime)),
@@ -3066,7 +3110,7 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                         action();
                     }
                 });
-            $scope.upcomingEventsFetchTracker.track(upcomingEventsPromise);
+            $scope.calendarEventsFetchTracker.track(calendarEventsPromise);
         }
     }
 

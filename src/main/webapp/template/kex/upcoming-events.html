@@ -1,17 +1,20 @@
-<div>
-    <div class="row row-no-margin" ng-show="events.data.length == 0">
-        <div class="col-md-12">
-            <h4><em>No upcoming events</em></h4>
+<div class="upcoming-events row row-no-margin">
+    <div class="col-md-9">
+        <div ng-hide="pagedEvents.firstPageProcessed">
+            <loading-message msg="upcoming events" class="in-tab"></loading-message>
         </div>
-    </div>
 
-    <div class="row row-no-margin upcoming-events" ng-repeat="event in events.data">
-        <div class="col-md-9">
+        <div class="row row-no-margin" ng-show="(pagedEvents.elements.length == 0) && pagedEvents.firstPageProcessed">
+            <div class="col-md-12">
+                <h4><em>No upcoming events</em></h4>
+            </div>
+        </div>
 
-            <h4 class="date">
-                    {{ event.startTime | date:'EEEE, MMM d, y' }}
+        <div ng-repeat="event in pagedEvents.elements">
+
+            <h4 ng-show="event.showHeader" class="date">
+                    {{ event.startTime | date:event.dateFormat }}
             </h4>
-
 
             <div class="panel panel-default panel-clickable" ng-click="setLocation('#!/event/' + event.key)">
                 <div class="panel-body">
@@ -50,5 +53,15 @@
             </div>
 
         </div>
+
+        <div class="show-more" ng-show="pagedEvents.firstPageProcessed && pagedEvents.hasMore">
+            <button class="btn btn-default btn-sm"
+                btn-loading="pagedEvents.isProcessing"
+                data-loading-text="Processing..."
+                ng-click="pagedEvents.fetchNextPage()">Show more
+            </button>
+        </div>
+
     </div>
+
 </div>
