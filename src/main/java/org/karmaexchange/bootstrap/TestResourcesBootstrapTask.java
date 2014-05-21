@@ -790,7 +790,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       SourceEventGeneratorInfo eventSourceConfig = new SourceEventGeneratorInfo(
         Key.create(orgDao),
         "x",
-        "https://kex-developer-edition.na15.force.com/services/apexrest/registration");
+        "kex-developer-edition.na15.force.com");
       BaseDao.upsert(eventSourceConfig);
     }
     // The org is created without any memberships to start with.

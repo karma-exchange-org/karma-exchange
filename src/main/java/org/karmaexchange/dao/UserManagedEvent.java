@@ -33,20 +33,17 @@ public final class UserManagedEvent
   protected void preProcessInsert() {
     super.preProcessInsert();
     validateEvent();
-    initKarmaPoints();
   }
 
   @Override
   protected void processUpdate(UserManagedEvent prevObj) {
     super.processUpdate(prevObj);
     validateEvent();
-    initKarmaPoints();
   }
 
   private void validateEvent() {
     List<ValidationError> validationErrors = Lists.newArrayList();
 
-    validateBaseEvent(validationErrors);
     if (owner == null) {
       validationErrors.add(new ResourceValidationError(
         this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "owner"));

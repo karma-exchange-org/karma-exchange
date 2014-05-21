@@ -1,5 +1,6 @@
 package org.karmaexchange.util;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.helper.StringUtil;
 import org.jsoup.nodes.Document;
@@ -17,7 +18,20 @@ import org.jsoup.select.NodeVisitor;
 public class HtmlUtil {
 
   /**
-   * Format an HTML string to plain-text.
+   * Convert a plain-text string to an HTML string.
+   *
+   * @param palinText a string containing plain text characters
+   * @return formatted text
+   */
+  public static String toHtml(String plainText) {
+    // Escape any html chars.
+    String htmlCharsEscaped = StringEscapeUtils.escapeHtml(plainText);
+    // Preserve newlines.
+    return htmlCharsEscaped.replaceAll("\n", "<br>");
+  }
+
+  /**
+   * Convert an HTML string to a plain-text string.
    *
    * @param htmlStr a string containing HTML markup
    * @return formatted text

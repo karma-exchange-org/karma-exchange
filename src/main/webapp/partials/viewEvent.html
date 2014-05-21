@@ -1,4 +1,4 @@
-<div class="container vertical-panel-padding">
+<div class="container vertical-panel-padding event-details">
 
 <div class="row">
     <div class="col-md-9 col-sm-12">
@@ -181,7 +181,9 @@
         <div class="row panel-seperated-vertical">
             <div class="col-md-12">
                 <tabset>
-                    <tab active="tabs.details.active" disabled="tabs.details.disabled" select="tabManager.select('details')">
+                    <tab active="tabs.details.active"
+                         disabled="tabs.details.disabled"
+                         select="tabManager.select('details')">
                         <tab-heading>
                             <i class="icon-list"></i> Details
                         </tab-heading>
@@ -190,7 +192,7 @@
                             <loading-message msg="event" class="in-tab"></loading-message>
                         </div>
 
-                        <div class="panel panel-default panel-no-margin" ng-show="event.title">
+                        <div class="panel panel-default panel-no-margin description-panel" ng-show="event.title">
                             <div class="panel-body">
 
                                 <div ng-show="event.description" class="event-description-sub-panel">
@@ -200,7 +202,7 @@
                                         </strong>
                                     </h4>
 
-                                    <span ng-bind-html-unsafe="event.description | textToHtml">
+                                    <span ng-bind-html-unsafe="event.descriptionHtml">
                                     </span>
                                 </div>
                                 <div ng-show="event.specialInstructions" class="event-description-sub-panel">

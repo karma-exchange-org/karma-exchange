@@ -235,7 +235,6 @@ public final class Event extends BaseEvent<Event> {
 
     validateEvent();
 
-    initKarmaPoints();
     rating = IndexedAggregateRating.create();
     initDerivedRatings();
     // The list of associated organizations is consumed by initSearchableTokens(), so the
@@ -269,8 +268,6 @@ public final class Event extends BaseEvent<Event> {
 
     // Do event validation that is specific to event updates.
     validateEventUpdate(prevObj);
-
-    initKarmaPoints();
   }
 
   private void processParticipantMutation(EventParticipant updatedParticipant,
@@ -472,8 +469,6 @@ public final class Event extends BaseEvent<Event> {
 
   private void validateEvent() {
     List<ValidationError> validationErrors = Lists.newArrayList();
-
-    validateBaseEvent(validationErrors);
 
     // Managed events require a location
     if ((location == null) || (location.getAddress() == null) ||

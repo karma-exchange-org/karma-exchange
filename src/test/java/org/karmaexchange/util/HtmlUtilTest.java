@@ -7,6 +7,20 @@ import org.junit.Test;
 public class HtmlUtilTest {
 
   @Test
+  public void testToHtml() {
+    String plainTextStr = "Hello.\nThis isn't a complicated test.\nI hope this works!\n";
+    assertEquals("Hello.<br>This isn't a complicated test.<br>I hope this works!<br>",
+      HtmlUtil.toHtml(plainTextStr));
+  }
+
+  @Test
+  public void testToHtmAdvancedl() {
+    String plainTextStr = "Hello.\nThis is an <advanced></advanced> test.\n";
+    assertEquals("Hello.<br>This is an &lt;advanced&gt;&lt;/advanced&gt; test.<br>",
+      HtmlUtil.toHtml(plainTextStr));
+  }
+
+  @Test
   public void testToPlainTextNoHtml() {
     String plainTextStr = "Hello this isn't a complicated test. I hope this works!";
     assertEquals(plainTextStr, HtmlUtil.toPlainText(plainTextStr));

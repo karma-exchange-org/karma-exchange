@@ -596,6 +596,10 @@ img.kex-thumbnail-user-mini {
  * Event view details tabs
  */
 
+.event-details .description-panel .panel-body {
+  font-size: 14px;
+}
+
 .event-description-sub-panel {
   margin-bottom: 20px;
 }

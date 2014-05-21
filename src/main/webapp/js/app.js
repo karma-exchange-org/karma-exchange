@@ -2108,6 +2108,7 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
         },
         replace: true,
         transclude: false,
+        templateUrl: 'template/kex/impact-timeline.html',
         link: function (scope, element, attrs) {
             scope.FbUtil = FbUtil;
             scope.EventUtil = EventUtil;
@@ -2402,8 +2403,7 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
                     });
             }
 
-        },
-        templateUrl: 'template/kex/impact-timeline.html'
+        }
     };
 });
 

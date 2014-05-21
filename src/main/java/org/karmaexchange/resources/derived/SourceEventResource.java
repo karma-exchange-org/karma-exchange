@@ -49,47 +49,49 @@ public class SourceEventResource {
       @QueryParam("org_secret") String orgSecret,
       List<EventSyncRequest> syncRequests) {
     Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
-    validateOrgSecret(orgKey, orgSecret);
+    SourceEventGeneratorInfo sourceInfo = validateOrgSecret(orgKey, orgSecret);
 
     AdminUtil.executeSubtaskAsAdmin(
       AdminTaskType.SOURCE_EVENT_UPDATE,
-      new SyncEventsAdminSubtask(syncRequests, orgKey));
+      new SyncEventsAdminSubtask(syncRequests, sourceInfo));
   }
 
   @Data
   private class SyncEventsAdminSubtask implements AdminSubtask {
 
     private final List<EventSyncRequest> syncRequests;
-    private final Key<Organization> orgKey;
+    private final SourceEventGeneratorInfo sourceInfo;
 
     @Override
     public void execute() {
       // TODO(avaliani): Optimize this by doing a batch upsert / delete.
       for (EventSyncRequest syncRequest : syncRequests) {
           if (syncRequest.action == EventSyncRequest.Action.UPSERT) {
-            Event event = syncRequest.sourceEvent.toEvent(orgKey);
+            Event event = syncRequest.sourceEvent.toEvent(sourceInfo);
             getEventResource().upsertResource(
               new EventView(event, false));
           } else {
             getEventResource().deleteResource(
-              SourceEvent.createKey(orgKey, syncRequest.sourceKey));
+              SourceEvent.createKey(sourceInfo, syncRequest.sourceKey));
           }
       }
     }
   }
 
-  private static void validateOrgSecret(Key<Organization> orgKey, String orgSecret) {
-    SourceEventGeneratorInfo config =
+  private static SourceEventGeneratorInfo validateOrgSecret(Key<Organization> orgKey,
+      String orgSecret) {
+    SourceEventGeneratorInfo sourceInfo =
         ofy().load().key(SourceEventGeneratorInfo.createKey(orgKey)).now();
-    if (config == null) {
+    if (sourceInfo == null) {
       throw ErrorResponseMsg.createException(
         "organization is not configured to support derived events", ErrorInfo.Type.BAD_REQUEST);
     }
-    if (!config.getSecret().equals(orgSecret)) {
+    if (!sourceInfo.getSecret().equals(orgSecret)) {
       throw ErrorResponseMsg.createException(
         "event source authentication credentials are not valid",
         ErrorInfo.Type.AUTHENTICATION);
     }
+    return sourceInfo;
   }
 
   private EventResource getEventResource() {
