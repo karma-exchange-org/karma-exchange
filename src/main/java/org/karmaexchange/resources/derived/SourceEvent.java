@@ -31,6 +31,7 @@ import org.karmaexchange.dao.Event.SourceEventInfo;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.User.RegisteredEmail;
+import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
 import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
@@ -39,6 +40,7 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.GeocodingService;
 import org.karmaexchange.util.HtmlUtil;
+import org.karmaexchange.util.SalesforceUtil;
 
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.common.collect.Lists;
@@ -65,17 +67,19 @@ public class SourceEvent {
   @Setter(AccessLevel.NONE)
   private Event event = new Event();
 
-  public Event toEvent(Key<Organization> orgKey) {
-    validate(orgKey);
-    if (event.getDescription() != null) {
-      event.setDescription(HtmlUtil.toPlainText(event.getDescription()).trim());
+  public Event toEvent(SourceEventGeneratorInfo sourceInfo) {
+    validate(sourceInfo.getOrgKey());
+    if (event.getDescriptionHtml() != null) {
+      event.setDescriptionHtml(
+        SalesforceUtil.processRichTextField(event.getDescriptionHtml(), sourceInfo));
     }
     if (event.getLocation() != null) {
       Location loc = event.getLocation();
       if (loc.getTitle() != null) {
-        loc.setTitle(HtmlUtil.toPlainText(loc.getTitle()).trim());
+        loc.setTitle(loc.getTitle().trim());
       }
       if (loc.getDescription() != null) {
+        // TODO(avlaiani): support html and non html location description
         loc.setDescription(HtmlUtil.toPlainText(loc.getDescription()).trim());
       }
       Address addr = loc.getAddress();
@@ -88,7 +92,8 @@ public class SourceEvent {
         }
       }
     }
-    event.setOwner(SourceEventNamespaceDao.createKey(orgKey, sourceKey).getString());
+    event.setOwner(
+      SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceKey).getString());
     event.setId(EVENT_ID);
     event.setSourceEventInfo(new SourceEventInfo(sourceKey));
     mapSourceParticipants();
@@ -124,9 +129,9 @@ public class SourceEvent {
     event.setParticipants(participants);
   }
 
-  public static Key<Event> createKey(Key<Organization> orgKey, String sourceKey) {
+  public static Key<Event> createKey(SourceEventGeneratorInfo sourceInfo, String sourceKey) {
     return Key.<Event>create(
-      SourceEventNamespaceDao.createKey(orgKey, sourceKey),
+      SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceKey),
       Event.class,
       EVENT_ID);
   }
@@ -144,6 +149,14 @@ public class SourceEvent {
     if (!KeyWrapper.toKey(event.getOrganization()).equals(orgKey)) {
       throw ErrorResponseMsg.createException(
         "organization field does not match specified organization",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+
+    // This restriction is to simplify the code. In the future we can support a mix of
+    // descriptions.
+    if (event.getDescription() != null) {
+      throw ErrorResponseMsg.createException(
+        "only an html description can be specified for derived events",
         ErrorInfo.Type.BAD_REQUEST);
     }
 

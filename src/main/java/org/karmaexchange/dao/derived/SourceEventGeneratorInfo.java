@@ -8,6 +8,7 @@ import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Permission;
+import org.karmaexchange.util.SalesforceUtil;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -30,13 +31,21 @@ public class SourceEventGeneratorInfo extends IdBaseDao<SourceEventGeneratorInfo
   private static final long EVENT_SOURCE_ID = 1;
 
   private String secret;
-  private String registrationUrl;
+  private String domain;
 
-  public SourceEventGeneratorInfo(Key<Organization> orgKey, String secret, String registrationUrl) {
+  public SourceEventGeneratorInfo(Key<Organization> orgKey, String secret, String domain) {
     owner = orgKey;
     id = EVENT_SOURCE_ID;
     this.secret = secret;
-    this.registrationUrl = registrationUrl;
+    this.domain = domain;
+  }
+
+  public Key<Organization> getOrgKey() {
+    return Key.create(owner.getString());
+  }
+
+  public String getRegistrationUrl() {
+    return "https://" + domain + SalesforceUtil.REGISTRATION_API_PATH;
   }
 
   @Override
