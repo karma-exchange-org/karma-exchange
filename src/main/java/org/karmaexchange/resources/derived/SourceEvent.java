@@ -31,7 +31,7 @@ import org.karmaexchange.dao.Event.SourceEventInfo;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.User.RegisteredEmail;
-import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
+import org.karmaexchange.dao.derived.EventSourceInfo;
 import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
@@ -67,7 +67,7 @@ public class SourceEvent {
   @Setter(AccessLevel.NONE)
   private Event event = new Event();
 
-  public Event toEvent(SourceEventGeneratorInfo sourceInfo) {
+  public Event toEvent(EventSourceInfo sourceInfo) {
     validate(sourceInfo.getOrgKey());
     if (event.getDescriptionHtml() != null) {
       event.setDescriptionHtml(
@@ -129,7 +129,7 @@ public class SourceEvent {
     event.setParticipants(participants);
   }
 
-  public static Key<Event> createKey(SourceEventGeneratorInfo sourceInfo, String sourceKey) {
+  public static Key<Event> createKey(EventSourceInfo sourceInfo, String sourceKey) {
     return Key.<Event>create(
       SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceKey),
       Event.class,

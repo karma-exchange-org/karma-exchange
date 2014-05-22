@@ -16,6 +16,7 @@ public class AdminUtil {
     TEST,
     BOOTSTRAP,
     AUTH_RESOURCE,
+    ADMIN_MANAGED_RESOURCE,
     TASK_QUEUE,
     MAP_REDUCE,
     REGISTRATION,

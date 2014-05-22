@@ -20,7 +20,7 @@ import lombok.Data;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Organization;
-import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
+import org.karmaexchange.dao.derived.EventSourceInfo;
 import org.karmaexchange.resources.EventResource;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventView;
@@ -49,7 +49,7 @@ public class SourceEventResource {
       @QueryParam("org_secret") String orgSecret,
       List<EventSyncRequest> syncRequests) {
     Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
-    SourceEventGeneratorInfo sourceInfo = validateOrgSecret(orgKey, orgSecret);
+    EventSourceInfo sourceInfo = validateOrgSecret(orgKey, orgSecret);
 
     AdminUtil.executeSubtaskAsAdmin(
       AdminTaskType.SOURCE_EVENT_UPDATE,
@@ -60,7 +60,7 @@ public class SourceEventResource {
   private class SyncEventsAdminSubtask implements AdminSubtask {
 
     private final List<EventSyncRequest> syncRequests;
-    private final SourceEventGeneratorInfo sourceInfo;
+    private final EventSourceInfo sourceInfo;
 
     @Override
     public void execute() {
@@ -78,10 +78,10 @@ public class SourceEventResource {
     }
   }
 
-  private static SourceEventGeneratorInfo validateOrgSecret(Key<Organization> orgKey,
+  private static EventSourceInfo validateOrgSecret(Key<Organization> orgKey,
       String orgSecret) {
-    SourceEventGeneratorInfo sourceInfo =
-        ofy().load().key(SourceEventGeneratorInfo.createKey(orgKey)).now();
+    EventSourceInfo sourceInfo =
+        ofy().load().key(EventSourceInfo.createKey(orgKey)).now();
     if (sourceInfo == null) {
       throw ErrorResponseMsg.createException(
         "organization is not configured to support derived events", ErrorInfo.Type.BAD_REQUEST);

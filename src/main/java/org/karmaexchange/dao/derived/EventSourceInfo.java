@@ -3,6 +3,7 @@ package org.karmaexchange.dao.derived;
 import static org.karmaexchange.util.OfyService.ofy;
 
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.IdBaseDao;
@@ -26,24 +27,26 @@ import com.googlecode.objectify.annotation.Entity;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public class SourceEventGeneratorInfo extends IdBaseDao<SourceEventGeneratorInfo> {
+public class EventSourceInfo extends IdBaseDao<EventSourceInfo> {
 
   private static final long EVENT_SOURCE_ID = 1;
 
   private String secret;
   private String domain;
 
-  public SourceEventGeneratorInfo(Key<Organization> orgKey, String secret, String domain) {
+  public EventSourceInfo(Key<Organization> orgKey, String secret, String domain) {
     owner = orgKey;
     id = EVENT_SOURCE_ID;
     this.secret = secret;
     this.domain = domain;
   }
 
+  @XmlTransient
   public Key<Organization> getOrgKey() {
     return Key.create(owner.getString());
   }
 
+  @XmlTransient
   public String getRegistrationUrl() {
     return "https://" + domain + SalesforceUtil.REGISTRATION_API_PATH;
   }
@@ -55,8 +58,8 @@ public class SourceEventGeneratorInfo extends IdBaseDao<SourceEventGeneratorInfo
     return ownerDao.getPermission();
   }
 
-  public static Key<SourceEventGeneratorInfo> createKey(Key<Organization> orgKey) {
-    return Key.<SourceEventGeneratorInfo>create(
-      orgKey, SourceEventGeneratorInfo.class, EVENT_SOURCE_ID);
+  public static Key<EventSourceInfo> createKey(Key<Organization> orgKey) {
+    return Key.<EventSourceInfo>create(
+      orgKey, EventSourceInfo.class, EVENT_SOURCE_ID);
   }
 }

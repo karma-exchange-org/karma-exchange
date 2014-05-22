@@ -3,7 +3,7 @@ package org.karmaexchange.util;
 import static org.junit.Assert.*;
 
 import org.junit.Test;
-import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
+import org.karmaexchange.dao.derived.EventSourceInfo;
 
 public class SalesforceUtilTest {
 
@@ -24,8 +24,8 @@ public class SalesforceUtilTest {
         " <img alt=\"karma logo\" src=\"https://karmademo.appspot.com/img/logo.png\"></img></div>" +
         "<br><br>";
 
-    SourceEventGeneratorInfo sourceInfo =
-        new SourceEventGeneratorInfo(null, "x", "kex-developer-edition.na15.force.com");
+    EventSourceInfo sourceInfo =
+        new EventSourceInfo(null, "x", "kex-developer-edition.na15.force.com");
 
     String processedRtfContent = SalesforceUtil.processRichTextField(rtfContent, sourceInfo);
 

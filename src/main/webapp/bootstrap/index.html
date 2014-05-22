@@ -3,142 +3,24 @@
 <head>
   <title>Bootstrap Karma Exchange</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
   <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-theme.min.css">
-  <meta charset="UTF-8">
-  <style type="text/css">
-    body {
-      padding-top: 10px;
-    }
-
-    .button-row {
-      padding: 4px;
-    }
-
-    .btn-admin-op {
-      text-transform:uppercase;
-/*      font-variant:small-caps;
-      text-transform:capitalize;*/
-    }
-
-    .button-header {
-      text-transform:uppercase;
-    }
-
-    .panel-dark-gray {
-      border-color: #6E6E6E;
-    }
-
-    .panel-dark-gray > .panel-heading {
-      color:#fff;
-      background-color: #6E6E6E;
-      border-color: #6E6E6E;
-    }
-
-    .panel-seperated-vertical {
-      margin-top: 10px;
-      margin-bottom: 10px;
-    }
-
-    .table-no-margin {
-      margin-bottom: 0;
-    }
-
-  </style>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="bootstrap-app.css">
 </head>
-<body ng-controller="BootstrapCtrl">
+<body>
   <script src="//code.jquery.com/jquery.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.js"></script>
   <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
   <script src="/js/vendor/angular-resource.min.js"></script>
+
   <script src="/js/initappid.js"></script>
   <script src="bootstrap-app.js"></script>
 
-  <div class="container">
-    <div class="row">
-      <div class="col-md-12 panel panel-default">
-        <div class="row text-center panel-heading">
-          <span class="button-header">Karma Exchange Admin Console</span>
-        </div>
-        <div class="panel-body">
-
-          <div class="row">
-            <div class="col-md-5">
-              <div class="row button-row">
-                <div id="account-info"></div>
-              </div>
-
-              <div class="row button-row">
-                <button onclick="consoleLoggedRequest('/bootstrap/test_resources')" class="btn btn-block btn-primary btn-admin-op">Bootstrap test resources</button>
-              </div>
-
-              <div class="row button-row">
-                <button onclick="consoleLoggedRequest('/bootstrap/datastore_indexes')" class="btn btn-block btn-default btn-admin-op">Update datastore-indexes-auto.xml</button>
-              </div>
-
-              <div class="row button-row">
-                <button onclick="consoleLoggedRequest('/task/process_event_completions')" class="btn btn-block btn-default btn-admin-op">Process newly completed events</button>
-              </div>
-
-              <div class="row button-row">
-                <button onclick="consoleLoggedRequest('/task/compute_leaderboard')" class="btn btn-block btn-default btn-admin-op">Compute organization leaderboards</button>
-              </div>
-
-              <div class="row button-row">
-                <button ng-click="fetchUserUsage()" class="btn btn-block btn-default btn-admin-op">Fetch user usage info</button>
-              </div>
-
-              <div class="row button-row">
-                <button onclick="consoleLoggedRequest('/bootstrap/delete_snapshots')" class="btn btn-block btn-default btn-admin-op">Delete web page snapshots</button>
-              </div>
-
-              <div class="row button-row">
-                <button onclick="consoleLoggedRequest('/bootstrap/purge_resources')" class="btn btn-block btn-danger btn-admin-op">Delete all resources</button>
-              </div>
-
-            </div>
-            <div class="col-md-7">
-              <form role="form">
-                <div class="form-group">
-                  <textarea class="form-control" id="consoleOutput" rows=12 disabled></textarea>
-                </div>
-              </form>
-            </div>
-          </div>
-
-          <div class="row panel-seperated-vertical" ng-show="userUsageInfo">
-            <div class="col-md-12">
-
-              <table class="table table-no-margin">
-                  <thead>
-                      <tr>
-                          <th>User</th>
-                          <th>Last Visited</th>
-                          <th>Email</th>
-                      </tr>
-                  </thead>
-                  <tbody>
-                      <tr ng-repeat="userUsageEntry in userUsageInfo">
-                          <td>{{ userUsageEntry.firstName + ' ' + userUsageEntry.lastName }}</td>
-                          <td>{{ userUsageEntry.lastVisited | date:'short'}}</td>
-                          <td>{{ userUsageEntry.email }} </td>
-                      </tr>
-                  </tbody>
-              </table>
-
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </div>
-
-    <!--  Using this as a way to refresh the fb access token. Need to verify it works! -->
-    <fb:facepile></fb:facepile>
-
+  <div ng-view>
   </div>
-
-  <div id="fb-root"></div>
 
 </body>
 </html>

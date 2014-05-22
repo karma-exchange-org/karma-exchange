@@ -17,6 +17,8 @@ import javax.ws.rs.core.Response;
 
 import org.karmaexchange.dao.User;
 import org.karmaexchange.resources.AuthResource;
+import org.karmaexchange.resources.EventSourceInfoResource;
+import org.karmaexchange.resources.UserUsageResource;
 import org.karmaexchange.util.ServletUtil;
 import org.karmaexchange.util.UserService;
 import org.karmaexchange.util.AdminUtil.AdminTaskType;
@@ -51,10 +53,13 @@ public class AuthFilter implements Filter {
 
     Key<User> userKey;
     try {
-      if (req.getRequestURI().toLowerCase().startsWith(
-            RESOURCE_PATH_PREFIX + AuthResource.AUTH_RESOURCE_PATH)) {
+      String reqUri = req.getRequestURI().toLowerCase();
+      if ( reqUri.startsWith(RESOURCE_PATH_PREFIX + AuthResource.RESOURCE_PATH) ) {
         // The auth resource updates the session. So skip the session lookup.
         userKey = AdminTaskType.AUTH_RESOURCE.getKey();
+      } else if ( reqUri.startsWith(RESOURCE_PATH_PREFIX + UserUsageResource.RESOURCE_PATH) ||
+          reqUri.startsWith(RESOURCE_PATH_PREFIX + EventSourceInfoResource.RESOURCE_PATH) ) {
+        userKey = AdminTaskType.ADMIN_MANAGED_RESOURCE.getKey();
       } else {
         Session session = Session.getCurrentSession(req);
         if (session == null) {
