@@ -12,7 +12,6 @@ import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.UserManagedEvent;
 import org.karmaexchange.dao.Waiver;
-import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
 import org.karmaexchange.snapshot.WebPageSnapshot;
 
 import com.googlecode.objectify.Key;
@@ -36,8 +35,6 @@ public class PurgeAllResourcesServlet extends BootstrapServlet {
     Iterable<Key<Leaderboard>> leaderboardKeys =
         ofy().load().type(Leaderboard.class).keys().iterable();
     Iterable<Key<Waiver>> waiverKeys = ofy().load().type(Waiver.class).keys().iterable();
-    Iterable<Key<SourceEventGeneratorInfo>> generatorInfoKeys =
-        ofy().load().type(SourceEventGeneratorInfo.class).keys().iterable();
     Iterable<Key<UserManagedEvent>> userManagedEventKeys =
         ofy().load().type(UserManagedEvent.class).keys().iterable();
     Iterable<Key<WebPageSnapshot>> persistedSnapshotKeys =
@@ -46,7 +43,9 @@ public class PurgeAllResourcesServlet extends BootstrapServlet {
         ofy().load().type(GlobalUidMapping.class).keys().iterable();
     Iterable<Key<Session>> sessions =
         ofy().load().type(Session.class).keys().iterable();
-    // Do not delete UserUsage. We want to keep that information even when we reset the demo.
+    // * Do not delete EventSourceInfo since we configure that once and re-use it accross
+    //   test db deletes.
+    // * Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     ofy().delete().keys(eventKeys);
     ofy().delete().keys(userKeys);
@@ -55,7 +54,6 @@ public class PurgeAllResourcesServlet extends BootstrapServlet {
     ofy().delete().keys(reviewKeys);
     ofy().delete().keys(leaderboardKeys);
     ofy().delete().keys(waiverKeys);
-    ofy().delete().keys(generatorInfoKeys);
     ofy().delete().keys(userManagedEventKeys);
     ofy().delete().keys(persistedSnapshotKeys);
     ofy().delete().keys(globalUidMappings);

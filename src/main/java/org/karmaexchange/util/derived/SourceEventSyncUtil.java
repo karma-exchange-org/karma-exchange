@@ -18,7 +18,7 @@ import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Event.ParticipantType;
-import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
+import org.karmaexchange.dao.derived.EventSourceInfo;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
@@ -61,8 +61,8 @@ public class SourceEventSyncUtil {
       return;
     }
 
-    SourceEventGeneratorInfo config = ofy().load().key(
-      SourceEventGeneratorInfo.createKey(
+    EventSourceInfo config = ofy().load().key(
+      EventSourceInfo.createKey(
         KeyWrapper.toKey(event.getOrganization()))).now();
     if (config == null) {
       throw ErrorResponseMsg.createException(

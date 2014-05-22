@@ -159,6 +159,10 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
     mission = providerGeneratedOrg.getMission();
   }
 
+  public static Key<Organization> createKey(String orgId) {
+    return Key.create(Organization.class, getNameFromPageName(orgId));
+  }
+
   @Override
   protected void preProcessInsert() {
     super.preProcessInsert();

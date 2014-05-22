@@ -7,7 +7,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
+import org.karmaexchange.dao.derived.EventSourceInfo;
 
 public class SalesforceUtil {
 
@@ -15,7 +15,7 @@ public class SalesforceUtil {
 
   static final String IMG_CDN_DOMAIN = "content.force.com";
 
-  public static String processRichTextField(String htmlStr, SourceEventGeneratorInfo sourceInfo) {
+  public static String processRichTextField(String htmlStr, EventSourceInfo sourceInfo) {
     Document doc = Jsoup.parseBodyFragment(htmlStr);
 
     // For now we'll just strip images that are stored in the salesforce db and retain

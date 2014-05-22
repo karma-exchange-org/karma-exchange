@@ -45,7 +45,6 @@ import org.karmaexchange.dao.Organization.AutoMembershipRule;
 import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.User.KarmaGoal;
 import org.karmaexchange.dao.User.RegisteredEmail;
-import org.karmaexchange.dao.derived.SourceEventGeneratorInfo;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.ImageProviderType;
 import org.karmaexchange.dao.KeyWrapper;
@@ -785,13 +784,6 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     for (final TestOrganization testOrg : TestOrganization.values()) {
       Organization orgDao = createOrganization(testOrg);
       BaseDao.upsert(orgDao);
-
-      // For testing create an event source config for every organization.
-      SourceEventGeneratorInfo eventSourceConfig = new SourceEventGeneratorInfo(
-        Key.create(orgDao),
-        "x",
-        "kex-developer-edition.na15.force.com");
-      BaseDao.upsert(eventSourceConfig);
     }
     // The org is created without any memberships to start with.
     for (TestOrganization testOrg : TestOrganization.values()) {

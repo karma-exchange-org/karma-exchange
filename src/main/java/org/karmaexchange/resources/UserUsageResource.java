@@ -13,8 +13,10 @@ import javax.ws.rs.core.UriInfo;
 
 import org.karmaexchange.dao.UserUsage;
 
-@Path("/admin/user_usage")
+@Path(UserUsageResource.RESOURCE_PATH)
 public class UserUsageResource {
+
+  public static final String RESOURCE_PATH = "/admin/user_usage";
 
   @Context
   protected UriInfo uriInfo;

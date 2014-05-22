@@ -1,0 +1,89 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-12 panel panel-default">
+      <div class="row text-center panel-heading">
+        <span class="button-header">Karma Exchange Admin Console</span>
+      </div>
+      <div class="panel-body">
+
+        <div class="row">
+          <div class="col-md-5">
+            <div class="row button-row">
+              <div id="account-info"></div>
+            </div>
+
+            <div class="row button-row">
+              <button onclick="consoleLoggedRequest('/bootstrap/test_resources')" class="btn btn-block btn-primary btn-admin-op">Bootstrap test resources</button>
+            </div>
+
+            <div class="row button-row">
+              <a href="#/configure-org" class="btn btn-block btn-primary btn-admin-op">Configure Org</a>
+            </div>
+
+            <div class="row button-row">
+              <button onclick="consoleLoggedRequest('/bootstrap/datastore_indexes')" class="btn btn-block btn-default btn-admin-op">Update datastore-indexes-auto.xml</button>
+            </div>
+
+            <div class="row button-row">
+              <button onclick="consoleLoggedRequest('/task/process_event_completions')" class="btn btn-block btn-default btn-admin-op">Process newly completed events</button>
+            </div>
+
+            <div class="row button-row">
+              <button onclick="consoleLoggedRequest('/task/compute_leaderboard')" class="btn btn-block btn-default btn-admin-op">Compute organization leaderboards</button>
+            </div>
+
+            <div class="row button-row">
+              <button ng-click="fetchUserUsage()" class="btn btn-block btn-default btn-admin-op">Fetch user usage info</button>
+            </div>
+
+            <div class="row button-row">
+              <button onclick="consoleLoggedRequest('/bootstrap/delete_snapshots')" class="btn btn-block btn-default btn-admin-op">Delete web page snapshots</button>
+            </div>
+
+            <div class="row button-row">
+              <button onclick="consoleLoggedRequest('/bootstrap/purge_resources')" class="btn btn-block btn-danger btn-admin-op">Delete all resources</button>
+            </div>
+
+          </div>
+          <div class="col-md-7">
+            <form role="form">
+              <div class="form-group">
+                <textarea class="form-control" id="consoleOutput" rows=12 disabled></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="row panel-seperated-vertical" ng-show="userUsageInfo">
+          <div class="col-md-12">
+
+            <table class="table table-no-margin">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Last Visited</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="userUsageEntry in userUsageInfo">
+                        <td>{{ userUsageEntry.firstName + ' ' + userUsageEntry.lastName }}</td>
+                        <td>{{ userUsageEntry.lastVisited | date:'short'}}</td>
+                        <td>{{ userUsageEntry.email }} </td>
+                    </tr>
+                </tbody>
+            </table>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!--  Using this as a way to refresh the fb access token. Need to verify it works! -->
+  <fb:facepile></fb:facepile>
+
+</div>
+
+<div id="fb-root"></div>

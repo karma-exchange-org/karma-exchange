@@ -1,0 +1,40 @@
+body {
+  padding-top: 10px;
+}
+
+.button-row {
+  padding: 4px;
+}
+
+.btn-admin-op {
+  text-transform:uppercase;
+/*      font-variant:small-caps;
+  text-transform:capitalize;*/
+}
+
+.button-header {
+  text-transform:uppercase;
+}
+
+.panel-dark-gray {
+  border-color: #6E6E6E;
+}
+
+.panel-dark-gray > .panel-heading {
+  color:#fff;
+  background-color: #6E6E6E;
+  border-color: #6E6E6E;
+}
+
+.panel-seperated-vertical {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.table-no-margin {
+  margin-bottom: 0;
+}
+
+.clickable:hover {
+  cursor: pointer;
+}

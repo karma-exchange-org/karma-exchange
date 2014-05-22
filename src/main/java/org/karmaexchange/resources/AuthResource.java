@@ -29,7 +29,7 @@ import com.googlecode.objectify.Key;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Path(AuthResource.AUTH_RESOURCE_PATH)
+@Path(AuthResource.RESOURCE_PATH)
 @NoArgsConstructor
 public class AuthResource {
 
@@ -38,7 +38,7 @@ public class AuthResource {
    * create and load any user object.
    */
 
-  public static final String AUTH_RESOURCE_PATH = "/auth";
+  public static final String RESOURCE_PATH = "/auth";
 
   @Path("login")
   @POST

@@ -1,0 +1,55 @@
+<div class="container configure-org">
+    <div class="row">
+        <div class="col-md-5">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+
+                    <h3 class="panel-title">
+                        Configure Organization
+                    </h3>
+
+                </div>
+                <div class="panel-body">
+
+                    <div class="alert alert-danger" ng-show="error">
+                        {{ error }}
+                    </div>
+
+                    <form role="form">
+
+                        <div class="form-group">
+                            <label class="control-label">Org Id</label>
+                            <input ng-model="orgId" name="orgId" type="text" placeholder="" class="form-control" >
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Secret</label>
+                            <div class="input-group">
+                                <!-- The input doesn't align with the spam because of margin in form-group and most likely
+                                     something to do with floats. Investigate later. -->
+                                <input ng-model="eventSourceInfo.secret" name="orgSecret" type="text" placeholder="" class="form-control" >
+                                <span class="input-group-addon clickable" ng-click="newSecret()">
+                                    <i class="fa fa-refresh"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="control-label">Salesforce DB Domain</label>
+                            <input ng-model="eventSourceInfo.domain" name="orgDomain" type="text" placeholder="" class="form-control" >
+                        </div>
+
+                        <button class="btn btn-primary"
+                                ng-click="save()"
+                                ng-disabled="!orgId"
+                                btn-loading="savePending || loadPending"
+                                data-loading-text="Processing...">
+                            Save
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
