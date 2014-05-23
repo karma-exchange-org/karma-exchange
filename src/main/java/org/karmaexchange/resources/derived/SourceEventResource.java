@@ -28,7 +28,6 @@ import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
 import org.karmaexchange.util.AdminUtil.AdminTaskType;
-import org.karmaexchange.util.OfyUtil;
 
 import com.googlecode.objectify.Key;
 
@@ -45,11 +44,10 @@ public class SourceEventResource {
   @POST
   @Consumes({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public void syncEvents(
-      @QueryParam("org_key") String orgKeyStr,
+      @QueryParam("org_id") String orgId,
       @QueryParam("org_secret") String orgSecret,
       List<EventSyncRequest> syncRequests) {
-    Key<Organization> orgKey = OfyUtil.createKey(orgKeyStr);
-    EventSourceInfo sourceInfo = validateOrgSecret(orgKey, orgSecret);
+    EventSourceInfo sourceInfo = validateOrgSecret(orgId, orgSecret);
 
     AdminUtil.executeSubtaskAsAdmin(
       AdminTaskType.SOURCE_EVENT_UPDATE,
@@ -78,8 +76,15 @@ public class SourceEventResource {
     }
   }
 
-  private static EventSourceInfo validateOrgSecret(Key<Organization> orgKey,
+  private static EventSourceInfo validateOrgSecret(String orgId,
       String orgSecret) {
+    if (orgId == null) {
+      throw ErrorResponseMsg.createException(
+        "'orgId' must be specified",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    Key<Organization> orgKey =
+        Organization.createKey(orgId);
     EventSourceInfo sourceInfo =
         ofy().load().key(EventSourceInfo.createKey(orgKey)).now();
     if (sourceInfo == null) {
