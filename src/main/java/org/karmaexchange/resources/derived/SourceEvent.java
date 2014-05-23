@@ -95,6 +95,7 @@ public class SourceEvent {
     event.setOwner(
       SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceKey).getString());
     event.setId(EVENT_ID);
+    event.setOrganization(KeyWrapper.create(sourceInfo.getOrgKey()));
     event.setSourceEventInfo(new SourceEventInfo(sourceKey));
     mapSourceParticipants();
     // TODO(avaliani): map source participants
@@ -146,9 +147,9 @@ public class SourceEvent {
         "key is a derived field and can not be specified",
         ErrorInfo.Type.BAD_REQUEST);
     }
-    if (!KeyWrapper.toKey(event.getOrganization()).equals(orgKey)) {
+    if (event.getOrganization() != null) {
       throw ErrorResponseMsg.createException(
-        "organization field does not match specified organization",
+        "organization field should not be specified",
         ErrorInfo.Type.BAD_REQUEST);
     }
 
