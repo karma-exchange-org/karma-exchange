@@ -1,8 +1,10 @@
 package org.karmaexchange.util.derived;
 
+import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
 
 import java.io.IOException;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,12 +15,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import org.apache.commons.io.IOUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.derived.EventSourceInfo;
+import org.karmaexchange.resources.derived.SourceEvent;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
@@ -86,19 +90,31 @@ public class SourceEventSyncUtil {
       connection.setReadTimeout(0);
 
       ObjectMapper mapper = new ObjectMapper();
-      RegistrationReq registrationReq = new RegistrationReq(
+      RegistrationRequest registrationReq = new RegistrationRequest(
         action,
-        event.getSourceEventInfo().getSourceKey(),
+        event.getSourceEventInfo().getEventId(),
         user.getFirstName(),
         user.getLastName(),
         user.getPrimaryEmail());
       mapper.writeValue(connection.getOutputStream(), registrationReq);
 
       int responseCode = connection.getResponseCode();
-      String responseMsg = connection.getResponseMessage();
-      if (responseCode != HttpURLConnection.HTTP_OK) {
-        // TODO(avaliani): clean this up
-        throw ErrorResponseMsg.createException("Error: " + responseMsg,
+      if (responseCode == HttpURLConnection.HTTP_OK) {
+        StringWriter responseContent = new StringWriter();
+        IOUtils.copy(
+          connection.getInputStream(), responseContent);
+        RegistrationResponse registrationResp =
+            mapper.readValue(responseContent.toString(), RegistrationResponse.class);
+        // TODO(avaliani): leverage the sourceEvent to do a full event update (vs. explicitly
+        // processing the update). The update should happen even on error. We can be out of
+        // sync we need to update our db.
+        if (registrationResp.error != null) {
+          registrationResp.error.convertAndThrowError();
+        }
+      } else {
+        throw ErrorResponseMsg.createException(
+          format("Error: remote db request failed [%d, %s]",
+            connection.getResponseCode(), connection.getResponseMessage()),
           ErrorInfo.Type.BACKEND_SERVICE_FAILURE);
       }
     } catch (IOException e) {
@@ -110,12 +126,47 @@ public class SourceEventSyncUtil {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  private static class RegistrationReq {
+  private static class RegistrationRequest {
     private RegistrationAction action;
-    private String sourceKey;
+    private String eventId;
     private String firstName;
     private String lastName;
     private String email;
   }
 
+  @XmlRootElement
+  @Data
+  private static class RegistrationResponse {
+    SourceEvent sourceEvent;
+    SourceErrorInfo error;
+  }
+
+  @Data
+  private static class SourceErrorInfo {
+    public enum ErrorType {
+      INVALID_PARAM,
+      REGISTRATION_LIMIT_REACHED,
+      OBJECT_NOT_FOUND,
+      DML_EXCEPTION,
+      OTHER_EXCEPTION
+    }
+
+    private ErrorType type;
+    private String message;
+
+    public void convertAndThrowError() {
+      if (type == ErrorType.REGISTRATION_LIMIT_REACHED) {
+        throw ErrorResponseMsg.createException(
+          "the event has reached the max registration limit",
+          ErrorInfo.Type.LIMIT_REACHED);
+      } else if (type == ErrorType.OBJECT_NOT_FOUND) {
+        throw ErrorResponseMsg.createException("event not found",
+          ErrorInfo.Type.BAD_REQUEST);
+      } else {
+        throw ErrorResponseMsg.createException(
+          format("Error: exception updating remote db [%s,%s]", type, message),
+          ErrorInfo.Type.BACKEND_SERVICE_FAILURE);
+      }
+    }
+  }
 }

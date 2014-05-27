@@ -70,7 +70,7 @@ public class SourceEventResource {
               new EventView(event, false));
           } else {
             getEventResource().deleteResource(
-              SourceEvent.createKey(sourceInfo, syncRequest.sourceKey));
+              SourceEvent.createKey(sourceInfo, syncRequest.sourceEventId));
           }
       }
     }
@@ -117,7 +117,7 @@ public class SourceEventResource {
      * Source db key of the event being synchronized. Non-null for the DELETE action.
      */
     @Nullable
-    private String sourceKey;
+    private String sourceEventId;
 
     /**
      * Source db event of being synchronized. Non-null for the UPSERT action.
