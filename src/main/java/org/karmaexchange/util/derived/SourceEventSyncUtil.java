@@ -65,17 +65,17 @@ public class SourceEventSyncUtil {
       return;
     }
 
-    EventSourceInfo config = ofy().load().key(
+    EventSourceInfo sourceInfo = ofy().load().key(
       EventSourceInfo.createKey(
         KeyWrapper.toKey(event.getOrganization()))).now();
-    if (config == null) {
+    if (sourceInfo == null) {
       throw ErrorResponseMsg.createException(
         "derived event generator info missing", ErrorInfo.Type.BACKEND_SERVICE_FAILURE);
     }
 
     URL url;
     try {
-      url = new URL(config.getRegistrationUrl());
+      url = new URL(sourceInfo.getRegistrationUrl());
     } catch (MalformedURLException e) {
       throw ErrorResponseMsg.createException(e, ErrorInfo.Type.BACKEND_SERVICE_FAILURE);
     }
@@ -91,6 +91,7 @@ public class SourceEventSyncUtil {
 
       ObjectMapper mapper = new ObjectMapper();
       RegistrationRequest registrationReq = new RegistrationRequest(
+        sourceInfo.getSecret(),
         action,
         event.getSourceEventInfo().getEventId(),
         user.getFirstName(),
@@ -127,6 +128,8 @@ public class SourceEventSyncUtil {
   @NoArgsConstructor
   @AllArgsConstructor
   private static class RegistrationRequest {
+    private String secretKey;
+
     private RegistrationAction action;
     private String eventId;
     private String firstName;
@@ -144,6 +147,7 @@ public class SourceEventSyncUtil {
   @Data
   private static class SourceErrorInfo {
     public enum ErrorType {
+      AUTHENTICATION_FAILURE,
       INVALID_PARAM,
       REGISTRATION_LIMIT_REACHED,
       OBJECT_NOT_FOUND,
