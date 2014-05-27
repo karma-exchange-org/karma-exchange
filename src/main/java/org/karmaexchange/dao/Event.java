@@ -29,6 +29,7 @@ import org.karmaexchange.util.SearchUtil;
 import org.karmaexchange.util.UserService;
 import org.karmaexchange.util.derived.SourceEventSyncUtil;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
@@ -1476,12 +1477,11 @@ public final class Event extends BaseEvent<Event> {
 
   @Data
   @NoArgsConstructor
+  @AllArgsConstructor
   public static final class SourceEventInfo {
-    private String sourceKey;
-
-    public SourceEventInfo(String sourceKey) {
-      this.sourceKey = sourceKey;
-    }
+    // An external event id uniquely identifying the source event.
+    private String eventId;
+    private Date lastModifiedDate;
   }
 
 }

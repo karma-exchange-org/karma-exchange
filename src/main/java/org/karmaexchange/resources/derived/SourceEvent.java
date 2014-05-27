@@ -3,6 +3,7 @@ package org.karmaexchange.resources.derived;
 import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
 
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -54,9 +55,11 @@ public class SourceEvent {
 
   private static final Logger log = Logger.getLogger(SourceEvent.class.getName());
 
-  private String sourceKey;
+  private String sourceEventId;
 
   private List<SourceEventParticipant> sourceParticipants = Lists.newArrayList();
+
+  private Date sourceLastModifiedDate;
 
   /*
    * We delegate instead of extending event because Objectify seems to require that all subclasses
@@ -93,10 +96,10 @@ public class SourceEvent {
       }
     }
     event.setOwner(
-      SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceKey).getString());
+      SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceEventId).getString());
     event.setId(EVENT_ID);
     event.setOrganization(KeyWrapper.create(sourceInfo.getOrgKey()));
-    event.setSourceEventInfo(new SourceEventInfo(sourceKey));
+    event.setSourceEventInfo(new SourceEventInfo(sourceEventId, sourceLastModifiedDate));
     mapSourceParticipants();
     // TODO(avaliani): map source participants
     return event;
@@ -138,8 +141,8 @@ public class SourceEvent {
   }
 
   private void validate(Key<Organization> orgKey) {
-    if (sourceKey == null) {
-      throw ErrorResponseMsg.createException("sourceKey must be specified",
+    if (sourceEventId == null) {
+      throw ErrorResponseMsg.createException("sourceEventId must be specified",
         ErrorInfo.Type.BAD_REQUEST);
     }
     if (event.getKey() != null) {
@@ -182,7 +185,7 @@ public class SourceEvent {
         log.warning(
           format("required field 'email' missing: " +
               "skipping user(%s,%s) for source event(%s, org=%s)",
-            sourceUser.firstName, sourceUser.lastName, sourceKey,
+            sourceUser.firstName, sourceUser.lastName, sourceEventId,
             orgKey.toString()));
       }
     }
