@@ -752,15 +752,19 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
         this._elements.orderedInsertExt(element, this._orderCb);
     }
 
-    function PagedElementView(resultPromise, processElementCb, pageLimit) {
+    function PagedElementView(resultPromise, processElementCb, pageLimit, firstPageNumElements) {
         this._elementSource =
             new PagedElementSource(resultPromise, processElementCb);
         this.pageLimit = pageLimit;
         this._displayLimit = pageLimit;
+        if (angular.isDefined(firstPageNumElements)) {
+            this._displayLimit = firstPageNumElements;
+        }
         this.elements = [];
         this.hasMore = false;
         this.firstPageProcessed = false;
         this.isProcessing = true;
+        this._isProcessingDef = $q.defer();
         this._updateView();
     }
 
@@ -785,6 +789,7 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
         this._elementSource.peek().then(
             angular.bind(this, function(element) {
                 this.isProcessing = false;
+                this._isProcessingDef.resolve();
                 this.firstPageProcessed = true;
                 this.hasMore = (element != null);
             }));
@@ -794,8 +799,13 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
         if (!this.isProcessing) {
             this._displayLimit += this.pageLimit;
             this.isProcessing = true;
+            this._isProcessingDef = $q.defer();
             this._updateView();
         }
+    }
+
+    PagedElementView.prototype.isProcessingPromise = function() {
+        return this._isProcessingDef.promise;
     }
 
     return {
@@ -803,8 +813,8 @@ kexApp.factory('ElementSourceFactory', function($q, $http) {
             return new PagedElementSource(resultPromise, processResultCb);
         },
 
-        createPagedElementView: function(resultPromise, processElementCb, pageLimit) {
-            return new PagedElementView(resultPromise, processElementCb, pageLimit);
+        createPagedElementView: function(resultPromise, processElementCb, pageLimit, firstPageNumElements) {
+            return new PagedElementView(resultPromise, processElementCb, pageLimit, firstPageNumElements);
         },
 
         createCompositeElementSource: function(elementSource1, elementSource2, resultOrderCb) {
@@ -1705,6 +1715,21 @@ kexApp.directive("btnLoading", function () {
             });
     }
 });
+
+/*
+ * This directive opens all links in an iframe view in a new window / tab
+ * since there is no navigation in an iframe.
+ */
+kexApp.directive('a', function ($rootScope) {
+    return {
+        restrict: 'E',
+        link: function (scope, element, attr) {
+            if ($rootScope.iframeView) {
+                element.attr("target", "_blank");
+            }
+        }
+    };
+ });
 
 /* ng-focus was not available in 1.0.8 */
 kexApp.directive('ngExFocus', ['$parse', function($parse) {
@@ -3233,7 +3258,7 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
 
     var now, prevEventDate;
 
-    $scope.reset = function( ) {
+    $scope.reset = function( numEventsToLoad ) {
         now = new Date();
         prevEventDate = new Date( 1001, 1, 1, 1, 1, 1, 0 );
 
@@ -3254,7 +3279,7 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
                 eventSearchDef.reject();
             });
         $scope.pagedEvents = ElementSourceFactory.createPagedElementView(
-            eventSearchDef.promise, processEvent, EVENTS_PER_PAGE);
+            eventSearchDef.promise, processEvent, EVENTS_PER_PAGE, numEventsToLoad);
     };
 
     function processEvent(event) {
@@ -3283,7 +3308,9 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
 
     $scope.$on("SessionManager.userChanged", function (event, response) {
         // Only dependency is the cookie identifying the user.
-        $scope.reset();
+        var numElemsToReload = ($scope.pagedEvents.elements.length > 0) ?
+            $scope.pagedEvents.elements.length : undefined;
+        $scope.reset(numElemsToReload);
     });
 
     $scope.addMarker = function( markerLat, markerLng ) {
@@ -3302,10 +3329,11 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
             .then(
                 function () {
                     // The events array refreshes once a user logs in. Make sure the
-                    // refresh is complete.
+                    // refresh is complete and all the elements that were previously loaded
+                    // are reloaded.
                     // TODO(avaliani): we should move away from refreshing the entire array and
                     //   instead update the existing array.
-                    return eventSearchRecyclablePromise.promise;
+                    return $scope.pagedEvents.isProcessingPromise();
                 })
             .then(
                 function () {
@@ -4120,9 +4148,10 @@ kexApp.controller('NavbarController',
 
 kexApp.controller('RootController',
     [
-        '$scope', 'PageProperties',
-        function($scope, PageProperties) {
+        '$scope', 'PageProperties', '$location', '$rootScope',
+        function($scope, PageProperties, $location, $rootScope) {
             $scope.PageProperties = PageProperties;
+            $rootScope.iframeView = !!$location.search().iframe;
         }
     ]);
 

@@ -119,6 +119,10 @@ body {
   /* background: url(../img/bg.gif);*/
 }
 
+body.iframe-view {
+  padding-top: 10px;
+}
+
 .navbar-nav > li > a.welcome {
   text-transform: none;
 }

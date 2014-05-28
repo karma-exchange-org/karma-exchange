@@ -1,4 +1,4 @@
-<div id="intro-banner">
+<div id="intro-banner" ng-hide="iframeView">
     <div id="hero">
         <div class="container">
             <h1 class="hero-text animated fadeInDown">Make earning and sharing <em>karma</em> part of your daily routine.</h1>
@@ -66,6 +66,7 @@
                 <li ng-repeat="event in pagedEvents.elements" id="event_{{event.key}}">
 
                     <div>
+
                         <h4 ng-show="event.showHeader" class="date">
                                 {{event.startTime | date:event.dateFormat}}
                         </h4>
