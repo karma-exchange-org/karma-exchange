@@ -989,7 +989,45 @@ kexApp.provider('PageProperties', function() {
         }];
 });
 
-kexApp.factory('KexUtil', function($location, $modal) {
+kexApp.factory('IframeUtil', function($rootScope, $location) {
+
+    var iframeParentUrl, iframeView, iframeVersion;
+
+    iframeVersion = $location.search().iframe;
+    iframeView = $rootScope.iframeView = !!iframeVersion;
+    iframeParentUrl = $location.search().iframeParentUrl;
+
+    var IframeUtil = {
+
+        getEventDetailsHref: function(eventKey) {
+            var hrefResult = {};
+            if ( iframeView && iframeParentUrl ) {
+                hrefResult.href = iframeParentUrl + '?eventId=' + eventKey;
+                if (iframeVersion == 'targetAlwaysBlank') {
+                    hrefResult.target = '_blank';
+                } else {
+                    hrefResult.target = '_parent';
+                }
+            } else {
+                hrefResult.href = '#!/event/' + eventKey;
+                hrefResult.target = IframeUtil.getLinkTarget();
+            }
+            return hrefResult;
+        },
+
+        getLinkTarget: function() {
+            if (iframeView) {
+                return '_blank';
+            } else {
+                return '_self';
+            }
+        }
+
+    }
+    return IframeUtil;
+});
+
+kexApp.factory('KexUtil', function($location, $modal, $rootScope) {
     var ANON_USER_IMAGE_URL = "/img/anon_user_256_pd_color.png";
 
     return {
@@ -997,12 +1035,15 @@ kexApp.factory('KexUtil', function($location, $modal) {
             // window.location.host includes the port #.
             return window.location.protocol + '//' + window.location.host;
         },
+
         getLocation: function() {
             return window.location.href;
         },
+
         urlStripProtocol: function(url) {
             return url ? url.replace(/^http:/,'') : url;
         },
+
         stripHashbang: function(url) {
             return (url.indexOf('#!') === 0) ? url.substring(2) : url;
         },
@@ -1720,12 +1761,16 @@ kexApp.directive("btnLoading", function () {
  * This directive opens all links in an iframe view in a new window / tab
  * since there is no navigation in an iframe.
  */
-kexApp.directive('a', function ($rootScope) {
+kexApp.directive('a', function ($rootScope, IframeUtil) {
     return {
         restrict: 'E',
-        link: function (scope, element, attr) {
-            if ($rootScope.iframeView) {
-                element.attr("target", "_blank");
+        link: function (scope, element, attrs) {
+            // Skip links that have an explicit target specified.
+            if (!('target' in attrs)) {
+                var target = IframeUtil.getLinkTarget();
+                if (target != '_self') {
+                    element.attr('target', target);
+                }
             }
         }
     };
@@ -2746,17 +2791,19 @@ kexApp.directive('loadingMessage', function($rootScope) {
     };
 });
 
-kexApp.directive('truncateAndLink', function($rootScope, KexUtil) {
+kexApp.directive('truncateAndLink', function($rootScope, KexUtil, IframeUtil) {
     return {
         restrict: 'E',
         scope: {
             text: '=',
             linkText: '@',
             href: '@',
+            hrefCb: '&',
             limit: '@'
         },
         replace: true,
         transclude: false,
+        templateUrl: 'template/kex/truncate-and-link.html',
         link: function (scope, element, attrs) {
             scope.$watch('text', updateText);
             scope.$watch('href', updateText);
@@ -2764,16 +2811,25 @@ kexApp.directive('truncateAndLink', function($rootScope, KexUtil) {
 
             function updateText() {
                 if (  angular.isDefined(scope.text) &&
-                      angular.isDefined(scope.href) &&
+                      ( angular.isDefined(scope.href) ||
+                        ('hrefCb' in attrs) ) &&
                       angular.isDefined(scope.limit)  ) {
                     var result =
                         KexUtil.truncateToWordBoundary(scope.text, scope.limit);
                     scope.output = result.str;
                     scope.truncated = result.truncated;
+
+                    if ('hrefCb' in attrs) {
+                        scope.hrefCtx = scope.hrefCb({});
+                    } else {
+                        scope.hrefCtx = {
+                            href: scope.href,
+                            target: IframeUtil.getLinkTarget()
+                        }
+                    }
                 }
             }
-        },
-        templateUrl: 'template/kex/truncate-and-link.html'
+        }
     };
 });
 
@@ -3240,7 +3296,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
 };
 var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, KexUtil,
         EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q, Geocoder, $log,
-        SnapshotServiceHandshake, SessionManager, ElementSourceFactory ) {
+        SnapshotServiceHandshake, SessionManager, ElementSourceFactory, IframeUtil ) {
     var EVENTS_PER_PAGE = 20;
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
@@ -3294,6 +3350,10 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
 
         if (event.key == getRouteExpandedEventKey()) {
             toggleEvent(event);
+        }
+
+        event.detailsHrefCb = function() {
+            return IframeUtil.getEventDetailsHref(event.key);
         }
 
         return event;
@@ -4148,10 +4208,9 @@ kexApp.controller('NavbarController',
 
 kexApp.controller('RootController',
     [
-        '$scope', 'PageProperties', '$location', '$rootScope',
-        function($scope, PageProperties, $location, $rootScope) {
+        '$scope', 'PageProperties',
+        function($scope, PageProperties) {
             $scope.PageProperties = PageProperties;
-            $rootScope.iframeView = !!$location.search().iframe;
         }
     ]);
 
@@ -4313,6 +4372,13 @@ kexApp.config( function( $provide, $routeProvider, $httpProvider, $facebookProvi
                 reloadOnSearch: false
             })
         .when(
+            '/events',
+            {
+                controller : eventsCtrl,
+                templateUrl : 'partials/events.html',
+                reloadOnSearch: false
+            })
+        .when(
             '/event/add',
             {
                 title : "Add/Edit Event" + PAGE_TITLE_SUFFIX,
@@ -4422,9 +4488,10 @@ kexApp.config( function( $provide, $routeProvider, $httpProvider, $facebookProvi
 //   - PageProperties
 //   - SessionManager
 //   - PersonaUtil
+//   - IframeUtil
 .run( function( $rootScope, Me, $location, FbUtil, $modal, MeUtil, $q, $http,
         AuthDepResource, KexUtil, SnapshotServiceHandshake, PageProperties,
-        SessionManager, PersonaUtil) {
+        SessionManager, PersonaUtil, IframeUtil) {
 
     $rootScope.fbUtil = FbUtil;
     $rootScope.setLocation = angular.bind(KexUtil, KexUtil.setLocation);

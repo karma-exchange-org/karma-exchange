@@ -119,8 +119,8 @@
                                                 <truncate-and-link
                                                     text="event.expandedEvent.description"
                                                     link-text="(more)"
-                                                    href="#!/event/{{event.key}}"
-                                                    limit="500" >
+                                                    href-cb="event.detailsHrefCb()"
+                                                    limit="500">
                                                 </truncate-and-link>
                                             </div>
                                         </div>
@@ -197,7 +197,11 @@
                                                                 <i class="icon-ok"></i> You are waitlisted!
                                                         </span>
                                                 -->
-                                                <a href="#!/event/{{event.key}}" class="btn btn-info btn-sm"><i class=" icon-info-sign icon-white"></i> More info</a>
+                                                <a href="{{ event.detailsHrefCb().href }}"
+                                                   target="{{ event.detailsHrefCb().target }}"
+                                                   class="btn btn-info btn-sm">
+                                                    <i class=" icon-info-sign icon-white"></i> More info
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
