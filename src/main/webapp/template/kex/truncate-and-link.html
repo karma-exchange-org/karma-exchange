@@ -1,5 +1,5 @@
 <span>
     <span ng-bind-html-unsafe="output | textToHtml">
     </span>
-    <em><a href="{{ href }}" ng-show="truncated">{{ linkText }}</a></em>
+    <em><a href="{{ hrefCtx.href }}" target="{{ hrefCtx.target }}" ng-show="truncated">{{ linkText }}</a></em>
 </span>
