@@ -29,7 +29,6 @@ public class PurgeAllResourcesServlet extends BootstrapServlet {
 
     Iterable<Key<Event>> eventKeys = ofy().load().type(Event.class).keys().iterable();
     Iterable<Key<User>> userKeys = ofy().load().type(User.class).keys().iterable();
-    Iterable<Key<Organization>> orgKeys = ofy().load().type(Organization.class).keys().iterable();
     Iterable<Key<Image>> imageKeys = ofy().load().type(Image.class).keys().iterable();
     Iterable<Key<Review>> reviewKeys = ofy().load().type(Review.class).keys().iterable();
     Iterable<Key<Leaderboard>> leaderboardKeys =
@@ -45,11 +44,12 @@ public class PurgeAllResourcesServlet extends BootstrapServlet {
         ofy().load().type(Session.class).keys().iterable();
     // * Do not delete EventSourceInfo since we configure that once and re-use it accross
     //   test db deletes.
+    // * Do not delete organizations since we have remote dbs that sync events with us.
+    //   This is okay because organizations currently don't store references to other objects.
     // * Do not delete UserUsage. We want to keep that information even when we reset the demo.
 
     ofy().delete().keys(eventKeys);
     ofy().delete().keys(userKeys);
-    ofy().delete().keys(orgKeys);
     ofy().delete().keys(imageKeys);
     ofy().delete().keys(reviewKeys);
     ofy().delete().keys(leaderboardKeys);

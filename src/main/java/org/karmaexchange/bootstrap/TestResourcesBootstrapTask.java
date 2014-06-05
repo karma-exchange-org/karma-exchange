@@ -244,6 +244,8 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       asList(
         TestOrgMembership.of(POONUM, Organization.Role.ADMIN, null))),
 
+    STEWARDSHIP_NETWORK_NE("StewardshipNetworkNewEngland", null),
+
     UNITED_WAY("UnitedWay",
       "https://give.liveunited.org/page/contribute/support-us",
       AMIR,
@@ -270,6 +272,9 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     @Getter
     private final List<Waiver> waivers;
 
+    private TestOrganization(String pageName, String donationUrl) {
+      this(pageName, donationUrl, null, ImmutableList.<TestOrgMembership>of());
+    }
 
     private TestOrganization(String pageName, String donationUrl, TestUser initialAdmin,
         List<TestOrgMembership> memberships) {
@@ -782,13 +787,21 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
 
   private void persistOrganizations() {
     for (final TestOrganization testOrg : TestOrganization.values()) {
+      // If the organization exists delete it (workaround to reset karma points) and because
+      // organizations are no longer deleted during purge.
+      Key<Organization> orgKey =
+          Organization.createKey(testOrg.getPageName());
+      ofy().delete().key(orgKey).now();
+
       Organization orgDao = createOrganization(testOrg);
       BaseDao.upsert(orgDao);
     }
     // The org is created without any memberships to start with.
     for (TestOrganization testOrg : TestOrganization.values()) {
-      User.updateMembership(getKey(testOrg.initialAdmin), testOrg.getKey(),
-        Organization.Role.ADMIN);
+      if (testOrg.initialAdmin != null) {
+        User.updateMembership(getKey(testOrg.initialAdmin), testOrg.getKey(),
+          Organization.Role.ADMIN);
+      }
       for (TestOrgMembership membership : testOrg.memberships) {
         if (membership.grantedRole != null) {
           User.updateMembership(getKey(membership.user), testOrg.getKey(), membership.grantedRole);

@@ -100,10 +100,10 @@ public class SourceEventSyncUtil {
       mapper.writeValue(connection.getOutputStream(), registrationReq);
 
       int responseCode = connection.getResponseCode();
+      StringWriter responseContent = new StringWriter();
+      IOUtils.copy(
+        connection.getInputStream(), responseContent);
       if (responseCode == HttpURLConnection.HTTP_OK) {
-        StringWriter responseContent = new StringWriter();
-        IOUtils.copy(
-          connection.getInputStream(), responseContent);
         RegistrationResponse registrationResp =
             mapper.readValue(responseContent.toString(), RegistrationResponse.class);
         // TODO(avaliani): leverage the sourceEvent to do a full event update (vs. explicitly
@@ -114,8 +114,11 @@ public class SourceEventSyncUtil {
         }
       } else {
         throw ErrorResponseMsg.createException(
-          format("Error: remote db request failed [%d, %s]",
-            connection.getResponseCode(), connection.getResponseMessage()),
+          format("Error: remote db request failed [%s, %d, %s,\n response='%s'\n]",
+            url,
+            connection.getResponseCode(),
+            connection.getResponseMessage(),
+            responseContent),
           ErrorInfo.Type.BACKEND_SERVICE_FAILURE);
       }
     } catch (IOException e) {
