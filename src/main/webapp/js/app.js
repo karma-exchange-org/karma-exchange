@@ -3107,14 +3107,16 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
                     });
             }
 
-            if ($scope.org.permission === "ALL") {
-                tabManager.addTab('manageOrg', { active: false, onSelectionCb: loadManageOrgTab });
-                $scope.dynamicTabs.push({
-                    heading: '<i class="icon-cogs"></i> Manage Organization',
-                    contentUrl: 'partials/manage-org-tab.html',
-                    tabName: 'manageOrg',
-                });
-            }
+            // Disable manageOrg tab for now until we have the opportunity to clean up the ui.
+            //
+            // if ($scope.org.permission === "ALL") {
+            //     tabManager.addTab('manageOrg', { active: false, onSelectionCb: loadManageOrgTab });
+            //     $scope.dynamicTabs.push({
+            //         heading: '<i class="icon-cogs"></i> Manage Organization',
+            //         contentUrl: 'partials/manage-org-tab.html',
+            //         tabName: 'manageOrg',
+            //     });
+            // }
 
             PageProperties.setContentTitle($scope.org.orgName);
 

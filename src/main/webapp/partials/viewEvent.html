@@ -108,9 +108,13 @@
                         </div>
 
                         <div class="event-view-action" ng-hide="unregistrationActionTracker.isPending()">
+<!--
+                            Disable edit event for now until we get a chance to clean up the ui.
+
                             <div ng-show="event.registrationInfo=='ORGANIZER'">
                                 <a href="#!/event/{{event.key}}/edit">Edit event</a>
                             </div>
+ -->
                             <div ng-show="event.status!='COMPLETED'">
                                 <div ng-show="event.registrationInfo=='REGISTERED'">
                                     <a href="" ng-click="unregister()">Unregister</a>

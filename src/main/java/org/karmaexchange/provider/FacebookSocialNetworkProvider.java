@@ -132,7 +132,13 @@ public final class FacebookSocialNetworkProvider implements SocialNetworkProvide
     org.setOrgName(fbPage.getName());
     org.setPage(PageRef.create(fbPageName, PAGE_BASE_URL + fbPageName,
       SocialNetworkProviderType.FACEBOOK));
-    org.setMission(fbPage.getMission());
+    String mission = null;
+    if (fbPage.getMission() != null) {
+      mission = fbPage.getMission();
+    } else if (fbPage.getAbout() != null) {
+      mission = fbPage.getAbout();
+    }
+    org.setMission(mission);
     org.setAddress(getAddress(fbPage.getLocation()));
     return org;
   }
