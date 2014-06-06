@@ -46,10 +46,11 @@ public class ComputeLeaderboardServlet extends TaskQueueAdminTaskServlet {
   }
 
   private static MapReduceSettings getSettings() {
-    MapReduceSettings settings = new MapReduceSettings()
-        .setWorkerQueueName("mapreduce-workers")
-        .setControllerQueueName("default");
-    return settings;
+    return null;
+//    MapReduceSettings settings = new MapReduceSettings()
+//        .setWorkerQueueName("mapreduce-workers")
+//        .setControllerQueueName("default");
+//    return settings;
   }
 
   private void redirectToMapReduceStatusUrl(String mapReduceJobId) throws IOException {
