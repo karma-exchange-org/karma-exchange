@@ -31,17 +31,18 @@ public class ComputeLeaderboardServlet extends TaskQueueAdminTaskServlet {
   }
 
   public static String startComputeLeaderboardMapReduce() {
-    String eventKind = OfyUtil.getKind(Event.class);
-    return MapReduceJob.start(
-        MapReduceSpecification.of(
-            "ComputeLeaderboardMapReduce",
-            new DatastoreInput(eventKind, DEFAULT_MAP_SHARD_COUNT),
-            new LeaderboardMapper(),
-            Marshallers.<Key<Organization>>getSerializationMarshaller(),
-            Marshallers.<UserKarmaRecord>getSerializationMarshaller(),
-            new LeaderboardReducer(),
-            NoOutput.<Void, Void>create(DEFAULT_REDUCE_SHARD_COUNT)),
-        getSettings());
+    return null;
+//    String eventKind = OfyUtil.getKind(Event.class);
+//    return MapReduceJob.start(
+//        MapReduceSpecification.of(
+//            "ComputeLeaderboardMapReduce",
+//            new DatastoreInput(eventKind, DEFAULT_MAP_SHARD_COUNT),
+//            new LeaderboardMapper(),
+//            Marshallers.<Key<Organization>>getSerializationMarshaller(),
+//            Marshallers.<UserKarmaRecord>getSerializationMarshaller(),
+//            new LeaderboardReducer(),
+//            NoOutput.<Void, Void>create(DEFAULT_REDUCE_SHARD_COUNT)),
+//        getSettings());
   }
 
   private static MapReduceSettings getSettings() {
