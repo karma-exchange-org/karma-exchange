@@ -1,0 +1,16 @@
+<div class="container calendar-iframe loading-overlay-container">
+
+    <!-- <div ng-show="eventRange.isFetchPending()" class="loading-overlay-back"></div> -->
+    <div ng-show="eventRange.isFetchPending()" class="loading-overlay-img-only">
+        <img src="/img/loading_white_circle_text.gif" alt="Loading..."></img>
+    </div>
+
+    <div>
+        <div class="calendar"
+            ng-model="calendarEventSources"
+            calendar="calendar"
+            ui-calendar="calendarUiConfig.calendar">
+        </div>
+    </div>
+
+</div>

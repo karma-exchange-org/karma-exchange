@@ -3247,6 +3247,160 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     }
 };
 
+kexApp.controller('CalendarCtrl', [
+    '$scope', '$log', 'Events', '$http', 'IframeUtil',
+    function($scope, $log, Events, $http, IframeUtil) {
+
+        var now = new Date().getTime();
+        var calendarEvents = [];
+        $scope.calendarEventSources = [calendarEvents];
+        $scope.calendarUiConfig = {
+            calendar: {
+                // height: 450,
+                editable: false,
+                header: {
+                    left: 'month agendaWeek agendaDay',
+                    center: 'title',
+                    right: 'today prev,next'
+                },
+                viewRender: function(view, element) {
+                    if ($scope.eventRange) {
+                        $scope.eventRange.updateVisibleEventRange(view.visStart, view.visEnd);
+                    } else {
+                        $scope.eventRange = new EventRange(view.visStart, view.visEnd, addEvent);
+                    }
+                }
+            }
+        };
+
+        function addEvent(event) {
+            // TODO(avaliani): does this handle multi-day events. Need to check.
+            var eventHref = IframeUtil.getEventDetailsHref(event.key);
+            calendarEvents.push({
+                title: event.title,
+                start: new Date(event.startTime),
+                end: new Date(event.endTime),
+                className: (event.startTime < now) ? "fc-event-past" : undefined,
+                allDay: false,
+                url: eventHref.href,
+                urlTarget: eventHref.target
+            });
+        }
+
+        function EventRange(start, end, addEventCb) {
+            var FETCH_LIMIT = 200;
+            var events = [];
+            var eventsMap = {};
+
+            start = start.getTime();
+            end = end.getTime();
+            var visStart = start;
+            var visEnd = end;
+            var fetchPending = false;
+
+            this.updateVisibleEventRange = updateVisibleEventRange;
+            this.isFetchPending = isFetchPending;
+
+            fetchEvents(start, end);
+
+            function fetchEvents(fetchStart, fetchEnd) {
+                fetchPending = true;
+                Events.get(
+                    {
+                        type: "INTERVAL",
+                        start_time: fetchStart,
+                        end_time: fetchEnd,
+                        limit: FETCH_LIMIT
+                        // keywords: "org:" + $scope.org.searchTokenSuffix
+                    },
+                    processFetchResultSuccess,
+                    processFetchResultError);
+            }
+
+            function processFetchResultSuccess(result) {
+                angular.forEach(result.data, addEventOrdered);
+
+                if (result.paging && result.paging.next) {
+                    $http.get( result.paging.next )
+                        .success(processFetchResultSuccess)
+                        .error(processFetchResultError);
+                } else {
+                    fetchPending = false;
+                    processVisibleEventRangeUpdates();
+                }
+            }
+
+            function processFetchResultError() {
+                fetchPending = false;
+            }
+
+            function updateVisibleEventRange(newStart, newEnd) {
+                visStart = newStart.getTime();
+                visEnd = newEnd.getTime();
+                if (!fetchPending) {
+                    processVisibleEventRangeUpdates();
+                }
+            }
+
+            function processVisibleEventRangeUpdates() {
+                var fetchStart = visStart;
+                var fetchEnd = visEnd;
+
+                if (visStart >= start) {
+                    // Handles both visStart being less than end and it being greater than end.
+                    fetchStart = end;
+                }
+
+                if (visEnd <= end) {
+                    fetchEnd = start;
+                }
+
+                if (fetchStart < fetchEnd) {
+                    if (fetchStart < start) {
+                        start = fetchStart;
+                    }
+                    if (fetchEnd > end) {
+                        end = fetchEnd;
+                    }
+                    fetchEvents(fetchStart, fetchEnd);
+                }
+            }
+
+            function addEventOrdered(event) {
+                if (eventsMap[event.key]) {
+                    return;
+                }
+
+                var lastEl = (events.length > 0) ?
+                    events[events.length - 1] : undefined;
+
+                var addedEvent = false;
+                if (lastEl && (event.startTime < lastEl.startTime)) {
+                    for (var evIdx = 0; evIdx < events.length; evIdx++) {
+                        var curEl = events[evIdx];
+                        if (event.startTime < curEl.startTime) {
+                            events.splice(evIdx, 0, event);
+                            addedEvent = true;
+                            break;
+                        }
+                    }
+                }
+                if (!addedEvent) {
+                    events.push(event);
+                }
+
+                eventsMap[event.key] = event;
+
+                addEventCb(event);
+            }
+
+            function isFetchPending() {
+                return fetchPending;
+            }
+        }
+    }
+]);
+
 var orgCtrl = function( $scope, $location, $routeParams, $modal, Org, KexUtil ) {
     $scope.query = "";
     $scope.newOrg = { page : { url : null, urlProvider : "FACEBOOK" }};
@@ -4416,6 +4570,13 @@ kexApp.config( function( $provide, $routeProvider, $httpProvider, $facebookProvi
             {
                 controller : orgDetailCtrl,
                 templateUrl : 'partials/organizationDetail.html',
+                reloadOnSearch: false
+            })
+        .when(
+            '/calendar',
+            {
+                controller : 'CalendarCtrl',
+                templateUrl : 'partials/calendar.html',
                 reloadOnSearch: false
             })
         // NOTE: If you're adding a new when you need to either add
