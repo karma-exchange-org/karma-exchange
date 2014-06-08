@@ -1711,6 +1711,55 @@ p {
 
 /***** END DROPDOWN INPUT *****/
 
+/***** LOADING OVERLAY *****/
+
+.loading-overlay-container {
+    position   : relative;
+}
+
+.loading-overlay-back {
+    position   : absolute;
+    top        : 0;
+    left       : 0;
+    width      : 100%;
+    height     : 100%;
+    background : #000;
+    opacity    : 0.8;
+    filter     : alpha(opacity=80);
+    z-index    : 105;
+}
+
+.loading-overlay {
+    position : absolute;
+    top:50%;
+    left:50%;
+    margin-left:-45px;
+    margin-top:-45px;
+    color: #fff;
+    /*width    : 100%;*/
+    /*height   : 100%;*/
+    z-index  : 110;
+}
+
+.loading-overlay-img-only {
+    position : absolute;
+    top:50%;
+    left:50%;
+    margin-left:-65px; /* 90/2 (loading img size / 2) + padding */
+    margin-top:-65px;
+
+    padding: 20px;
+    border: 1px #808080 solid;
+    background : #000;
+    border-radius: 10px;
+
+    opacity: .5;
+
+    z-index  : 110;
+}
+
+/***** END LOADING OVERLAY *****/
+
 /***** MICRO CLEARFIX *****/
 
 /**

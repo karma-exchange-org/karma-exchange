@@ -35,6 +35,7 @@ import lombok.NoArgsConstructor;
 public class ListResponseMsg<T> {
 
   private List<T> data;
+  @Nullable
   private PagingInfo paging;
 
   public static <T> ListResponseMsg<T> create(List<T> data) {
