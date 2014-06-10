@@ -151,6 +151,11 @@ public final class Event extends BaseEvent<Event> {
 
   private KeyWrapper<Waiver> waiver;
 
+  private String locationInformationHtml;
+
+  private String externalRegistrationUrl;
+  private String externalRegistrationDetailsHtml;
+
   private SourceEventInfo sourceEventInfo;
 
   public enum RegistrationInfo {
@@ -471,13 +476,6 @@ public final class Event extends BaseEvent<Event> {
   private void validateEvent() {
     List<ValidationError> validationErrors = Lists.newArrayList();
 
-    // Managed events require a location
-    if ((location == null) || (location.getAddress() == null) ||
-        (location.getAddress().getGeoPt() == null)) {
-      validationErrors.add(new ResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "location"));
-    }
-
     // Managed events must have a duration
     if ( (startTime != null) && (endTime != null) && !startTime.before(endTime)) {
      validationErrors.add(new MultiFieldResourceValidationError(
@@ -485,11 +483,6 @@ public final class Event extends BaseEvent<Event> {
        "endTime", "startTime"));
    }
 
-    if (maxRegistrations < 1) {
-      validationErrors.add(new LimitResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_MUST_BE_GTEQ_LIMIT,
-        "maxRegistrations", 1));
-    }
     if (organization == null) {
       validationErrors.add(new ResourceValidationError(
         this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "organization"));

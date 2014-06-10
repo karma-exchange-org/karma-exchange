@@ -89,7 +89,7 @@
                                                     <h4 class="margin-0">
                                                         <strong>{{event.title}}</strong>
                                                     </h4>
-                                                    <small class="text-muted">{{event.location.title}} in {{event.location.address.city}}</small>
+                                                    <span ng-show="event.locationQuickSummary">{{event.locationQuickSummary}}</span>
                                             </div>
                                             <div class="pull-right">
                                                     <h4 class="margin-top-0 text-right">

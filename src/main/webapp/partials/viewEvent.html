@@ -51,7 +51,7 @@
                     </div>
                 </div>
 
-                <div class="panel panel-default panel-seperated-vertical">
+                <div class="panel panel-default panel-seperated-vertical" ng-show="event.location">
                     <div class="panel-body">
 
                         <div class="event-view-icon-img-div">
@@ -199,7 +199,7 @@
                         <div class="panel panel-default panel-no-margin description-panel" ng-show="event.title">
                             <div class="panel-body">
 
-                                <div ng-show="event.description" class="event-description-sub-panel">
+                                <div ng-show="event.descriptionHtml" class="event-description-sub-panel">
                                     <h4>
                                         <strong>
                                             Description
@@ -216,6 +216,26 @@
                                         </strong>
                                     </h4>
                                     <span ng-bind-html-unsafe="event.specialInstructions | textToHtml">
+                                    </span>
+                                </div>
+                                <div ng-show="event.locationInformationHtml" class="event-description-sub-panel">
+                                    <h4>
+                                        <strong>
+                                            Location Information
+                                        </strong>
+                                    </h4>
+
+                                    <span ng-bind-html-unsafe="event.locationInformationHtml">
+                                    </span>
+                                </div>
+                                <div ng-show="event.externalRegistrationDetailsHtml" class="event-description-sub-panel">
+                                    <h4>
+                                        <strong>
+                                            Registration Information
+                                        </strong>
+                                    </h4>
+
+                                    <span ng-bind-html-unsafe="event.externalRegistrationDetailsHtml">
                                     </span>
                                 </div>
                                 <div class="event-description-sub-panel">
