@@ -2639,6 +2639,21 @@ kexApp.directive('upcomingEvents', function(KexUtil, ElementSourceFactory, $q, U
                 prevEventDate = dateVal;
                 event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
                 event.showHeader = showHeader;
+                event.locationQuickSummary = '';
+                if (event.location) {
+                    if (event.location.title) {
+                        event.locationQuickSummary = event.location.title;
+                    }
+                    if (event.location.address && event.location.address.city) {
+                        if (event.locationQuickSummary) {
+                            event.locationQuickSummary += ' ';
+                        }
+                        event.locationQuickSummary += 'in ' + event.location.address.city;
+                        if (event.location.address.state) {
+                            event.locationQuickSummary += ', ' + event.location.address.state;
+                        }
+                    }
+                }
                 return event;
             }
         }
@@ -3503,6 +3518,21 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
         event.showHeader = showHeader;
         event.isCollapsed = true;
+        event.locationQuickSummary = '';
+        if (event.location) {
+            if (event.location.title) {
+                event.locationQuickSummary = event.location.title;
+            }
+            if (event.location.address && event.location.address.city) {
+                if (event.locationQuickSummary) {
+                    event.locationQuickSummary += ' ';
+                }
+                event.locationQuickSummary += 'in ' + event.location.address.city;
+                if (event.location.address.state) {
+                    event.locationQuickSummary += ', ' + event.location.address.state;
+                }
+            }
+        }
 
         if (event.key == getRouteExpandedEventKey()) {
             toggleEvent(event);

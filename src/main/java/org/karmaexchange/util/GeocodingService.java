@@ -20,6 +20,7 @@ public class GeocodingService {
 
   @Nullable
   public static GeoPt getGeoPt(String addressStr) {
+    // TODO(avaliani): use an api key to avoid geocoding quota limits
     final Geocoder geocoder = new Geocoder();
     GeocoderRequest geocoderRequest = new GeocoderRequestBuilder()
       .setAddress(addressStr)
@@ -37,12 +38,10 @@ public class GeocodingService {
         "Geocoding failed: status=" + geocoderResponse.getStatus() + ", " +
           "response=" + geocoderResponse);
 
-      // TODO(avaliani): Properly handle geopt encoding failures.
-      // Temporary hack for the demo use San Francisco, CA
-      return new GeoPt(37.774929f, -122.419416f);
+      // TODO(avaliani): Properly handle geopt encoding failures. Retrying in cases where
+      //   the error is over quota.
+      return null;
     }
-
-    // return null;
   }
 
 }

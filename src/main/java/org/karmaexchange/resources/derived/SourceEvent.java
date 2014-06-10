@@ -59,6 +59,8 @@ public class SourceEvent {
 
   private List<SourceEventParticipant> sourceParticipants = Lists.newArrayList();
 
+  private SourceAssociatedOrg sourceAssociatedOrg;
+
   private Date sourceLastModifiedDate;
 
   /*
@@ -75,6 +77,15 @@ public class SourceEvent {
     if (event.getDescriptionHtml() != null) {
       event.setDescriptionHtml(
         SalesforceUtil.processRichTextField(event.getDescriptionHtml(), sourceInfo));
+    }
+    if (event.getLocationInformationHtml() != null) {
+      event.setLocationInformationHtml(
+        SalesforceUtil.processRichTextField(event.getLocationInformationHtml(), sourceInfo));
+    }
+    if (event.getExternalRegistrationDetailsHtml() != null) {
+      event.setExternalRegistrationDetailsHtml(
+        SalesforceUtil.processRichTextField(
+          event.getExternalRegistrationDetailsHtml(), sourceInfo));
     }
     if (event.getLocation() != null) {
       Location loc = event.getLocation();
@@ -221,5 +232,17 @@ public class SourceEvent {
     private String firstName;
     private String lastName;
     private String email;
+  }
+
+  // This is temporary until we decide how to fully incorporate associated orgs.
+  @Data
+  @NoArgsConstructor
+  public static final class SourceAssociatedOrg {
+    public enum Type {
+      EVENT_SPONSOR
+    }
+
+    private String name;
+    private Type type;
   }
 }

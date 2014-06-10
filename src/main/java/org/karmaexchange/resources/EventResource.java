@@ -274,11 +274,15 @@ public class EventResource extends BaseDaoResource<Event, EventView> {
     List<Event> filteredResults = Lists.newArrayList();
     do {
       for (Event event : queryResult.getSearchResults()) {
-        GeoPtWrapper eventGeoPt = event.getLocation().getAddress().getGeoPt();
-        LatLng eventLoc = new LatLng(eventGeoPt.getLatitude(), eventGeoPt.getLongitude());
-        double distanceInMiles = LatLngTool.distance(userLoc, eventLoc, LengthUnit.MILE);
-        if (distanceInMiles <= maxDistInMiles) {
-          filteredResults.add(event);
+        if ( (event.getLocation() != null) &&
+             (event.getLocation().getAddress() != null) &&
+             (event.getLocation().getAddress().getGeoPt() != null) ) {
+          GeoPtWrapper eventGeoPt = event.getLocation().getAddress().getGeoPt();
+          LatLng eventLoc = new LatLng(eventGeoPt.getLatitude(), eventGeoPt.getLongitude());
+          double distanceInMiles = LatLngTool.distance(userLoc, eventLoc, LengthUnit.MILE);
+          if (distanceInMiles <= maxDistInMiles) {
+            filteredResults.add(event);
+          }
         }
       }
 
