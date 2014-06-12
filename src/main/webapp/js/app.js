@@ -138,8 +138,45 @@ kexApp = angular.module( "kexApp",
         }
 
     };
-});
+})
 
+.filter('eventStartEndDate', function () {
+    return function (event) {
+        if (!angular.isDefined(event)) {
+            return;
+        }
+
+        var dateStr;
+        var startTime = moment(event.startTime);
+        var endTime = moment(event.endTime);
+        if ( (startTime.year() != endTime.year()) ||
+             (startTime.dayOfYear() != endTime.dayOfYear()) ) {
+            dateStr =
+                '<div>' +
+                    '<h4 class="date-start">' +
+                        startTime.format('dddd, MMMM Do YYYY') + '<br/>' +
+                        startTime.format('h:mm A') +
+                    '</h4>' +
+                '</div>' +
+                '<div>' +
+                    '<h4 class="date-to"> to </h4>' +
+                '</div>' +
+                '<div>' +
+                    '<h4 class="date-end">' +
+                        endTime.format('dddd, MMMM Do YYYY') + '<br/>' +
+                        endTime.format('h:mm A') +
+                    '</h4>' +
+                '</div>';
+        } else {
+            dateStr =
+                '<h4 class="date-combined">' +
+                    startTime.format('dddd, MMMM Do YYYY') + '<br/>' +
+                    startTime.format('h:mm A') + ' to ' + endTime.format('h:mm A') +
+                '</h4>';
+        }
+        return dateStr;
+    };
+});
 
 /*
  * Session management

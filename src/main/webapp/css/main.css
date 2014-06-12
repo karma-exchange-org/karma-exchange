@@ -596,6 +596,31 @@ img.kex-thumbnail-user-mini {
   padding-bottom: 5px;
 }
 
+.event-start-end-date h4 {
+  line-height: 1.4;
+}
+
+.event-start-end-date .date-start {
+  font-weight: bold;
+  margin: 0;
+}
+
+.event-start-end-date .date-to {
+  margin-left: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.event-start-end-date .date-end {
+  font-weight: bold;
+  margin: 0;
+}
+
+.event-start-end-date .date-combined {
+  font-weight: bold;
+  margin: 0;
+}
+
 /*
  * Event view details tabs
  */

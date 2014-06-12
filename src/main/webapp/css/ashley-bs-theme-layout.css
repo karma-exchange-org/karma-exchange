@@ -295,6 +295,7 @@ h3, legend {
 h4 {
 	/*font-size: 14px;*/
 	/*line-height: 22px;*/
+	line-height: 1.2;
 	margin-bottom: 6px;
 	/*font-style: bold;*/
 	font-family: Arial, Helvetica, sans-serif;
