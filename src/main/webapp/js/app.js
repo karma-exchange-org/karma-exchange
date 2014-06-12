@@ -1841,7 +1841,8 @@ kexApp.directive('dropdownInput', function ($q, $rootScope) {
         restrict: 'E',
         scope: {
             paceholder: '@',
-            inputDisplayValue: '=',
+            inputLabel: '=',
+            inputValue: '=',
             inputSubmit: '&'
         },
         replace: true,
@@ -1863,19 +1864,17 @@ kexApp.directive('dropdownInput', function ($q, $rootScope) {
                 }
             };
             scope.submit = function() {
-                if (scope.inputValue) {
-                    var submitResult = scope.inputSubmit({value: scope.inputValue});
-                    scope.inputParseTracker = new PromiseTracker(submitResult);
-                    submitResult.then(
-                        function() {
-                            closeDropdown();
-                        },
-                        function(errorMsg) {
-                            scope.errorMsg = errorMsg;
-                            // TODO(avaliani): input element is disabled so can't set focus.
-                            // dropdownInputElement.focus();
-                        })
-                }
+                var submitResult = scope.inputSubmit({value: scope.inputValue});
+                scope.inputParseTracker = new PromiseTracker(submitResult);
+                submitResult.then(
+                    function() {
+                        closeDropdown();
+                    },
+                    function(errorMsg) {
+                        scope.errorMsg = errorMsg;
+                        // TODO(avaliani): input element is disabled so can't set focus.
+                        // dropdownInputElement.focus();
+                    })
             }
 
             scope.$watch(
@@ -1902,7 +1901,7 @@ kexApp.directive('dropdownInput', function ($q, $rootScope) {
 
             function closeDropdown() {
                 if (dropdownToggleElement.css('display') !='none') {
-                    scope.inputValue = "";
+                    // scope.inputValue = "";
                     scope.errorMsg = "";
                     dropdownToggleElement.trigger( "click" );
                 }
@@ -3504,7 +3503,8 @@ var createOrgCtrl = function ($scope, $modalInstance) {
 };
 var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, KexUtil,
         EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q, Geocoder, $log,
-        SnapshotServiceHandshake, SessionManager, ElementSourceFactory, IframeUtil ) {
+        SnapshotServiceHandshake, SessionManager, ElementSourceFactory, IframeUtil,
+        $localStorage ) {
     var EVENTS_PER_PAGE = 20;
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
@@ -3528,14 +3528,23 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
 
         var eventSearchDef = eventSearchRecyclablePromise.recycle();
         $scope.eventSearchTracker.reset(eventSearchDef.promise);
+
+        var reqParams = {
+            keywords: ($scope.query ? $scope.query : ""),
+            limit: EVENTS_PER_PAGE + 1
+        };
+        if ($scope.locationSearch.settings.selectedLocation) {
+            angular.extend(
+                reqParams,
+                {
+                    distance: $scope.locationSearch.settings.selectedDistance,
+                    lat: $scope.locationSearch.settings.selectedLocation.latitude,
+                    lng: $scope.locationSearch.settings.selectedLocation.longitude
+                });
+        }
+
         Events.get(
-            {
-                keywords: ($scope.query ? $scope.query : ""),
-                distance: $scope.locationSearch.selectedDistance,
-                lat: $scope.locationSearch.selectedLocation.latitude,
-                lng: $scope.locationSearch.selectedLocation.longitude,
-                limit: EVENTS_PER_PAGE + 1
-            },
+            reqParams,
             function(value) {
                 eventSearchDef.resolve(value);
             },
@@ -3729,23 +3738,37 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     }
 
     function LocationSearch() {
-        this.selectedDistance = 50;
+        var settings = $localStorage.locationSearch ? JSON.parse($localStorage.locationSearch) : {};
+
+        var DEFAULT_DISTANCE = 50;
         this.distanceChoices = [
             5,
             10,
             50
         ];
+        this.settings = settings;
 
-        this.selectedLocation =
-            { text: "San Francisco, CA", latitude: 37.774929, longitude: -122.419416 };
+        initSettings();
+
+        function initSettings() {
+            if (!settings.selectedDistance) {
+                settings.selectedDistance = DEFAULT_DISTANCE;
+            }
+        }
+
+        function persistSettings() {
+            $localStorage.locationSearch = JSON.stringify(settings);
+        }
+
 
         this.distanceToDisplayString = function (distance) {
             return distance + " miles";
         }
 
         this.updateDistance = function (newDistance) {
-            if (newDistance != this.selectedDistance) {
-                this.selectedDistance = newDistance;
+            if (newDistance != settings.selectedDistance) {
+                settings.selectedDistance = newDistance;
+                persistSettings();
                 return true;
             } else {
                 return false;
@@ -3753,16 +3776,31 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         }
 
         this.updateLocation = function (newLocation) {
-            if ( (this.selectedLocation.latitude != newLocation.lat) ||
-                 (this.selectedLocation.longitude != newLocation.lng) ) {
+            var curLocation = settings.selectedLocation;
 
-                this.selectedLocation.latitude = newLocation.lat;
-                this.selectedLocation.longitude = newLocation.lng;
-                if (newLocation.city && newLocation.state) {
-                    this.selectedLocation.text = newLocation.city + ", " + newLocation.state;
+            if (!newLocation) {
+                if (curLocation) {
+                    curLocation = settings.selectedLocation = undefined;
+                    persistSettings();
+                    return true;
                 } else {
-                    this.selectedLocation.text = newLocation.formattedAddress;
+                    return false;
                 }
+            } else if ( (!curLocation) ||
+                 (curLocation.latitude != newLocation.lat) ||
+                 (curLocation.longitude != newLocation.lng) ) {
+
+                if (!curLocation) {
+                    curLocation = settings.selectedLocation = {};
+                }
+                curLocation.latitude = newLocation.lat;
+                curLocation.longitude = newLocation.lng;
+                if (newLocation.city && newLocation.state) {
+                    curLocation.text = newLocation.city + ", " + newLocation.state;
+                } else {
+                    curLocation.text = newLocation.formattedAddress;
+                }
+                persistSettings();
                 return true;
 
             } else {
@@ -3778,6 +3816,13 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         }
     }
     $scope.getGeocoding = function (value) {
+        if (!value) {
+            if ($scope.locationSearch.updateLocation(value)) {
+                $scope.reset();
+            }
+            return $q.when();
+        }
+
         var geocodingDef = $q.defer();
 
         Geocoder.geocodeAddress(value).then(

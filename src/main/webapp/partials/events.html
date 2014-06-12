@@ -21,18 +21,19 @@
                         </span>
                 </div>
             </div>
-            <div class="location-search col-sm-6">
+
+            <div class="location-search location-specified col-sm-6" ng-show="locationSearch.settings.selectedLocation">
                 <span class="text">
                     within
                 </span>
 
                 <div class="dropdown">
                   <a class="dropdown-toggle">
-                    {{ locationSearch.distanceToDisplayString(locationSearch.selectedDistance) }}
+                    {{ locationSearch.distanceToDisplayString(locationSearch.settings.selectedDistance) }}
                   </a>
                   <ul class="dropdown-menu">
                     <li ng-repeat="distance in locationSearch.distanceChoices">
-                        <a ng-class="{ 'selected' : (distance == locationSearch.selectedDistance)}"
+                        <a ng-class="{ 'selected' : (distance == locationSearch.settings.selectedDistance)}"
                            ng-click="updateDistance(distance)">
                             {{ locationSearch.distanceToDisplayString(distance) }}
                         </a>
@@ -46,10 +47,23 @@
 
                 <dropdown-input class="city-name"
                     paceholder="City or postal code"
-                    input-display-value="locationSearch.selectedLocation.text"
+                    input-label="locationSearch.settings.selectedLocation.text"
+                    input-value="locationSearch.inputValue"
                     input-submit="getGeocoding(value)">
                 </dropdown-input>
             </div>
+
+            <div class="location-search location-not-specified col-sm-6" ng-hide="locationSearch.settings.selectedLocation">
+
+                <dropdown-input class="city-name"
+                    paceholder="City or postal code"
+                    input-label="'Filter by location'"
+                    input-value="locationSearch.inputValue"
+                    input-submit="getGeocoding(value)">
+                </dropdown-input>
+
+            </div>
+
         </div>
 
         <div class="results-div">
