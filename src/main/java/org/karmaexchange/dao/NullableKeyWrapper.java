@@ -14,7 +14,7 @@ import com.googlecode.objectify.Key;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public final class NullableKeyWrapper<T> extends KeyWrapper<T> {
+public class NullableKeyWrapper<T> extends KeyWrapper<T> {
 
   public static <T> NullableKeyWrapper<T> create() {
     return new NullableKeyWrapper<T>(null);
@@ -24,7 +24,7 @@ public final class NullableKeyWrapper<T> extends KeyWrapper<T> {
     return new NullableKeyWrapper<T>(key);
   }
 
-  private NullableKeyWrapper(@Nullable Key<T> key) {
+  protected NullableKeyWrapper(@Nullable Key<T> key) {
     this.key = key;
   }
 

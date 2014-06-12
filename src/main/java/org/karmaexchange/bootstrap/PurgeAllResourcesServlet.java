@@ -7,7 +7,6 @@ import org.karmaexchange.auth.Session;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Image;
 import org.karmaexchange.dao.Leaderboard;
-import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Review;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.UserManagedEvent;
