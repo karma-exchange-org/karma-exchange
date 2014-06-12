@@ -33,19 +33,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="event-view-icon-text-div">
-
-                            <h4 class="margin-0">
-                                <strong>
-                                    {{event.startTime | date:'EEEE, MMM d, y'}}
-                                </strong>
-                            </h4>
-                            <h4 class="margin-0">
-                                <strong>
-                                    {{event.startTime|date:'shortTime'}} to {{event.endTime|date:'shortTime'}}
-                                </strong>
-                            </h4>
-
+                        <div class="event-view-icon-text-div event-start-end-date" ng-bind-html-unsafe="event | eventStartEndDate">
                         </div>
 
                     </div>

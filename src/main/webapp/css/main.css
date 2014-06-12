@@ -320,8 +320,14 @@ table>tbody>tr>td.table-cell-align-middle {
 
 .event-search .search-box .location-search {
   padding: 4px 0px 0px 10px;
-  font-size: 19px;
   font-family: 'Open Sans', sans-serif;
+}
+
+.event-search .search-box .location-search.location-specified {
+  font-size: 19px;
+}
+.event-search .search-box .location-search.location-not-specified {
+  font-size: 14px;
 }
 
 .event-search .search-box .location-search > .text,
@@ -330,14 +336,30 @@ table>tbody>tr>td.table-cell-align-middle {
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.2);
 }
 
-.event-search .search-box .location-search div.dropdown {
-  display: inline-block;
-  border-bottom: 1px dotted #FFF;
+.event-search .search-box .location-search.location-not-specified a.dropdown-toggle {
+  text-transform: uppercase;
 }
 
-.event-search .search-box .location-search div.dropdown:hover,
-.event-search .search-box .location-search div.dropdown.open {
+.event-search .search-box .location-search div.dropdown {
+  display: inline-block;
+}
+
+.event-search .search-box .location-search.location-specified div.dropdown {
+  border-bottom: 1px dotted #FFF;
+}
+.event-search .search-box .location-search.location-specified div.dropdown:hover,
+.event-search .search-box .location-search.location-specified div.dropdown.open {
   border-bottom: 1px dotted #F0F0F0;
+}
+
+.event-search .search-box .location-search.location-not-specified div.dropdown {
+  border: 1px #FFF solid;
+  padding: 2px 7px;
+  margin-top: 2px;
+}
+.event-search .search-box .location-search.location-not-specified div.dropdown:hover,
+.event-search .search-box .location-search.location-not-specified div.dropdown.open {
+  border: 1px #F0F0F0 solid;
 }
 
 .event-search .search-box .location-search a {
@@ -594,6 +616,31 @@ img.kex-thumbnail-user-mini {
 
 .event-view-rating {
   padding-bottom: 5px;
+}
+
+.event-start-end-date h4 {
+  line-height: inherit;  /* using this since h4.margin-0 uses it. Re-eval. */
+}
+
+.event-start-end-date .date-start {
+  font-weight: bold;
+  margin: 0;
+}
+
+.event-start-end-date .date-to {
+  margin-left: 20px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.event-start-end-date .date-end {
+  font-weight: bold;
+  margin: 0;
+}
+
+.event-start-end-date .date-combined {
+  font-weight: bold;
+  margin: 0;
 }
 
 /*

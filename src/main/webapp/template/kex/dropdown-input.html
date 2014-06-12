@@ -1,6 +1,6 @@
 <div class="dropdown dropdown-input">
     <a class="dropdown-toggle">
-        {{ inputDisplayValue }}
+        {{ inputLabel }}
     </a>
     <ul class="dropdown-menu">
         <li>
@@ -23,12 +23,15 @@
                         Processing ...
                     </div>
                 </div>
-                <button ng-show="isMobileDeviceOrTablet"
-                        class="btn btn-primary btn-sm"
+                <button class="btn btn-default btn-sm"
+                        ng-click="inputValue=''; submit()">
+                    Clear
+                </button>
+                <button class="btn btn-primary btn-sm"
                         ng-click="submit()"
                         btn-loading="inputParseTracker.isPending()"
                         data-loading-text="Processing...">
-                    Set location
+                    Update
                 </button>
             </div>
         </li>
