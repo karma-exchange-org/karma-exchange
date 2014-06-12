@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
 
+import org.karmaexchange.dao.AssociatedOrganization.Association;
 import org.karmaexchange.dao.Organization.Role;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
@@ -95,7 +96,7 @@ public final class Event extends BaseEvent<Event> {
   @Index
   private KeyWrapper<Organization> organization;
 
-  private List<OrganizationNamedKeyWrapper> associatedOrganizations = Lists.newArrayList();
+  private List<AssociatedOrganization> associatedOrganizations = Lists.newArrayList();
 
   // Can not be explicitly set. Automatically managed.
   @Ignore
@@ -267,7 +268,7 @@ public final class Event extends BaseEvent<Event> {
     validateEvent();
     // The list of associated organizations is consumed by initSearchableTokens(), so the
     // associated organizations must be set prior to invoking initSearchableTokens().
-    associatedOrganizations = prevObj.associatedOrganizations;
+    initAssociatedOrganizations();
     initSearchableTokens();
     completionProcessed = prevObj.completionProcessed;
     completionTasks = prevObj.completionTasks;
@@ -386,10 +387,28 @@ public final class Event extends BaseEvent<Event> {
   }
 
   private void initAssociatedOrganizations() {
-    associatedOrganizations = Lists.newArrayList();
-    for (Organization org : Organization.getOrgAndAncestorOrgs(KeyWrapper.toKey(organization))) {
-      associatedOrganizations.add(new OrganizationNamedKeyWrapper(org));
+    associatedOrganizations =
+        getExplicitOrgAssociations();
+    Key<Organization> eventOwnerKey = KeyWrapper.toKey(organization);
+    for (Organization org : Organization.getOrgAndAncestorOrgs(eventOwnerKey)) {
+      Association association =
+          Key.create(org).equals(eventOwnerKey) ? Association.EVENT_OWNER :
+            Association.EVENT_OWNER_ANCESTOR;
+      associatedOrganizations.add(
+        new AssociatedOrganization(org, association));
     }
+  }
+
+  private List<AssociatedOrganization> getExplicitOrgAssociations() {
+    List<AssociatedOrganization> explicitOrgAssocs =
+        Lists.newArrayList();
+    for (AssociatedOrganization org : associatedOrganizations) {
+      if ( (org.getAssociation() != AssociatedOrganization.Association.EVENT_OWNER) &&
+           (org.getAssociation() != AssociatedOrganization.Association.EVENT_OWNER_ANCESTOR) ) {
+        explicitOrgAssocs.add(org);
+      }
+    }
+    return explicitOrgAssocs;
   }
 
   private void initSearchableTokens() {
@@ -399,10 +418,14 @@ public final class Event extends BaseEvent<Event> {
     // Throw an exception if we can't add the primary org token to the searchableTokensSet.
     searchableTokensSet.add(
       Organization.getPrimaryOrgSearchToken(primaryOrgKey));
-    for (OrganizationNamedKeyWrapper orgKeyWrapper : associatedOrganizations) {
-      // Throw an exception if we can't add the org token to the searchableTokensSet.
-      searchableTokensSet.add(
-        Organization.getAssociatedOrgsSearchToken(KeyWrapper.toKey(orgKeyWrapper)));
+    for (AssociatedOrganization assocOrg : associatedOrganizations) {
+      Key<Organization> assocOrgKey =
+          KeyWrapper.toKey(assocOrg);
+      if (assocOrgKey != null) {
+        // Throw an exception if we can't add the org token to the searchableTokensSet.
+        searchableTokensSet.add(
+          Organization.getAssociatedOrgsSearchToken(assocOrgKey));
+      }
     }
 
     for (SuitableForType suitableForType : suitableForTypes) {
@@ -504,6 +527,14 @@ public final class Event extends BaseEvent<Event> {
               organizerEntry.getKey().getString()));
           }
         }
+      }
+    }
+
+    for (AssociatedOrganization assocOrg : associatedOrganizations) {
+      ValidationError validationError =
+          assocOrg.validate(this, "associatedOrganizations");
+      if (validationError != null) {
+        validationErrors.add(validationError);
       }
     }
 

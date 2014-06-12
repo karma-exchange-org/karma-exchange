@@ -7,6 +7,7 @@ import java.util.Date;
 
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.EventParticipant;
+import org.karmaexchange.dao.AssociatedOrganization;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
@@ -47,12 +48,17 @@ public class LeaderboardMapper extends Mapper<Entity, Key<Organization>, UserKar
     if (event.getStatus() != Status.COMPLETED) {
       return;
     }
-    for (OrganizationNamedKeyWrapper associatedOrg : event.getAssociatedOrganizations()) {
+    for (AssociatedOrganization assocOrg : event.getAssociatedOrganizations()) {
       for (EventParticipant participant : event.getParticipants()) {
         if (participant.getType().countAsAttended()) {
-          getContext().emit(KeyWrapper.toKey(associatedOrg),
-            new UserKarmaRecord(KeyWrapper.toKey(participant.getUser()), event.getKarmaPoints(),
-              event.getEndTime()));
+          Key<Organization> assocOrgKey =
+              KeyWrapper.toKey(assocOrg);
+          if (assocOrgKey != null) {
+            getContext().emit(
+              assocOrgKey,
+              new UserKarmaRecord(KeyWrapper.toKey(participant.getUser()), event.getKarmaPoints(),
+                event.getEndTime()));
+          }
         }
       }
     }

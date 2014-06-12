@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.AccessLevel;
@@ -23,8 +24,10 @@ import org.karmaexchange.auth.GlobalUid;
 import org.karmaexchange.auth.GlobalUidMapping;
 import org.karmaexchange.auth.GlobalUidType;
 import org.karmaexchange.dao.Address;
+import org.karmaexchange.dao.AssociatedOrganization;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.AssociatedOrganization.Association;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.Event.ParticipantType;
@@ -59,7 +62,7 @@ public class SourceEvent {
 
   private List<SourceEventParticipant> sourceParticipants = Lists.newArrayList();
 
-  private SourceAssociatedOrg sourceAssociatedOrg;
+  private SourceAssociatedOrganization sourceAssociatedOrg;
 
   private Date sourceLastModifiedDate;
 
@@ -110,6 +113,10 @@ public class SourceEvent {
       SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceEventId).getString());
     event.setId(EVENT_ID);
     event.setOrganization(KeyWrapper.create(sourceInfo.getOrgKey()));
+    if (sourceAssociatedOrg != null) {
+      event.getAssociatedOrganizations().add(
+        sourceAssociatedOrg.toAssociatedOrganization());
+    }
     event.setSourceEventInfo(new SourceEventInfo(sourceEventId, sourceLastModifiedDate));
     mapSourceParticipants();
     // TODO(avaliani): map source participants
@@ -234,15 +241,20 @@ public class SourceEvent {
     private String email;
   }
 
-  // This is temporary until we decide how to fully incorporate associated orgs.
   @Data
   @NoArgsConstructor
-  public static final class SourceAssociatedOrg {
-    public enum Type {
-      EVENT_SPONSOR
-    }
-
+  public static final class SourceAssociatedOrganization {
+    @Nullable
+    private String orgId;
     private String name;
-    private Type type;
+    private Association type;
+
+    public AssociatedOrganization toAssociatedOrganization() {
+      Key<Organization> orgKey = null;
+      if (orgId != null) {
+        orgKey = Organization.createKey(orgId);
+      }
+      return new AssociatedOrganization(orgKey, name, type);
+    }
   }
 }

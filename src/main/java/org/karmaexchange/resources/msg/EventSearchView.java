@@ -11,13 +11,13 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.karmaexchange.dao.AlbumRef;
+import org.karmaexchange.dao.AssociatedOrganization;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Event.RegistrationInfo;
 import org.karmaexchange.dao.Event.Status;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.Organization;
-import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.CachedEventParticipant;
 import org.karmaexchange.dao.Permission;
 import org.karmaexchange.dao.AggregateRating;
@@ -45,7 +45,7 @@ public class EventSearchView {
 
   private KeyWrapper<Organization> organization;
   private OrgEventSummary organizationDetails;
-  private List<OrganizationNamedKeyWrapper> associatedOrganizations = Lists.newArrayList();
+  private List<AssociatedOrganization> associatedOrganizations = Lists.newArrayList();
 
   private String title;
   private Location location;
