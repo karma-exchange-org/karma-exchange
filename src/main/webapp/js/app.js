@@ -1719,7 +1719,8 @@ kexApp.factory('PersonaUtil', function($q, $rootScope) {
 });
 
 
-kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, KarmaGoalUtil, MeUtil) {
+kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, KarmaGoalUtil, MeUtil,
+        IframeUtil) {
     return {
         postRegistrationTasks: function(event, participantType) {
             this._postRegistrationTasks(event, participantType, true);
@@ -1756,6 +1757,28 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, Karm
         getImpactViewUrl: function (event) {
             // TODO(avaliani): the impact url should be different from the event details url.
             return KexUtil.getBaseUrl() + '/#!/event/' + event.key;
+        },
+
+        processEventLoad: function(event) {
+            event.locationQuickSummary = '';
+            if (event.location) {
+                if (event.location.title) {
+                    event.locationQuickSummary = event.location.title;
+                }
+                if (event.location.address && event.location.address.city) {
+                    if (event.locationQuickSummary) {
+                        event.locationQuickSummary += ' ';
+                    }
+                    event.locationQuickSummary += 'in ' + event.location.address.city;
+                    if (event.location.address.state) {
+                        event.locationQuickSummary += ', ' + event.location.address.state;
+                    }
+                }
+            }
+            if (event.externalRegistrationUrl || event.externalRegistrationDetailsHtml) {
+                event.registrationInfo = 'EXTERNAL_REGISTRATION';
+            }
+            event.detailsHref = IframeUtil.getEventDetailsHref(event.key);
         }
     };
 });
@@ -2612,7 +2635,8 @@ kexApp.directive('leaderboardTable', function() {
     };
 });
 
-kexApp.directive('upcomingEvents', function(KexUtil, ElementSourceFactory, $q, User, Events) {
+kexApp.directive('upcomingEvents', function(KexUtil, ElementSourceFactory, $q, User,
+        Events, EventUtil) {
     return {
         restrict: 'E',
         scope: {
@@ -2668,6 +2692,7 @@ kexApp.directive('upcomingEvents', function(KexUtil, ElementSourceFactory, $q, U
             }
 
             function processEvent(event) {
+                EventUtil.processEventLoad(event);
                 var dateVal = new Date(event.startTime);
                 var showHeader = (dateVal.getDate() != prevEventDate.getDate()) ||
                     (dateVal.getMonth() != prevEventDate.getMonth()) ||
@@ -2675,21 +2700,6 @@ kexApp.directive('upcomingEvents', function(KexUtil, ElementSourceFactory, $q, U
                 prevEventDate = dateVal;
                 event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
                 event.showHeader = showHeader;
-                event.locationQuickSummary = '';
-                if (event.location) {
-                    if (event.location.title) {
-                        event.locationQuickSummary = event.location.title;
-                    }
-                    if (event.location.address && event.location.address.city) {
-                        if (event.locationQuickSummary) {
-                            event.locationQuickSummary += ' ';
-                        }
-                        event.locationQuickSummary += 'in ' + event.location.address.city;
-                        if (event.location.address.state) {
-                            event.locationQuickSummary += ', ' + event.location.address.state;
-                        }
-                    }
-                }
                 return event;
             }
         }
@@ -2848,8 +2858,7 @@ kexApp.directive('truncateAndLink', function($rootScope, KexUtil, IframeUtil) {
         scope: {
             text: '=',
             linkText: '@',
-            href: '@',
-            hrefCb: '&',
+            linkDetails: '=',
             limit: '@'
         },
         replace: true,
@@ -2857,27 +2866,17 @@ kexApp.directive('truncateAndLink', function($rootScope, KexUtil, IframeUtil) {
         templateUrl: 'template/kex/truncate-and-link.html',
         link: function (scope, element, attrs) {
             scope.$watch('text', updateText);
-            scope.$watch('href', updateText);
+            scope.$watch('linkDetails', updateText);
             scope.$watch('limit', updateText);
 
             function updateText() {
                 if (  angular.isDefined(scope.text) &&
-                      ( angular.isDefined(scope.href) ||
-                        ('hrefCb' in attrs) ) &&
+                      angular.isDefined(scope.linkDetails) &&
                       angular.isDefined(scope.limit)  ) {
                     var result =
                         KexUtil.truncateToWordBoundary(scope.text, scope.limit);
                     scope.output = result.str;
                     scope.truncated = result.truncated;
-
-                    if ('hrefCb' in attrs) {
-                        scope.hrefCtx = scope.hrefCb({});
-                    } else {
-                        scope.hrefCtx = {
-                            href: scope.href,
-                            target: IframeUtil.getLinkTarget()
-                        }
-                    }
                 }
             }
         }
@@ -3504,7 +3503,7 @@ var createOrgCtrl = function ($scope, $modalInstance) {
 var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, KexUtil,
         EventUtil, FbUtil, RecyclablePromiseFactory, MeUtil, $q, Geocoder, $log,
         SnapshotServiceHandshake, SessionManager, ElementSourceFactory, IframeUtil,
-        $localStorage ) {
+        $localStorage, $modal ) {
     var EVENTS_PER_PAGE = 20;
     $scope.KexUtil = KexUtil;
     $scope.FbUtil = FbUtil;
@@ -3556,6 +3555,7 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
     };
 
     function processEvent(event) {
+        EventUtil.processEventLoad(event);
         var dateVal = new Date(event.startTime);
         var showHeader = (dateVal.getDate() != prevEventDate.getDate()) ||
             (dateVal.getMonth() != prevEventDate.getMonth()) ||
@@ -3564,30 +3564,9 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         event.dateFormat = (now.getFullYear() == dateVal.getFullYear()) ? 'EEEE, MMM d' : 'EEEE, MMM d, y';
         event.showHeader = showHeader;
         event.isCollapsed = true;
-        event.locationQuickSummary = '';
-        if (event.location) {
-            if (event.location.title) {
-                event.locationQuickSummary = event.location.title;
-            }
-            if (event.location.address && event.location.address.city) {
-                if (event.locationQuickSummary) {
-                    event.locationQuickSummary += ' ';
-                }
-                event.locationQuickSummary += 'in ' + event.location.address.city;
-                if (event.location.address.state) {
-                    event.locationQuickSummary += ', ' + event.location.address.state;
-                }
-            }
-        }
-
         if (event.key == getRouteExpandedEventKey()) {
             toggleEvent(event);
         }
-
-        event.detailsHrefCb = function() {
-            return IframeUtil.getEventDetailsHref(event.key);
-        }
-
         return event;
     }
 
@@ -3849,8 +3828,33 @@ var eventsCtrl = function( $scope, $location, $routeParams, Events, $rootScope, 
         return geocodingDef.promise;
     }
 
+    $scope.displayExternalRegInfo = function() {
+        var event = this.event;
+        $modal.open({
+            backdrop: false,
+            templateUrl: 'template/kex/registration-info-modal.html',
+            controller: 'RegistrationInfoModalInstanceCtrl',
+            resolve:
+                {
+                    event: function () {
+                        return event;
+                    }
+                }
+        });
+    };
+
     $scope.reset();
 };
+
+kexApp.controller('RegistrationInfoModalInstanceCtrl', [
+    '$scope', '$modalInstance', 'event',
+    function($scope, $modalInstance, event) {
+        $scope.event = event;
+        $scope.close = function() {
+            $modalInstance.dismiss();
+        }
+    }
+]);
 
 var addEditEventsCtrl =  function( $scope, $rootScope, $routeParams, $filter, $location, Events, $http, FbUtil, EventUtil, KexUtil ) {
     $scope.KexUtil = KexUtil;
@@ -4340,8 +4344,9 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
             {
                 id: $routeParams.eventId
             },
-            function( result ) {
-                $scope.event = result;
+            function( event ) {
+                $scope.event = event;
+                EventUtil.processEventLoad(event);
                 if ($scope.event.status == 'COMPLETED') {
                     tabs.impact.disabled = false;
                     if (tabs.impact.active) {
@@ -4703,7 +4708,8 @@ kexApp.config( function( $provide, $routeProvider, $httpProvider, $facebookProvi
     if (document.location.hostname === "localhost" ) {
         fbAppId = '276423019167993';
     }
-    else if (document.location.hostname === "karmademo.dyndns.dk" ) {
+    else if ( (document.location.hostname === "karmademo.dyndns.dk") ||
+              (document.location.hostname === "karmademo.dyndns.org") ) {
         fbAppId = '1381630838720301';
     }
     else if ( /^kex-latest[-\w]*.appspot.com$/.test(document.location.hostname) ) {

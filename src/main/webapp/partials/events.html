@@ -57,7 +57,7 @@
 
                 <dropdown-input class="city-name"
                     paceholder="City or postal code"
-                    input-label="'Filter by location'"
+                    input-label="'Set your location'"
                     input-value="locationSearch.inputValue"
                     input-submit="getGeocoding(value)">
                 </dropdown-input>
@@ -133,7 +133,7 @@
                                                 <truncate-and-link
                                                     text="event.expandedEvent.description"
                                                     link-text="(more)"
-                                                    href-cb="event.detailsHrefCb()"
+                                                    link-details="event.detailsHref"
                                                     limit="500">
                                                 </truncate-and-link>
                                             </div>
@@ -147,7 +147,7 @@
                                                         <strong>{{event.expandedEvent.startTime|date:'shortTime'}} - {{event.expandedEvent.endTime|date:'shortTime'}}</strong>
                                                 </p>
 
-                                                <p>
+                                                <p ng-show="event.expandedEvent.location">
 
                                                         <strong>{{event.expandedEvent.location.title}}</strong><br>
                                                         <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
@@ -162,11 +162,20 @@
                                                 Who?
                                             </div>
                                             <div class="body">
-                                                <p>
-                                                        Volunteers needed : <strong>{{event.expandedEvent.maxRegistrations-event.expandedEvent.numRegistered | limit10 }}</strong>
+                                                <p ng-show="(event.registrationInfo != 'EXTERNAL_REGISTRATION')">
+                                                        Volunteers needed :
+                                                        <strong>
+                                                            {{event.maxRegistrations-event.numRegistered | limit10 }}
+                                                        </strong>
                                                 </p>
-                                                <p>
-                                                        Volunteers attending: <strong>{{event.expandedEvent.numRegistered}}</strong>
+                                                <p ng-show="(event.registrationInfo == 'EXTERNAL_REGISTRATION') && (event.maxRegistrations > 0)">
+                                                        Volunteers needed :
+                                                        <strong>
+                                                            {{event.maxRegistrations | limit10 }}
+                                                        </strong>
+                                                </p>
+                                                <p ng-show="(event.registrationInfo != 'EXTERNAL_REGISTRATION')">
+                                                        Volunteers attending: <strong>{{event.numRegistered}}</strong>
                                                 </p>
                                                 <p>
                                                         Organized by:
@@ -187,20 +196,37 @@
                                                 &nbsp;
                                             </div>
                                             <div class="body text-center">
-                                                <button ng-show="{CAN_REGISTER:true}[event.expandedEvent.registrationInfo]"
+
+                                                <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"
                                                         class="btn btn-success btn-sm"
                                                         ng-click="register(event, 'REGISTERED')"
                                                         btn-loading="event.registrationActionTracker.isPending()"
                                                         data-loading-text="Processing...">
                                                     <i class="icon-ok icon-white"></i> Register
                                                 </button>
-                                                <button ng-show="{CAN_WAIT_LIST:true}[event.expandedEvent.registrationInfo]"
+
+                                                <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"
                                                         class="btn btn-success btn-sm"
                                                         ng-click="register(event, 'WAIT_LISTED')"
                                                         btn-loading="event.registrationActionTracker.isPending()"
                                                         data-loading-text="Processing...">
                                                     <i class="icon-ok icon-white"></i> Wait list
                                                 </button>
+
+
+                                                <button ng-show="event.externalRegistrationDetailsHtml && (!event.externalRegistrationUrl)"
+                                                        class="btn btn-success btn-sm"
+                                                        ng-click="displayExternalRegInfo()">
+                                                    <i class="icon-question-sign icon-white"></i> How to <br/> Register
+                                                </button>
+
+                                                <a ng-show="event.externalRegistrationUrl"
+                                                   href="{{ event.externalRegistrationUrl }}"
+                                                   target="_blank"
+                                                   class="btn btn-success btn-sm">
+                                                    <i class="icon-external-link-sign icon-white"></i> Register at<br/>partner site
+                                                </a>
+
                                                 <!--
                                                         Not really needed anymore since we have a label containing the registration info.
 
@@ -211,8 +237,8 @@
                                                                 <i class="icon-ok"></i> You are waitlisted!
                                                         </span>
                                                 -->
-                                                <a href="{{ event.detailsHrefCb().href }}"
-                                                   target="{{ event.detailsHrefCb().target }}"
+                                                <a href="{{ event.detailsHref.href }}"
+                                                   target="{{ event.detailsHref.target }}"
                                                    class="btn btn-info btn-sm">
                                                     <i class=" icon-info-sign icon-white"></i> More info
                                                 </a>
