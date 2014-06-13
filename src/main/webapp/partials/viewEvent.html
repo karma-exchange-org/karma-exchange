@@ -16,7 +16,7 @@
         <div class="row" ng-show="event.title">
             <div class="col-sm-6">
 
-                <div class="panel panel-default panel-no-margin">
+                <div class="panel panel-default">
                     <div class="panel-body">
 
                         <div class="event-view-icon-img-div">
@@ -39,7 +39,7 @@
                     </div>
                 </div>
 
-                <div class="panel panel-default panel-seperated-vertical" ng-show="event.location">
+                <div class="panel panel-default" ng-show="event.location">
                     <div class="panel-body">
 
                         <div class="event-view-icon-img-div">
@@ -84,8 +84,13 @@
                 <div class="panel panel-default">
                     <div class="panel-body text-center">
 
-                        <h4 class="event-view-volunteers-needed margin-0" ng-show="event.status!='COMPLETED'">
+                        <h4 class="event-view-volunteers-needed margin-0"
+                            ng-show="(event.status != 'COMPLETED') && (event.registrationInfo != 'EXTERNAL_REGISTRATION')">
                             {{event.maxRegistrations - event.registeredUsers.length | limit10Verbose }}
+                        </h4>
+                        <h4 class="event-view-volunteers-needed margin-0"
+                            ng-show="(event.status != 'COMPLETED') && (event.maxRegistrations > 0) && (event.registrationInfo == 'EXTERNAL_REGISTRATION')">
+                            {{event.maxRegistrations  | limit10Verbose }}
                         </h4>
 
                         <div class="font-size-h4" ng-hide="unregistrationActionTracker.isPending()">
@@ -115,6 +120,7 @@
 
                         <div ng-hide="unregistrationActionTracker.isPending()">
                             <div ng-show="event.status!='COMPLETED'">
+
                                 <button ng-show="{CAN_REGISTER:true}[event.registrationInfo]"
                                         class="btn btn-success"
                                         ng-click="register('REGISTERED')"
@@ -124,6 +130,7 @@
                                     </i>
                                     Register
                                 </button>
+
                                 <button ng-show="{CAN_WAIT_LIST:true}[event.registrationInfo]"
                                         class="btn btn-success"
                                         ng-click="register('WAIT_LISTED')"
@@ -133,6 +140,15 @@
                                     </i>
                                     Wait list
                                 </button>
+
+                                <a ng-show="event.externalRegistrationUrl"
+                                   href="{{ event.externalRegistrationUrl }}"
+                                   target="_blank"
+                                   class="btn btn-success">
+
+                                    <i class="icon-external-link-sign icon-white"></i> Register at partner site
+
+                                </a>
                             </div>
                         </div>
 
@@ -194,8 +210,8 @@
                                         </strong>
                                     </h4>
 
-                                    <span ng-bind-html-unsafe="event.descriptionHtml">
-                                    </span>
+                                    <div ng-bind-html-unsafe="event.descriptionHtml">
+                                    </div>
                                 </div>
                                 <div ng-show="event.specialInstructions" class="event-description-sub-panel">
                                     <h4>
@@ -203,8 +219,8 @@
                                             Special instructions
                                         </strong>
                                     </h4>
-                                    <span ng-bind-html-unsafe="event.specialInstructions | textToHtml">
-                                    </span>
+                                    <div ng-bind-html-unsafe="event.specialInstructions | textToHtml">
+                                    </div>
                                 </div>
                                 <div ng-show="event.locationInformationHtml" class="event-description-sub-panel">
                                     <h4>
@@ -213,8 +229,8 @@
                                         </strong>
                                     </h4>
 
-                                    <span ng-bind-html-unsafe="event.locationInformationHtml">
-                                    </span>
+                                    <div ng-bind-html-unsafe="event.locationInformationHtml">
+                                    </div>
                                 </div>
                                 <div ng-show="event.externalRegistrationDetailsHtml" class="event-description-sub-panel">
                                     <h4>
@@ -223,8 +239,16 @@
                                         </strong>
                                     </h4>
 
-                                    <span ng-bind-html-unsafe="event.externalRegistrationDetailsHtml">
-                                    </span>
+                                    <div ng-bind-html-unsafe="event.externalRegistrationDetailsHtml">
+                                    </div>
+
+                                    <a ng-show="event.externalRegistrationUrl"
+                                       href="{{ event.externalRegistrationUrl }}"
+                                       target="_blank"
+                                       class="btn btn-success btn-sm">
+                                            <i class="icon-external-link-sign icon-white"></i> Register at partner site
+                                    </a>
+
                                 </div>
                                 <div class="event-description-sub-panel">
                                     <h4>

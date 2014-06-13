@@ -7,6 +7,10 @@
  *       bootstrap to ensure colors are respected, etc.
  */
 
+.panel {
+  margin-bottom: 10px;
+}
+
 .panel-body {
     /*background-color: #F0F0F0;*/
 }

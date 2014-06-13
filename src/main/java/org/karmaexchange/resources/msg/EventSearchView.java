@@ -54,6 +54,8 @@ public class EventSearchView {
   private Status status;
   private AlbumRef album;
   private RegistrationInfo registrationInfo;
+  private String externalRegistrationUrl;
+  private String externalRegistrationDetailsHtml;
   private UserEventSearchInfo userEventSearchInfo;
 
   private List<CachedEventParticipant> cachedParticipants = Lists.newArrayList();
@@ -128,6 +130,8 @@ public class EventSearchView {
     numRegistered = event.getRegisteredUsers().size();
     maxRegistrations = event.getMaxRegistrations();
     registrationInfo = event.getRegistrationInfo();
+    externalRegistrationUrl = event.getExternalRegistrationUrl();
+    externalRegistrationDetailsHtml = event.getExternalRegistrationDetailsHtml();
     rating = event.getRating();
     if (currentUserReview != null) {
       currentUserRating = currentUserReview.getRating();
