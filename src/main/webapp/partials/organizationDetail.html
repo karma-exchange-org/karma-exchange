@@ -169,6 +169,10 @@
                 </upcoming-events>
 
             </tab>
+
+<!--
+    Bug: Calendar tab intermittently works. Disable it for now until we can get it working correctly.
+
             <tab active="tabs.calendar.active" select="tabManager.select('calendar')">
                 <tab-heading>
                     <i class="icon-calendar">
@@ -181,7 +185,6 @@
                 </div>
 
                 <div ng-show="!calendarEventsFetchTracker.isPending()">
-                    <!-- <div full-calendar events="events"></div> -->
                     <div class="calendar"
                         ng-model="calendarEventSources"
                         calendar="eventCalendar"
@@ -189,6 +192,11 @@
                     </div>
                 </div>
             </tab>
+ -->
+
+<!--
+    Bug: Map reduce is not currently working for leaderboard. Once that's fixed re-enable leaderboard tab.
+
             <tab active="tabs.topVolunteers.active" select="tabManager.select('topVolunteers')">
                 <tab-heading>
                     <i class="icon-thumbs-up">
@@ -214,7 +222,7 @@
                     </div>
                 </div>
             </tab>
-
+ -->
             <!-- Switch to using ng-if once we upgrade to angular 1.2 -->
             <tab active="tabs[tab.tabName].active" select="tabManager.select(tab.tabName)" ng-repeat="tab in dynamicTabs">
                 <tab-heading>

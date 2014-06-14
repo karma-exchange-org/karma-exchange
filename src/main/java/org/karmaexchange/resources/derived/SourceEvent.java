@@ -95,10 +95,6 @@ public class SourceEvent {
       if (loc.getTitle() != null) {
         loc.setTitle(loc.getTitle().trim());
       }
-      if (loc.getDescription() != null) {
-        // TODO(avlaiani): support html and non html location description
-        loc.setDescription(HtmlUtil.toPlainText(loc.getDescription()).trim());
-      }
       Address addr = loc.getAddress();
       if ((addr != null) && (addr.getGeoPt() == null)) {
         String geocodeableAddr = addr.toGeocodeableString();
@@ -247,14 +243,14 @@ public class SourceEvent {
     @Nullable
     private String orgId;
     private String name;
-    private Association type;
+    private Association association;
 
     public AssociatedOrganization toAssociatedOrganization() {
       Key<Organization> orgKey = null;
       if (orgId != null) {
         orgKey = Organization.createKey(orgId);
       }
-      return new AssociatedOrganization(orgKey, name, type);
+      return new AssociatedOrganization(orgKey, name, association);
     }
   }
 }

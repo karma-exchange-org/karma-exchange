@@ -1779,6 +1779,54 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, Karm
                 event.registrationInfo = 'EXTERNAL_REGISTRATION';
             }
             event.detailsHref = IframeUtil.getEventDetailsHref(event.key);
+            event.mapHref = getMapHref(event);
+            event.addressStrCityToZip = getAddressStrCityToZip(event);
+
+            function getMapHref(event) {
+                var addr = getAddress(event);
+                if (addr) {
+                    var searchStr = '';
+                    var geoPt = addr.geoPt;
+                    if (geoPt) {
+                        searchStr = '(' + geoPt.latitude + ',' + geoPt.longitude + ')';
+                    } else {
+                        searchStr = addToAddrStr(searchStr, addr.street);
+                        searchStr = addToAddrStr(searchStr, addr.city);
+                        searchStr = addToAddrStr(searchStr, addr.state);
+                        searchStr = addToAddrStr(searchStr, addr.zip);
+                        searchStr = addToAddrStr(searchStr, addr.country);
+                    }
+                    return searchStr ? ('//maps.google.com/?q=' + encodeURIComponent(searchStr)) : undefined;
+                } else {
+                    return undefined;
+                }
+            }
+
+            function getAddressStrCityToZip(event) {
+                var addr = getAddress(event);
+                var addrStr = '';
+                if (addr) {
+                    addrStr = addToAddrStr(addrStr, addr.city);
+                    addrStr = addToAddrStr(addrStr, addr.state);
+                    addrStr = addToAddrStr(addrStr, addr.zip, true);
+                }
+                return addrStr ? addrStr : undefined;
+            }
+
+            function getAddress(event) {
+                return (event.location && event.location.address) ?
+                    event.location.address : undefined;
+            }
+
+            function addToAddrStr(addrStr, comp, skipComma) {
+                if (comp) {
+                    if (addrStr) {
+                        addrStr += skipComma ? ' ' : ', ';
+                    }
+                    addrStr += comp;
+                }
+                return addrStr;
+            }
         }
     };
 });
