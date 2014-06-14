@@ -48,9 +48,9 @@
                                 <h4 class="event-view-icon-img-only-div">
                                     <i class="icon-map-marker icon-white"></i>
                                 </h4>
-                                <div>
+                                <div ng-show="event.mapHref">
                                     <small>
-                                        <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
+                                        <a href="{{ event.mapHref }}" target="_blank">
                                             Map
                                         </a>
                                     </small>
@@ -60,15 +60,19 @@
                         </div>
                         <div class="event-view-icon-text-div">
 
-                            <h4 class="margin-0">
+                            <h4 class="margin-0" ng-show="event.location.title">
                                 <strong>
                                     {{event.location.title}}
                                 </strong>
                             </h4>
                             <div>
-                                {{event.location.address.street}}
-                                <br>
-                                {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}
+                                <span ng-show="event.location.address.street">
+                                    {{event.location.address.street}}
+                                    <br>
+                                </span>
+                                <span ng-show="event.addressStrCityToZip">
+                                    {{ event.addressStrCityToZip }}
+                                </span>
                             </div>
 
                         </div>

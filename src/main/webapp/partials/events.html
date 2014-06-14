@@ -149,10 +149,21 @@
 
                                                 <p ng-show="event.expandedEvent.location">
 
-                                                        <strong>{{event.expandedEvent.location.title}}</strong><br>
-                                                        <a href="//maps.google.com/?q={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.zip}}, {{event.location.address.country}}" target="_blank">
-                                                            {{event.expandedEvent.location.address.street}}<br>
-                                                            {{event.expandedEvent.location.address.city}}, {{event.expandedEvent.location.address.state}} {{event.expandedEvent.location.address.zip}}<br>
+                                                        <strong ng-show="event.location.title">
+                                                            {{event.location.title}}
+                                                            <br>
+                                                        </strong>
+                                                        <a href="{{ event.mapHref }}" target="_blank" ng-show="event.mapHref">
+                                                            <span ng-show="event.location.address.street">
+                                                                {{event.location.address.street}}
+                                                                <br>
+                                                            </span>
+                                                            <span ng-show="event.addressStrCityToZip">
+                                                                {{ event.addressStrCityToZip }}
+                                                            </span>
+                                                            <span ng-hide="event.addressStrCityToZip || event.location.address.street">
+                                                                <small>VIEW MAP</small>
+                                                            </span>
                                                         </a>
                                                 </p>
                                             </div>

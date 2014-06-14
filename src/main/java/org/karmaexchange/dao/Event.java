@@ -77,6 +77,8 @@ public final class Event extends BaseEvent<Event> {
    *   - compare this to Meetup, OneBrick, Golden Gate athletic club, etc.
    */
 
+  private String shiftDescription;
+
   private String specialInstructions; // See flash volunteer.
   @Index
   private List<CauseType> causes = Lists.newArrayList();
