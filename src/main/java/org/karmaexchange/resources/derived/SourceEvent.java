@@ -43,7 +43,6 @@ import org.karmaexchange.dao.Organization;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.GeocodingService;
-import org.karmaexchange.util.HtmlUtil;
 import org.karmaexchange.util.SalesforceUtil;
 
 import com.google.appengine.api.datastore.GeoPt;

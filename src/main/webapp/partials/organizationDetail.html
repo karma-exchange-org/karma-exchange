@@ -194,9 +194,6 @@
             </tab>
  -->
 
-<!--
-    Bug: Map reduce is not currently working for leaderboard. Once that's fixed re-enable leaderboard tab.
-
             <tab active="tabs.topVolunteers.active" select="tabManager.select('topVolunteers')">
                 <tab-heading>
                     <i class="icon-thumbs-up">
@@ -222,7 +219,7 @@
                     </div>
                 </div>
             </tab>
- -->
+
             <!-- Switch to using ng-if once we upgrade to angular 1.2 -->
             <tab active="tabs[tab.tabName].active" select="tabManager.select(tab.tabName)" ng-repeat="tab in dynamicTabs">
                 <tab-heading>

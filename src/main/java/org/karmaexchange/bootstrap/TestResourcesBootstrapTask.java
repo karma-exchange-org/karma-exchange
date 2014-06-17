@@ -376,10 +376,10 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     statusWriter.println("About to award badges...");
     awardBadges(createEventsResult.getEvents());
 
-//    statusWriter.println("About to update organization leaderboards...");
-//    String leaderboardJobId = ComputeLeaderboardServlet.startComputeLeaderboardMapReduce();
-//    statusWriter.println("Leaderboard update initiated. View status at: " +
-//        ComputeLeaderboardServlet.getMapReduceStatusUrl(baseUrl, leaderboardJobId));
+    statusWriter.println("About to update organization leaderboards...");
+    String leaderboardJobId = ComputeLeaderboardServlet.startMapReduce();
+    statusWriter.println("Leaderboard update initiated. View status at: " +
+        ComputeLeaderboardServlet.getMapReduceStatusUrl("", leaderboardJobId));
 
     statusWriter.println("Test resources persisted.");
   }
