@@ -1601,7 +1601,7 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
         return !!fbUserId;
     }
 
-    return {
+    var FbUtil = {
         GRAPH_API_URL: "//graph.facebook.com",
 
         getImageUrl: function (id, type) {
@@ -1647,8 +1647,21 @@ kexApp.factory('FbUtil', function($rootScope, $facebook, $location,
 
             FbApiCache.update(cacheKey, promise);
             return promise;
+        },
+
+        getOrgThumbnailImgUrl: function(org) {
+            if (!angular.isDefined(org)) {
+                return undefined;
+            }
+            // For the thumbnail image we use the listing org's page if the org itself
+            // doesn't have a facebook page.
+            var fbPageName = org.page ? org.page.name : org.listingOrgPage.name;
+            return FbUtil.getImageUrl(fbPageName, 'square');
         }
+
     };
+
+    return FbUtil;
 });
 
 
@@ -3190,12 +3203,14 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
         function(result) {
             $scope.org = result;
             $scope.orgLoaded = true;
-            $facebook.api("/" + $scope.org.page.name).then(function(response) {
-                $scope.fbPage = response;
-                if ($scope.fbPage.cover && $scope.fbPage.cover.source) {
-                    PageProperties.setPageImage($scope.fbPage.cover.source);
-                }
-            });
+            if ($scope.org.page) {
+                $facebook.api("/" + $scope.org.page.name).then(function(response) {
+                    $scope.fbPage = response;
+                    if ($scope.fbPage.cover && $scope.fbPage.cover.source) {
+                        PageProperties.setPageImage($scope.fbPage.cover.source);
+                    }
+                });
+            }
 
             if ($scope.org.parentOrg) {
                 Org.get(

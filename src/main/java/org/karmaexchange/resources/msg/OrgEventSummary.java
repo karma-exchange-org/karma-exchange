@@ -13,6 +13,7 @@ public class OrgEventSummary {
   private String key;
   private String orgName;
   private PageRef page;
+  private PageRef listingOrgPage;
   private long karmaPoints;
   private AggregateRating eventRating;
 
@@ -20,6 +21,7 @@ public class OrgEventSummary {
     key = org.getKey();
     orgName = org.getOrgName();
     page = org.getPage();
+    listingOrgPage = org.getListingOrgPage();
     karmaPoints = org.getKarmaPoints();
     eventRating = org.getEventRating();
   }

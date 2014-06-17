@@ -1,7 +1,7 @@
 <div>
     <div class="org-event-summary-img-panel">
         <a href="#!/org/{{org.key}}" class="thumbnail-rounded-corners kex-thumbnail-with-label">
-            <img ng-src="{{FbUtil.getImageUrl(org.page.name, 'square')}}" class=" kex-thumbnail-org">
+            <img ng-src="{{ FbUtil.getOrgThumbnailImgUrl(org) }}" class=" kex-thumbnail-org">
         </a>
     </div>
     <div class="org-event-summary-info-panel">

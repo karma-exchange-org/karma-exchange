@@ -43,8 +43,7 @@ public class EventSearchView {
   private String key;
   private Permission permission;
 
-  private KeyWrapper<Organization> organization;
-  private OrgEventSummary organizationDetails;
+  private OrgEventSummary sponsoringOrgDetails;
   private List<AssociatedOrganization> associatedOrganizations = Lists.newArrayList();
 
   private String title;
@@ -71,7 +70,7 @@ public class EventSearchView {
 
   public static List<EventSearchView> create(List<Event> events, EventSearchType searchType,
       @Nullable Key<User> eventSearchUserKey, boolean loadReviews) {
-    Map<Key<Organization>, Organization> orgs = loadOrgs(events);
+    Map<Key<Organization>, Organization> sponsoringOrgs = loadSponsoringOrgs(events);
 
     Map<Key<Review>, Review> reviews = ImmutableMap.of();
     if (loadReviews && (searchType == EventSearchType.PAST)) {
@@ -81,16 +80,20 @@ public class EventSearchView {
     List<EventSearchView> searchResults = Lists.newArrayList();
     for (Event event : events) {
       searchResults.add(
-        new EventSearchView(event, orgs.get(KeyWrapper.toKey(event.getOrganization())),
-          reviews.get(Review.getKeyForCurrentUser(event)), eventSearchUserKey));
+        new EventSearchView(
+          event,
+          sponsoringOrgs.get(
+            KeyWrapper.toKey(event.getSponsoringOrg())),
+          reviews.get(Review.getKeyForCurrentUser(event)),
+          eventSearchUserKey));
     }
     return searchResults;
   }
 
-  private static Map<Key<Organization>, Organization> loadOrgs(List<Event> events) {
+  private static Map<Key<Organization>, Organization> loadSponsoringOrgs(List<Event> events) {
     Set<Key<Organization>> orgs = Sets.newHashSet();
     for (Event event : events) {
-      orgs.add(KeyWrapper.toKey(event.getOrganization()));
+      orgs.add(KeyWrapper.toKey(event.getSponsoringOrg()));
     }
     return ofy().load().keys(orgs);
   }
@@ -106,14 +109,13 @@ public class EventSearchView {
     return ofy().load().keys(reviewKeys);
   }
 
-  protected EventSearchView(Event event, @Nullable Organization fetchedOrg,
+  protected EventSearchView(Event event, @Nullable Organization sponsoringOrg,
       @Nullable Review currentUserReview, @Nullable Key<User> eventSearchUserKey) {
     key = event.getKey();
     permission = event.getPermission();
 
-    organization = event.getOrganization();
-    if (fetchedOrg != null) {
-      organizationDetails = new OrgEventSummary(fetchedOrg);
+    if (sponsoringOrg != null) {
+      sponsoringOrgDetails = new OrgEventSummary(sponsoringOrg);
     }
     associatedOrganizations = event.getAssociatedOrganizations();
 

@@ -52,6 +52,12 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
   private String searchableOrgName;
 
   private PageRef page;
+
+  // The assumption is that there is only one organization that lists another organizations
+  // events. We need the listing org page info so we display an icon / cover photo for
+  // automatically created organizations.
+  private PageRef listingOrgPage;
+
   private String mission;
   @Index
   private OrganizationNamedKeyWrapper parentOrg;
@@ -106,18 +112,17 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
    * | private Type type;
   */
 
-  @Override
-  public void setName(String name) {
-    // Facebook page names are case insensitive.
-    this.name = getNameFromPageName(name);
+  public static String orgIdToName(String name) {
+    // We're making the name case insensitive
+    return name.toLowerCase();
   }
 
-  public static String getNameFromPageName(String pageName) {
-    return pageName.toLowerCase();
-  }
-
-  public static String getUniqueOrgId(Key<Organization> orgKey) {
+  public static String getOrgId(Key<Organization> orgKey) {
     return orgKey.getName();
+  }
+
+  public static Key<Organization> createKey(String orgId) {
+    return Key.create(Organization.class, orgIdToName(orgId));
   }
 
   public static String getPrimaryOrgSearchToken(Key<Organization> orgKey) {
@@ -137,7 +142,7 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
 
   public void initFromPage() {
     owner = null;
-    if (!pageIsInitialized()) {
+    if ((page == null) || !page.isValid()) {
       throw ValidationErrorInfo.createException(ImmutableList.of(
         new ResourceValidationError(this,
           ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "page")));
@@ -146,21 +151,7 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
     // Right now we only support facebook.
     SocialNetworkProvider provider =
         SocialNetworkProviderType.FACEBOOK.getProvider();
-    Organization providerGeneratedOrg =
-        provider.createOrganization(page.getName());
-
-    name = getNameFromPageName(page.getName());
-    if (orgName == null) {
-      orgName = providerGeneratedOrg.getOrgName();
-    }
-    if (address == null) {
-      address = providerGeneratedOrg.getAddress();
-    }
-    mission = providerGeneratedOrg.getMission();
-  }
-
-  public static Key<Organization> createKey(String orgId) {
-    return Key.create(Organization.class, getNameFromPageName(orgId));
+    provider.initOrganization(this, page.getName());
   }
 
   @Override
@@ -231,14 +222,22 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
         this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "orgName"));
     }
 
-    if (pageIsInitialized()) {
-      if (!getNameFromPageName(page.getName()).equals(name)) {
+    if (page == null) {
+      if (listingOrgPage == null) {
+        validationErrors.add(new ResourceValidationError(
+          this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "page | listingOrgPage"));
+      } else if (!listingOrgPage.isValid()) {
+        validationErrors.add(new ResourceValidationError(
+          this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "listingOrgPage"));
+      }
+    } else {
+      if (!page.isValid()) {
+        validationErrors.add(new ResourceValidationError(
+          this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "page"));
+      } else if (!orgIdToName(page.getName()).equals(name)) {
         validationErrors.add(new ResourceValidationError(
           this, ValidationErrorType.RESOURCE_FIELD_VALUE_INVALID, "name"));
       }
-    } else {
-      validationErrors.add(new ResourceValidationError(
-        this, ValidationErrorType.RESOURCE_FIELD_VALUE_REQUIRED, "page"));
     }
 
     if ((email != null) && !EmailValidator.getInstance().isValid(email)) {
@@ -265,11 +264,6 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
     if (!validationErrors.isEmpty()) {
       throw ValidationErrorInfo.createException(validationErrors);
     }
-  }
-
-  private boolean pageIsInitialized() {
-    return (page != null) && (page.getName() != null) && (page.getUrlProvider() != null) &&
-        (page.getUrl() != null);
   }
 
   // TODO(avaliani): remove the load in eval permissions.

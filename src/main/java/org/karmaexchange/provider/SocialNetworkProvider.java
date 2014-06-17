@@ -17,5 +17,5 @@ public interface SocialNetworkProvider extends AuthProvider {
     public abstract SocialNetworkProvider getProvider();
   }
 
-  Organization createOrganization(String pageName);
+  void initOrganization(Organization org, String pageName);
 }

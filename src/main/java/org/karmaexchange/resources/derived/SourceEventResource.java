@@ -1,7 +1,5 @@
 package org.karmaexchange.resources.derived;
 
-import static org.karmaexchange.util.OfyService.ofy;
-
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -22,9 +20,7 @@ import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.derived.EventSourceInfo;
 import org.karmaexchange.resources.EventResource;
-import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.EventView;
-import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
 import org.karmaexchange.util.AdminUtil.AdminTaskType;
@@ -47,7 +43,8 @@ public class SourceEventResource {
       @QueryParam("org_id") String orgId,
       @QueryParam("org_secret") String orgSecret,
       List<EventSyncRequest> syncRequests) {
-    EventSourceInfo sourceInfo = validateOrgSecret(orgId, orgSecret);
+    EventSourceInfo sourceInfo =
+        EventSourceInfo.validateOrgSecret(orgId, orgSecret);
 
     AdminUtil.executeSubtaskAsAdmin(
       AdminTaskType.SOURCE_EVENT_UPDATE,
@@ -74,29 +71,6 @@ public class SourceEventResource {
           }
       }
     }
-  }
-
-  private static EventSourceInfo validateOrgSecret(String orgId,
-      String orgSecret) {
-    if (orgId == null) {
-      throw ErrorResponseMsg.createException(
-        "'orgId' must be specified",
-        ErrorInfo.Type.BAD_REQUEST);
-    }
-    Key<Organization> orgKey =
-        Organization.createKey(orgId);
-    EventSourceInfo sourceInfo =
-        ofy().load().key(EventSourceInfo.createKey(orgKey)).now();
-    if (sourceInfo == null) {
-      throw ErrorResponseMsg.createException(
-        "organization is not configured to support derived events", ErrorInfo.Type.BAD_REQUEST);
-    }
-    if (!sourceInfo.getSecret().equals(orgSecret)) {
-      throw ErrorResponseMsg.createException(
-        "event source authentication credentials are not valid",
-        ErrorInfo.Type.AUTHENTICATION);
-    }
-    return sourceInfo;
   }
 
   private EventResource getEventResource() {

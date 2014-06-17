@@ -21,6 +21,6 @@ public class SourceEventNamespaceDao {
   public static Key<SourceEventNamespaceDao> createKey(Key<Organization> organizationKey,
       String sourceKey) {
     return Key.<SourceEventNamespaceDao>create(SourceEventNamespaceDao.class,
-      Organization.getUniqueOrgId(organizationKey) + ":" + sourceKey);
+      Organization.getOrgId(organizationKey) + ":" + sourceKey);
   }
 }
