@@ -10,7 +10,6 @@ import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.AssociatedOrganization;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
-import org.karmaexchange.dao.OrganizationNamedKeyWrapper;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Event.Status;
 import org.karmaexchange.task.LeaderboardMapper.UserKarmaRecord;
@@ -41,9 +40,10 @@ public class LeaderboardMapper extends Mapper<Entity, Key<Organization>, UserKar
   private void mapAsAdmin(Entity dsEvent) {
     Event event = ofy().load().fromEntity(dsEvent);
 
-    // fromEntity() should invoke @OnLoad annotations
-    // event.processLoad();
-    // TODO(avaliani): verify
+    // Bug: fromEntity() is not invoking @OnLoad annotation
+    if (event.getKey() == null) {
+      event.processLoad();
+    }
 
     if (event.getStatus() != Status.COMPLETED) {
       return;

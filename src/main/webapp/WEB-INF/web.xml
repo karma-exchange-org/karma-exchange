@@ -26,7 +26,6 @@ http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
     <filter-mapping>
         <filter-name>ObjectifyFilter</filter-name>
         <url-pattern>/*</url-pattern>
-        <url-pattern>/_ah/warmup/*</url-pattern>
     </filter-mapping>
 
     <filter>

@@ -38,3 +38,7 @@ body {
 .clickable:hover {
   cursor: pointer;
 }
+
+.admin-console #consoleOutput {
+  cursor: text;
+}
