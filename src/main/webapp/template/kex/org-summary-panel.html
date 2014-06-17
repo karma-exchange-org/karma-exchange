@@ -3,7 +3,7 @@
 
     <div class="panel-heading">
         <div class="thumbnail">
-            <img ng-src="{{FbUtil.getImageUrl(org.page.name, 'square')}}">
+            <img ng-src="{{ FbUtil.getOrgThumbnailImgUrl(org) }}">
         </div>
         <div class="title">
             <h3 class="panel-title">
@@ -11,7 +11,7 @@
             </h3>
         </div>
     </div>
-    <div class="panel-body">
+    <div class="panel-body" ng-show="org.mission">
         {{org.mission}}
     </div>
 

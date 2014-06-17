@@ -11,6 +11,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import org.karmaexchange.dao.AssociatedOrganization;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
 import org.karmaexchange.dao.IdBaseDao;
@@ -27,7 +28,7 @@ public class EventView implements BaseDaoView<Event> {
   @Setter(AccessLevel.NONE)
   private Event event = new Event();
 
-  private OrgEventSummary organizationDetails;
+  private OrgEventSummary sponsoringOrgDetails;
 
   public EventView(Event event) {
     this(event, true);
@@ -36,9 +37,12 @@ public class EventView implements BaseDaoView<Event> {
   public EventView(Event event, boolean initView) {
     this.event = event;
     if (initView) {
-      Organization org = ofy().load().key(KeyWrapper.toKey(event.getOrganization())).now();
-      if (org != null) {
-        organizationDetails = new OrgEventSummary(org);
+      AssociatedOrganization sponsoringOrgInfo =
+          event.getSponsoringOrg();
+      Organization sponsoringOrg =
+          ofy().load().key(KeyWrapper.toKey(sponsoringOrgInfo)).now();
+      if (sponsoringOrg != null) {
+        sponsoringOrgDetails = new OrgEventSummary(sponsoringOrg);
       }
     }
   }

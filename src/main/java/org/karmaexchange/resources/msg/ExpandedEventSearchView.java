@@ -40,8 +40,9 @@ public class ExpandedEventSearchView extends EventSearchView {
     if (event.getRegistrationInfo() == RegistrationInfo.REGISTERED) {
       review = ofy().load().key(Review.getKeyForCurrentUser(event)).now();
     }
-    Organization org = ofy().load().key(KeyWrapper.toKey(event.getOrganization())).now();
-    return new ExpandedEventSearchView(event, org, review);
+    Organization sponsoringOrg =
+        ofy().load().key(KeyWrapper.toKey(event.getSponsoringOrg())).now();
+    return new ExpandedEventSearchView(event, sponsoringOrg, review);
   }
 
   private ExpandedEventSearchView(Event event, @Nullable Organization fetchedOrg,

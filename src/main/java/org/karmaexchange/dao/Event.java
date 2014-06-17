@@ -413,6 +413,22 @@ public final class Event extends BaseEvent<Event> {
     return explicitOrgAssocs;
   }
 
+  @XmlTransient
+  public AssociatedOrganization getSponsoringOrg() {
+    AssociatedOrganization eventOwnerOrg =  null;
+    for (AssociatedOrganization org : associatedOrganizations) {
+      if (org.getAssociation() == AssociatedOrganization.Association.EVENT_OWNER) {
+        eventOwnerOrg = org;
+      }
+      if (org.getAssociation() == AssociatedOrganization.Association.EVENT_SPONSOR) {
+        return org;
+      }
+    }
+    // If there is no specified event sponsor then the owning organization is the event
+    // sponsor.
+    return eventOwnerOrg;
+  }
+
   private void initSearchableTokens() {
     BoundedHashSet<String> searchableTokensSet = BoundedHashSet.create(MAX_SEARCH_TOKENS);
 
@@ -423,11 +439,9 @@ public final class Event extends BaseEvent<Event> {
     for (AssociatedOrganization assocOrg : associatedOrganizations) {
       Key<Organization> assocOrgKey =
           KeyWrapper.toKey(assocOrg);
-      if (assocOrgKey != null) {
-        // Throw an exception if we can't add the org token to the searchableTokensSet.
-        searchableTokensSet.add(
-          Organization.getAssociatedOrgsSearchToken(assocOrgKey));
-      }
+      // Throw an exception if we can't add the org token to the searchableTokensSet.
+      searchableTokensSet.add(
+        Organization.getAssociatedOrgsSearchToken(assocOrgKey));
     }
 
     for (SuitableForType suitableForType : suitableForTypes) {

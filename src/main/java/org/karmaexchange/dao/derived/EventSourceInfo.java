@@ -9,6 +9,8 @@ import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Permission;
+import org.karmaexchange.resources.msg.ErrorResponseMsg;
+import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.SalesforceUtil;
 
 import lombok.Data;
@@ -61,5 +63,29 @@ public class EventSourceInfo extends IdBaseDao<EventSourceInfo> {
   public static Key<EventSourceInfo> createKey(Key<Organization> orgKey) {
     return Key.<EventSourceInfo>create(
       orgKey, EventSourceInfo.class, EVENT_SOURCE_ID);
+  }
+
+  public static EventSourceInfo validateOrgSecret(String orgId,
+      String orgSecret) {
+    if (orgId == null) {
+      throw ErrorResponseMsg.createException(
+        "'orgId' must be specified",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    Key<Organization> orgKey =
+        Organization.createKey(orgId);
+    EventSourceInfo sourceInfo =
+        ofy().load().key(EventSourceInfo.createKey(orgKey)).now();
+    if (sourceInfo == null) {
+      throw ErrorResponseMsg.createException(
+        "organization '" + orgId + "' is not configured to support derived events",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    if (!sourceInfo.getSecret().equals(orgSecret)) {
+      throw ErrorResponseMsg.createException(
+        "organization '" + orgId + "' authentication credentials are not valid",
+        ErrorInfo.Type.AUTHENTICATION);
+    }
+    return sourceInfo;
   }
 }

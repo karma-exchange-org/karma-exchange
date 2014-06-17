@@ -122,13 +122,13 @@ public final class FacebookSocialNetworkProvider implements SocialNetworkProvide
   }
 
   @Override
-  public Organization createOrganization(String fbPageName) {
+  public void initOrganization(Organization org, String fbPageName) {
     DefaultFacebookClient fbClient = new DefaultFacebookClient(getAppCredentials().getToken());
     // Getting age_range unfortunately requires explicitly specifiying the fields.
     Page fbPage = fetchObject(fbClient, fbPageName, Page.class);
 
-    Organization org = new Organization();
-    org.setName(fbPageName);
+    // Relying on fb page name uniqueness
+    org.setName(Organization.orgIdToName(fbPageName));
     org.setOrgName(fbPage.getName());
     org.setPage(PageRef.create(fbPageName, PAGE_BASE_URL + fbPageName,
       SocialNetworkProviderType.FACEBOOK));
@@ -140,7 +140,6 @@ public final class FacebookSocialNetworkProvider implements SocialNetworkProvide
     }
     org.setMission(mission);
     org.setAddress(getAddress(fbPage.getLocation()));
-    return org;
   }
 
   private Address getAddress(@Nullable Location fbLocation) {

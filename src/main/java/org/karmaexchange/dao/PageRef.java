@@ -13,6 +13,7 @@ import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderTyp
 @Data
 @NoArgsConstructor
 public class PageRef {
+
   private String name;
   private String url;
   private SocialNetworkProviderType urlProvider;
@@ -26,4 +27,9 @@ public class PageRef {
     this.url = url;
     this.urlProvider = urlProvider;
   }
+
+  public boolean isValid() {
+    return (name != null) && (urlProvider != null) && (url != null);
+  }
+
 }

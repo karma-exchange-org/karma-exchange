@@ -15,6 +15,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Delegate;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -48,6 +49,7 @@ import org.karmaexchange.util.SalesforceUtil;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.VoidWork;
 
 @XmlRootElement
 @Data
@@ -108,14 +110,18 @@ public class SourceEvent {
       SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceEventId).getString());
     event.setId(EVENT_ID);
     event.setOrganization(KeyWrapper.create(sourceInfo.getOrgKey()));
-    if (sourceAssociatedOrg != null) {
-      event.getAssociatedOrganizations().add(
-        sourceAssociatedOrg.toAssociatedOrganization());
-    }
     event.setSourceEventInfo(new SourceEventInfo(sourceEventId, sourceLastModifiedDate));
+    mapAssociatedOrg(sourceInfo);
     mapSourceParticipants();
-    // TODO(avaliani): map source participants
     return event;
+  }
+
+  private void mapAssociatedOrg(EventSourceInfo sourceInfo) {
+    if (sourceAssociatedOrg != null) {
+      AssociatedOrganization assocOrg =
+          sourceAssociatedOrg.toAssociatedOrganization(sourceInfo);
+      event.getAssociatedOrganizations().add(assocOrg);
+    }
   }
 
   private void mapSourceParticipants() {
@@ -239,17 +245,72 @@ public class SourceEvent {
   @Data
   @NoArgsConstructor
   public static final class SourceAssociatedOrganization {
+
+    private String name;
+
     @Nullable
     private String orgId;
-    private String name;
+    @Nullable
+    private String secretKey;
+
     private Association association;
 
-    public AssociatedOrganization toAssociatedOrganization() {
+    public AssociatedOrganization toAssociatedOrganization(EventSourceInfo sourceInfo) {
       Key<Organization> orgKey = null;
-      if (orgId != null) {
-        orgKey = Organization.createKey(orgId);
+      if (orgId == null) {
+        orgId =
+            computeAssociatedOrgId(sourceInfo);
+        orgKey =
+            Organization.createKey(orgId);
+        Organization org =
+            ofy().load().key(orgKey).now();
+        if (org == null) {
+          // We automatically create organizations for associated organizations that
+          // do not have an existing org.
+          Organization listingOrg =
+              ofy().load().key(sourceInfo.getOrgKey()).now();
+          ofy().transact(
+            new CreateAssociatedOrganizationTxn(listingOrg));
+        }
+      } else {
+        EventSourceInfo.validateOrgSecret(orgId, secretKey);
+        orgKey =
+            Organization.createKey(orgId);
+        Organization org =
+            ofy().load().key(orgKey).now();
+        // Use the saved org name and not the one specified in the remote db.
+        name = org.getOrgName();
       }
       return new AssociatedOrganization(orgKey, name, association);
+    }
+
+    private String computeAssociatedOrgId(EventSourceInfo sourceInfo) {
+      String listingOrgId =
+          Organization.getOrgId(sourceInfo.getOrgKey());
+      String assocOrgNameSuffix = name.replaceAll("\\s","").toLowerCase();
+      return listingOrgId + "." + assocOrgNameSuffix;
+    }
+
+    @Data
+    @EqualsAndHashCode(callSuper=false)
+    private class CreateAssociatedOrganizationTxn extends VoidWork {
+
+      private final Organization listingOrg;
+
+      public void vrun() {
+        Key<Organization> orgKey =
+            Organization.createKey(orgId);
+        Organization org = ofy().load().key(orgKey).now();
+        // Only create the org if it doesn't already exist.
+        if (org == null) {
+          org = new Organization();
+          org.setName(
+            Organization.orgIdToName(orgId));
+          org.setOrgName(name);
+          org.setListingOrgPage(listingOrg.getPage());
+          BaseDao.upsert(org);
+        }
+      }
     }
   }
 }

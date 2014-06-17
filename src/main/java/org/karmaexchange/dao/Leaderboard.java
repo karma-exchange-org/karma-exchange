@@ -51,7 +51,7 @@ public class Leaderboard extends NameBaseDao<Leaderboard> {
   }
 
   private static String createName(Key<Organization> orgKey, LeaderboardType type) {
-    return Organization.getUniqueOrgId(orgKey) + type.toString();
+    return Organization.getOrgId(orgKey) + type.toString();
   }
 
   public static Key<Leaderboard> createKey(Key<Organization> orgKey, LeaderboardType type) {

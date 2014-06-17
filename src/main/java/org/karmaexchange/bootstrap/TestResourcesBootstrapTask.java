@@ -306,7 +306,7 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
     }
 
     public Key<Organization> getKey() {
-      return Key.create(Organization.class, Organization.getNameFromPageName(pageName));
+      return Key.create(Organization.class, Organization.orgIdToName(pageName));
     }
 
     private static Waiver createWaiver(String description, String content) {

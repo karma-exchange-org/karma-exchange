@@ -169,14 +169,14 @@
 
                             <div class="thumbnail-row">
                                 <div class="thumbnail-img">
-                                    <a href="#!/org/{{event.organization.key}}">
-                                        <img ng-src="{{FbUtil.getImageUrl(event.organizationDetails.page.name, 'square')}}">
+                                    <a href="#!/org/{{event.sponsoringOrgDetails.key}}">
+                                        <img ng-src="{{ FbUtil.getOrgThumbnailImgUrl(event.sponsoringOrgDetails) }}">
                                     </a>
                                 </div>
                                 <div class="thumbnail-org-and-date">
                                     <div class="org-name">
-                                        <a href="#!/org/{{event.organization.key}}">
-                                            {{event.organizationDetails.orgName}}
+                                        <a href="#!/org/{{event.sponsoringOrgDetails.key}}">
+                                            {{event.sponsoringOrgDetails.orgName}}
                                         </a>
                                     </div>
                                     <div class="event-date">

@@ -1,7 +1,5 @@
 package org.karmaexchange.dao;
 
-import javax.annotation.Nullable;
-
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationError;
 import org.karmaexchange.resources.msg.ValidationErrorInfo.ValidationErrorType;
 
@@ -16,7 +14,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper=true)
 @ToString(callSuper=true)
-public final class AssociatedOrganization extends NullableKeyWrapper<Organization> {
+public final class AssociatedOrganization extends KeyWrapper<Organization> {
 
   public enum Association {
     EVENT_SPONSOR,
@@ -27,7 +25,7 @@ public final class AssociatedOrganization extends NullableKeyWrapper<Organizatio
   private String orgName;
   private Association association;
 
-  public AssociatedOrganization(@Nullable Key<Organization> orgKey, String orgName,
+  public AssociatedOrganization(Key<Organization> orgKey, String orgName,
       Association association) {
     super(orgKey);
     this.orgName = orgName;
@@ -41,7 +39,7 @@ public final class AssociatedOrganization extends NullableKeyWrapper<Organizatio
   }
 
   public ValidationError validate(BaseDao<?> resource, String listFieldName) {
-    if (orgName == null) {
+    if ((orgName == null) || (key == null)) {
       return new BaseDao.ListValueValidationError(
         resource, ValidationErrorType.RESOURCE_FIELD_LIST_VALUE_INVALID_VALUE, listFieldName,
         this.toString());
