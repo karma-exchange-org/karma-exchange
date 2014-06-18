@@ -33,7 +33,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="event-view-icon-text-div event-start-end-date" ng-bind-html-unsafe="event | eventStartEndDate">
+                        <div class="event-view-icon-text-div">
+                            <div class="event-start-end-date" ng-bind-html-unsafe="event | eventStartEndDate">
+                            </div>
+                            <div ng-show="event.shiftDescription">
+                                {{ event.shiftDescription }}
+                            </div>
                         </div>
 
                     </div>

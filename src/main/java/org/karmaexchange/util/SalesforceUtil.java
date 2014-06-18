@@ -38,6 +38,25 @@ public class SalesforceUtil {
       }
     }
 
+    Elements elsWithStyle = doc.getElementsByAttribute("style");
+    for (Element elWithStyle : elsWithStyle) {
+      String inputStyleAttr = elWithStyle.attr("style");
+      StringBuilder outputStyleAttr = new StringBuilder();
+      String[] cssProperties = inputStyleAttr.split(";");
+      for (String cssProperty : cssProperties) {
+        String cssPropertyName = cssProperty.split(":", 2)[0];
+        cssPropertyName = cssPropertyName.trim();
+        if (!cssPropertyName.equalsIgnoreCase("font-size") &&
+            !cssPropertyName.equalsIgnoreCase("font-family") ) {
+          if (outputStyleAttr.length() != 0) {
+            outputStyleAttr.append(";");
+          }
+          outputStyleAttr.append(cssPropertyName);
+        }
+      }
+      elWithStyle.attr("style", outputStyleAttr.toString());
+    }
+
     return doc.body().html().toString();
   }
 
