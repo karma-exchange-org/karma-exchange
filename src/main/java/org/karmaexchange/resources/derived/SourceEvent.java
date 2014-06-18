@@ -13,6 +13,7 @@ import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Delegate;
 import lombok.EqualsAndHashCode;
@@ -28,6 +29,7 @@ import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AssociatedOrganization;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
+import org.karmaexchange.dao.PageRef;
 import org.karmaexchange.dao.AssociatedOrganization.Association;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.GeoPtWrapper;
@@ -41,6 +43,8 @@ import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.provider.FacebookSocialNetworkProvider;
+import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.GeocodingService;
@@ -256,32 +260,51 @@ public class SourceEvent {
     private Association association;
 
     public AssociatedOrganization toAssociatedOrganization(EventSourceInfo sourceInfo) {
-      Key<Organization> orgKey = null;
+      Key<Organization> assocOrgKey = null;
+      Organization assocOrg;
       if (orgId == null) {
         orgId =
             computeAssociatedOrgId(sourceInfo);
-        orgKey =
+        assocOrgKey =
             Organization.createKey(orgId);
-        Organization org =
-            ofy().load().key(orgKey).now();
-        if (org == null) {
+        assocOrg =
+            ofy().load().key(assocOrgKey).now();
+        if (assocOrg == null) {
           // We automatically create organizations for associated organizations that
           // do not have an existing org.
           Organization listingOrg =
               ofy().load().key(sourceInfo.getOrgKey()).now();
-          ofy().transact(
-            new CreateAssociatedOrganizationTxn(listingOrg));
+
+          assocOrg = new Organization();
+          assocOrg.setName(
+            Organization.orgIdToName(orgId));
+          assocOrg.setOrgName(name);
+          assocOrg.setListingOrgPage(listingOrg.getPage());
+
+          CreateAssociatedOrganizationTxn createOrgTxn =
+              new CreateAssociatedOrganizationTxn(assocOrg);
+          ofy().transact(createOrgTxn);
+          assocOrg = createOrgTxn.assocOrg;
         }
       } else {
-        EventSourceInfo.validateOrgSecret(orgId, secretKey);
-        orgKey =
+        // TESTING: We're disabling the org secret check for now.
+        // EventSourceInfo.validateOrgSecret(orgId, secretKey);
+
+        assocOrgKey =
             Organization.createKey(orgId);
-        Organization org =
-            ofy().load().key(orgKey).now();
-        // Use the saved org name and not the one specified in the remote db.
-        name = org.getOrgName();
+        assocOrg =
+            ofy().load().key(assocOrgKey).now();
+
+        // TESTING: We're auto creating orgs that don't exist.
+        if (assocOrg == null) {
+          assocOrg = createAssociatedOrganizationFromFb(orgId);
+        }
       }
-      return new AssociatedOrganization(orgKey, name, association);
+
+      // Use the saved org name and not the one specified in the remote db.
+      name = assocOrg.getOrgName();
+
+      return new AssociatedOrganization(assocOrgKey, name, association);
     }
 
     private String computeAssociatedOrgId(EventSourceInfo sourceInfo) {
@@ -291,24 +314,34 @@ public class SourceEvent {
       return listingOrgId + "." + assocOrgNameSuffix;
     }
 
-    @Data
-    @EqualsAndHashCode(callSuper=false)
-    private class CreateAssociatedOrganizationTxn extends VoidWork {
+    // TESTING
+    private Organization createAssociatedOrganizationFromFb(String orgId) {
+      Organization assocOrg = new Organization();
+      assocOrg.setPage(PageRef.create(orgId, FacebookSocialNetworkProvider.PAGE_BASE_URL + orgId,
+        SocialNetworkProviderType.FACEBOOK));
+      assocOrg.initFromPage();
+      CreateAssociatedOrganizationTxn createOrgTxn =
+          new CreateAssociatedOrganizationTxn(assocOrg);
+      ofy().transact(createOrgTxn);
+      return createOrgTxn.assocOrg;
+    }
 
-      private final Organization listingOrg;
+    @Data
+    @AllArgsConstructor
+    @EqualsAndHashCode(callSuper=false)
+    private static class CreateAssociatedOrganizationTxn extends VoidWork {
+
+      private Organization assocOrg;
 
       public void vrun() {
-        Key<Organization> orgKey =
-            Organization.createKey(orgId);
-        Organization org = ofy().load().key(orgKey).now();
-        // Only create the org if it doesn't already exist.
-        if (org == null) {
-          org = new Organization();
-          org.setName(
-            Organization.orgIdToName(orgId));
-          org.setOrgName(name);
-          org.setListingOrgPage(listingOrg.getPage());
-          BaseDao.upsert(org);
+        Key<Organization> assocOrgKey =
+            Key.create(assocOrg);
+        Organization existingAssocOrg =
+            ofy().load().key(assocOrgKey).now();
+        if (existingAssocOrg == null) {
+          BaseDao.upsert(assocOrg);
+        } else {
+          assocOrg = existingAssocOrg;
         }
       }
     }
