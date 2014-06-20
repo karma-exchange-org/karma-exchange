@@ -7,8 +7,11 @@ import org.karmaexchange.dao.derived.EventSourceInfo;
 
 public class SalesforceUtilTest {
 
+  private static final EventSourceInfo SOURCE_INFO =
+      new EventSourceInfo(null, "x", "kex-developer-edition.na15.force.com");
+
   @Test
-  public void testProcessRichTextField() {
+  public void testProcessRichTextFieldImgs() {
     String rtfContent = "<strong>Let&#39;s try and do some rtf.</strong><br><br>Image 1:<br><br><img alt=\"Anon User Image\" src=\"https://c.na15.content.force.com/servlet/rtaImage?eid=a02i000000FODHi&amp;feoid=00Ni000000DUtH7&amp;refid=0EMi00000008fan\"></img><br><br>Let&#39;s see how links are done as well.<br><br>And bullets" +
         "<ul><li>" +
         "     one bullet</li><li>" +
@@ -24,10 +27,7 @@ public class SalesforceUtilTest {
         " <img alt=\"karma logo\" src=\"https://karmademo.appspot.com/img/logo.png\"></img></div>" +
         "<br><br>";
 
-    EventSourceInfo sourceInfo =
-        new EventSourceInfo(null, "x", "kex-developer-edition.na15.force.com");
-
-    String processedRtfContent = SalesforceUtil.processRichTextField(rtfContent, sourceInfo);
+    String processedRtfContent = SalesforceUtil.processRichTextField(rtfContent, SOURCE_INFO);
 
     assertTrue("processed field should not be wrapped in an html tag",
       !processedRtfContent.toLowerCase().contains("<html>"));
@@ -43,6 +43,30 @@ public class SalesforceUtilTest {
       processedRtfContent.contains("try and do some rtf"));
     assertTrue("content 'one bullet' must be present",
       processedRtfContent.contains("one bullet"));
+  }
+
+  @Test
+  public void testProcessRichTextFieldFormattedText() {
+    String fmtdText = "<span style=\"font-size: 15px; font-family: Arial; \">Volunteers</span>";
+    assertEquals("<span>Volunteers</span>",
+      SalesforceUtil.processRichTextField(fmtdText, SOURCE_INFO));
+
+    fmtdText = "<span style=\"font-size: 15px;\">Volunteers</span>";
+    assertEquals("<span>Volunteers</span>",
+      SalesforceUtil.processRichTextField(fmtdText, SOURCE_INFO));
+
+    fmtdText = "<span style=\"   font-size  : 15px;\">Volunteers</span>";
+    assertEquals("<span>Volunteers</span>",
+      SalesforceUtil.processRichTextField(fmtdText, SOURCE_INFO));
+
+    fmtdText = "<span style=\"font-weight: bold; \">Volunteers</span>";
+    assertEquals("<span style=\"font-weight: bold\">Volunteers</span>",
+      SalesforceUtil.processRichTextField(fmtdText, SOURCE_INFO));
+
+    fmtdText = "<span style=\"font-weight: bold; font-size: 15px;\">Volunteers</span>";
+    assertEquals("<span style=\"font-weight: bold\">Volunteers</span>",
+      SalesforceUtil.processRichTextField(fmtdText, SOURCE_INFO));
+
   }
 
 }

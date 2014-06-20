@@ -1,4 +1,4 @@
-<div class="container vertical-panel-padding event-details">
+<div class="event-details container vertical-panel-padding">
 
 <div class="row">
     <div class="col-md-9 col-sm-12">
@@ -26,7 +26,7 @@
                                 </h4>
                                 <div>
                                     <small>
-                                        <a href="//www.google.com/calendar/event?action=TEMPLATE&text={{event.title}}&dates={{event.startTime | date:'yyyyMMddThhmmss'}}/{{event.endTime|date:'yyyyMMddThhmmss'}}&details={{event.description|truncate:1000}}&location={{event.location.address.street}}, {{event.location.address.city}}, {{event.location.address.state}}, {{event.location.address.country}}, {{event.location.address.zip}}&trp=true&sprop=karmaexchange&sprop=name:{{location.host}}" target="_blank">
+                                        <a href="{{ event.calendarHref }}" target="_blank">
                                             Export
                                         </a>
                                     </small>
@@ -36,7 +36,7 @@
                         <div class="event-view-icon-text-div">
                             <div class="event-start-end-date" ng-bind-html-unsafe="event | eventStartEndDate">
                             </div>
-                            <div ng-show="event.shiftDescription">
+                            <div class="shift-description" ng-show="event.shiftDescription">
                                 {{ event.shiftDescription }}
                             </div>
                         </div>
@@ -71,13 +71,15 @@
                                 </strong>
                             </h4>
                             <div>
-                                <span ng-show="event.location.address.street">
+                                <div ng-show="event.location.address.street">
                                     {{event.location.address.street}}
-                                    <br>
-                                </span>
-                                <span ng-show="event.addressStrCityToZip">
+                                </div>
+                                <div ng-show="event.addressStrCityToZip">
                                     {{ event.addressStrCityToZip }}
-                                </span>
+                                </div>
+                                <div ng-show="event.gpsCoordinatesExplicitStr">
+                                    {{ event.gpsCoordinatesExplicitStr }}
+                                </div>
                             </div>
 
                         </div>
@@ -148,6 +150,12 @@
                                     <i class="icon-ok icon-white">
                                     </i>
                                     Wait list
+                                </button>
+
+                                <button ng-show="event.externalRegistrationDetailsHtml && (!event.externalRegistrationUrl)"
+                                        class="btn btn-success"
+                                        ng-click="displayExternalRegInfo()">
+                                    <i class="icon-question-sign icon-white"></i> How to Register
                                 </button>
 
                                 <a ng-show="event.externalRegistrationUrl"

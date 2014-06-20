@@ -166,9 +166,15 @@ public final class FacebookSocialNetworkProvider implements SocialNetworkProvide
     } catch(FacebookException e) {
       if (e instanceof FacebookOAuthException) {
         throw ErrorResponseMsg.createException(e.getMessage(), ErrorInfo.Type.AUTHENTICATION);
-      } else {
-        throw ErrorResponseMsg.createException(e, ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
       }
+      if (e.getMessage().toLowerCase().contains("unsupported get request")) {
+        // This seems to be thrown when there is a permissions issue.
+        // http://stackoverflow.com/questions/6843796/graph-api-returns-false-or-unsupported-get-request-accessing-public-facebook
+        throw ErrorResponseMsg.createException(
+          "Access to faceboook object '" + name + "' is restricted",
+          ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
+      }
+      throw ErrorResponseMsg.createException(e, ErrorInfo.Type.PARTNER_SERVICE_FAILURE);
     }
   }
 

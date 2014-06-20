@@ -1793,26 +1793,61 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, Karm
             }
             event.detailsHref = IframeUtil.getEventDetailsHref(event.key);
             event.mapHref = getMapHref(event);
+            event.calendarHref = getCalendarHref(event);
             event.addressStrCityToZip = getAddressStrCityToZip(event);
+            event.gpsCoordinatesExplicitStr = getReadableGpsCoordinatesIfExplicit(event);
 
             function getMapHref(event) {
+                var addr = getMappableAddress(event);
+                return addr ? ('//maps.google.com/?q=' + encodeURIComponent(addr)) : undefined;
+            }
+
+            function getMappableAddress(event) {
                 var addr = getAddress(event);
                 if (addr) {
-                    var searchStr = '';
-                    var geoPt = addr.geoPt;
-                    if (geoPt) {
-                        searchStr = '(' + geoPt.latitude + ',' + geoPt.longitude + ')';
+                    var readableAddr = getMappableReadableAddress(addr);
+                    var geoPtAddr = getMappableGeoPtAddr(addr);
+                    var geoPtExplicit = addr.geoPt ? addr.geoPt.explicit : false;
+
+                    if (readableAddr && !geoPtExplicit) {
+                        return readableAddr;
+                    } else if (geoPtAddr) {
+                        return geoPtAddr;
                     } else {
-                        searchStr = addToAddrStr(searchStr, addr.street);
-                        searchStr = addToAddrStr(searchStr, addr.city);
-                        searchStr = addToAddrStr(searchStr, addr.state);
-                        searchStr = addToAddrStr(searchStr, addr.zip);
-                        searchStr = addToAddrStr(searchStr, addr.country);
+                        return readableAddr;
                     }
-                    return searchStr ? ('//maps.google.com/?q=' + encodeURIComponent(searchStr)) : undefined;
-                } else {
-                    return undefined;
                 }
+                return undefined;
+
+                function getMappableReadableAddress(addr) {
+                    var readableAddr = '';
+                    readableAddr = addToAddrStr(readableAddr, addr.street);
+                    readableAddr = addToAddrStr(readableAddr, addr.city);
+                    readableAddr = addToAddrStr(readableAddr, addr.state);
+                    readableAddr = addToAddrStr(readableAddr, addr.zip);
+                    readableAddr = addToAddrStr(readableAddr, addr.country);
+                    return readableAddr ? readableAddr : undefined;
+                }
+
+                function getMappableGeoPtAddr(addr) {
+                    return addr.geoPt ? (addr.geoPt.latitude + ',' + addr.geoPt.longitude) : undefined;
+                }
+            }
+
+            function getCalendarHref(event) {
+                var dateFmt = "YYYYMMDDTHHmmss";
+                // var addr = getAddressFullReadable(event);
+                var addr = getMappableAddress(event);
+                return '//www.google.com/calendar/event?' +
+                    'action=TEMPLATE' +
+                    '&text=' + event.title +
+                    '&dates=' + moment(event.startTime).format(dateFmt) +
+                    '/' + moment(event.endTime).format(dateFmt) +
+                    '&details=' + encodeURIComponent( KexUtil.truncateToWordBoundary(event.description, 1000).str ) +
+                    ( addr ? '&location=' + encodeURIComponent( addr ) : '' ) +
+                    '&trp=true' +
+                    '&sprop=name:' + encodeURIComponent('Karma Exchange') +
+                    '&sprop=' + encodeURIComponent(location.host);
             }
 
             function getAddressStrCityToZip(event) {
@@ -1824,6 +1859,16 @@ kexApp.factory('EventUtil', function($q, $rootScope, User, Events, KexUtil, Karm
                     addrStr = addToAddrStr(addrStr, addr.zip, true);
                 }
                 return addrStr ? addrStr : undefined;
+            }
+
+            function getReadableGpsCoordinatesIfExplicit(event) {
+                var addr = getAddress(event);
+                if (addr && addr.geoPt && addr.geoPt.explicit) {
+                    var geoPt = addr.geoPt;
+                    return 'GPS Coordinates: (' + geoPt.latitude +
+                        ',' + geoPt.longitude + ')';
+                }
+                return undefined;
             }
 
             function getAddress(event) {
@@ -4398,6 +4443,20 @@ var viewEventCtrl = function($scope, $rootScope, $route, $routeParams, $filter, 
                     $scope.eventWaitListed.paging.next = data.paging ? data.paging.next : null;
                 });
         }
+    };
+
+    $scope.displayExternalRegInfo = function() {
+        $modal.open({
+            backdrop: false,
+            templateUrl: 'template/kex/registration-info-modal.html',
+            controller: 'RegistrationInfoModalInstanceCtrl',
+            resolve:
+                {
+                    event: function () {
+                        return $scope.event;
+                    }
+                }
+        });
     };
 
     function refreshEvent(refreshDetailsOnly) {
