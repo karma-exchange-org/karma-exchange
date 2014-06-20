@@ -1,6 +1,8 @@
 package org.karmaexchange.dao;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 import com.google.appengine.api.datastore.GeoPt;
@@ -13,6 +15,13 @@ public class GeoPtWrapper {
   // once full text search is integrated with the datastore. And we can't use GeoPt directly
   // because it doesn't have setters and getters for JAXB conversion.
   private GeoPt geoPt;
+
+  /**
+   * Were the coordinates explicitly specified or this a geocoding of an address.
+   */
+  @Getter
+  @Setter
+  private boolean explicit;
 
   public static GeoPtWrapper create(GeoPt geoPt) {
     GeoPtWrapper wrapper = new GeoPtWrapper();

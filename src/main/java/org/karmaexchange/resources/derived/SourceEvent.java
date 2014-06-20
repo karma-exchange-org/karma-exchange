@@ -101,12 +101,17 @@ public class SourceEvent {
         loc.setTitle(loc.getTitle().trim());
       }
       Address addr = loc.getAddress();
-      if ((addr != null) && (addr.getGeoPt() == null)) {
-        String geocodeableAddr = addr.toGeocodeableString();
-        // Do a synchronous API call to the Google geocoding service.
-        GeoPt geoPt = GeocodingService.getGeoPt(geocodeableAddr);
-        if (geoPt != null) {
-          addr.setGeoPt(GeoPtWrapper.create(geoPt));
+      if (addr != null) {
+        if (addr.getGeoPt() == null) {
+          String geocodeableAddr = addr.toGeocodeableString();
+          // Do a synchronous API call to the Google geocoding service.
+          GeoPt geoPt = GeocodingService.getGeoPt(geocodeableAddr);
+          if (geoPt != null) {
+            addr.setGeoPt(GeoPtWrapper.create(geoPt));
+          }
+        } else {
+          // The geoPt was explicitly specified. Mark it as such.
+          addr.getGeoPt().setExplicit(true);
         }
       }
     }

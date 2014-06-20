@@ -2,6 +2,8 @@ package org.karmaexchange.util;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -15,12 +17,19 @@ public class SalesforceUtil {
 
   static final String IMG_CDN_DOMAIN = "content.force.com";
 
+  private static final List<String> RESTRICTED_CSS_PROPERTY_NAMES =
+      Arrays.asList("font-size", "font-family", "background-color");
+
   public static String processRichTextField(String htmlStr, EventSourceInfo sourceInfo) {
     Document doc = Jsoup.parseBodyFragment(htmlStr);
 
-    // For now we'll just strip images that are stored in the salesforce db and retain
-    // the remainder of the markup.
+    updateSalesforceCdnImgLinks(doc, sourceInfo);
+    removeRestrictedCssProperties(doc);
 
+    return doc.body().html().toString();
+  }
+
+  private static void updateSalesforceCdnImgLinks(Document doc, EventSourceInfo sourceInfo) {
     Elements imgs = doc.getElementsByTag("img");
     for (Element img : imgs) {
       URI uri = null;
@@ -37,8 +46,36 @@ public class SalesforceUtil {
         }
       }
     }
+  }
 
-    return doc.body().html().toString();
+  private static void removeRestrictedCssProperties(Document doc) {
+    Elements elsWithStyle = doc.getElementsByAttribute("style");
+    for (Element elWithStyle : elsWithStyle) {
+      String inputStyleAttr =
+          elWithStyle.attr("style");
+      StringBuilder outputStyleAttr =
+          new StringBuilder();
+      String[] cssProperties =
+          inputStyleAttr.split(";");
+      for (String cssProperty : cssProperties) {
+        String cssPropertyName = cssProperty.split(":", 2)[0];
+        cssPropertyName = cssPropertyName.trim();
+        // We don't let the user adjust the font-size or the font-family since we control
+        // that in the UI.
+        if (!cssPropertyName.isEmpty() &&
+            !RESTRICTED_CSS_PROPERTY_NAMES.contains(cssPropertyName) ) {
+          if (outputStyleAttr.length() != 0) {
+            outputStyleAttr.append(";");
+          }
+          outputStyleAttr.append(cssProperty);
+        }
+      }
+      if (outputStyleAttr.length() > 0) {
+        elWithStyle.attr("style", outputStyleAttr.toString());
+      } else {
+        elWithStyle.removeAttr("style");
+      }
+    }
   }
 
 }
