@@ -104,6 +104,7 @@ angular.module('ui.bootstrap.ex.urltabs', [])
     function TabManager() {
       this.tabs = {};
       this.tabSelectedByUrl = false;
+      this._apiTabSelect = undefined;
       this._defaultActiveTabName = null;
       this._init = false;
     }
@@ -149,7 +150,7 @@ angular.module('ui.bootstrap.ex.urltabs', [])
 
     TabManager.prototype._checkUrlForTabName = function() {
       if ($routeParams.tab && this.tabs[$routeParams.tab]) {
-        this.markTabActive($routeParams.tab);
+        this._markTabActive($routeParams.tab);
         this.tabSelectedByUrl = true;
       }
     }
@@ -161,6 +162,20 @@ angular.module('ui.bootstrap.ex.urltabs', [])
     }
 
     TabManager.prototype.markTabActive = function(tabName) {
+      // Internal automatic tab changes should not happen when a tab is explicitly
+      // selected by the url.
+      if (!this.tabSelectedByUrl) {
+        this._markTabActive(tabName);
+        // If we update the url when we internally select tabs then the
+        // browser back button has strange behavior (no-effect on first click) because
+        // (a) we don't reload the page on search parameter changes and (b)
+        // even if we did reload the page, internal automatic tab changes would
+        // be re-applied.
+        this._apiTabSelect = tabName;
+      }
+    }
+
+    TabManager.prototype._markTabActive = function(tabName) {
       this._deactivateTabs();
       this.tabs[tabName].active = true;
     }
@@ -175,10 +190,12 @@ angular.module('ui.bootstrap.ex.urltabs', [])
       if (this.tabs[tabName].onSelectionCb) {
         this.tabs[tabName].onSelectionCb();
       }
-      if ((tabName != this._defaultActiveTabName) || this.tabSelectedByUrl) {
+      if ((this._apiTabSelect != tabName) &&
+          ( (tabName != this._defaultActiveTabName) || this.tabSelectedByUrl )) {
         $location.search('tab', tabName);
         this.tabSelectedByUrl = true;
       }
+      this._apiTabSelect = undefined;
     }
 
     TabManager.prototype.reloadActiveTab = function() {
