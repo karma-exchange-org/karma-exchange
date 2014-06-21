@@ -2339,7 +2339,8 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
         scope: {
             org: '=',
             user: '=',
-            visible: '='
+            visible: '=',
+            afterInitCb: '&'
         },
         replace: true,
         transclude: false,
@@ -2373,6 +2374,7 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
 
             scope.hasMoreEvents = false;
             scope.hasMoreEventsProcessing = true;
+            var firstLoadProcessed = false;
 
             var userCreatedEventsSource =
                 ElementSourceFactory.createSortedArrayElementSource(eventDisplayOrderCmp);
@@ -2484,6 +2486,13 @@ kexApp.directive('impactTimeline', function(FbUtil, EventUtil, User,
                 scope.pagedResult.peek().then( function(event) {
                     scope.hasMoreEventsProcessing = false;
                     scope.hasMoreEvents = (event != null);
+                    if (!firstLoadProcessed) {
+                        firstLoadProcessed = true;
+                        if (scope.afterInitCb) {
+                            scope.afterInitCb(
+                                { isEmpty: (displayableEvents.length == 0) });
+                        }
+                    }
                 });
             }
 
@@ -3284,6 +3293,8 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     $scope.calendarEventsFetchTracker = new PromiseTracker(orgPromise);
     $scope.topVolunteersFetchTracker = new PromiseTracker(orgPromise);
 
+    $scope.afterImpactTimelineInitCb = afterImpactTimelineInitCb;
+
     Org.get(
         {
             id: $routeParams.orgId,
@@ -3296,6 +3307,12 @@ var orgDetailCtrl = function($scope, $location, $routeParams, $rootScope, $http,
     function loadImpactTab() {
         if (!$scope.loadKarmaTab && $scope.orgLoaded) {
             $scope.loadKarmaTab = true;
+        }
+    }
+
+    function afterImpactTimelineInitCb(isEmpty) {
+        if (isEmpty && !tabManager.tabSelectedByUrl && tabManager.tabs.impact.active) {
+            tabManager.markTabActive('upcoming');
         }
     }
 
