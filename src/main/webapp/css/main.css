@@ -1180,6 +1180,15 @@ p {
   background: #fff;
 }
 
+.button-outline.tour {
+  margin: 0px !important;
+}
+
+.button-outline.login {
+  padding: 12px 48px;
+  margin-left: 8px !important;
+}
+
 #intro-banner {
   margin-top: -41px;
 }
@@ -1188,7 +1197,7 @@ p {
   background: #4B4848;
   background-size: cover;
   /*background-image: url("../../images/bg2blur2.png");*/
-  background-image: url("/img/banner/team_banner.jpg");
+  background-image: url("/img/banner/hero_main.jpg");
   background-position: center center;
   height: 400px;
   position: relative;
@@ -1221,7 +1230,7 @@ p {
   top: 0;
   width: 100%;
   height: 100%;
-  background: rgba(6, 13, 32, 0.35);
+  /*background: rgba(6, 13, 32, 0.35);*/
 }
 #intro-banner #hero .container {
   position: relative;
@@ -1231,14 +1240,14 @@ p {
   text-align: center;
   color: #fff;
   text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
-
-  font-family: 'Open Sans', sans-serif;
+  text-transform: uppercase;
+  font-family: 'Oswald', sans-serif;
   font-weight: 600;
-  font-size: 45px;
-
-  max-width: 840px;
+  font-size: 41px;
+  line-height: 1.2em;
+  max-width: 690px;
   margin: 0 auto;
-  margin-top: 68px;
+  margin-top: 58px;
 }
 @media (max-width: 767px) {
   #intro-banner #hero h1.hero-text {
@@ -1247,6 +1256,29 @@ p {
     margin-top: 10px;
   }
 }
+#intro-banner #hero #hero-divider {
+  margin: 8px auto 0 auto;
+  width: 636px;
+}
+#intro-banner #hero #hero-divider .line {
+  float: left;
+  border-bottom: 1px solid #fff;
+  width: 290px;
+  position: relative;
+  top: 12px;
+}
+#intro-banner #hero #hero-divider #divider-kex-logo {
+  background: url(/img/banner/divider-kex-logo.png) no-repeat top left;
+  width: 26px;
+  height: 27px;
+  float: left;
+  margin: 0 15px;
+}
+
+
+
+
+
 /*
 #intro-banner #hero .sub-text {
   -webkit-font-smoothing: antialiased;
@@ -1282,7 +1314,7 @@ p {
   -ms-animation-delay: 0.6s;
   animation-delay: 0.6s;
   text-align: center;
-  margin-top: 40px;
+  margin-top: 20px;
 }
 @media (max-width: 767px) {
   #intro-banner #hero .cta {
@@ -1290,7 +1322,7 @@ p {
   }
 }
 #intro-banner #hero .cta a {
-  margin: 0px 20px;
+  margin: 0px 20px 0px 0px;
 }
 @media (max-width: 767px) {
   #intro-banner #hero .cta a {
@@ -1298,6 +1330,14 @@ p {
     padding: 12px 25px;
     margin: 0px 15px 15px 0px;
   }
+}
+#intro-banner #hero .photo-credit {
+  text-align: center;
+  margin-top: 37px;
+  color: #fff;
+}
+#intro-banner #hero .photo-credit a {
+  color: #fff;
 }
 
 /***** END BANNER *****/
@@ -1845,3 +1885,9 @@ p {
 
 /***** END MICRO CLEARFIX *****/
 
+
+/***** CLEAR:BOTH FIX; *****/
+
+.clear { clear: both; }
+
+/***** END CLEAR:BOTH FIX *****/
