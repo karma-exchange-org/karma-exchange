@@ -7,7 +7,7 @@
 - [Setup](#setup)
 - [Helpful Git Links](#links)
 
-
+___
 <a name="uploading"/>
 ## Uploading changes
 
@@ -136,6 +136,7 @@ After you do git-cleanup I recommend you immediately create a new branch to avoi
 
     $ git checkout -b <temp-branch-name>
 
+___
 <a name="featurebranchcollab"/>
 ## Collaborating on a feature branch
 
@@ -179,6 +180,7 @@ If there are conflicts:
     $ git-push
 
 
+___
 <a name="setup"/>
 ## Setup
 
@@ -253,6 +255,7 @@ Once you download them put them in your preferred directory (example below uses 
 
 Note that 'git-diff' works really well if you have meld setup.
 
+___
 <a name="links"/>
 ## Helpful Git Links
 
