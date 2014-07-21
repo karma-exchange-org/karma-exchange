@@ -132,7 +132,7 @@ Sync your master branch to the latest changes and delete your merged branch:
     $ git pull
     $ git branch -d <my-awesome-feature-branch-name>
 
-After you do git-cleanup, I recommend you immediately create a new branch to avoid accidentally merging changes to the master branch in the future:
+After you do git-cleanup I recommend you immediately create a new branch to avoid accidentally merging changes to the master branch in the future:
 
     $ git checkout -b <temp-branch-name>
     
