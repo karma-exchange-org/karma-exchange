@@ -1195,7 +1195,8 @@ p {
   position: relative;
   top: 30px;
 }
-#intro-banner #hero:before {
+#intro-banner #hero:before {  /* Gradients below created with the Ultimate CSS Gradient Generator
+                                (http://www.colorzilla.com/gradient-editor) */
   position: absolute;
   content: '';
   left: 0;
@@ -1222,6 +1223,7 @@ p {
 #intro-banner #hero .container {
   position: relative;
   z-index: 33;
+  height: 100%;
 }
 #intro-banner #hero h1.hero-text {
   text-align: center;
@@ -1286,7 +1288,6 @@ p {
 #intro-banner #hero .photo-credit {
   text-align: center;
   color: #fff;
-  z-index: 9999;
   position: absolute;
   bottom: 40px;
   width: 200px;
@@ -1315,7 +1316,7 @@ p {
 
 /* Mobile */
 @media (max-width: 767px) {
-  #intro-banner #hero .container {
+  #intro-banner #hero:before {
     background: #4FAFC2;
     background: rgba(79, 175, 194, 0.86);
   }
@@ -1338,8 +1339,8 @@ p {
     background-position: 44% 0%;
     background-size: 1550px;
   }
-  #intro-banner #hero .container {
-    padding-bottom: 30px;
+  #intro-banner #hero:before {
+    height: 200px;
   }
   #intro-banner #hero h1.hero-text {
     font-size: 26px;
@@ -1354,8 +1355,8 @@ p {
     background-position: 42% top;
     background-size: 345%;
   }
-  #intro-banner #hero .container {
-    padding-bottom: 20px;
+  #intro-banner #hero:before {
+    height: 195px
   }
   #intro-banner #hero h1.hero-text {
     font-size: 22px;
