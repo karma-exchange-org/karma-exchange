@@ -7,7 +7,8 @@ else if ( (document.location.hostname === "karmademo.dyndns.dk") ||
           (document.location.hostname === "karmademo.dyndns.org") ) {
     fbAppId = '1381630838720301';
 }
-else if ( /^kex-latest[-\w]*.appspot.com$/.test(document.location.hostname) ) {
+else if ( /^kex-latest[-\w]*.appspot.com$/.test(document.location.hostname) ||
+          (document.location.hostname === "karmademo.appspot.com") ) {
     fbAppId = '166052360247234';
 }
 else {
