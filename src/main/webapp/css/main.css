@@ -306,7 +306,7 @@ table>tbody>tr>td.table-cell-align-middle {
 
 .event-search .search-box {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   margin-left: 15px;
   margin-right: 15px;
   background-color: #4FAFC2;
@@ -1213,7 +1213,7 @@ p {
 }
 #intro-banner #hero .container {
   position: relative;
-  z-index: 33;
+  z-index: 1;
   height: 100%;
 }
 #intro-banner #hero h1.hero-text {
