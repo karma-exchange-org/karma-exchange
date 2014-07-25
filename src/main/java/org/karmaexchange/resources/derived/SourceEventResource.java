@@ -17,15 +17,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import lombok.Data;
 
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.derived.EventSourceInfo;
 import org.karmaexchange.resources.EventResource;
 import org.karmaexchange.resources.msg.EventView;
 import org.karmaexchange.util.AdminUtil;
 import org.karmaexchange.util.AdminUtil.AdminSubtask;
 import org.karmaexchange.util.AdminUtil.AdminTaskType;
-
-import com.googlecode.objectify.Key;
 
 @Path("/derived/event")
 public class SourceEventResource {
@@ -42,7 +39,7 @@ public class SourceEventResource {
   public void syncEvents(
       @QueryParam("org_id") String orgId,
       @QueryParam("org_secret") String orgSecret,
-      List<EventSyncRequest> syncRequests) {
+      List<SyncRequest> syncRequests) {
     EventSourceInfo sourceInfo =
         EventSourceInfo.validateOrgSecret(orgId, orgSecret);
 
@@ -54,21 +51,35 @@ public class SourceEventResource {
   @Data
   private class SyncEventsAdminSubtask implements AdminSubtask {
 
-    private final List<EventSyncRequest> syncRequests;
+    private final List<SyncRequest> syncRequests;
     private final EventSourceInfo sourceInfo;
 
     @Override
     public void execute() {
       // TODO(avaliani): Optimize this by doing a batch upsert / delete.
-      for (EventSyncRequest syncRequest : syncRequests) {
-          if (syncRequest.action == EventSyncRequest.Action.UPSERT) {
+      for (SyncRequest syncRequest : syncRequests) {
+
+        if (syncRequest.action == SyncRequest.Action.UPSERT) {
+
+          if (syncRequest.sourceEvent != null) {
             Event event = syncRequest.sourceEvent.toEvent(sourceInfo);
             getEventResource().upsertResource(
               new EventView(event, false));
-          } else {
+          } else if (syncRequest.sourceUser != null) {
+            syncRequest.sourceUser.upsert(sourceInfo);
+          } else if (syncRequest.sourceConfig != null) {
+            syncRequest.sourceConfig.upsert(sourceInfo);
+          }
+
+        } else { // DELETE
+
+          if (syncRequest.sourceEventId != null) {
             getEventResource().deleteResource(
               SourceEvent.createKey(sourceInfo, syncRequest.sourceEventId));
           }
+
+        }
+
       }
     }
   }
@@ -79,7 +90,7 @@ public class SourceEventResource {
 
   @XmlRootElement
   @Data
-  public static class EventSyncRequest {
+  public static class SyncRequest {
     public enum Action {
       UPSERT,
       DELETE
@@ -88,18 +99,27 @@ public class SourceEventResource {
     private Action action;
 
     /**
-     * Source db key of the event being synchronized. Non-null for the DELETE action.
+     * Source db key of the event being synchronized. Only non-null for DELETE.
      */
     @Nullable
     private String sourceEventId;
 
     /**
-     * Source db event of being synchronized. Non-null for the UPSERT action.
+     * Source db event of being synchronized. Only non-null for UPSERT.
      */
     @Nullable
     private SourceEvent sourceEvent;
 
-    public void execute(Key<Organization> orgKey) {
-    }
+    /**
+     * Source db user being synchronized. Only non-null for UPSERT.
+     */
+    @Nullable
+    private SourceUser sourceUser;
+
+    /**
+     * Source configuration info. Only non-null for UPSERT.
+     */
+    @Nullable
+    private SourceConfig sourceConfig;
   }
 }

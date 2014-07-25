@@ -93,7 +93,7 @@ public class SourceEventSyncUtil {
       RegistrationRequest registrationReq = new RegistrationRequest(
         sourceInfo.getSecret(),
         action,
-        event.getSourceEventInfo().getEventId(),
+        event.getSourceEventInfo().getId(),
         user.getFirstName(),
         user.getLastName(),
         user.getPrimaryEmail());

@@ -7,8 +7,12 @@ import org.karmaexchange.dao.derived.EventSourceInfo;
 
 public class SalesforceUtilTest {
 
-  private static final EventSourceInfo SOURCE_INFO =
-      new EventSourceInfo(null, "x", "kex-developer-edition.na15.force.com");
+  private static final EventSourceInfo SOURCE_INFO;
+  static {
+    SOURCE_INFO = new EventSourceInfo();
+    SOURCE_INFO.setSecret("x");
+    SOURCE_INFO.setDomain("kex-developer-edition.na15.force.com");
+  }
 
   @Test
   public void testProcessRichTextFieldImgs() {

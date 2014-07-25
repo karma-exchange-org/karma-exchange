@@ -53,9 +53,11 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
 
   private PageRef page;
 
-  // The assumption is that there is only one organization that lists another organizations
-  // events. We need the listing org page info so we display an icon / cover photo for
+  // This field non-null only if the organization itself does not have a facebook page.
+  //
+  // We need the listing org page info so we display an icon / cover photo for
   // automatically created organizations.
+  @Nullable
   private PageRef listingOrgPage;
 
   private String mission;
@@ -84,6 +86,9 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
   private String searchTokenSuffix;
 
   private String donationUrl;
+
+  @Nullable
+  private SourceOrganizationInfo sourceOrgInfo;
 
   public enum Role {
     ADMIN(3),
@@ -394,5 +399,21 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
   @Override
   public Organization getDao() {
     return this;
+  }
+
+  @Data
+  @NoArgsConstructor
+  public static final class SourceOrganizationInfo {
+    // An external id uniquely identifying the source org.
+    private String id;
+
+    // Null if the organization is the same as the listing organization.
+    @Nullable
+    KeyWrapper<Organization> listingOrg;
+
+    public SourceOrganizationInfo(String id, Key<Organization> listingOrgKey) {
+      this.id = id;
+      this.listingOrg = KeyWrapper.create(listingOrgKey);
+    }
   }
 }

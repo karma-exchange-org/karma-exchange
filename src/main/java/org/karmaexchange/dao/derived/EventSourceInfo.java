@@ -36,11 +36,9 @@ public class EventSourceInfo extends IdBaseDao<EventSourceInfo> {
   private String secret;
   private String domain;
 
-  public EventSourceInfo(Key<Organization> orgKey, String secret, String domain) {
+  public void init(Key<Organization> orgKey) {
     owner = orgKey;
     id = EVENT_SOURCE_ID;
-    this.secret = secret;
-    this.domain = domain;
   }
 
   @XmlTransient

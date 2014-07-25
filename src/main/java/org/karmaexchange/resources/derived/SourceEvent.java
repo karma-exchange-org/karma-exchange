@@ -3,48 +3,36 @@ package org.karmaexchange.resources.derived;
 import static java.lang.String.format;
 import static org.karmaexchange.util.OfyService.ofy;
 
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Delegate;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import org.karmaexchange.auth.AuthProvider.UserInfo;
-import org.karmaexchange.auth.GlobalUid;
 import org.karmaexchange.auth.GlobalUidMapping;
-import org.karmaexchange.auth.GlobalUidType;
 import org.karmaexchange.dao.Address;
 import org.karmaexchange.dao.AssociatedOrganization;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.Event;
-import org.karmaexchange.dao.PageRef;
 import org.karmaexchange.dao.AssociatedOrganization.Association;
 import org.karmaexchange.dao.Event.EventParticipant;
 import org.karmaexchange.dao.GeoPtWrapper;
 import org.karmaexchange.dao.Event.ParticipantType;
-import org.karmaexchange.dao.Event.SourceEventInfo;
 import org.karmaexchange.dao.Location;
 import org.karmaexchange.dao.User;
-import org.karmaexchange.dao.User.RegisteredEmail;
 import org.karmaexchange.dao.derived.EventSourceInfo;
 import org.karmaexchange.dao.derived.SourceEventNamespaceDao;
 import org.karmaexchange.dao.IdBaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
-import org.karmaexchange.provider.FacebookSocialNetworkProvider;
-import org.karmaexchange.provider.SocialNetworkProvider.SocialNetworkProviderType;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 import org.karmaexchange.util.GeocodingService;
@@ -53,7 +41,6 @@ import org.karmaexchange.util.SalesforceUtil;
 import com.google.appengine.api.datastore.GeoPt;
 import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.VoidWork;
 
 @XmlRootElement
 @Data
@@ -63,13 +50,10 @@ public class SourceEvent {
 
   private static final Logger log = Logger.getLogger(SourceEvent.class.getName());
 
-  private String sourceEventId;
-
   private List<SourceEventParticipant> sourceParticipants = Lists.newArrayList();
 
   private SourceAssociatedOrganization sourceAssociatedOrg;
 
-  private Date sourceLastModifiedDate;
 
   /*
    * We delegate instead of extending event because Objectify seems to require that all subclasses
@@ -116,12 +100,13 @@ public class SourceEvent {
       }
     }
     event.setOwner(
-      SourceEventNamespaceDao.createKey(sourceInfo.getOrgKey(), sourceEventId).getString());
+      SourceEventNamespaceDao.createKey(
+        sourceInfo.getOrgKey(),
+        event.getSourceEventInfo().getId()).getString());
     event.setId(EVENT_ID);
     event.setOrganization(KeyWrapper.create(sourceInfo.getOrgKey()));
-    event.setSourceEventInfo(new SourceEventInfo(sourceEventId, sourceLastModifiedDate));
     mapAssociatedOrg(sourceInfo);
-    mapSourceParticipants();
+    mapSourceParticipants(sourceInfo.getOrgKey());
     return event;
   }
 
@@ -133,12 +118,12 @@ public class SourceEvent {
     }
   }
 
-  private void mapSourceParticipants() {
+  private void mapSourceParticipants(Key<Organization> eventListingOrgKey) {
     List<Key<GlobalUidMapping>> sourceParticipantMappingsKeys =
         Lists.newArrayList();
     for (SourceEventParticipant sourceParticipant : sourceParticipants) {
       sourceParticipantMappingsKeys.add(
-        sourceParticipant.getGlobalUidMappingKey());
+        sourceParticipant.user.getGlobalUidMappingKey());
     }
 
     Map<Key<GlobalUidMapping>, GlobalUidMapping> sourceParticipantMappings =
@@ -147,11 +132,11 @@ public class SourceEvent {
         Lists.newArrayList();
     for (SourceEventParticipant sourceParticipant : sourceParticipants) {
       GlobalUidMapping mapping =
-          sourceParticipantMappings.get(sourceParticipant.getGlobalUidMappingKey());
+          sourceParticipantMappings.get(sourceParticipant.user.getGlobalUidMappingKey());
       Key<User> userKey;
       if (mapping == null) {
         userKey = User.upsertNewUser(
-          sourceParticipant.createUser());
+          sourceParticipant.user.createUser(eventListingOrgKey));
       } else {
         userKey = mapping.getUserKey();
       }
@@ -169,10 +154,19 @@ public class SourceEvent {
   }
 
   private void validate(Key<Organization> orgKey) {
-    if (sourceEventId == null) {
-      throw ErrorResponseMsg.createException("sourceEventId must be specified",
+    if (event.getSourceEventInfo() == null) {
+      throw ErrorResponseMsg.createException("sourceEventInfo must be specified",
         ErrorInfo.Type.BAD_REQUEST);
     }
+    if (event.getSourceEventInfo().getId() == null) {
+      throw ErrorResponseMsg.createException("sourceEventInfo.id must be specified",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+    if (event.getSourceEventInfo().getLastModifiedDate() == null) {
+      throw ErrorResponseMsg.createException("sourceEventInfo.lastModifiedDate must be specified",
+        ErrorInfo.Type.BAD_REQUEST);
+    }
+
     if (event.getKey() != null) {
       throw ErrorResponseMsg.createException(
         "key is a derived field and can not be specified",
@@ -202,153 +196,59 @@ public class SourceEvent {
     while (sourceParticipantsIter.hasNext()) {
       SourceEventParticipant sourceParticipant =
           sourceParticipantsIter.next();
-      SourceUser sourceUser = sourceParticipant.user;
+      BaseSourceUser sourceUser = sourceParticipant.user;
       if (sourceUser == null) {
         throw ErrorResponseMsg.createException(
           "required field 'user' is null for sourceParticipant",
           ErrorInfo.Type.BAD_REQUEST);
       }
-      if (sourceUser.email == null) {
+      if (sourceUser.getEmail() == null) {
         sourceParticipantsIter.remove();
         log.warning(
           format("required field 'email' missing: " +
               "skipping user(%s,%s) for source event(%s, org=%s)",
-            sourceUser.firstName, sourceUser.lastName, sourceEventId,
+            sourceUser.getFirstName(), sourceUser.getLastName(), event.getSourceEventInfo().getId(),
             orgKey.toString()));
       }
+    }
+
+    if (sourceAssociatedOrg != null) {
+      sourceAssociatedOrg.validate();
     }
   }
 
   @Data
   @NoArgsConstructor
   public static final class SourceEventParticipant {
-    private SourceUser user;
+    private BaseSourceUser user;
     private ParticipantType type;
-
-    public Key<GlobalUidMapping> getGlobalUidMappingKey() {
-      return GlobalUidMapping.getKey(
-        new GlobalUid(GlobalUidType.EMAIL, user.email));
-    }
 
     public EventParticipant toEventParticipant(Key<User> userKey) {
       return EventParticipant.create(userKey, type);
     }
-
-    public UserInfo createUser() {
-      User newUser = User.create();
-      newUser.setFirstName(user.firstName);
-      newUser.setLastName(user.lastName);
-      newUser.getRegisteredEmails().add(new RegisteredEmail(user.email, true));
-      return new UserInfo(newUser);
-    }
-  }
-
-  @Data
-  @NoArgsConstructor
-  public static final class SourceUser {
-    private String firstName;
-    private String lastName;
-    private String email;
   }
 
   @Data
   @NoArgsConstructor
   public static final class SourceAssociatedOrganization {
 
-    private String name;
-
-    @Nullable
-    private String orgId;
-    @Nullable
-    private String secretKey;
+    private SourceOrganization org;
 
     private Association association;
 
+    public void validate() {
+      if (org == null) {
+        throw ErrorResponseMsg.createException("associated org field 'org' must be specified",
+          ErrorInfo.Type.BAD_REQUEST);
+      }
+      org.validate();
+    }
+
     public AssociatedOrganization toAssociatedOrganization(EventSourceInfo sourceInfo) {
-      Key<Organization> assocOrgKey = null;
-      Organization assocOrg;
-      if (orgId == null) {
-        orgId =
-            computeAssociatedOrgId(sourceInfo);
-        assocOrgKey =
-            Organization.createKey(orgId);
-        assocOrg =
-            ofy().load().key(assocOrgKey).now();
-        if (assocOrg == null) {
-          // We automatically create organizations for associated organizations that
-          // do not have an existing org.
-          Organization listingOrg =
-              ofy().load().key(sourceInfo.getOrgKey()).now();
-
-          assocOrg = new Organization();
-          assocOrg.setName(
-            Organization.orgIdToName(orgId));
-          assocOrg.setOrgName(name);
-          assocOrg.setListingOrgPage(listingOrg.getPage());
-
-          CreateAssociatedOrganizationTxn createOrgTxn =
-              new CreateAssociatedOrganizationTxn(assocOrg);
-          ofy().transact(createOrgTxn);
-          assocOrg = createOrgTxn.assocOrg;
-        }
-      } else {
-        // TESTING: We're disabling the org secret check for now.
-        // EventSourceInfo.validateOrgSecret(orgId, secretKey);
-
-        assocOrgKey =
-            Organization.createKey(orgId);
-        assocOrg =
-            ofy().load().key(assocOrgKey).now();
-
-        // TESTING: We're auto creating orgs that don't exist.
-        if (assocOrg == null) {
-          assocOrg = createAssociatedOrganizationFromFb(orgId);
-        }
-      }
-
-      // Use the saved org name and not the one specified in the remote db.
-      name = assocOrg.getOrgName();
-
-      return new AssociatedOrganization(assocOrgKey, name, association);
+      Key<Organization> assocOrgKey =
+          org.lookupOrCreateOrg(sourceInfo);
+      return new AssociatedOrganization(assocOrgKey, org.getName(), association);
     }
 
-    private String computeAssociatedOrgId(EventSourceInfo sourceInfo) {
-      String listingOrgId =
-          Organization.getOrgId(sourceInfo.getOrgKey());
-      String assocOrgNameSuffix = name.replaceAll("\\s","").toLowerCase();
-      return listingOrgId + "." + assocOrgNameSuffix;
-    }
-
-    // TESTING
-    private Organization createAssociatedOrganizationFromFb(String orgId) {
-      Organization assocOrg = new Organization();
-      assocOrg.setPage(PageRef.create(orgId, FacebookSocialNetworkProvider.PAGE_BASE_URL + orgId,
-        SocialNetworkProviderType.FACEBOOK));
-      assocOrg.initFromPage();
-      CreateAssociatedOrganizationTxn createOrgTxn =
-          new CreateAssociatedOrganizationTxn(assocOrg);
-      ofy().transact(createOrgTxn);
-      return createOrgTxn.assocOrg;
-    }
-
-    @Data
-    @AllArgsConstructor
-    @EqualsAndHashCode(callSuper=false)
-    private static class CreateAssociatedOrganizationTxn extends VoidWork {
-
-      private Organization assocOrg;
-
-      public void vrun() {
-        Key<Organization> assocOrgKey =
-            Key.create(assocOrg);
-        Organization existingAssocOrg =
-            ofy().load().key(assocOrgKey).now();
-        if (existingAssocOrg == null) {
-          BaseDao.upsert(assocOrg);
-        } else {
-          assocOrg = existingAssocOrg;
-        }
-      }
-    }
   }
 }
