@@ -36,10 +36,10 @@ public class EventSourceInfoResource {
   @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
   public void updateResource(@QueryParam("orgId") String orgId,
       EventSourceInfo inputSourceInfo) {
-    Key<Organization> orgKey = validateOrgId(orgId);
-    EventSourceInfo sourceInfoToSave =
-        new EventSourceInfo(orgKey, inputSourceInfo.getSecret(), inputSourceInfo.getDomain());
-    BaseDao.upsert(sourceInfoToSave);
+    Key<Organization> orgKey =
+        validateOrgId(orgId);
+    inputSourceInfo.init(orgKey);
+    BaseDao.upsert(inputSourceInfo);
   }
 
   private Key<Organization> validateOrgId(String orgId) {

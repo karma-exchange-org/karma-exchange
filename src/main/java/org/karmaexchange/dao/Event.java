@@ -1519,8 +1519,8 @@ public final class Event extends BaseEvent<Event> {
   @NoArgsConstructor
   @AllArgsConstructor
   public static final class SourceEventInfo {
-    // An external event id uniquely identifying the source event.
-    private String eventId;
+    // An external id uniquely identifying the source event.
+    private String id;
     private Date lastModifiedDate;
   }
 

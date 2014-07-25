@@ -6,6 +6,7 @@ import static org.karmaexchange.util.UserService.getCurrentUserKey;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -31,6 +32,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+import com.google.api.client.util.Sets;
 import com.google.appengine.api.blobstore.BlobKey;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -94,6 +96,16 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
   private IndexedAggregateRating eventOrganizerRating;
 
   private EventSearch lastEventSearch;
+
+  private boolean emailOptOut;
+
+  // A list of all orgs the user has participated in events with.
+  // TODO(avaliani): update this with map reduce. Currently it is initialized at
+  //   creation only with the source org.
+  // TODO(avaliani): update this every time a user successfully registers with an organization.
+  private Set<KeyWrapper<Organization>> eventOrgs = Sets.newHashSet();
+
+  private List<OrganizationPrefs> orgPrefs = Lists.newArrayList();
 
   // TODO(avaliani): profileSecurityPrefs
 
@@ -320,6 +332,10 @@ public final class User extends IdBaseDao<User> implements BaseDaoView<User> {
       }
       if (user.ageRange == null) {
         user.ageRange = newUser.ageRange;
+      }
+      user.emailOptOut = newUser.emailOptOut;
+      if (user.orgPrefs == null) {
+        user.orgPrefs = newUser.orgPrefs;
       }
       BaseDao.partialUpdate(user);
     }
