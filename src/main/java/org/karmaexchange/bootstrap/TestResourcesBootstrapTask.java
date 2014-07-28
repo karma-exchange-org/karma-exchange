@@ -721,13 +721,13 @@ public class TestResourcesBootstrapTask extends BootstrapTask {
       List<Key<User>> registeredUsers, List<Key<User>> waitListedUsers) {
     List<EventParticipant> participants = Lists.newArrayList();
     for (Key<User> organizer : organizers) {
-      participants.add(EventParticipant.create(organizer, ParticipantType.ORGANIZER));
+      participants.add(new EventParticipant(organizer, ParticipantType.ORGANIZER));
     }
     for (Key<User> registeredUser : registeredUsers) {
-      participants.add(EventParticipant.create(registeredUser, ParticipantType.REGISTERED));
+      participants.add(new EventParticipant(registeredUser, ParticipantType.REGISTERED));
     }
     for (Key<User> waitListedUser : waitListedUsers) {
-      participants.add(EventParticipant.create(waitListedUser, ParticipantType.WAIT_LISTED));
+      participants.add(new EventParticipant(waitListedUser, ParticipantType.WAIT_LISTED));
     }
     return participants;
   }

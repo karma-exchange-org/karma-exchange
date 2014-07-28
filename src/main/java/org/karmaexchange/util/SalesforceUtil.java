@@ -13,7 +13,7 @@ import org.karmaexchange.dao.derived.EventSourceInfo;
 
 public class SalesforceUtil {
 
-  public static final String REGISTRATION_API_PATH = "/services/apexrest/registration";
+  public static final String REGISTRATION_API_PATH = "/services/apexrest/Karma/kex-api";
 
   static final String IMG_CDN_DOMAIN = "content.force.com";
 
