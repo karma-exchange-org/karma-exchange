@@ -236,7 +236,8 @@ public final class Event extends BaseEvent<Event> {
     // Add the current user as an organizer if there are no organizers registered.
     if (organizers.isEmpty() && UserService.isCurrentUserLoggedIn()) {
       Iterables.removeIf(participants, EventParticipant.userPredicate(getCurrentUserKey()));
-      participants.add(EventParticipant.create(getCurrentUserKey(), ParticipantType.ORGANIZER));
+      participants.add(
+        new EventParticipant(getCurrentUserKey(), ParticipantType.ORGANIZER));
       initParticipantLists();
     }
     processParticipants();
@@ -808,7 +809,8 @@ public final class Event extends BaseEvent<Event> {
       if (participantToUpsert == null) {
         // TODO(avaliani): organizers should not in theory be allowed to add arbitrary users.
         //     However, this simplifies testing so we're going to allow it for now.
-        participantToUpsert = EventParticipant.create(userToUpsertKey, participantType);
+        participantToUpsert =
+            new EventParticipant(userToUpsertKey, participantType);
         event.participants.add(participantToUpsert);
         mutationType = MutationType.INSERT;
       } else {
@@ -889,14 +891,19 @@ public final class Event extends BaseEvent<Event> {
     @Index
     private KeyWrapper<User> user;
     private ParticipantType type;
+    private int numVolunteers;
+    private double hoursWorked;
 
-    public static EventParticipant create(Key<User> user, ParticipantType type) {
-      return new EventParticipant(KeyWrapper.create(user), type);
+    public EventParticipant(Key<User> user, ParticipantType type) {
+      this(user, type, 1, 0);
     }
 
-    private EventParticipant(KeyWrapper<User> user, ParticipantType type) {
-      this.user = user;
+    public EventParticipant(Key<User> user, ParticipantType type, int numVolunteers,
+        double hoursWorked) {
+      this.user = KeyWrapper.create(user);
       this.type = type;
+      this.numVolunteers = numVolunteers;
+      this.hoursWorked = hoursWorked;
     }
 
     public static Predicate<EventParticipant> userPredicate(final Key<User> userKey) {

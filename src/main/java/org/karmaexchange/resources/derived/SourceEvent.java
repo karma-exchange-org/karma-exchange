@@ -222,9 +222,11 @@ public class SourceEvent {
   public static final class SourceEventParticipant {
     private BaseSourceUser user;
     private ParticipantType type;
+    public int numVolunteers;
+    public double hoursWorked;
 
     public EventParticipant toEventParticipant(Key<User> userKey) {
-      return EventParticipant.create(userKey, type);
+      return new EventParticipant(userKey, type, numVolunteers, hoursWorked);
     }
   }
 

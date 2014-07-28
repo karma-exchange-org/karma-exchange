@@ -160,6 +160,7 @@ public class SourceEventSyncUtil {
 
     private ErrorType type;
     private String message;
+    private String stackTrace;
 
     public void convertAndThrowError() {
       if (type == ErrorType.REGISTRATION_LIMIT_REACHED) {
