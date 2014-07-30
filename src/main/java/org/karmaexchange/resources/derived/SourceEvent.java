@@ -123,7 +123,7 @@ public class SourceEvent {
         Lists.newArrayList();
     for (SourceEventParticipant sourceParticipant : sourceParticipants) {
       sourceParticipantMappingsKeys.add(
-        sourceParticipant.user.getGlobalUidMappingKey());
+        sourceParticipant.user.createGlobalUidMappingKey());
     }
 
     Map<Key<GlobalUidMapping>, GlobalUidMapping> sourceParticipantMappings =
@@ -132,7 +132,7 @@ public class SourceEvent {
         Lists.newArrayList();
     for (SourceEventParticipant sourceParticipant : sourceParticipants) {
       GlobalUidMapping mapping =
-          sourceParticipantMappings.get(sourceParticipant.user.getGlobalUidMappingKey());
+          sourceParticipantMappings.get(sourceParticipant.user.createGlobalUidMappingKey());
       Key<User> userKey;
       if (mapping == null) {
         userKey = User.upsertNewUser(

@@ -407,9 +407,8 @@ public class Organization extends NameBaseDao<Organization> implements BaseDaoVi
     // An external id uniquely identifying the source org.
     private String id;
 
-    // Null if the organization is the same as the listing organization.
-    @Nullable
-    KeyWrapper<Organization> listingOrg;
+    // The listing org may or may not be the same organization.
+    private KeyWrapper<Organization> listingOrg;
 
     public SourceOrganizationInfo(String id, Key<Organization> listingOrgKey) {
       this.id = id;

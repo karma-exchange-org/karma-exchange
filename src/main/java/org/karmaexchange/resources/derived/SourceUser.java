@@ -11,11 +11,13 @@ import org.karmaexchange.auth.GlobalUidMapping;
 import org.karmaexchange.dao.BaseDao;
 import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
+import org.karmaexchange.dao.Organization.SourceOrganizationInfo;
 import org.karmaexchange.dao.OrganizationPrefs;
 import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.derived.EventSourceInfo;
 
 import com.google.api.client.util.Maps;
+import com.google.common.collect.Lists;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.VoidWork;
 
@@ -33,6 +35,26 @@ public final class SourceUser extends BaseSourceUser {
   private boolean emailOptOut;
   private List<SourceOrganizationPrefs> orgPrefs;
 
+  public SourceUser(User user, EventSourceInfo eventSourceBeingUpdated) {
+    super(user);
+    emailOptOut = user.isEmailOptOut();
+    orgPrefs = getListingOrgPrefs( user, eventSourceBeingUpdated.getOrgKey() );
+  }
+
+  private List<SourceOrganizationPrefs> getListingOrgPrefs(User user,
+      Key<Organization> listingOrgKey) {
+    List<SourceOrganizationPrefs> filteredPrefs = Lists.newArrayList();
+    for (OrganizationPrefs orgPref : user.getOrgPrefs()) {
+      if ( (orgPref.getSourceOrgInfo() != null) &&
+           KeyWrapper.toKey(orgPref.getSourceOrgInfo().getListingOrg())
+             .equals(listingOrgKey) ) {
+        filteredPrefs.add(
+          new SourceOrganizationPrefs(orgPref) );
+      }
+    }
+    return filteredPrefs;
+  }
+
   public void upsert(EventSourceInfo listingOrgInfo) {
     validate();
 
@@ -40,7 +62,7 @@ public final class SourceUser extends BaseSourceUser {
         toOrganizationPrefsMap(listingOrgInfo);
 
     GlobalUidMapping mapping =
-        ofy().load().key(getGlobalUidMappingKey()).now();
+        ofy().load().key(createGlobalUidMappingKey()).now();
     if (mapping == null) {
       UserInfo userInfo =
           createUser(listingOrgInfo.getOrgKey());
@@ -86,6 +108,11 @@ public final class SourceUser extends BaseSourceUser {
     private SourceOrganization org;
     private boolean emailOptOut;
 
+    public SourceOrganizationPrefs(OrganizationPrefs orgPrefs) {
+      emailOptOut = orgPrefs.isEmailOptOut();
+      org = new SourceOrganization(orgPrefs.getSourceOrgInfo());
+    }
+
     public void validate() {
       org.validate();
     }
@@ -93,7 +120,10 @@ public final class SourceUser extends BaseSourceUser {
     public OrganizationPrefs toOrganizationPrefs(EventSourceInfo listingOrgInfo) {
       Key<Organization> orgKey =
           org.lookupOrCreateOrg(listingOrgInfo);
-      return new OrganizationPrefs(orgKey, emailOptOut);
+      return new OrganizationPrefs(
+          orgKey,
+          new SourceOrganizationInfo(org.getId(), listingOrgInfo.getOrgKey()),
+          emailOptOut);
     }
   }
 

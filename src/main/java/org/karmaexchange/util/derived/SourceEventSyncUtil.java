@@ -23,6 +23,7 @@ import org.karmaexchange.dao.User;
 import org.karmaexchange.dao.Event.ParticipantType;
 import org.karmaexchange.dao.derived.EventSourceInfo;
 import org.karmaexchange.resources.derived.SourceEvent;
+import org.karmaexchange.resources.derived.SourceUser;
 import org.karmaexchange.resources.msg.ErrorResponseMsg;
 import org.karmaexchange.resources.msg.ErrorResponseMsg.ErrorInfo;
 
@@ -91,13 +92,15 @@ public class SourceEventSyncUtil {
 
       ObjectMapper mapper = new ObjectMapper();
       RegistrationRequest registrationReq = new RegistrationRequest(
-        sourceInfo.getSecret(),
         action,
-        event.getSourceEventInfo().getId(),
-        user.getFirstName(),
-        user.getLastName(),
-        user.getPrimaryEmail());
-      mapper.writeValue(connection.getOutputStream(), registrationReq);
+        event.getSourceEventInfo().getId());
+      SourceUser sourceUser =
+          new SourceUser(user, sourceInfo);
+      UpdateRequest updateReq = new UpdateRequest(
+        sourceInfo.getSecret(),
+        registrationReq,
+        sourceUser);
+      mapper.writeValue(connection.getOutputStream(), updateReq);
 
       int responseCode = connection.getResponseCode();
       StringWriter responseContent = new StringWriter();
@@ -130,14 +133,26 @@ public class SourceEventSyncUtil {
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
-  private static class RegistrationRequest {
+  private static class UpdateRequest {
     private String secretKey;
+    private RegistrationRequest registrationReq;
+    private SourceUser sourceUser;
+  }
 
+  @Data
+  @NoArgsConstructor
+  private static class RegistrationRequest {
     private RegistrationAction action;
     private String eventId;
-    private String firstName;
-    private String lastName;
-    private String email;
+    // TODO(avaliani): update num volunteers.
+    private int numVolunteers;
+
+    public RegistrationRequest(RegistrationAction action, String eventId) {
+      this.action = action;
+      this.eventId = eventId;
+      // TODO(avaliani): this should be user initialized.
+      this.numVolunteers = 1;
+    }
   }
 
   @XmlRootElement
