@@ -3,6 +3,7 @@ package org.karmaexchange.resources.derived;
 import static org.karmaexchange.util.OfyService.ofy;
 
 import org.karmaexchange.dao.BaseDao;
+import org.karmaexchange.dao.KeyWrapper;
 import org.karmaexchange.dao.Organization;
 import org.karmaexchange.dao.Organization.SourceOrganizationInfo;
 import org.karmaexchange.dao.derived.EventSourceInfo;
@@ -20,8 +21,8 @@ public class SourceConfig {
 
   private String rootOrgId;
 
-  public void upsert(EventSourceInfo orgInfo) {
-    Key<Organization> orgKey = orgInfo.getOrgKey();
+  public void upsert(EventSourceInfo sourceInfo) {
+    Key<Organization> orgKey = sourceInfo.getOrgKey();
     Organization org =
         ofy().load().key(orgKey).now();
     SourceOrganizationInfo persistedOrgInfo =
@@ -31,10 +32,19 @@ public class SourceConfig {
       persistedOrgInfo = new SourceOrganizationInfo();
     }
 
+    boolean updateRequired = false;
     if ((persistedOrgInfo.getId() == null) ||
         !persistedOrgInfo.getId().equals(rootOrgId)) {
-
       persistedOrgInfo.setId(rootOrgId);
+      updateRequired = true;
+    }
+    if ((persistedOrgInfo.getListingOrg() == null) ||
+        !persistedOrgInfo.getListingOrg().equals(orgKey)) {
+      persistedOrgInfo.setListingOrg(
+        KeyWrapper.create(orgKey));
+      updateRequired = true;
+    }
+    if (updateRequired) {
       ofy().transact(
         new UpdateOrgConfigTxn(orgKey, persistedOrgInfo));
     }

@@ -34,6 +34,11 @@ public final class SourceOrganization {
   @Nullable
   private String secretKey;
 
+  // This constructor is only meant to be used for source update requests.
+  public SourceOrganization(SourceOrganizationInfo sourceOrgInfo) {
+    id = sourceOrgInfo.getId();
+  }
+
   public void validate() {
     if ((id == null) || (name == null)) {
       throw ErrorResponseMsg.createException("invalid org info: " + this,

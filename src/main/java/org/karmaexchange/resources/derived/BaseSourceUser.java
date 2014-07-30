@@ -22,7 +22,18 @@ public class BaseSourceUser {
   private String lastName;
   private String email;
 
-  public Key<GlobalUidMapping> getGlobalUidMappingKey() {
+  public BaseSourceUser(User user) {
+    firstName = user.getFirstName();
+    lastName= user.getLastName();
+    // If the primary email changes we need new mapping info at the source db.
+    // TODO(avaliani): Think about how to address this. One way to store for each db
+    //   the contact id.
+    //   We need to handle correctly the case that a user changes their primary email
+    //   address.
+    email = user.getPrimaryEmail();
+  }
+
+  public Key<GlobalUidMapping> createGlobalUidMappingKey() {
     return GlobalUidMapping.getKey(
       new GlobalUid(GlobalUidType.EMAIL, email));
   }
