@@ -1579,7 +1579,60 @@ p {
 
 .login-modal .modal-body .login-button {
   text-align: center;
-  margin-top: 5px;
+  margin-top: 20px;
+}
+
+.login-modal .modal-dialog {
+  max-width: none;
+}
+
+@media screen and (min-width: 768px) {
+  .login-modal .modal-dialog {
+    width: 600px;
+  }
+}
+
+.login-modal .partnership-overview .partnership-description,
+.login-modal .partnership-overview .partnership-logos {
+  margin-bottom: 10px;
+}
+
+.login-modal .partnership-logo .thumbnail,
+.login-modal .partnership-logo .name {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.login-modal .partnership-logo .thumbnail > img {
+  max-width: none;  /* undo bootstrap */
+}
+
+.login-modal .partnership-logo .name {
+  padding-left: 10px;
+}
+
+.login-modal .partnership-logos .partnership-logo {
+  float: left;
+  width: 230px;
+  text-align: left;
+  margin: 10px;
+}
+
+.login-modal .partnership-logos {
+  display: inline-block;
+}
+
+.login-modal .partnership-overview {
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 20px;
+}
+
+.login-modal .sign-in-options > .description {
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 10px;
 }
 
 /***** END LOGIN MODAL *****/

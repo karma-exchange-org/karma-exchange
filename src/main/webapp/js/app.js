@@ -341,7 +341,8 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 
         login: function() {
             var modalInstance = $modal.open({
-                backdrop: "static",
+                backdrop: 'static',
+                windowClass: 'login-modal',
                 templateUrl: 'template/kex/login-modal.html',
                 controller: 'LoginModalInstanceCtrl'
             });
@@ -1064,7 +1065,7 @@ kexApp.factory('IframeUtil', function($rootScope, $location) {
     return IframeUtil;
 });
 
-kexApp.factory('KexUtil', function($location, $modal, $rootScope) {
+kexApp.factory('KexUtil', function($location, $modal, $rootScope, $window) {
     var ANON_USER_IMAGE_URL = "/img/anon_user_256_pd_color.png";
 
     return {
@@ -1157,8 +1158,12 @@ kexApp.factory('KexUtil', function($location, $modal, $rootScope) {
             return { str: str, truncated: tooLong };
         },
 
-        setLocation: function (path) {
-            $location.path(this.stripHashbang(path));
+        setLocation: function (path, target) {
+            if (angular.isDefined(target)) {
+                $window.open(path, target);
+            } else {
+                $location.path(this.stripHashbang(path));
+            }
         },
 
         createConfirmationModal: function(modalText) {
