@@ -430,6 +430,8 @@ kexApp.controller(
         '$scope', '$modalInstance', '$facebook', 'SessionManager', 'FbUtil', '$q', 'PersonaUtil', '$rootScope', '$log', 'IframeUtil',
         function($scope, $modalInstance, $facebook, SessionManager, FbUtil, $q, PersonaUtil, $rootScope, $log, IframeUtil) {
 
+            $scope.FbUtil = FbUtil;
+
             $scope.cancel = cancelLogin;
             var loginTracker = new PromiseTracker();
 

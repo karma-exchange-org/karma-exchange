@@ -15,10 +15,10 @@
             <div class="partnership-logo panel panel-default panel-clickable" ng-click="setLocation('/#!/org/' + iframeOrg.key, '_blank')">
                 <div class="panel-heading">
                     <div class="thumbnail">
-                        <img src="http://graph.facebook.com/StewardshipNetworkNewEngland/picture?type=square" class="kex-thumbnail-org"> </img>
+                        <img ng-src="{{ FbUtil.getOrgThumbnailImgUrl(iframeOrg) }}" class="kex-thumbnail-org"> </img>
                     </div>
                     <div class="name">
-                        The Stewardship Network: New England
+                        {{ iframeOrg.orgName }}
                     </div>
                 </div>
             </div>
