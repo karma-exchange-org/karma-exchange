@@ -57,12 +57,8 @@
 
 /* START MODAL CSS */
 
-@media screen and (min-width: 450px) {
-  .modal-dialog {
-    width: 400px;
-    padding-top: 30px;
-    padding-bottom: 30px;
-  }
+.modal-dialog {
+  max-width: 400px;
 }
 
 .modal-content {

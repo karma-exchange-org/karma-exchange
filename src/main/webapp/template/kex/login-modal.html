@@ -1,24 +1,71 @@
-<div class="login-modal">
-    <div class="modal-header">
-        <button type="button" class="close" ng-click="cancel()">&times;</button>
-        <h4 class="modal-title">Log in</h4>
+<div class="modal-header">
+    <button type="button" class="close" ng-click="cancel()">&times;</button>
+    <h4 class="modal-title">Sign in</h4>
+</div>
+<div class="modal-body">
+
+    <div class="partnership-overview">
+
+        <div class="partnership-description">
+            The <a href="">Stewardship Network of New England</a> has partnered with <a href="/#!/tour" target="_blank">Karma Exchange</a> to make it easy for volunteers to sign up for opportunities and track their impact.
+        </div>
+
+        <div class="partnership-logos cf">
+
+            <!-- todo(avaliani): add ng-click -->
+            <div class="partnership-logo panel panel-default panel-clickable">
+                <div class="panel-heading">
+                    <div class="thumbnail">
+                        <img src="http://graph.facebook.com/StewardshipNetworkNewEngland/picture?type=square" class="kex-thumbnail-org"> </img>
+                    </div>
+                    <div class="name">
+                        The Stewardship Network: New England
+                    </div>
+                </div>
+            </div>
+
+            <div class="partnership-logo panel panel-default panel-clickable" ng-click="setLocation('/#!/tour', '_blank')">
+                <div class="panel-heading">
+                    <div class="thumbnail">
+                        <img src="/img/kex-logo-hand-only.png" class="kex-thumbnail-org"> </img>
+                    </div>
+                    <div class="name">
+                        Karma Exchange
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
-    <div class="modal-body">
+
+    <div class="sign-in-options">
+
+        <div class="description">
+            Select your prefered sign in option to get started!
+        </div>
 
         <div class="login-button">
             <a href="" class="persona-button persona-fb" title="Sign in with Facebook" ng-click="fbLogin()">
                 <span>Sign in with Facebook</span>
             </a>
+            <div class="description">
+                We never spam your wall, friends, or email.
+            </div>
         </div>
 
         <div class="login-button">
             <a href="" class="persona-button persona-orange" title="Sign in with your email" ng-click="personaLogin()">
                 <span>Sign in with your email</span>
             </a>
+            <div class="description">
+                We use <a href="https://login.persona.org/about" target="_blank">Mozilla Persona</a> to verify your email address. Persona is a simple sign-in system from the non-profit behind Firefox.
+            </div>
         </div>
 
     </div>
-    <div class="modal-footer">
-        <button class="btn btn-default btn-sm" ng-click="cancel()">Cancel</button>
-    </div>
+
+</div>
+<div class="modal-footer">
+    <button class="btn btn-default btn-sm" ng-click="cancel()">Cancel</button>
 </div>
