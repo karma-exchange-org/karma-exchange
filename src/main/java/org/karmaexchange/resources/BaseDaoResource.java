@@ -61,7 +61,13 @@ public abstract class BaseDaoResource<T extends BaseDao<T>, U extends BaseDaoVie
   }
 
   protected T getResourceObj(String keyStr) {
-    Key<T> key = OfyUtil.<T>createKey(keyStr);
+    Key<T> key;
+    try {
+      key = OfyUtil.createIfKey(keyStr);
+    } catch (IllegalArgumentException e) {
+      // See if the key is actually an id.
+      key = keyFromId(keyStr);
+    }
     T resource = ofy().load().key(key).now();
     if (resource == null) {
       throw ErrorResponseMsg.createException("resource does not exist", ErrorInfo.Type.BAD_REQUEST);
@@ -103,5 +109,9 @@ public abstract class BaseDaoResource<T extends BaseDao<T>, U extends BaseDaoVie
 
   protected void preProcessUpsert(T resource) {
     // No-op.
+  }
+
+  protected Key<T> keyFromId(String id) {
+    throw ErrorResponseMsg.createException("invalid key", ErrorInfo.Type.BAD_REQUEST);
   }
 }

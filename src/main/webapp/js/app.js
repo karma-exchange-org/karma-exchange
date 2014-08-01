@@ -140,6 +140,12 @@ kexApp = angular.module( "kexApp",
     };
 })
 
+.filter('removeDefiniteArticle', function () {
+    return function (text) {
+        return text ? text.replace(/^the\s+/i, '') : text;
+    };
+})
+
 .filter('eventStartEndDate', function () {
     return function (event) {
         if (!angular.isDefined(event)) {
@@ -421,8 +427,10 @@ kexApp.factory('SessionManager', function($rootScope, $q, $http, FbUtil, $resour
 kexApp.controller(
     'LoginModalInstanceCtrl',
     [
-        '$scope', '$modalInstance', '$facebook', 'SessionManager', 'FbUtil', '$q', 'PersonaUtil', '$rootScope', '$log',
-        function($scope, $modalInstance, $facebook, SessionManager, FbUtil, $q, PersonaUtil, $rootScope, $log) {
+        '$scope', '$modalInstance', '$facebook', 'SessionManager', 'FbUtil', '$q', 'PersonaUtil', '$rootScope', '$log', 'IframeUtil',
+        function($scope, $modalInstance, $facebook, SessionManager, FbUtil, $q, PersonaUtil, $rootScope, $log, IframeUtil) {
+
+            $scope.FbUtil = FbUtil;
 
             $scope.cancel = cancelLogin;
             var loginTracker = new PromiseTracker();
@@ -435,6 +443,10 @@ kexApp.controller(
 
             $scope.$on('$destroy', function() {
                 personaAuthChangeUnsubscribe();
+            });
+
+            IframeUtil.getIframeOrg().then( function(result) {
+                $scope.iframeOrg = result;
             });
 
             $scope.fbLogin = function() {
@@ -1027,15 +1039,25 @@ kexApp.provider('PageProperties', function() {
         }];
 });
 
-kexApp.factory('IframeUtil', function($rootScope, $location) {
+kexApp.factory('IframeUtil', function($rootScope, $location, $q, Org) {
 
-    var iframeParentUrl, iframeView, iframeVersion;
+    var iframeVersion = $location.search().iframe;
+    var iframeView = $rootScope.iframeView = !!iframeVersion;
+    var iframeParentUrl = $location.search().iframeParentUrl;
+    var iframeOrgId = $location.search().iframeOrgId;
 
-    iframeVersion = $location.search().iframe;
-    iframeView = $rootScope.iframeView = !!iframeVersion;
-    iframeParentUrl = $location.search().iframeParentUrl;
+    var iframeOrgProm;
+    if (iframeOrgId) {
+        iframeOrgProm = Org.get({ id: iframeOrgId });
+    } else {
+        iframeOrgProm = $q.when();
+    }
 
     var IframeUtil = {
+
+        getIframeOrg: function() {
+            return iframeOrgProm;
+        },
 
         getEventDetailsHref: function(eventKey) {
             var hrefResult = {};

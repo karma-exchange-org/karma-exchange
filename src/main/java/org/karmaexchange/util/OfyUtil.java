@@ -19,6 +19,21 @@ public class OfyUtil {
     }
   }
 
+  /**
+   * Creates a Key object if the input is a valid key.
+   *
+   * @param keyStr the encoded key to parse
+   * @return the Key object for the input keyStr
+   * @throws IllegalArgumentException if the string is non-null and not a valid key.
+   */
+  public static <T> Key<T> createIfKey(String keyStr) {
+    try {
+      return Key.<T>create(keyStr);
+    } catch (NullPointerException e) {
+      throw ErrorResponseMsg.createException(e, ErrorInfo.Type.BAD_REQUEST);
+    }
+  }
+
   public static String getKind(Class<?> cls) {
     return ofy().factory().getMetadata(cls).getKeyMetadata().getKind();
   }
