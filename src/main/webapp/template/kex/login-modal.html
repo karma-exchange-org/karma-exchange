@@ -4,16 +4,15 @@
 </div>
 <div class="modal-body">
 
-    <div class="partnership-overview">
+    <div class="partnership-overview" ng-show="iframeOrg">
 
         <div class="partnership-description">
-            The <a href="">Stewardship Network of New England</a> has partnered with <a href="/#!/tour" target="_blank">Karma Exchange</a> to make it easy for volunteers to sign up for opportunities and track their impact.
+            The <a href="/#!/org/{{iframeOrg.key}}" target="_blank">{{ iframeOrg.orgName | removeDefiniteArticle }}</a> has partnered with <a href="/#!/tour" target="_blank">Karma Exchange</a> to make it easy for volunteers to sign up for opportunities and track their impact.
         </div>
 
         <div class="partnership-logos cf">
 
-            <!-- todo(avaliani): add ng-click -->
-            <div class="partnership-logo panel panel-default panel-clickable">
+            <div class="partnership-logo panel panel-default panel-clickable" ng-click="setLocation('/#!/org/' + iframeOrg.key, '_blank')">
                 <div class="panel-heading">
                     <div class="thumbnail">
                         <img src="http://graph.facebook.com/StewardshipNetworkNewEngland/picture?type=square" class="kex-thumbnail-org"> </img>

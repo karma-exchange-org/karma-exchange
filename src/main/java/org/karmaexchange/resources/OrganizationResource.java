@@ -60,6 +60,11 @@ public class OrganizationResource extends ViewlessBaseDaoResource<Organization> 
     }
   }
 
+  @Override
+  protected Key<Organization> keyFromId(String id) {
+    return Organization.createKey(id);
+  }
+
   @GET
   @Produces({MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON})
   public Response getResources() {
